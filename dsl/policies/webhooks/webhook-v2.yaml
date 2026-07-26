@@ -1,0 +1,38 @@
+apiVersion: edgemint.io/v1
+kind: WebhookPolicy
+metadata:
+  name: webhook-delivery-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+spec:
+  signature:
+    algorithm: HMAC-SHA256
+    signedInput: timestamp.rawBody
+    timestampToleranceSeconds: 300
+    secretOverlapHours: 24
+  successStatusRanges:
+  - 200-299
+  retryStatusCodes:
+  - 408
+  - 409
+  - 425
+  - 429
+  - 500
+  - 502
+  - 503
+  - 504
+  retry:
+    delaysSeconds:
+    - 10
+    - 30
+    - 120
+    - 600
+    - 3600
+    - 21600
+    - 86400
+    jitterBps: 2000
+    maximumAttempts: 8
+  terminalAction: dead_letter
+  retentionDays: 30

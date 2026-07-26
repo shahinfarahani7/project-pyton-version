@@ -1,0 +1,9 @@
+syntax = "proto3";
+package edgemint.v1;
+option csharp_namespace = "EdgeMint.Contracts.V1";
+import "common.proto";
+service WorkerInternalApi { rpc VerifyLease(VerifyLeaseRequest) returns (LeaseAuthority); rpc RecordHeartbeat(HeartbeatRequest) returns (HeartbeatResponse); }
+message VerifyLeaseRequest { RequestContext context = 1; string assignment_id = 2; int64 fence_token = 3; string worker_device_id = 4; }
+message LeaseAuthority { bool valid = 1; string assignment_id = 2; string attempt_id = 3; int64 fence_token = 4; string model_version_id = 5; string input_sha256 = 6; int64 expires_unix_ms = 7; }
+message HeartbeatRequest { RequestContext context = 1; string worker_device_id = 2; int64 sequence = 3; bytes signed_payload = 4; bytes signature = 5; }
+message HeartbeatResponse { bool accepted = 1; int64 next_heartbeat_unix_ms = 2; }

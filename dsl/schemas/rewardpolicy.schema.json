@@ -1,0 +1,315 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/rewardpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "RewardPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "calculationVersion": {
+          "type": "string"
+        },
+        "caps": {
+          "additionalProperties": false,
+          "properties": {
+            "maxDailyPassiveRewardMicrosPerWorker": {
+              "type": "integer"
+            },
+            "maximumWorkerShareOfNetTaskRevenueBps": {
+              "type": "integer"
+            },
+            "passiveShareOfMonthlyRewardsBps": {
+              "type": "integer"
+            },
+            "passiveShareOfNetRevenueBps": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "maxDailyPassiveRewardMicrosPerWorker",
+            "maximumWorkerShareOfNetTaskRevenueBps",
+            "passiveShareOfMonthlyRewardsBps",
+            "passiveShareOfNetRevenueBps"
+          ],
+          "type": "object"
+        },
+        "eligibility": {
+          "additionalProperties": false,
+          "properties": {
+            "attestationRequired": {
+              "type": "boolean"
+            },
+            "minimumTrustMilli": {
+              "type": "integer"
+            },
+            "verifiedResultRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "attestationRequired",
+            "minimumTrustMilli",
+            "verifiedResultRequired"
+          ],
+          "type": "object"
+        },
+        "failurePayments": {
+          "additionalProperties": false,
+          "properties": {
+            "customerCancelledAfterStart": {
+              "type": "string"
+            },
+            "platformLostAcknowledgedResult": {
+              "type": "string"
+            },
+            "workerInvalidResult": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "customerCancelledAfterStart",
+            "platformLostAcknowledgedResult",
+            "workerInvalidResult"
+          ],
+          "type": "object"
+        },
+        "holds": {
+          "additionalProperties": false,
+          "properties": {
+            "defaultHours": {
+              "type": "integer"
+            },
+            "fraudReviewHours": {
+              "type": "integer"
+            },
+            "newWorkerHours": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "defaultHours",
+            "fraudReviewHours",
+            "newWorkerHours"
+          ],
+          "type": "object"
+        },
+        "multipliersBps": {
+          "additionalProperties": false,
+          "properties": {
+            "tier": {
+              "additionalProperties": false,
+              "properties": {
+                "T1": {
+                  "type": "integer"
+                },
+                "T2": {
+                  "type": "integer"
+                },
+                "T3": {
+                  "type": "integer"
+                },
+                "T4": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "T1",
+                "T2",
+                "T3",
+                "T4"
+              ],
+              "type": "object"
+            },
+            "urgency": {
+              "additionalProperties": false,
+              "properties": {
+                "batch": {
+                  "type": "integer"
+                },
+                "priority": {
+                  "type": "integer"
+                },
+                "realtime": {
+                  "type": "integer"
+                },
+                "standard": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "batch",
+                "priority",
+                "realtime",
+                "standard"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "tier",
+            "urgency"
+          ],
+          "type": "object"
+        },
+        "orderedMultipliers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "qualityBands": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "minimumMilli": {
+                "type": "integer"
+              },
+              "multiplierBps": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "minimumMilli",
+              "multiplierBps"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "reliabilityBoundsBps": {
+          "additionalProperties": false,
+          "properties": {
+            "maximum": {
+              "type": "integer"
+            },
+            "minimum": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "maximum",
+            "minimum"
+          ],
+          "type": "object"
+        },
+        "rules": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "baseRewardMicrosPerQuantum": {
+                "type": "integer"
+              },
+              "taskType": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "baseRewardMicrosPerQuantum",
+              "taskType"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "scarcityBoundsBps": {
+          "additionalProperties": false,
+          "properties": {
+            "maximum": {
+              "type": "integer"
+            },
+            "minimum": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "maximum",
+            "minimum"
+          ],
+          "type": "object"
+        },
+        "unit": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "calculationVersion",
+        "caps",
+        "eligibility",
+        "failurePayments",
+        "holds",
+        "multipliersBps",
+        "orderedMultipliers",
+        "qualityBands",
+        "reliabilityBoundsBps",
+        "rules",
+        "scarcityBoundsBps",
+        "unit"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint RewardPolicy",
+  "type": "object"
+}

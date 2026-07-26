@@ -1,0 +1,52 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "sendHeartbeat",
+  "request": {
+    "method": "POST",
+    "path": "/workers/{workerId}/heartbeat",
+    "pathParameters": {
+      "workerId": "wrk_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_sendHeartbeat_0001",
+      "Idempotency-Key": "idem_sendHeartbeat_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "sequence": 1,
+      "observedAt": "2026-07-21T10:00:00Z",
+      "batteryBps": 0,
+      "charging": true,
+      "thermalState": "nominal",
+      "freeRamBytes": 0,
+      "freeStorageBytes": 0,
+      "network": "offline",
+      "currentLeases": [
+        "example"
+      ],
+      "installedModels": [
+        {
+          "modelVersionId": "id_01J00000000000000000000000",
+          "artifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    }
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.health:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

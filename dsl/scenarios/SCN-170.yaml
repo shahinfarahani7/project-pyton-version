@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-170-verification-lifecycle-human_review-to-rejected
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-170
+  stateMachineRef: StateMachine/verification-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is human_review
+  - expected version matches
+  when:
+  - event requests human_review -> rejected
+  then:
+  - state becomes rejected
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: human_review
+    to: rejected
+  expectedEvents:
+  - verification-lifecycle.human_review_to_rejected
+  expectedErrorCode: null

@@ -1,0 +1,29 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "archiveWorkspace",
+  "request": {
+    "method": "DELETE",
+    "path": "/workspaces/{workspaceId}",
+    "pathParameters": {
+      "workspaceId": "wsp_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_archiveWorkspace_0001",
+      "Idempotency-Key": "idem_archiveWorkspace_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "If-Match": "\"1\""
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "204",
+    "successBody": null,
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.workspaces:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

@@ -1,0 +1,164 @@
+apiVersion: edgemint.io/v1
+kind: ProductionReleaseInputs
+metadata:
+  version: 5.0.0
+  status: active
+spec:
+  cloud:
+  - name: AWS_ACCOUNT_ID
+    format: ^[0-9]{12}$
+    owner: Platform
+    secret: false
+  - name: AWS_PRIMARY_REGION
+    const: eu-central-1
+    owner: Platform
+    secret: false
+  - name: AWS_DR_REGION
+    const: eu-west-1
+    owner: Platform
+    secret: false
+  - name: ROUTE53_ZONE_ID
+    format: ^Z[A-Z0-9]+$
+    owner: Platform
+    secret: false
+  - name: PRODUCTION_DOMAIN
+    format: ^[a-z0-9.-]+$
+    owner: Platform
+    secret: false
+  - name: TERRAFORM_STATE_BUCKET
+    format: ^[a-z0-9.-]+$
+    owner: Platform
+    secret: false
+  - name: TERRAFORM_LOCK_TABLE
+    format: ^[A-Za-z0-9_.-]+$
+    owner: Platform
+    secret: false
+  - name: EKS_CLUSTER_VERSION
+    format: ^1\.[0-9]+$
+    owner: Platform
+    secret: false
+  - name: EKS_ADDON_VERSION_MANIFEST
+    format: ^evidence/actual/platform/eks-addon-versions\.json$
+    owner: Platform
+    secret: false
+  - name: PLATFORM_ADMIN_ROLE_ARN
+    format: ^arn:aws:iam::[0-9]{12}:role/
+    owner: Security
+    secret: false
+  - name: DATABASE_GENERATION
+    format: ^[A-Za-z0-9._-]+$
+    owner: Database
+    secret: false
+  - name: POSTGRES_ENGINE
+    const: postgres
+    owner: Database
+    secret: false
+  - name: POSTGRES_ENGINE_VERSION
+    const: '18.4'
+    owner: Database
+    secret: false
+  - name: POSTGRES_PARAMETER_GROUP_FAMILY
+    const: postgres18
+    owner: Database
+    secret: false
+  identity:
+  - name: COGNITO_CUSTOMER_POOL_ID
+    format: ^[a-z0-9-]+_[A-Za-z0-9]+$
+    owner: Security
+    secret: false
+  - name: COGNITO_OPERATIONS_POOL_ID
+    format: ^[a-z0-9-]+_[A-Za-z0-9]+$
+    owner: Security
+    secret: false
+  - name: PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN
+    format: '^arn:aws:secretsmanager:'
+    owner: Mobile Security
+    secret: true
+  - name: APPLE_APP_ATTEST_KEY_SECRET_ARN
+    format: '^arn:aws:secretsmanager:'
+    owner: Mobile Security
+    secret: true
+  - name: OPERATIONS_OIDC_PROVIDER_NAME
+    format: ^[A-Za-z0-9_-]{3,32}$
+    owner: Security
+    secret: false
+  - name: OPERATIONS_OIDC_ISSUER
+    format: ^https://
+    owner: Security
+    secret: false
+  - name: OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN
+    format: '^arn:aws:secretsmanager:'
+    owner: Security
+    secret: true
+  - name: OPERATIONS_OIDC_CLIENT_SECRET_ARN
+    format: '^arn:aws:secretsmanager:'
+    owner: Security
+    secret: true
+  - name: OPERATOR_IDP_FIDO2_POLICY_EVIDENCE
+    format: ^evidence/actual/identity/operator-fido2-policy\.json$
+    owner: Security
+    secret: false
+  payments:
+  - name: STRIPE_SECRET_KEY_ARN
+    format: '^arn:aws:secretsmanager:'
+    owner: Finance
+    secret: true
+  - name: STRIPE_WEBHOOK_SECRET_ARN
+    format: '^arn:aws:secretsmanager:'
+    owner: Finance
+    secret: true
+  - name: STRIPE_CONNECT_PLATFORM_ACCOUNT_ID
+    format: ^acct_[A-Za-z0-9]+$
+    owner: Finance
+    secret: false
+  supplyChain:
+  - name: COSIGN_KMS_KEY_ARN
+    format: '^arn:aws:kms:'
+    owner: Security
+    secret: false
+  - name: COSIGN_TRUSTED_PUBLIC_KEY_SHA256
+    format: ^[a-f0-9]{64}$
+    owner: Security
+    secret: false
+  - name: MODEL_SIGNING_KMS_KEY_ARN
+    format: '^arn:aws:kms:'
+    owner: ML Platform
+    secret: false
+  - name: ISTIO_VERSION
+    format: ^[0-9]+\.[0-9]+\.[0-9]+$
+    owner: Platform
+    secret: false
+  - name: ISTIO_CHART_PROVENANCE_EVIDENCE
+    format: ^evidence/actual/platform/istio-provenance\.json$
+    owner: Security
+    secret: false
+  - name: MINIO_IMAGE
+    format: ^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$
+    owner: Platform
+    secret: false
+  - name: MAILPIT_IMAGE
+    format: ^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$
+    owner: Platform
+    secret: false
+  - name: PYTHON_RUNTIME_IMAGE
+    format: ^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$
+    owner: Platform
+    secret: false
+  - name: POSTGRES_DEV_IMAGE
+    format: ^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$
+    owner: Database
+    secret: false
+  - name: POSTGRES_TOOLS_IMAGE
+    format: ^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$
+    owner: Database
+    secret: false
+  models:
+  - name: GA1_MODEL_RELEASE_MANIFEST
+    format: ^evidence/actual/models/.+\.json$
+    owner: ML Lead
+    secret: false
+  approvals:
+  - name: RELEASE_APPROVAL_MANIFEST
+    format: ^evidence/actual/release-evidence\.json$
+    owner: Release Manager
+    secret: false

@@ -1,0 +1,347 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/usecase.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "UseCase"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptanceCriteria": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "actors": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "alternateFlows": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "condition": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "condition",
+              "outcome"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "implementation": {
+          "additionalProperties": false,
+          "properties": {
+            "authorization": {
+              "additionalProperties": false,
+              "properties": {
+                "permissionSource": {
+                  "type": "string"
+                },
+                "principalTypes": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "tenantBoundary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "principalTypes",
+                "permissionSource",
+                "tenantBoundary"
+              ],
+              "type": "object"
+            },
+            "concurrency": {
+              "additionalProperties": false,
+              "properties": {
+                "expectedVersionRequired": {
+                  "type": "boolean"
+                },
+                "fenceRequired": {
+                  "type": "boolean"
+                },
+                "strategy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "strategy"
+              ],
+              "type": "object"
+            },
+            "errorCodes": {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "financialEffects": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "idempotency": {
+              "additionalProperties": false,
+              "properties": {
+                "mode": {
+                  "enum": [
+                    "required",
+                    "not_applicable"
+                  ]
+                },
+                "scope": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "mode",
+                "scope"
+              ],
+              "type": "object"
+            },
+            "observability": {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "retention": {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "transaction": {
+              "additionalProperties": false,
+              "properties": {
+                "isolation": {
+                  "type": "string"
+                },
+                "outboxEvents": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "writes": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "isolation",
+                "writes",
+                "outboxEvents"
+              ],
+              "type": "object"
+            },
+            "transport": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "method": {
+                    "type": "string"
+                  },
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "operationId",
+                  "method",
+                  "path"
+                ],
+                "type": "object"
+              },
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": [
+            "transport",
+            "authorization",
+            "idempotency",
+            "transaction",
+            "concurrency",
+            "financialEffects",
+            "errorCodes",
+            "observability",
+            "retention"
+          ],
+          "type": "object"
+        },
+        "mainFlow": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "postconditions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "preconditions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        },
+        "trace": {
+          "additionalProperties": false,
+          "properties": {
+            "apiOperations": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "entities": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "events": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "requirements": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "tests": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "apiOperations",
+            "entities",
+            "events",
+            "requirements",
+            "tests"
+          ],
+          "type": "object"
+        },
+        "trigger": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "acceptanceCriteria",
+        "actors",
+        "alternateFlows",
+        "id",
+        "mainFlow",
+        "postconditions",
+        "preconditions",
+        "title",
+        "trace",
+        "trigger",
+        "implementation"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint UseCase",
+  "type": "object"
+}

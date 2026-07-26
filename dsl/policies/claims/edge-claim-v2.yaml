@@ -1,0 +1,35 @@
+apiVersion: edgemint.io/v1
+kind: ClaimPolicy
+metadata:
+  name: edge-claim-v2
+  version: 2.0.0
+  status: draft
+  owners:
+  - legal
+  - finance
+  - security
+spec:
+  enabled: false
+  rewardUnit: EUR_REWARD_MICROS
+  tokenSymbol: EDGE
+  tokenDecimals: 18
+  eligibility:
+    minimumVerifiedRewardMicros: 100000000
+    kycRequired: true
+    sanctionsScreeningRequired: true
+    jurisdictionAllowlistRequired: true
+    fraudHoldMustBeClear: true
+    destinationVerificationRequired: true
+  epoch:
+    rateSource: approved_treasury_oracle
+    rateValiditySeconds: 900
+    conversionRounding: floor
+    dustAction: retain_reward_balance
+    treasuryCapRequired: true
+  batch:
+    schedule: daily
+    maximumClaims: 10000
+    ambiguousTransferAction: reconciling_no_resubmit
+  fees:
+    mode: deduct_or_campaign_sponsored
+  killSwitch: token_claims

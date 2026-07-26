@@ -1,0 +1,39 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createApiKey",
+  "request": {
+    "method": "POST",
+    "path": "/workspaces/{workspaceId}/api-keys",
+    "pathParameters": {
+      "workspaceId": "wsp_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createApiKey_0001",
+      "Idempotency-Key": "idem_createApiKey_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "name": "Example Name",
+      "scopes": [
+        "example"
+      ]
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "secret": "example",
+      "prefix": "example",
+      "createdAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.api-keys:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

@@ -1,0 +1,1998 @@
+{
+  "schemaVersion": "5.0",
+  "releaseId": "EM-20000101-EXAMPLE",
+  "environment": "production",
+  "commitSha": "0000000000000000000000000000000000000000",
+  "generatedAt": "2000-01-01T00:00:00Z",
+  "expiresAt": "2000-01-01T01:00:00Z",
+  "trustedRoots": {
+    "path": "evidence/actual/example/trusted-roots.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "mediaType": "application/json",
+    "generatedAt": "2000-01-01T00:00:00Z",
+    "releaseId": "EM-20000101-EXAMPLE",
+    "commitSha": "0000000000000000000000000000000000000000"
+  },
+  "repositoryState": {
+    "path": "evidence/actual/example/repository-state.json",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "mediaType": "application/json",
+    "generatedAt": "2000-01-01T00:00:00Z",
+    "releaseId": "EM-20000101-EXAMPLE",
+    "commitSha": "0000000000000000000000000000000000000000"
+  },
+  "externalInputs": [
+    {
+      "name": "APPLE_APP_ATTEST_KEY_SECRET_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/APPLE_APP_ATTEST_KEY_SECRET_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "AWS_ACCOUNT_ID",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/AWS_ACCOUNT_ID.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "AWS_DR_REGION",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/AWS_DR_REGION.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "AWS_PRIMARY_REGION",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/AWS_PRIMARY_REGION.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "COGNITO_CUSTOMER_POOL_ID",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/COGNITO_CUSTOMER_POOL_ID.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "COGNITO_OPERATIONS_POOL_ID",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/COGNITO_OPERATIONS_POOL_ID.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "COSIGN_KMS_KEY_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/COSIGN_KMS_KEY_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "COSIGN_TRUSTED_PUBLIC_KEY_SHA256",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/COSIGN_TRUSTED_PUBLIC_KEY_SHA256.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "DATABASE_GENERATION",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/DATABASE_GENERATION.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "EKS_ADDON_VERSION_MANIFEST",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/EKS_ADDON_VERSION_MANIFEST.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "EKS_CLUSTER_VERSION",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/EKS_CLUSTER_VERSION.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "GA1_MODEL_RELEASE_MANIFEST",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/GA1_MODEL_RELEASE_MANIFEST.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "ISTIO_CHART_PROVENANCE_EVIDENCE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/ISTIO_CHART_PROVENANCE_EVIDENCE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "ISTIO_VERSION",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/ISTIO_VERSION.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "MAILPIT_IMAGE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/MAILPIT_IMAGE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "MINIO_IMAGE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/MINIO_IMAGE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "MODEL_SIGNING_KMS_KEY_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/MODEL_SIGNING_KMS_KEY_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "OPERATIONS_OIDC_CLIENT_SECRET_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/OPERATIONS_OIDC_CLIENT_SECRET_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "OPERATIONS_OIDC_ISSUER",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/OPERATIONS_OIDC_ISSUER.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "OPERATIONS_OIDC_PROVIDER_NAME",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/OPERATIONS_OIDC_PROVIDER_NAME.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "OPERATOR_IDP_FIDO2_POLICY_EVIDENCE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/OPERATOR_IDP_FIDO2_POLICY_EVIDENCE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "PLATFORM_ADMIN_ROLE_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/PLATFORM_ADMIN_ROLE_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "POSTGRES_DEV_IMAGE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/POSTGRES_DEV_IMAGE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "POSTGRES_ENGINE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/POSTGRES_ENGINE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "POSTGRES_ENGINE_VERSION",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/POSTGRES_ENGINE_VERSION.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "POSTGRES_PARAMETER_GROUP_FAMILY",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/POSTGRES_PARAMETER_GROUP_FAMILY.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "POSTGRES_TOOLS_IMAGE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/POSTGRES_TOOLS_IMAGE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "PRODUCTION_DOMAIN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/PRODUCTION_DOMAIN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "PYTHON_RUNTIME_IMAGE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/PYTHON_RUNTIME_IMAGE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "ROUTE53_ZONE_ID",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/ROUTE53_ZONE_ID.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "STRIPE_CONNECT_PLATFORM_ACCOUNT_ID",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/STRIPE_CONNECT_PLATFORM_ACCOUNT_ID.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "STRIPE_SECRET_KEY_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/STRIPE_SECRET_KEY_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "STRIPE_WEBHOOK_SECRET_ARN",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/STRIPE_WEBHOOK_SECRET_ARN.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "TERRAFORM_LOCK_TABLE",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/TERRAFORM_LOCK_TABLE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "TERRAFORM_STATE_BUCKET",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/TERRAFORM_STATE_BUCKET.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "api-gateway",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/api-gateway/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/api-gateway/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/api-gateway/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/api-gateway/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "event-relay",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/event-relay/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/event-relay/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/event-relay/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/event-relay/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "identity",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/identity/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/identity/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/identity/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/identity/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "customer",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/customer/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/customer/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/customer/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/customer/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "file",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/file/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/file/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/file/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/file/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "task-intake",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/task-intake/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/task-intake/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/task-intake/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/task-intake/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "pricing",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/pricing/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/pricing/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/pricing/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/pricing/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "router",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/router/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/router/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/router/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/router/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "worker-gateway",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/worker-gateway/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/worker-gateway/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/worker-gateway/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/worker-gateway/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "worker-registry",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/worker-registry/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/worker-registry/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/worker-registry/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/worker-registry/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "result",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/result/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/result/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/result/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/result/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "verification",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/verification/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/verification/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/verification/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/verification/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "billing",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/billing/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/billing/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/billing/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/billing/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "ledger",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/ledger/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/ledger/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/ledger/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/ledger/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "reward",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/reward/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/reward/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/reward/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/reward/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "claim",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/claim/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/claim/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/claim/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/claim/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "fraud",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/fraud/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/fraud/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/fraud/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/fraud/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "webhook",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/webhook/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/webhook/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/webhook/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/webhook/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "model-registry",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/model-registry/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/model-registry/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/model-registry/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/model-registry/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "notification",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/notification/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/notification/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/notification/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/notification/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "operations",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/operations/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/operations/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/operations/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/operations/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "customer-portal",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/customer-portal/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/customer-portal/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/customer-portal/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/customer-portal/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "operations-portal",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/operations-portal/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/operations-portal/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/operations-portal/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/operations-portal/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "android-worker",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/android-worker/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/android-worker/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/android-worker/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/android-worker/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "model-paddleocr-mobile",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/model-paddleocr-mobile/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/model-paddleocr-mobile/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/model-paddleocr-mobile/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/model-paddleocr-mobile/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "model-gemma-3n-e2b-int4",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/model-gemma-3n-e2b-int4/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/model-gemma-3n-e2b-int4/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/model-gemma-3n-e2b-int4/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/model-gemma-3n-e2b-int4/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "model-whisper-base-int8",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "producedAt": "2000-01-01T00:00:00Z",
+      "sbom": {
+        "path": "evidence/actual/example/artifacts/model-whisper-base-int8/sbom.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "signatureVerification": {
+        "path": "evidence/actual/example/artifacts/model-whisper-base-int8/signature-verification.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "provenance": {
+        "path": "evidence/actual/example/artifacts/model-whisper-base-int8/provenance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "vulnerabilityReport": {
+        "path": "evidence/actual/example/artifacts/model-whisper-base-int8/vulnerability-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "name": "unit",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/unit.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "property",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/property.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "integration",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/integration.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "contract",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/contract.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "e2e-paid-task",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/e2e-paid-task.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "database-rls-invariants",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/database-rls-invariants.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "migration-upgrade",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/migration-upgrade.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "websocket-delivery-replay",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/websocket-delivery-replay.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "load",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/load.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "soak",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/soak.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "chaos",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/chaos.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "security-sast",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/security-sast.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "security-dast",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/security-dast.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "penetration-test",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/penetration-test.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "mobile-device-matrix",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/mobile-device-matrix.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "model-quality-resource",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/model-quality-resource.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "backup-restore",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/backup-restore.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "disaster-recovery",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/disaster-recovery.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "financial-reconciliation",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/financial-reconciliation.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "privacy-deletion",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/privacy-deletion.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "canary-rollback",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/tests/canary-rollback.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "function": "Product",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/Product.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "function": "Engineering",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/Engineering.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "function": "Security",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/Security.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "function": "SRE",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/SRE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "function": "Finance",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/Finance.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "function": "Legal",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/Legal.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "function": "Operations",
+      "approverId": "EXAMPLE-APPROVER",
+      "signingKeyId": "EXAMPLE-KEY",
+      "approvedAt": "2000-01-01T00:00:00Z",
+      "releaseId": "EM-20000101-EXAMPLE",
+      "commitSha": "0000000000000000000000000000000000000000",
+      "signatureVerification": {
+        "path": "evidence/actual/example/approvals/Operations.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    }
+  ],
+  "canary": [
+    {
+      "stage": "internal",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/canary/internal-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "metrics": {
+        "path": "evidence/actual/example/canary/internal-metrics.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "rollbackReady": true
+    },
+    {
+      "stage": "1-percent",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/canary/1-percent-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "metrics": {
+        "path": "evidence/actual/example/canary/1-percent-metrics.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "rollbackReady": true
+    },
+    {
+      "stage": "5-percent",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/canary/5-percent-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "metrics": {
+        "path": "evidence/actual/example/canary/5-percent-metrics.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "rollbackReady": true
+    },
+    {
+      "stage": "25-percent",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/canary/25-percent-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "metrics": {
+        "path": "evidence/actual/example/canary/25-percent-metrics.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "rollbackReady": true
+    },
+    {
+      "stage": "100-percent",
+      "status": "passed",
+      "startedAt": "2000-01-01T00:00:00Z",
+      "completedAt": "2000-01-01T00:00:00Z",
+      "report": {
+        "path": "evidence/actual/example/canary/100-percent-report.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "metrics": {
+        "path": "evidence/actual/example/canary/100-percent-metrics.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      },
+      "rollbackReady": true
+    }
+  ]
+}

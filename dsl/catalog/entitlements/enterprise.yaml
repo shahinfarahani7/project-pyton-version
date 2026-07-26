@@ -1,0 +1,24 @@
+apiVersion: edgemint.io/v1
+kind: EntitlementPolicy
+metadata:
+  name: enterprise-entitlements-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - billing
+spec:
+  plan: enterprise
+  limits:
+    concurrentLeases: 2000
+    monthlyIncludedCreditMicros: 0
+    logRetentionDays: 2555
+    apiRequestsPerMinute: 1000
+  features:
+    rbac: true
+    sso: true
+    dedicatedPool: true
+    customKeys: true
+    humanReview: true
+  priceMultiplierBps: 7000
+  hardLimitBehavior: reject_with_upgrade_required

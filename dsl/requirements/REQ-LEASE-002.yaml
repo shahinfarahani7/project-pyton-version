@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-lease-002
+  version: 2.0.0
+  status: active
+  description: Assignment and lease are created atomically without per-task confirmation
+  owners:
+  - architecture
+spec:
+  statement: The router must atomically reserve worker capacity, create the assignment lease, allocate the monotonic fence
+    token and emit outbox evidence without an offered or accepted state and without worker confirmation.
+  priority: must
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-209-worker-lifecycle-cooldown-to-ready
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-209
+  stateMachineRef: StateMachine/worker-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is cooldown
+  - expected version matches
+  when:
+  - event requests cooldown -> ready
+  then:
+  - state becomes ready
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: cooldown
+    to: ready
+  expectedEvents:
+  - worker-lifecycle.cooldown_to_ready
+  expectedErrorCode: null

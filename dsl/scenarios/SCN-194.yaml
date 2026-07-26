@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-194-model-download-lifecycle-paused-to-downloading
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-194
+  stateMachineRef: StateMachine/model-download-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is paused
+  - expected version matches
+  when:
+  - event requests paused -> downloading
+  then:
+  - state becomes downloading
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: paused
+    to: downloading
+  expectedEvents:
+  - model-download-lifecycle.paused_to_downloading
+  expectedErrorCode: null

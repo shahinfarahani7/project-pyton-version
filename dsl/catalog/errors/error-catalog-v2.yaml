@@ -1,0 +1,311 @@
+apiVersion: edgemint.io/v1
+kind: ErrorCatalog
+metadata:
+  name: error-catalog-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+spec:
+  errors:
+  - code: APPEAL_EVIDENCE_INCOMPLETE
+    httpStatus: 422
+    retryable: false
+  - code: ASSIGNMENT_ALREADY_STARTED
+    httpStatus: 409
+    retryable: false
+  - code: ASSIGNMENT_STALE_FENCE
+    httpStatus: 409
+    retryable: false
+  - code: ASSIGNMENT_START_WINDOW_EXPIRED
+    httpStatus: 409
+    retryable: true
+  - code: ASSIGNMENT_UNAVAILABLE_EVIDENCE_MISMATCH
+    httpStatus: 409
+    retryable: false
+  - code: ATTEMPT_INVALID_TRANSITION
+    httpStatus: 409
+    retryable: false
+  - code: ATTEMPT_LIMIT_REACHED
+    httpStatus: 409
+    retryable: false
+  - code: ATTESTATION_CHALLENGE_RATE_LIMITED
+    httpStatus: 429
+    retryable: true
+  - code: ATTESTATION_INVALID
+    httpStatus: 403
+    retryable: false
+  - code: AUTH_INVALID_CREDENTIAL
+    httpStatus: 401
+    retryable: false
+  - code: AUTH_SCOPE_REQUIRED
+    httpStatus: 403
+    retryable: false
+  - code: CHALLENGE_EXPIRED
+    httpStatus: 409
+    retryable: false
+  - code: CHANGE_REASON_REQUIRED
+    httpStatus: 422
+    retryable: false
+  - code: CHECKPOINT_DIGEST_MISMATCH
+    httpStatus: 422
+    retryable: false
+  - code: CHECKPOINT_NOT_RESUMABLE
+    httpStatus: 409
+    retryable: false
+  - code: CHECKPOINT_SEQUENCE_INVALID
+    httpStatus: 409
+    retryable: false
+  - code: CLAIM_BATCH_EMPTY
+    httpStatus: 422
+    retryable: false
+  - code: CLAIM_COMPLIANCE_HOLD
+    httpStatus: 409
+    retryable: true
+  - code: CLAIM_EPOCH_CLOSED
+    httpStatus: 409
+    retryable: false
+  - code: CLAIM_MINIMUM_NOT_MET
+    httpStatus: 422
+    retryable: false
+  - code: CLOUD_BUDGET_EXCEEDED
+    httpStatus: 409
+    retryable: false
+  - code: CONSENSUS_QUORUM_NOT_REACHED
+    httpStatus: 409
+    retryable: false
+  - code: CONTENT_TYPE_NOT_ALLOWED
+    httpStatus: 422
+    retryable: false
+  - code: CURRENCY_MISMATCH
+    httpStatus: 422
+    retryable: false
+  - code: DELETION_EVIDENCE_FAILED
+    httpStatus: 500
+    retryable: true
+  - code: DEVICE_KEY_MISMATCH
+    httpStatus: 403
+    retryable: false
+  - code: DOWNLOAD_POLICY_BLOCKED
+    httpStatus: 403
+    retryable: false
+  - code: EDGE_CAPACITY_UNAVAILABLE
+    httpStatus: 503
+    retryable: true
+  - code: FILE_DIGEST_MISMATCH
+    httpStatus: 422
+    retryable: false
+  - code: FILE_NOT_READY
+    httpStatus: 409
+    retryable: true
+  - code: FRAUD_CASE_NOT_RESOLVABLE
+    httpStatus: 409
+    retryable: false
+  - code: HEALTH_SNAPSHOT_NOT_CURRENT
+    httpStatus: 409
+    retryable: true
+  - code: IDEMPOTENCY_CONFLICT
+    httpStatus: 409
+    retryable: false
+  - code: IDEMPOTENCY_REPLAY_CORRUPT
+    httpStatus: 500
+    retryable: false
+  - code: INPUT_DIGEST_MISMATCH
+    httpStatus: 422
+    retryable: false
+  - code: INPUT_SCHEMA_INVALID
+    httpStatus: 422
+    retryable: false
+  - code: INSUFFICIENT_CREDIT
+    httpStatus: 402
+    retryable: true
+  - code: INSUFFICIENT_STORAGE
+    httpStatus: 409
+    retryable: false
+  - code: INVITATION_ALREADY_PENDING
+    httpStatus: 409
+    retryable: false
+  - code: INVITATION_ROLE_INVALID
+    httpStatus: 422
+    retryable: false
+  - code: JURISDICTION_NOT_ALLOWED
+    httpStatus: 403
+    retryable: false
+  - code: KYC_REQUIRED
+    httpStatus: 403
+    retryable: false
+  - code: LEASE_EXPIRED
+    httpStatus: 409
+    retryable: false
+  - code: LEASE_RENEWAL_SEQUENCE_INVALID
+    httpStatus: 409
+    retryable: false
+  - code: LEDGER_EVIDENCE_INCOMPLETE
+    httpStatus: 422
+    retryable: false
+  - code: LEDGER_IMBALANCE_DETECTED
+    httpStatus: 500
+    retryable: true
+  - code: LEDGER_INVARIANT_FAILED
+    httpStatus: 500
+    retryable: false
+  - code: LEGAL_APPROVAL_MISSING
+    httpStatus: 409
+    retryable: false
+  - code: LEGAL_HOLD_ACTIVE
+    httpStatus: 409
+    retryable: false
+  - code: MALWARE_DETECTED
+    httpStatus: 422
+    retryable: false
+  - code: MODEL_DIGEST_MISMATCH
+    httpStatus: 422
+    retryable: false
+  - code: MODEL_HAS_ACTIVE_ASSIGNMENTS
+    httpStatus: 409
+    retryable: false
+  - code: MODEL_NOT_COMPATIBLE
+    httpStatus: 422
+    retryable: false
+  - code: MODEL_RELEASE_EVIDENCE_MISSING
+    httpStatus: 409
+    retryable: false
+  - code: MODEL_REVOCATION_REASON_REQUIRED
+    httpStatus: 422
+    retryable: false
+  - code: MODEL_ROLLOUT_ALREADY_ACTIVE
+    httpStatus: 409
+    retryable: false
+  - code: MODEL_SIGNATURE_INVALID
+    httpStatus: 403
+    retryable: false
+  - code: MODEL_UNLOAD_FAILED
+    httpStatus: 500
+    retryable: true
+  - code: NEGATIVE_MARGIN_FLOOR
+    httpStatus: 422
+    retryable: false
+  - code: NETWORK_POLICY_BLOCKED
+    httpStatus: 403
+    retryable: true
+  - code: NO_COMPATIBLE_ASSIGNMENT
+    httpStatus: 204
+    retryable: false
+  - code: POLICY_ACTIVATION_CONFLICT
+    httpStatus: 409
+    retryable: false
+  - code: POLICY_APPROVAL_MISSING
+    httpStatus: 409
+    retryable: false
+  - code: POLICY_DEPENDENCY_CONFLICT
+    httpStatus: 409
+    retryable: false
+  - code: POLICY_HASH_MISMATCH
+    httpStatus: 409
+    retryable: false
+  - code: POLICY_ROLLBACK_TARGET_INVALID
+    httpStatus: 409
+    retryable: false
+  - code: POLICY_SCHEMA_INVALID
+    httpStatus: 422
+    retryable: false
+  - code: POLICY_VERSION_ALREADY_EXISTS
+    httpStatus: 409
+    retryable: false
+  - code: PRICE_POLICY_NOT_ACTIVE
+    httpStatus: 409
+    retryable: false
+  - code: PROVIDER_RESULT_AMBIGUOUS
+    httpStatus: 503
+    retryable: false
+  - code: QUOTE_EXPIRED
+    httpStatus: 409
+    retryable: true
+  - code: RECONCILIATION_ALREADY_RUNNING
+    httpStatus: 409
+    retryable: false
+  - code: REGION_POLICY_BLOCKED
+    httpStatus: 403
+    retryable: false
+  - code: RESOURCE_MEMORY_PRESSURE
+    httpStatus: 409
+    retryable: true
+  - code: RESULT_SCHEMA_INVALID
+    httpStatus: 422
+    retryable: false
+  - code: RUNTIME_ABI_MISMATCH
+    httpStatus: 422
+    retryable: false
+  - code: SETTLEMENT_PROVIDER_UNAVAILABLE
+    httpStatus: 503
+    retryable: true
+  - code: STORAGE_UNAVAILABLE
+    httpStatus: 503
+    retryable: true
+  - code: TASK_INVALID_TRANSITION
+    httpStatus: 409
+    retryable: false
+  - code: TASK_NOT_CANCELLABLE
+    httpStatus: 409
+    retryable: false
+  - code: TASK_REVISION_IMMUTABLE
+    httpStatus: 409
+    retryable: false
+  - code: TASK_REVISION_NOT_RETRYABLE
+    httpStatus: 409
+    retryable: false
+  - code: TASK_TYPE_NOT_ACTIVE
+    httpStatus: 409
+    retryable: false
+  - code: TENANT_RESOURCE_NOT_FOUND
+    httpStatus: 404
+    retryable: false
+  - code: THERMAL_BLOCK
+    httpStatus: 409
+    retryable: false
+  - code: TOKEN_CLAIM_NOT_ENABLED
+    httpStatus: 403
+    retryable: true
+  - code: TRANSFER_REFERENCE_MISMATCH
+    httpStatus: 409
+    retryable: false
+  - code: TREASURY_CAP_MISSING
+    httpStatus: 409
+    retryable: false
+  - code: UNSUPPORTED_TASK_CONFIGURATION
+    httpStatus: 422
+    retryable: false
+  - code: UPLOAD_INCOMPLETE
+    httpStatus: 409
+    retryable: false
+  - code: UPLOAD_SIZE_INVALID
+    httpStatus: 422
+    retryable: false
+  - code: USAGE_ALREADY_FINALIZED
+    httpStatus: 409
+    retryable: false
+  - code: VERIFICATION_DISAGREEMENT
+    httpStatus: 409
+    retryable: true
+  - code: VERIFICATION_NOT_FINAL
+    httpStatus: 409
+    retryable: false
+  - code: VERIFICATION_POLICY_NOT_ACTIVE
+    httpStatus: 409
+    retryable: false
+  - code: VERSION_CONFLICT
+    httpStatus: 412
+    retryable: true
+  - code: WORKER_ALREADY_QUARANTINED
+    httpStatus: 409
+    retryable: false
+  - code: WORKER_NOT_ELIGIBLE
+    httpStatus: 403
+    retryable: false
+  - code: WORKER_POLICY_NOT_SATISFIED
+    httpStatus: 403
+    retryable: true
+  - code: WORKER_REASSIGNMENT_LIMIT_REACHED
+    httpStatus: 409
+    retryable: true
+  unknownErrorCode: INTERNAL_ERROR

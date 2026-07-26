@@ -1,0 +1,33 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-023-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-023
+  useCaseRef: UseCase/uc-012-cancel-task@2.0.0
+  mode: success
+  given:
+  - Use case UC-012 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.tasks:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke cancelTask with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy expected_version_compare_and_swap_plus_idempotency.
+  - 'Exactly these entities are written: tasks, credit_reservations.'
+  - 'Exactly these canonical events are inserted into the outbox: task.cancelled, credit.released.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - cancelTask
+    requirements:
+    - REQ-TASK-002
+  expectedEvents:
+  - task.cancelled
+  - credit.released
+  expectedErrorCode: null

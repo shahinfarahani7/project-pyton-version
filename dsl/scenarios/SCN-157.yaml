@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-157-assignment-lifecycle-running-to-revoked
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-157
+  stateMachineRef: StateMachine/assignment-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is running
+  - expected version matches
+  when:
+  - event requests running -> revoked
+  then:
+  - state becomes revoked
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: running
+    to: revoked
+  expectedEvents:
+  - assignment-lifecycle.running_to_revoked
+  expectedErrorCode: null

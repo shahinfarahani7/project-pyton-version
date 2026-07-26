@@ -1,0 +1,150 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/webhookpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "WebhookPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "retentionDays": {
+          "type": "integer"
+        },
+        "retry": {
+          "additionalProperties": false,
+          "properties": {
+            "delaysSeconds": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "jitterBps": {
+              "type": "integer"
+            },
+            "maximumAttempts": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "delaysSeconds",
+            "jitterBps",
+            "maximumAttempts"
+          ],
+          "type": "object"
+        },
+        "retryStatusCodes": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "signature": {
+          "additionalProperties": false,
+          "properties": {
+            "algorithm": {
+              "type": "string"
+            },
+            "secretOverlapHours": {
+              "type": "integer"
+            },
+            "signedInput": {
+              "type": "string"
+            },
+            "timestampToleranceSeconds": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "algorithm",
+            "secretOverlapHours",
+            "signedInput",
+            "timestampToleranceSeconds"
+          ],
+          "type": "object"
+        },
+        "successStatusRanges": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "terminalAction": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "retentionDays",
+        "retry",
+        "retryStatusCodes",
+        "signature",
+        "successStatusRanges",
+        "terminalAction"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint WebhookPolicy",
+  "type": "object"
+}

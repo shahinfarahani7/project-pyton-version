@@ -1,0 +1,77 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: document-ocr
+  version: 2.0.0
+  status: active
+  description: Production task contract for document.ocr
+  labels:
+    domain: document
+  owners:
+  - product
+  - platform
+spec:
+  code: document.ocr
+  lifecycle: commercial-candidate
+  billing:
+    measure: page
+    quantum: 1
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    - options
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+    additionalProperties: false
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+      metrics:
+        type: object
+    additionalProperties: false
+  inputLimits:
+    maximumBytes: 52428800
+    allowedContentTypes:
+    - application/pdf
+    - image/jpeg
+    - image/png
+  requiredCapabilities:
+    minimumWorkerTier: T1
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 300
+  modelCandidates:
+  - modelRef: ModelProfile/paddleocr-mobile@2.0.0
+    priority: 1
+  - modelRef: ModelProfile/minicpm-v-4.6-q4@2.0.0
+    priority: 2
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: verified
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

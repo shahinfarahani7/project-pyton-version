@@ -1,0 +1,42 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-057-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-057
+  useCaseRef: UseCase/uc-029-report-assignment-started@2.1.0
+  mode: success
+  given:
+  - Use case UC-029 policy dependencies are active and their hashes are pinned for
+    the request.
+  - Actor Worker App is authenticated and has permissions worker.assignments:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared
+    preconditions.
+  when:
+  - Invoke reportAssignmentStarted automatically with a schema-valid request and a
+    new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - 'Exactly these entities are written: assignments, task_attempts.'
+  - 'Exactly these canonical events are inserted into the outbox: task.assignment.started,
+    assignment.started, assignment-lifecycle.leased_to_running, attempt-lifecycle.leased_to_running.'
+  - No per-task worker confirmation is requested or recorded.
+  - The response, audit evidence, trace identifiers and financial effects match the
+    UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - reportAssignmentStarted
+    requirements:
+    - REQ-LEASE-002
+    - REQ-CONSENT-004
+  expectedEvents:
+  - task.assignment.started
+  - assignment.started
+  - assignment-lifecycle.leased_to_running
+  - attempt-lifecycle.leased_to_running
+  expectedErrorCode: null

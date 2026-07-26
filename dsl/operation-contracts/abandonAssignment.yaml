@@ -1,0 +1,55 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-abandonassignment
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for abandonAssignment.
+spec:
+  operationId: abandonAssignment
+  api: worker
+  method: POST
+  path: /assignments/{assignmentId}:abandon
+  summary: Abandon assignment
+  classification: supporting_command
+  permissions:
+  - worker.assignments:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - assignments
+    domainEvents:
+    - attempt.failed
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs: []
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-worker-api.yaml::POST /assignments/{assignmentId}:abandon
+    request: OpenAPI requestBody/parameters for abandonAssignment
+    response: OpenAPI responses for abandonAssignment
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

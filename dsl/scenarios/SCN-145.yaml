@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-145-attempt-lifecycle-running-to-result_submitted
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-145
+  stateMachineRef: StateMachine/attempt-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is running
+  - expected version matches
+  when:
+  - event requests running -> result_submitted
+  then:
+  - state becomes result_submitted
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: running
+    to: result_submitted
+  expectedEvents:
+  - attempt-lifecycle.running_to_result_submitted
+  expectedErrorCode: null

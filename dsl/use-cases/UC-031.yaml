@@ -1,0 +1,109 @@
+apiVersion: edgemint.io/v1
+kind: UseCase
+metadata:
+  name: uc-031-renew-execution-lease
+  version: 2.0.0
+  status: active
+  description: Renew execution lease
+  owners:
+  - product
+  - qa
+spec:
+  id: UC-031
+  title: Renew execution lease
+  actors: &id001
+  - Worker App
+  preconditions:
+  - authenticated or trusted service identity
+  - required policy versions active
+  - tenant scope resolved when applicable
+  trigger: renew lease
+  mainFlow:
+  - Resolve the authenticated principal and authorize renewAssignment against the
+    declared tenant, worker or control boundary.
+  - Validate the OpenAPI request, referenced resources, active policy hashes and all
+    preconditions; return only canonical ErrorCatalog codes.
+  - Execute with transaction isolation read_committed_with_targeted_row_locks and
+    concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - Persist assignments.
+  - Insert outbox events task.assignment.renewed in the same commit as domain writes.
+  - Return the exact OpenAPI response including requestId, traceId, resource version
+    and asynchronous lifecycle projection where applicable.
+  alternateFlows:
+  - condition: validation or policy failure
+    outcome: reject with stable error code and no unauthorized financial side effect
+  - condition: dependency unavailable
+    outcome: persist safe state, retry idempotently or return explicit asynchronous
+      status
+  postconditions:
+  - domain state satisfies invariant
+  - outbox/audit evidence exists
+  - financial effects match failure matrix
+  acceptanceCriteria:
+  - cross-tenant access denied
+  - correlation and policy hashes recorded
+  - Replaying the same Idempotency-Key with the same canonical body returns the original
+    status and resource without duplicate side effects.
+  - Reusing the same Idempotency-Key with a different canonical body returns IDEMPOTENCY_CONFLICT.
+  trace:
+    requirements:
+    - REQ-LEASE-004
+    apiOperations:
+    - renewAssignment
+    events: &id002
+    - task.assignment.renewed
+    - assignment.lease_renewed
+    entities:
+    - assignments
+    tests:
+    - AT-UC-031-POS
+    - AT-UC-031-NEG
+  implementation:
+    transport:
+    - operationId: renewAssignment
+      method: POST
+      path: /assignments/{assignmentId}:renew
+    authorization:
+      principalTypes: *id001
+      permissionSource: worker.assignments:write
+      tenantBoundary: Customer resources are scoped by organization_id and workspace_id;
+        worker resources by attested worker_id/device_id; control operations by mTLS
+        service or MFA operator identity.
+    idempotency:
+      mode: required
+      scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+    transaction:
+      isolation: read_committed_with_targeted_row_locks
+      writes:
+      - assignments
+      outboxEvents: *id002
+    concurrency:
+      strategy: lease_fence_token_plus_monotonic_sequence
+      fenceRequired: true
+      expectedVersionRequired: false
+    financialEffects:
+    - No charge, reservation, reward, token conversion or ledger entry is permitted
+      for this operation.
+    errorCodes:
+    - AUTH_INVALID_CREDENTIAL
+    - AUTH_SCOPE_REQUIRED
+    - INPUT_SCHEMA_INVALID
+    - TENANT_RESOURCE_NOT_FOUND
+    - IDEMPOTENCY_CONFLICT
+    - ASSIGNMENT_STALE_FENCE
+    - LEASE_EXPIRED
+    - LEASE_RENEWAL_SEQUENCE_INVALID
+    observability:
+    - Record requestId, traceId, operationId, actorId, organizationId/workspaceId
+      or workerId, resourceVersion and active policy hashes.
+    - For every mutation or privileged read, write an append-only audit event with
+      reason/ticket where required.
+    - Never log credentials, API keys, refresh tokens, raw customer payload, model
+      input/output, signed URLs or envelope keys.
+    retention:
+    - 'Customer payload and result retention follows the workspace-selected DataPolicy;
+      default confidential-v2: input 24 hours, result 90 days, audit 2555 days.'
+    - Restricted-v2 workloads retain input 24 hours, result 30 days, audit 2555 days
+      and worker temporary data 10 minutes.
+    - Financial and security evidence is retained independently of payload deletion
+      and remains append-only while legal hold is active.

@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny }
+spec: { podSelector: {}, policyTypes: [Ingress, Egress] }
+---
+{{- range $name, $service := .Values.services }}
+{{- if $service.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: {{ $name }}-policy }
+spec:
+  podSelector: { matchLabels: { app.kubernetes.io/name: {{ $name }} } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+  {{- if eq $name "api-gateway" }}
+    - from:
+      {{- range $.Values.global.ingressCidrs }}
+        - ipBlock: { cidr: {{ . | quote }} }
+      {{- end }}
+      ports: [{ protocol: TCP, port: 8080 }]
+  {{- end }}
+  {{- range $source := $service.networkPolicy.allowedIngressFrom }}
+    - from: [{ podSelector: { matchLabels: { app.kubernetes.io/name: {{ $source }} } } }]
+      ports: [{ protocol: TCP, port: 8080 }]
+  {{- end }}
+  egress:
+    - to: [{ namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: kube-system } } }]
+      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
+  {{- range $target := $service.networkPolicy.allowedEgressTo }}
+    - to: [{ podSelector: { matchLabels: { app.kubernetes.io/name: {{ $target }} } } }]
+      ports: [{ protocol: TCP, port: 8080 }]
+  {{- end }}
+  {{- if gt (len $service.networkPolicy.privateEgressPorts) 0 }}
+    - to:
+      {{- range $.Values.global.privateCidrs }}
+        - ipBlock: { cidr: {{ . | quote }} }
+      {{- end }}
+      ports:
+      {{- range $port := $service.networkPolicy.privateEgressPorts }}
+        - { protocol: TCP, port: {{ $port }} }
+      {{- end }}
+  {{- end }}
+  {{- if $service.networkPolicy.allowPublicHttps }}
+    - to:
+      {{- range $.Values.global.publicHttpsEgressCidrs }}
+        - ipBlock: { cidr: {{ . | quote }} }
+      {{- end }}
+      ports: [{ protocol: TCP, port: 443 }]
+  {{- end }}
+---
+{{- end }}
+{{- end }}

@@ -1,0 +1,24 @@
+{
+  "specversion": "1.0",
+  "id": "event_de73b9ca940e3fd9ca7a9b4d0e",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.claim-lifecycle.confirming_to_failed_released.v1",
+  "subject": "claim_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "correlationId": "corr_de73b9ca940e3fd9ca7a9b4d0e",
+  "causationId": "cmd_de73b9ca940e3fd9ca7a9b4d0e",
+  "partitionKey": "claim_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "claimId": "claim_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "fromStatus": "confirming",
+    "toStatus": "failed_released",
+    "workspaceId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

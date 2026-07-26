@@ -1,0 +1,37 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "getTask",
+  "request": {
+    "method": "GET",
+    "path": "/tasks/{taskId}",
+    "pathParameters": {
+      "taskId": "tsk_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getTask_0001",
+      "Authorization": "Bearer customer_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "workspaceId": "wsp_01J00000000000000000000000",
+      "taskType": "example",
+      "currentRevisionId": "id_01J00000000000000000000000",
+      "createdAt": "2026-07-21T10:00:00Z",
+      "version": 1,
+      "lifecycleStatus": "active",
+      "executionStatus": "active",
+      "billingStatus": "active"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.tasks:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

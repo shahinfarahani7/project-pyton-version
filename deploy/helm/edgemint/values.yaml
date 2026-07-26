@@ -1,0 +1,709 @@
+global:
+  imageRegistry: ''
+  environment: production
+  otelEndpoint: http://otel-collector:4317
+  namespace: edgemint
+  privateCidrs:
+  - 10.0.0.0/8
+  externalSecretsStore: aws-secrets-manager
+  ingressClassName: alb
+  domain: api.example.invalid
+  wafArn: ''
+  fixtureOnly: false
+  certificateArn: ''
+  ingressCidrs:
+  - 10.0.0.0/8
+  publicHttpsEgressCidrs:
+  - 0.0.0.0/0
+  podSecurityStandard: restricted
+services:
+  api-gateway:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/api-gateway
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys: []
+    networkPolicy:
+      allowedIngressFrom: []
+      allowedEgressTo:
+      - identity
+      - customer
+      - file
+      - task-intake
+      - pricing
+      - webhook
+      - operations
+      - event-relay
+      privateEgressPorts: []
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  identity:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/identity
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: true
+    pdb:
+      maxUnavailable: 1
+  customer:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/customer
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  file:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/file
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      - task-intake
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  task-intake:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/task-intake
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      allowedEgressTo:
+      - pricing
+      - file
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  pricing:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/pricing
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      - task-intake
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  router:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/router
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom: []
+      allowedEgressTo:
+      - worker-gateway
+      - worker-registry
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  worker-gateway:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/worker-gateway
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys: []
+    networkPolicy:
+      allowedIngressFrom:
+      - router
+      - api-gateway
+      allowedEgressTo:
+      - worker-registry
+      - result
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  worker-registry:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/worker-registry
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    - attestation
+    networkPolicy:
+      allowedIngressFrom:
+      - worker-gateway
+      - router
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: true
+    pdb:
+      maxUnavailable: 1
+  result:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/result
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - worker-gateway
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  verification:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/verification
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom: []
+      allowedEgressTo:
+      - model-registry
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  billing:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/billing
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    - stripe
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      - operations
+      allowedEgressTo:
+      - ledger
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: true
+    pdb:
+      maxUnavailable: 1
+  ledger:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/ledger
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - billing
+      - reward
+      - claim
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  reward:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/reward
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom: []
+      allowedEgressTo:
+      - ledger
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  claim:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/claim
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    - stripe
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      - operations
+      allowedEgressTo:
+      - ledger
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: true
+    pdb:
+      maxUnavailable: 1
+  fraud:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/fraud
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - operations
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  webhook:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/webhook
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: true
+    pdb:
+      maxUnavailable: 1
+  model-registry:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/model-registry
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - verification
+      - operations
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  notification:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/notification
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys: []
+    networkPolicy:
+      allowedIngressFrom: []
+      allowedEgressTo:
+      - event-relay
+      privateEgressPorts:
+      - 443
+      - 1433
+      allowPublicHttps: true
+    pdb:
+      maxUnavailable: 1
+  operations:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/operations
+      digest: ''
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: '2'
+        memory: 1Gi
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+      cpuTarget: 60
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      allowedEgressTo:
+      - billing
+      - claim
+      - fraud
+      - model-registry
+      - event-relay
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+    pdb:
+      maxUnavailable: 1
+  event-relay:
+    enabled: true
+    replicas: 3
+    image:
+      repository: edgemint/event-relay
+      digest: sha256:ea8d36121f6725fea3bf93220ea66c41cc3b8181759c00960d982231ca3deb39
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 30
+      cpuTarget: 60
+    pdb:
+      maxUnavailable: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: '2'
+        memory: 2Gi
+    secretKeys:
+    - database
+    networkPolicy:
+      allowedIngressFrom:
+      - api-gateway
+      - worker-gateway
+      - operations
+      allowedEgressTo: []
+      privateEgressPorts:
+      - 1433
+      allowPublicHttps: false
+irsaRoles:
+  api-gateway: ''
+  identity: ''
+  customer: ''
+  file: ''
+  task-intake: ''
+  pricing: ''
+  router: ''
+  worker-gateway: ''
+  worker-registry: ''
+  result: ''
+  verification: ''
+  billing: ''
+  ledger: ''
+  reward: ''
+  claim: ''
+  fraud: ''
+  webhook: ''
+  model-registry: ''
+  notification: ''
+  operations: ''
+  event-relay: ''
+externalSecrets:
+  enabled: true
+  refreshInterval: 1h
+  storeName: aws-secrets-manager
+  storeKind: ClusterSecretStore
+  keys:
+    database: edgemint/production/database
+    stripe: edgemint/production/stripe
+    attestation: edgemint/production/attestation
+resourceQuota:
+  enabled: true
+  requestsCpu: '20'
+  requestsMemory: 40Gi
+  limitsCpu: '80'
+  limitsMemory: 160Gi
+  pods: '300'
+limitRange:
+  enabled: true
+  defaultCpu: '2'
+  defaultMemory: 1Gi
+  defaultRequestCpu: 100m
+  defaultRequestMemory: 128Mi
+serviceMesh:
+  enabled: true
+  mode: STRICT

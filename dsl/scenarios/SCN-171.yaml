@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-171-reward-lifecycle-estimated-to-pending
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-171
+  stateMachineRef: StateMachine/reward-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is estimated
+  - expected version matches
+  when:
+  - event requests estimated -> pending
+  then:
+  - state becomes pending
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: estimated
+    to: pending
+  expectedEvents:
+  - reward-lifecycle.estimated_to_pending
+  expectedErrorCode: null

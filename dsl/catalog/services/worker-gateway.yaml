@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: worker-gateway
+  version: 2.0.0
+  status: active
+  owners:
+  - edge-platform
+spec:
+  service: worker-gateway
+  ownerTeam: edge-platform
+  dataOwnership:
+  - worker-gateway
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - worker.ready
+  - worker.degraded
+  - worker.quarantined
+  - worker.reward.pending
+  - worker.reward.verified
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

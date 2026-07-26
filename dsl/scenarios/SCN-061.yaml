@@ -1,0 +1,37 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-061-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-061
+  useCaseRef: UseCase/uc-031-renew-execution-lease@2.0.0
+  mode: success
+  given:
+  - Use case UC-031 policy dependencies are active and their hashes are pinned for
+    the request.
+  - Actor Worker App is authenticated and has permissions worker.assignments:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared
+    preconditions.
+  when:
+  - Invoke renewAssignment with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - 'Exactly these entities are written: assignments.'
+  - 'Exactly these canonical events are inserted into the outbox: task.assignment.renewed,
+    assignment.lease_renewed.'
+  - The response, audit evidence, trace identifiers and financial effects match the
+    UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - renewAssignment
+    requirements:
+    - REQ-LEASE-004
+  expectedEvents:
+  - task.assignment.renewed
+  - assignment.lease_renewed
+  expectedErrorCode: null

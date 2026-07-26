@@ -1,0 +1,34 @@
+apiVersion: edgemint.io/v1
+kind: PromotionPolicy
+metadata:
+  name: customer-trial
+  version: 2.0.0
+  status: evaluation
+  owners:
+  - growth
+  - finance
+  - fraud
+  labels:
+    productionActivation: requires-finance-approval
+spec:
+  budget:
+    unit: EUR_MICROS
+    amountMicros: 25000000000
+    owner: growth
+    hardStop: true
+  eligibilityRules:
+  - account_not_flagged
+  - campaign_window_active
+  benefit:
+    type: compute_credit
+    value: 25000000
+  caps:
+    perAccountDailyMicros: 1000000
+    globalBudgetHardStop: true
+  antiAbuse:
+  - device_attestation
+  - account_velocity
+  - linked_identity_check
+  fundsFloorDifference: true
+  killSwitch:
+    automaticFraudRateBps: 300

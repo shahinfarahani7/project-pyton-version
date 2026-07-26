@@ -1,0 +1,61 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-submitclaimbatch
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for submitClaimBatch.
+spec:
+  operationId: submitClaimBatch
+  api: operations
+  method: POST
+  path: /claim-batches
+  summary: Create and submit idempotent claim settlement batch
+  classification: business_use_case
+  permissions:
+  - ops.claims:submit-batch
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - claim_batch_items
+    - claim_batches
+    - reward_claims
+    domainEvents:
+    - claim.submitted
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-047-submit-claim-batch@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - CLAIM_BATCH_EMPTY
+  - CLAIM_EPOCH_CLOSED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - SETTLEMENT_PROVIDER_UNAVAILABLE
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-operations-api.yaml::POST /claim-batches
+    request: OpenAPI requestBody/parameters for submitClaimBatch
+    response: OpenAPI responses for submitClaimBatch
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

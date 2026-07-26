@@ -1,0 +1,14 @@
+{
+  "invariants": [
+    "same correlationId across causal chain",
+    "mutations use stable idempotency key",
+    "immutable revision is never edited",
+    "financial effects reconcile before terminal response"
+  ],
+  "journey": "customer-retry-same-revision",
+  "orderedOperations": [
+    "getTask",
+    "retryTask",
+    "listTaskAttempts"
+  ]
+}

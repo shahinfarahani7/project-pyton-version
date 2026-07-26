@@ -1,0 +1,23 @@
+{{- if .Values.resourceQuota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata: { name: edgemint-quota }
+spec:
+  hard:
+    requests.cpu: {{ .Values.resourceQuota.requestsCpu | quote }}
+    requests.memory: {{ .Values.resourceQuota.requestsMemory | quote }}
+    limits.cpu: {{ .Values.resourceQuota.limitsCpu | quote }}
+    limits.memory: {{ .Values.resourceQuota.limitsMemory | quote }}
+    pods: {{ .Values.resourceQuota.pods | quote }}
+---
+{{- end }}
+{{- if .Values.limitRange.enabled }}
+apiVersion: v1
+kind: LimitRange
+metadata: { name: edgemint-defaults }
+spec:
+  limits:
+    - type: Container
+      default: { cpu: {{ .Values.limitRange.defaultCpu | quote }}, memory: {{ .Values.limitRange.defaultMemory | quote }} }
+      defaultRequest: { cpu: {{ .Values.limitRange.defaultRequestCpu | quote }}, memory: {{ .Values.limitRange.defaultRequestMemory | quote }} }
+{{- end }}

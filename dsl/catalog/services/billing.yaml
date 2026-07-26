@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: billing
+  version: 2.0.0
+  status: active
+  owners:
+  - finance-platform
+spec:
+  service: billing
+  ownerTeam: finance-platform
+  dataOwnership:
+  - billing
+  synchronousDependencies: []
+  asynchronousEventsProduced: []
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

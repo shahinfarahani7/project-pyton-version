@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-model-002
+  version: 2.0.0
+  status: active
+  description: Model artifact must be signed and digest-verified
+  owners:
+  - architecture
+spec:
+  statement: Model artifact must be signed and digest-verified; control variant 2.
+  priority: must
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

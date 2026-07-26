@@ -1,0 +1,6660 @@
+openapi: 3.1.0
+info:
+  title: EdgeMint Public Customer API
+  version: 2.0.0
+  description: Normative customer API. All timestamps UTC RFC3339; money integer micro-EUR; mutations require idempotency.
+servers:
+- url: https://api.edgemint.example/v1
+tags:
+- name: identity
+- name: organizations
+- name: workspaces
+- name: api-keys
+- name: files
+- name: quotes
+- name: tasks
+- name: results
+- name: models
+- name: usage
+- name: billing
+- name: webhooks
+- name: disputes
+security:
+- OAuth2:
+  - tasks:write
+- ApiKey: []
+paths:
+  /me:
+    get:
+      operationId: getCurrentPrincipal
+      summary: Get current principal
+      tags:
+      - identity
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentPrincipalResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      x-required-permissions:
+      - customer.identity:read
+      x-edgemint-owner: principal
+      x-edgemint-contract-version: 5.0.0
+      description: Get current principal This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /organizations:
+    get:
+      operationId: listOrganizations
+      summary: List organizations
+      tags:
+      - organizations
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganizationsResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.organizations:read
+      x-edgemint-owner: organization
+      x-edgemint-contract-version: 5.0.0
+      description: List organizations This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createOrganization
+      summary: Create organization
+      tags:
+      - organizations
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganizationResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+      x-required-permissions:
+      - customer.organizations:write
+      x-edgemint-owner: organization
+      x-edgemint-contract-version: 5.0.0
+      description: Create organization This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /organizations/{organizationId}:
+    get:
+      operationId: getOrganization
+      summary: Get organization
+      tags:
+      - organizations
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOrganizationResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.organizations:read
+      x-edgemint-owner: organization
+      x-edgemint-contract-version: 5.0.0
+      description: Get organization This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    patch:
+      operationId: updateOrganization
+      summary: Update organization
+      tags:
+      - organizations
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: organizationId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - $ref: '#/components/parameters/IfMatch'
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^(?:W/)?"[1-9][0-9]*"$
+        description: Required optimistic-concurrency ETag.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationRequest'
+      x-required-permissions:
+      - customer.organizations:write
+      x-edgemint-owner: organization
+      x-edgemint-contract-version: 5.0.0
+      description: Update organization This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /workspaces:
+    get:
+      operationId: listWorkspaces
+      summary: List workspaces
+      tags:
+      - workspaces
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWorkspacesResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.workspaces:read
+      x-edgemint-owner: workspace
+      x-edgemint-contract-version: 5.0.0
+      description: List workspaces This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createWorkspace
+      summary: Create workspace
+      tags:
+      - workspaces
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWorkspaceResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - organizationId
+              - name
+              - environment
+              properties:
+                organizationId:
+                  type: string
+                name:
+                  type: string
+                environment:
+                  type: string
+      x-required-permissions:
+      - customer.workspaces:write
+      x-edgemint-owner: workspace
+      x-edgemint-contract-version: 5.0.0
+      description: Create workspace This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /workspaces/{workspaceId}:
+    get:
+      operationId: getWorkspace
+      summary: Get workspace
+      tags:
+      - workspaces
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWorkspaceResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.workspaces:read
+      x-edgemint-owner: workspace
+      x-edgemint-contract-version: 5.0.0
+      description: Get workspace This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    patch:
+      operationId: updateWorkspace
+      summary: Update workspace
+      tags:
+      - workspaces
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWorkspaceResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - $ref: '#/components/parameters/IfMatch'
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^(?:W/)?"[1-9][0-9]*"$
+        description: Required optimistic-concurrency ETag.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkspaceRequest'
+      x-required-permissions:
+      - customer.workspaces:write
+      x-edgemint-owner: workspace
+      x-edgemint-contract-version: 5.0.0
+      description: Update workspace This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    delete:
+      operationId: archiveWorkspace
+      summary: Archive workspace
+      tags:
+      - workspaces
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - $ref: '#/components/parameters/IfMatch'
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^(?:W/)?"[1-9][0-9]*"$
+        description: Required optimistic-concurrency ETag.
+      x-required-permissions:
+      - customer.workspaces:write
+      x-edgemint-owner: workspace
+      x-edgemint-contract-version: 5.0.0
+      description: Archive workspace This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /workspaces/{workspaceId}/api-keys:
+    get:
+      operationId: listApiKeys
+      summary: List API keys
+      tags:
+      - api-keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListApiKeysResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.api-keys:read
+      x-edgemint-owner: apikey
+      x-edgemint-contract-version: 5.0.0
+      description: List API keys This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createApiKey
+      summary: Create API key
+      tags:
+      - api-keys
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateApiKeyResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreateRequest'
+      x-required-permissions:
+      - customer.api-keys:write
+      x-edgemint-owner: apikey
+      x-edgemint-contract-version: 5.0.0
+      description: Create API key This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /api-keys/{apiKeyId}:rotate:
+    post:
+      operationId: rotateApiKey
+      summary: Rotate API key
+      tags:
+      - api-keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RotateApiKeyResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: apiKeyId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.api-keys:write
+      x-edgemint-owner: apikey
+      x-edgemint-contract-version: 5.0.0
+      description: Rotate API key This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /api-keys/{apiKeyId}:revoke:
+    post:
+      operationId: revokeApiKey
+      summary: Revoke API key
+      tags:
+      - api-keys
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevokeApiKeyResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: apiKeyId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.api-keys:write
+      x-edgemint-owner: apikey
+      x-edgemint-contract-version: 5.0.0
+      description: Revoke API key This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /files/upload-intents:
+    post:
+      operationId: createUploadIntent
+      summary: Create signed upload intent
+      tags:
+      - files
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUploadIntentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadIntent'
+      x-required-permissions:
+      - customer.files:write
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Create signed upload intent This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /files/{fileId}:complete:
+    post:
+      operationId: completeFileUpload
+      summary: Finalize upload and start scan
+      tags:
+      - files
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteFileUploadResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: fileId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - etag
+              properties:
+                etag:
+                  type: string
+      x-required-permissions:
+      - customer.files:write
+      x-edgemint-owner: file
+      x-edgemint-contract-version: 5.0.0
+      description: Finalize upload and start scan This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /files/{fileId}:
+    get:
+      operationId: getFile
+      summary: Get file metadata
+      tags:
+      - files
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFileResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: fileId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.files:read
+      x-edgemint-owner: file
+      x-edgemint-contract-version: 5.0.0
+      description: Get file metadata This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    delete:
+      operationId: deleteFile
+      summary: Schedule secure deletion
+      tags:
+      - files
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteFileResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: fileId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^(?:W/)?"[1-9][0-9]*"$
+        description: Required optimistic-concurrency ETag.
+      x-required-permissions:
+      - customer.files:write
+      x-edgemint-owner: file
+      x-edgemint-contract-version: 5.0.0
+      description: Schedule secure deletion This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /quotes:
+    post:
+      operationId: createQuote
+      summary: Create immutable price quote
+      tags:
+      - quotes
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateQuoteResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+      x-required-permissions:
+      - customer.quotes:write
+      x-edgemint-owner: quote
+      x-edgemint-contract-version: 5.0.0
+      description: Create immutable price quote This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /tasks:
+    post:
+      operationId: createTask
+      summary: Create and submit task
+      tags:
+      - tasks
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTaskResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      x-required-permissions:
+      - customer.tasks:write
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: Create and submit task This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    get:
+      operationId: listTasks
+      summary: List tasks
+      tags:
+      - tasks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTasksResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.tasks:read
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: List tasks This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /tasks/{taskId}:
+    get:
+      operationId: getTask
+      summary: Get task
+      tags:
+      - tasks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTaskResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.tasks:read
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: Get task This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /tasks/{taskId}:cancel:
+    post:
+      operationId: cancelTask
+      summary: Cancel task
+      tags:
+      - tasks
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelTaskResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      x-required-permissions:
+      - customer.tasks:write
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: Cancel task This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /tasks/{taskId}:retry:
+    post:
+      operationId: retryTask
+      summary: Retry task
+      tags:
+      - tasks
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryTaskResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      x-required-permissions:
+      - customer.tasks:write
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: Retry task This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /tasks/{taskId}/revisions:
+    get:
+      operationId: listTaskRevisions
+      summary: List immutable revisions
+      tags:
+      - tasks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTaskRevisionsResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.tasks:read
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: List immutable revisions This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createTaskRevision
+      summary: Edit by creating a new revision
+      tags:
+      - tasks
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTaskRevisionResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRevisionRequest'
+      x-required-permissions:
+      - customer.tasks:write
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: Edit by creating a new revision This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /tasks/{taskId}/attempts:
+    get:
+      operationId: listTaskAttempts
+      summary: List task attempts
+      tags:
+      - tasks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTaskAttemptsResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.tasks:read
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: List task attempts This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /tasks/{taskId}/result:
+    get:
+      operationId: getTaskResult
+      summary: Get verified result
+      tags:
+      - results
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTaskResultResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.results:read
+      x-edgemint-owner: task
+      x-edgemint-contract-version: 5.0.0
+      description: Get verified result This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /models:
+    get:
+      operationId: listAvailableModels
+      summary: List production-approved models
+      tags:
+      - models
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAvailableModelsResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.models:read
+      x-edgemint-owner: model
+      x-edgemint-contract-version: 5.0.0
+      description: List production-approved models This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /usage:
+    get:
+      operationId: getUsage
+      summary: Get metered usage
+      tags:
+      - usage
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsageResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      x-required-permissions:
+      - customer.usage:read
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Get metered usage This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /balance:
+    get:
+      operationId: getCreditBalance
+      summary: Get available and reserved credit
+      tags:
+      - billing
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCreditBalanceResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      x-required-permissions:
+      - customer.billing:read
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Get available and reserved credit This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /invoices:
+    get:
+      operationId: listInvoices
+      summary: List invoices
+      tags:
+      - billing
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListInvoicesResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.billing:read
+      x-edgemint-owner: invoice
+      x-edgemint-contract-version: 5.0.0
+      description: List invoices This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /subscriptions:
+    get:
+      operationId: getSubscription
+      summary: Get subscription
+      tags:
+      - billing
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSubscriptionResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      x-required-permissions:
+      - customer.billing:read
+      x-edgemint-owner: subscription
+      x-edgemint-contract-version: 5.0.0
+      description: Get subscription This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createSubscription
+      summary: Create or change subscription
+      tags:
+      - billing
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSubscriptionResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - plan
+              properties:
+                plan:
+                  type: string
+      x-required-permissions:
+      - customer.billing:write
+      x-edgemint-owner: subscription
+      x-edgemint-contract-version: 5.0.0
+      description: Create or change subscription This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /webhook-endpoints:
+    get:
+      operationId: listWebhookEndpoints
+      summary: List webhook endpoints
+      tags:
+      - webhooks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWebhookEndpointsResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.webhooks:read
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: List webhook endpoints This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createWebhookEndpoint
+      summary: Create webhook endpoint
+      tags:
+      - webhooks
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateWebhookEndpointResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - url
+              - events
+              properties:
+                url:
+                  type: string
+                  format: uri
+                events:
+                  type: array
+                  items:
+                    type: string
+      x-required-permissions:
+      - customer.webhooks:write
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: Create webhook endpoint This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /webhook-endpoints/{endpointId}:test:
+    post:
+      operationId: testWebhookEndpoint
+      summary: Test webhook endpoint
+      tags:
+      - webhooks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestWebhookEndpointResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: endpointId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.webhooks:write
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: Test webhook endpoint This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /webhook-endpoints/{endpointId}:rotate-secret:
+    post:
+      operationId: rotateWebhookSecret
+      summary: Rotate Secret webhook endpoint
+      tags:
+      - webhooks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RotateWebhookSecretResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: endpointId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.webhooks:write
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: Rotate Secret webhook endpoint This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /webhook-endpoints/{endpointId}:disable:
+    post:
+      operationId: disableWebhookEndpoint
+      summary: Disable webhook endpoint
+      tags:
+      - webhooks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisableWebhookEndpointResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: endpointId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.webhooks:write
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: Disable webhook endpoint This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /webhook-deliveries:
+    get:
+      operationId: listWebhookDeliveries
+      summary: List webhook delivery attempts
+      tags:
+      - webhooks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWebhookDeliveriesResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.webhooks:read
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: List webhook delivery attempts This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /webhook-deliveries/{deliveryId}:replay:
+    post:
+      operationId: replayWebhookDelivery
+      summary: Replay a delivery with same event id
+      tags:
+      - webhooks
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayWebhookDeliveryResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: deliveryId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - customer.webhooks:write
+      x-edgemint-owner: webhook
+      x-edgemint-contract-version: 5.0.0
+      description: Replay a delivery with same event id This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /disputes:
+    get:
+      operationId: listDisputes
+      summary: List disputes
+      tags:
+      - disputes
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDisputesResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+          minLength: 1
+      x-required-permissions:
+      - customer.disputes:read
+      x-edgemint-owner: dispute
+      x-edgemint-contract-version: 5.0.0
+      description: List disputes This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+    post:
+      operationId: createDispute
+      summary: Create task billing or quality dispute
+      tags:
+      - disputes
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDisputeResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - taskId
+              - reason
+              properties:
+                taskId:
+                  type: string
+                reason:
+                  type: string
+                evidenceFileIds:
+                  type: array
+                  items:
+                    type: string
+      x-required-permissions:
+      - customer.disputes:write
+      x-edgemint-owner: dispute
+      x-edgemint-contract-version: 5.0.0
+      description: Create task billing or quality dispute This operation enforces tenant scope, authorization, idempotency
+        where applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /workspaces/{workspaceId}/invitations:
+    post:
+      operationId: inviteWorkspaceMember
+      summary: Invite a workspace member
+      tags:
+      - workspaces
+      x-required-permissions:
+      - workspace.members:invite
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteWorkspaceMemberResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: workspaceId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - email
+              - role
+              - expiresInSeconds
+              properties:
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+                  enum:
+                  - admin
+                  - developer
+                  - analyst
+                  - billing_manager
+                  - viewer
+                expiresInSeconds:
+                  type: integer
+                  minimum: 300
+                  maximum: 604800
+                message:
+                  type: string
+                  maxLength: 1000
+      x-edgemint-owner: workspace
+      x-edgemint-contract-version: 5.0.0
+      description: Invite a workspace member This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.edgemint.example/oauth/token
+          scopes:
+            tasks:read: Read tasks
+            tasks:write: Create tasks
+            billing:read: Read billing
+            admin: Workspace administration
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-EdgeMint-Key
+  parameters:
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+  schemas:
+    Problem:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - title
+      - status
+      - code
+      - traceId
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{2,80}$
+        detail:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+          minLength: 1
+        retryable:
+          type: boolean
+          default: false
+        errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - path
+            - message
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+        instance:
+          type: string
+          format: uri-reference
+    Money:
+      type: object
+      additionalProperties: false
+      required:
+      - amountMicros
+      - currency
+      properties:
+        amountMicros:
+          $ref: '#/components/schemas/Int64String'
+        currency:
+          type: string
+          enum:
+          - EUR
+    PageInfo:
+      type: object
+      additionalProperties: false
+      required:
+      - limit
+      - hasMore
+      properties:
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 200
+        nextCursor:
+          type:
+          - string
+          - 'null'
+        hasMore:
+          type: boolean
+    TaskInput:
+      oneOf:
+      - $ref: '#/components/schemas/FileTaskInput'
+      - $ref: '#/components/schemas/InlineTaskInput'
+    TaskConfiguration:
+      oneOf:
+      - $ref: '#/components/schemas/DocumentOcrConfiguration'
+      - $ref: '#/components/schemas/DocumentExtractConfiguration'
+      - $ref: '#/components/schemas/AudioTranscribeConfiguration'
+    CreateTaskRequest:
+      oneOf:
+      - $ref: '#/components/schemas/DocumentOcrTaskRequest'
+      - $ref: '#/components/schemas/DocumentExtractTaskRequest'
+      - $ref: '#/components/schemas/AudioTranscribeTaskRequest'
+      discriminator:
+        propertyName: taskType
+        mapping:
+          document-ocr: '#/components/schemas/DocumentOcrTaskRequest'
+          document-extract: '#/components/schemas/DocumentExtractTaskRequest'
+          audio-transcribe: '#/components/schemas/AudioTranscribeTaskRequest'
+    Task:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+      properties:
+        id:
+          type: string
+        workspaceId:
+          type: string
+        taskType:
+          type: string
+        currentRevisionId:
+          type: string
+        resultId:
+          type:
+          - string
+          - 'null'
+        estimatedCost:
+          $ref: '#/components/schemas/Money'
+        finalCost:
+          oneOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          $ref: '#/components/schemas/Int64String'
+        lifecycleStatus:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - active
+          - completed
+          - failed
+          - cancelled
+          - expired
+          - disputed
+        executionStatus:
+          type: string
+          enum:
+          - not_scheduled
+          - queued
+          - matching
+          - leased
+          - running
+          - result_submitted
+          - verifying
+          - succeeded
+          - failed
+          - abandoned
+          - expired
+        billingStatus:
+          type: string
+          enum:
+          - not_reserved
+          - reserving
+          - reserved
+          - charged
+          - released
+          - failed
+          - disputed
+        currentAttemptId:
+          type:
+          - string
+          - 'null'
+    CreateRevisionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - changeReason
+      - input
+      - configuration
+      properties:
+        changeReason:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        input:
+          $ref: '#/components/schemas/TaskInput'
+        configuration:
+          $ref: '#/components/schemas/TaskConfiguration'
+    QuoteRequest:
+      $ref: '#/components/schemas/CreateTaskRequest'
+    Quote:
+      type: object
+      required:
+      - id
+      - expiresAt
+      - price
+      - priceBookVersion
+      - breakdown
+      properties:
+        id:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        price:
+          $ref: '#/components/schemas/Money'
+        priceBookVersion:
+          type: string
+        breakdown:
+          type: array
+          items:
+            type: object
+            required:
+            - code
+            - amountMicros
+            properties:
+              code:
+                type: string
+              amountMicros:
+                type: integer
+    UploadIntent:
+      type: object
+      required:
+      - workspaceId
+      - fileName
+      - contentType
+      - sizeBytes
+      - sha256
+      properties:
+        workspaceId:
+          type: string
+        fileName:
+          type: string
+          maxLength: 255
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          minimum: 1
+        sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+    FileRecord:
+      type: object
+      required:
+      - id
+      - status
+      - sizeBytes
+      - sha256
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending_upload
+          - uploaded
+          - scanning
+          - ready
+          - rejected
+          - deleted
+        sizeBytes:
+          type: integer
+        sha256:
+          type: string
+        uploadUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+        expiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Workspace:
+      type: object
+      required:
+      - id
+      - organizationId
+      - name
+      - environment
+      - version
+      properties:
+        id:
+          type: string
+        organizationId:
+          type: string
+        name:
+          type: string
+        environment:
+          type: string
+          enum:
+          - development
+          - staging
+          - production
+        version:
+          type: integer
+    ApiKeyCreateRequest:
+      type: object
+      required:
+      - name
+      - scopes
+      properties:
+        name:
+          type: string
+        scopes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        expiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        allowedCidrs:
+          type: array
+          items:
+            type: string
+    ApiKeyCreated:
+      type: object
+      required:
+      - id
+      - secret
+      - prefix
+      - createdAt
+      properties:
+        id:
+          type: string
+        secret:
+          type: string
+          description: Shown exactly once
+        prefix:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    WebhookEndpoint:
+      type: object
+      required:
+      - id
+      - url
+      - events
+      - enabled
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+        events:
+          type: array
+          items:
+            type: string
+        enabled:
+          type: boolean
+        secretLastFour:
+          type: string
+    Subscription:
+      type: object
+      required:
+      - id
+      - plan
+      - status
+      - currentPeriodEnd
+      properties:
+        id:
+          type: string
+        plan:
+          type: string
+          enum:
+          - developer
+          - growth
+          - business
+          - enterprise
+        status:
+          type: string
+          enum:
+          - trialing
+          - active
+          - past_due
+          - suspended
+          - cancelled
+        currentPeriodEnd:
+          type: string
+          format: date-time
+    Dispute:
+      type: object
+      required:
+      - id
+      - taskId
+      - status
+      - reason
+      properties:
+        id:
+          type: string
+        taskId:
+          type: string
+        status:
+          type: string
+          enum:
+          - open
+          - under_review
+          - accepted
+          - rejected
+          - resolved
+        reason:
+          type: string
+        resolution:
+          type:
+          - string
+          - 'null'
+    PublicId:
+      type: string
+      pattern: ^[a-z][a-z0-9_]{1,31}_[0-9A-HJKMNP-TV-Z]{26}$
+      example: task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z
+    Int64String:
+      type: string
+      pattern: ^-?(0|[1-9][0-9]*)$
+      example: '2500000'
+    CommandReceipt:
+      type: object
+      additionalProperties: false
+      required:
+      - operationId
+      - accepted
+      - status
+      - occurredAt
+      properties:
+        operationId:
+          type: string
+          minLength: 1
+        accepted:
+          type: boolean
+        resourceId:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          minLength: 1
+    Principal:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    GetCurrentPrincipalResponse:
+      $ref: '#/components/schemas/Principal'
+    OrganizationSummary:
+      type: object
+      additionalProperties: false
+      properties: &id001
+        id:
+          $ref: '#/components/schemas/PublicId'
+        name:
+          type: string
+          minLength: 2
+          maxLength: 200
+        status:
+          type: string
+          enum:
+          - active
+          - suspended
+          - archived
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - status
+      - version
+    ListOrganizationsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    Organization:
+      type: object
+      additionalProperties: false
+      properties: *id001
+      required:
+      - id
+      - name
+      - status
+      - version
+    CreateOrganizationResponse:
+      $ref: '#/components/schemas/Organization'
+    GetOrganizationResponse:
+      $ref: '#/components/schemas/Organization'
+    UpdateOrganizationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedVersion
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 4000
+        status:
+          type: string
+          minLength: 1
+        enabled:
+          type: boolean
+        reasonCode:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{2,80}$
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 2000
+    UpdateOrganizationResponse:
+      $ref: '#/components/schemas/Organization'
+    WorkspaceSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        organizationId:
+          $ref: '#/components/schemas/PublicId'
+        name:
+          type: string
+          minLength: 2
+          maxLength: 200
+        environment:
+          type: string
+          enum:
+          - development
+          - staging
+          - production
+        status:
+          type: string
+          enum:
+          - active
+          - archived
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - id
+      - name
+      - status
+      - version
+    ListWorkspacesResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkspaceSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    CreateWorkspaceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        organizationId:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        environment:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+      required:
+      - id
+      - organizationId
+      - name
+      - environment
+      - version
+    GetWorkspaceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        organizationId:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        environment:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+      required:
+      - id
+      - organizationId
+      - name
+      - environment
+      - version
+    UpdateWorkspaceRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedVersion
+      properties:
+        expectedVersion:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 4000
+        status:
+          type: string
+          minLength: 1
+        enabled:
+          type: boolean
+        reasonCode:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{2,80}$
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 2000
+    UpdateWorkspaceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        organizationId:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        environment:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+      required:
+      - id
+      - organizationId
+      - name
+      - environment
+      - version
+    ApiKeySummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    ListApiKeysResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiKeySummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    CreateApiKeyResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        secret:
+          type: string
+          minLength: 1
+        prefix:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - secret
+      - prefix
+      - createdAt
+    RotateApiKeyResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    RevokeApiKeyResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    CreateUploadIntentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        sizeBytes:
+          type: integer
+        sha256:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - status
+      - sizeBytes
+      - sha256
+    CompleteFileUploadResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        sizeBytes:
+          type: integer
+        sha256:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - status
+      - sizeBytes
+      - sha256
+    GetFileResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        sizeBytes:
+          type: integer
+        sha256:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - status
+      - sizeBytes
+      - sha256
+    DeleteFileResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    CreateQuoteResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        expiresAt:
+          type: string
+          format: date-time
+        price:
+          type: object
+          additionalProperties: false
+          properties:
+            amountMicros:
+              type: integer
+            currency:
+              type: string
+              minLength: 1
+          required:
+          - amountMicros
+          - currency
+        priceBookVersion:
+          type: string
+          minLength: 1
+        breakdown:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: string
+                minLength: 1
+              amountMicros:
+                type: integer
+            required:
+            - code
+            - amountMicros
+      required:
+      - id
+      - expiresAt
+      - price
+      - priceBookVersion
+      - breakdown
+    CreateTaskResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        taskType:
+          type: string
+          enum:
+          - document-ocr
+          - document-extract
+          - audio-transcribe
+        currentRevisionId:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        lifecycleStatus:
+          type: string
+          enum:
+          - submitted
+        executionStatus:
+          type: string
+          enum:
+          - queued
+        billingStatus:
+          type: string
+          enum:
+          - reserved
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+    ListTasksResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              id:
+                type: string
+                minLength: 1
+              workspaceId:
+                type: string
+                minLength: 1
+              taskType:
+                type: string
+                minLength: 1
+              currentRevisionId:
+                type: string
+                minLength: 1
+              createdAt:
+                type: string
+                format: date-time
+              version:
+                type: integer
+              lifecycleStatus:
+                type: string
+                minLength: 1
+              executionStatus:
+                type: string
+                minLength: 1
+              billingStatus:
+                type: string
+                minLength: 1
+            required:
+            - id
+            - workspaceId
+            - taskType
+            - currentRevisionId
+            - createdAt
+            - version
+            - lifecycleStatus
+            - executionStatus
+            - billingStatus
+        page:
+          type: object
+          additionalProperties: false
+          properties:
+            nextCursor:
+              type: string
+              minLength: 1
+            hasMore:
+              type: boolean
+          required:
+          - nextCursor
+          - hasMore
+      required:
+      - items
+      - page
+    GetTaskResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        taskType:
+          type: string
+          minLength: 1
+        currentRevisionId:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        lifecycleStatus:
+          type: string
+          minLength: 1
+        executionStatus:
+          type: string
+          minLength: 1
+        billingStatus:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+    CancelTaskResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        taskType:
+          type: string
+          minLength: 1
+        currentRevisionId:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        lifecycleStatus:
+          type: string
+          minLength: 1
+        executionStatus:
+          type: string
+          minLength: 1
+        billingStatus:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+    RetryTaskResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        taskType:
+          type: string
+          minLength: 1
+        currentRevisionId:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        lifecycleStatus:
+          type: string
+          minLength: 1
+        executionStatus:
+          type: string
+          minLength: 1
+        billingStatus:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+    TaskSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        workspaceId:
+          $ref: '#/components/schemas/PublicId'
+        taskType:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - draft
+          - submitted
+          - active
+          - completed
+          - failed
+          - cancelled
+          - expired
+          - disputed
+        currentRevisionId:
+          $ref: '#/components/schemas/PublicId'
+        version:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - taskType
+      - status
+      - version
+    ListTaskRevisionsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    CreateTaskRevisionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        taskType:
+          type: string
+          enum:
+          - document-ocr
+          - document-extract
+          - audio-transcribe
+        currentRevisionId:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        lifecycleStatus:
+          type: string
+          enum:
+          - submitted
+        executionStatus:
+          type: string
+          enum:
+          - queued
+        billingStatus:
+          type: string
+          enum:
+          - reserved
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+    ListTaskAttemptsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    GetTaskResultResponse:
+      $ref: '#/components/schemas/Task'
+    ModelSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    ListAvailableModelsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    Resource:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    GetUsageResponse:
+      $ref: '#/components/schemas/Resource'
+    GetCreditBalanceResponse:
+      $ref: '#/components/schemas/Resource'
+    InvoiceSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    ListInvoicesResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    GetSubscriptionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        plan:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        currentPeriodEnd:
+          type: string
+          format: date-time
+      required:
+      - id
+      - plan
+      - status
+      - currentPeriodEnd
+    CreateSubscriptionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        plan:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        currentPeriodEnd:
+          type: string
+          format: date-time
+      required:
+      - id
+      - plan
+      - status
+      - currentPeriodEnd
+    WebhookSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    ListWebhookEndpointsResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    CreateWebhookEndpointResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          minLength: 1
+        events:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        enabled:
+          type: boolean
+      required:
+      - id
+      - url
+      - events
+      - enabled
+    TestWebhookEndpointResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    RotateWebhookSecretResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    DisableWebhookEndpointResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    ListWebhookDeliveriesResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    ReplayWebhookDeliveryResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    DisputeSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    ListDisputesResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DisputeSummary'
+        page:
+          $ref: '#/components/schemas/PageInfo'
+    CreateDisputeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        taskId:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - taskId
+      - status
+      - reason
+    InviteWorkspaceMemberResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        taskType:
+          type: string
+          minLength: 1
+        currentRevisionId:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        lifecycleStatus:
+          type: string
+          minLength: 1
+        executionStatus:
+          type: string
+          minLength: 1
+        billingStatus:
+          type: string
+          minLength: 1
+      required:
+      - id
+      - workspaceId
+      - taskType
+      - currentRevisionId
+      - createdAt
+      - version
+      - lifecycleStatus
+      - executionStatus
+      - billingStatus
+    FileTaskInput:
+      type: object
+      additionalProperties: false
+      required:
+      - fileId
+      - contentType
+      properties:
+        fileId: &id002
+          $ref: '#/components/schemas/PublicId'
+        contentType:
+          type: string
+          enum:
+          - application/pdf
+          - image/jpeg
+          - image/png
+          - audio/mpeg
+          - audio/wav
+          - audio/mp4
+    InlineTaskInput:
+      type: object
+      additionalProperties: false
+      required:
+      - inlineText
+      - contentType
+      properties:
+        inlineText:
+          type: string
+          minLength: 1
+          maxLength: 100000
+        contentType:
+          const: text/plain
+    DocumentOcrParameters:
+      type: object
+      additionalProperties: false
+      properties:
+        pageRange:
+          type: string
+          pattern: ^(?:all|[1-9][0-9]*(?:-[1-9][0-9]*)?(?:,[1-9][0-9]*(?:-[1-9][0-9]*)?)*)$
+        deskew:
+          type: boolean
+        detectOrientation:
+          type: boolean
+        preserveLayout:
+          type: boolean
+      required:
+      - pageRange
+      - deskew
+    DocumentExtractParameters:
+      type: object
+      additionalProperties: false
+      properties:
+        extractionSchema:
+          type: object
+          minProperties: 1
+          maxProperties: 200
+          additionalProperties: true
+        strictSchema:
+          type: boolean
+        includeEvidence:
+          type: boolean
+      required:
+      - extractionSchema
+      - strictSchema
+    AudioTranscribeParameters:
+      type: object
+      additionalProperties: false
+      properties:
+        diarization:
+          type: boolean
+        timestamps:
+          type: string
+          enum:
+          - none
+          - segment
+          - word
+        profanityFilter:
+          type: boolean
+        maxSpeakers:
+          type: integer
+          minimum: 1
+          maximum: 20
+      required:
+      - diarization
+      - timestamps
+    DocumentOcrConfiguration:
+      type: object
+      additionalProperties: false
+      required:
+      - outputFormat
+      - verificationLevel
+      - priority
+      - regionPolicy
+      - retentionDays
+      - parameters
+      properties:
+        language: &id003
+          type: array
+          minItems: 1
+          maxItems: 10
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^[a-z]{2,3}(?:-[A-Z]{2})?$
+        outputFormat: &id004
+          type: string
+          enum:
+          - text
+          - json
+          - structured_json
+        verificationLevel: &id005
+          type: string
+          enum:
+          - standard
+          - verified
+          - consensus
+          - enterprise
+          - human_review
+        priority: &id006
+          type: string
+          enum:
+          - batch
+          - standard
+          - priority
+          - realtime
+        regionPolicy: &id007
+          type: string
+          enum:
+          - any_allowed
+          - eu_only
+          - private_pool_only
+        modelId: &id008
+          oneOf:
+          - *id002
+          - type: 'null'
+        retentionDays: &id009
+          type: integer
+          minimum: 0
+          maximum: 2555
+        parameters:
+          $ref: '#/components/schemas/DocumentOcrParameters'
+    DocumentExtractConfiguration:
+      type: object
+      additionalProperties: false
+      required:
+      - outputFormat
+      - verificationLevel
+      - priority
+      - regionPolicy
+      - retentionDays
+      - parameters
+      properties:
+        language: *id003
+        outputFormat: *id004
+        verificationLevel: *id005
+        priority: *id006
+        regionPolicy: *id007
+        modelId: *id008
+        retentionDays: *id009
+        parameters:
+          $ref: '#/components/schemas/DocumentExtractParameters'
+    AudioTranscribeConfiguration:
+      type: object
+      additionalProperties: false
+      required:
+      - outputFormat
+      - verificationLevel
+      - priority
+      - regionPolicy
+      - retentionDays
+      - parameters
+      properties:
+        language: *id003
+        outputFormat: *id004
+        verificationLevel: *id005
+        priority: *id006
+        regionPolicy: *id007
+        modelId: *id008
+        retentionDays: *id009
+        parameters:
+          $ref: '#/components/schemas/AudioTranscribeParameters'
+    DocumentOcrTaskRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - workspaceId
+      - taskType
+      - input
+      - configuration
+      properties:
+        workspaceId: *id002
+        taskType:
+          const: document-ocr
+        input:
+          type: object
+          additionalProperties: false
+          required:
+          - fileId
+          - contentType
+          properties:
+            fileId: *id002
+            contentType:
+              type: string
+              enum:
+              - application/pdf
+              - image/jpeg
+              - image/png
+        configuration:
+          $ref: '#/components/schemas/DocumentOcrConfiguration'
+        metadata: &id010
+          type: object
+          maxProperties: 50
+          additionalProperties:
+            type: string
+            maxLength: 1024
+        webhookEndpointId: &id011
+          oneOf:
+          - *id002
+          - type: 'null'
+        quoteId: &id012
+          oneOf:
+          - *id002
+          - type: 'null'
+    DocumentExtractTaskRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - workspaceId
+      - taskType
+      - input
+      - configuration
+      properties:
+        workspaceId: *id002
+        taskType:
+          const: document-extract
+        input:
+          type: object
+          additionalProperties: false
+          required:
+          - fileId
+          - contentType
+          properties:
+            fileId: *id002
+            contentType:
+              type: string
+              enum:
+              - application/pdf
+              - image/jpeg
+              - image/png
+        configuration:
+          $ref: '#/components/schemas/DocumentExtractConfiguration'
+        metadata: *id010
+        webhookEndpointId: *id011
+        quoteId: *id012
+    AudioTranscribeTaskRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - workspaceId
+      - taskType
+      - input
+      - configuration
+      properties:
+        workspaceId: *id002
+        taskType:
+          const: audio-transcribe
+        input:
+          type: object
+          additionalProperties: false
+          required:
+          - fileId
+          - contentType
+          properties:
+            fileId: *id002
+            contentType:
+              type: string
+              enum:
+              - audio/mpeg
+              - audio/wav
+              - audio/mp4
+        configuration:
+          $ref: '#/components/schemas/AudioTranscribeConfiguration'
+        metadata: *id010
+        webhookEndpointId: *id011
+        quoteId: *id012

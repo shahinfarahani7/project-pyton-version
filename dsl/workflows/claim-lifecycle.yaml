@@ -1,0 +1,68 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: claim-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: batched
+    terminal: false
+  - name: confirming
+    terminal: false
+  - name: draft
+    terminal: false
+  - name: eligibility_check
+    terminal: false
+  - name: failed_released
+    terminal: true
+  - name: reconciling
+    terminal: false
+  - name: rejected
+    terminal: true
+  - name: reserved
+    terminal: false
+  - name: settled
+    terminal: true
+  - name: submitted
+    terminal: false
+  transitions:
+  - from: draft
+    to: eligibility_check
+    event: claim-lifecycle.draft_to_eligibility_check
+  - from: eligibility_check
+    to: reserved
+    event: claim-lifecycle.eligibility_check_to_reserved
+  - from: eligibility_check
+    to: rejected
+    event: claim-lifecycle.eligibility_check_to_rejected
+  - from: reserved
+    to: batched
+    event: claim-lifecycle.reserved_to_batched
+  - from: batched
+    to: submitted
+    event: claim-lifecycle.batched_to_submitted
+  - from: submitted
+    to: confirming
+    event: claim-lifecycle.submitted_to_confirming
+  - from: confirming
+    to: settled
+    event: claim-lifecycle.confirming_to_settled
+  - from: confirming
+    to: failed_released
+    event: claim-lifecycle.confirming_to_failed_released
+  - from: confirming
+    to: reconciling
+    event: claim-lifecycle.confirming_to_reconciling
+  - from: reconciling
+    to: settled
+    event: claim-lifecycle.reconciling_to_settled
+  - from: reconciling
+    to: failed_released
+    event: claim-lifecycle.reconciling_to_failed_released
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

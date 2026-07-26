@@ -1,0 +1,77 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: audio-transcribe
+  version: 2.0.0
+  status: active
+  description: Production task contract for audio.transcribe
+  labels:
+    domain: audio
+  owners:
+  - product
+  - platform
+spec:
+  code: audio.transcribe
+  lifecycle: commercial-candidate
+  billing:
+    measure: audio_second
+    quantum: 60
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    - options
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+    additionalProperties: false
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+      metrics:
+        type: object
+    additionalProperties: false
+  inputLimits:
+    maximumBytes: 209715200
+    allowedContentTypes:
+    - audio/mpeg
+    - audio/wav
+    - audio/mp4
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 1800
+  modelCandidates:
+  - modelRef: ModelProfile/whisper-base-int8@2.0.0
+    priority: 1
+  - modelRef: ModelProfile/gemma-3n-e2b-int4@2.0.0
+    priority: 2
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

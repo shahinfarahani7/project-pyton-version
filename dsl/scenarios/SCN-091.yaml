@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-091-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-091
+  useCaseRef: UseCase/uc-046-approve-claim-epoch@2.0.0
+  mode: success
+  given:
+  - Use case UC-046 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Finance and Legal is authenticated and has permissions ops.claims:activate-epoch.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke activateClaimEpoch with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: token_conversion_epochs.'
+  - 'Exactly these canonical events are inserted into the outbox: claim.epoch.activated.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Finance and Legal
+    operationIds:
+    - activateClaimEpoch
+    requirements:
+    - REQ-CLAIM-002
+  expectedEvents:
+  - claim.epoch.activated
+  expectedErrorCode: null

@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-126-task-lifecycle-active-to-failed
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-126
+  stateMachineRef: StateMachine/task-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is active
+  - expected version matches
+  when:
+  - event requests active -> failed
+  then:
+  - state becomes failed
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: active
+    to: failed
+  expectedEvents:
+  - task-lifecycle.active_to_failed
+  expectedErrorCode: null

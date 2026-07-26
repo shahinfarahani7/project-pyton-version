@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-192-model-download-lifecycle-queued-to-downloading
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-192
+  stateMachineRef: StateMachine/model-download-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is queued
+  - expected version matches
+  when:
+  - event requests queued -> downloading
+  then:
+  - state becomes downloading
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: queued
+    to: downloading
+  expectedEvents:
+  - model-download-lifecycle.queued_to_downloading
+  expectedErrorCode: null

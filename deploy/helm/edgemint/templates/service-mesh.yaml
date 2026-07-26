@@ -1,0 +1,19 @@
+{{- if and (eq .Values.global.environment "production") (not .Values.serviceMesh.enabled) }}
+{{- fail "serviceMesh.enabled must be true in production" }}
+{{- end }}
+{{- if .Values.serviceMesh.enabled }}
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata: { name: edgemint-strict-mtls }
+spec:
+  mtls: { mode: {{ .Values.serviceMesh.mode }} }
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata: { name: edgemint-deny-unauthenticated }
+spec:
+  action: DENY
+  rules:
+    - from:
+        - source: { notPrincipals: ["cluster.local/ns/{{ .Release.Namespace }}/sa/*"] }
+{{- end }}

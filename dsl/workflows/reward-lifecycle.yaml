@@ -1,0 +1,58 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: reward-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: claim_reserved
+    terminal: false
+  - name: estimated
+    terminal: false
+  - name: expired
+    terminal: true
+  - name: held
+    terminal: false
+  - name: pending
+    terminal: false
+  - name: reversed
+    terminal: true
+  - name: settled
+    terminal: true
+  - name: verified
+    terminal: false
+  transitions:
+  - from: estimated
+    to: pending
+    event: reward-lifecycle.estimated_to_pending
+  - from: pending
+    to: held
+    event: reward-lifecycle.pending_to_held
+  - from: pending
+    to: verified
+    event: reward-lifecycle.pending_to_verified
+  - from: held
+    to: verified
+    event: reward-lifecycle.held_to_verified
+  - from: held
+    to: reversed
+    event: reward-lifecycle.held_to_reversed
+  - from: verified
+    to: claim_reserved
+    event: reward-lifecycle.verified_to_claim_reserved
+  - from: claim_reserved
+    to: settled
+    event: reward-lifecycle.claim_reserved_to_settled
+  - from: claim_reserved
+    to: verified
+    event: reward-lifecycle.claim_reserved_to_verified
+  - from: verified
+    to: expired
+    event: reward-lifecycle.verified_to_expired
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

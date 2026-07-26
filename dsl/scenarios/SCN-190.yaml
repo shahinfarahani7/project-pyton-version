@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-190-claim-lifecycle-reconciling-to-failed_released
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-190
+  stateMachineRef: StateMachine/claim-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is reconciling
+  - expected version matches
+  when:
+  - event requests reconciling -> failed_released
+  then:
+  - state becomes failed_released
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: reconciling
+    to: failed_released
+  expectedEvents:
+  - claim-lifecycle.reconciling_to_failed_released
+  expectedErrorCode: null

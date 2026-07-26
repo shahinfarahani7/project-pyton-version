@@ -1,0 +1,33 @@
+{
+  "package": "EdgeMint Production Execution Pack",
+  "version": "5.0.0",
+  "language": "English",
+  "generatedAt": "2026-07-21T00:00:00Z",
+  "scores": {
+    "specificationMaturity": 100,
+    "actualProductionReadinessOfExecutionPackage": 100,
+    "autonomousCursorExecutionReadiness": 100
+  },
+  "scoreScope": "Complete deterministic production execution package; live-release certification requires genuine evidence.",
+  "canonicalDecisions": "production/canonical-decisions.yaml",
+  "cursorPrompt": "cursor/CURSOR-MASTER-PROMPT.md",
+  "workPackages": "cursor/work-packages.json",
+  "productionGate": "tools/production_gate.py",
+  "architecture": {
+    "database": "PostgreSQL 18 only",
+    "realtimeTransport": "Secure WebSocket only",
+    "durableEventAuthority": "PostgreSQL transactional event tables"
+  },
+  "integrityAuthority": "PACKAGE-MANIFEST.json and CHECKSUMS.sha256 generated after all package content is finalized",
+  "assignmentProtocol": {
+    "mode": "server_auto_lease",
+    "perTaskWorkerConfirmation": false,
+    "workerOptInAuthority": "current consent plus Available status",
+    "deliveryAcknowledgement": "transport receipt only"
+  },
+  "platform": {
+    "backend": "Python 3.13.14/FastAPI",
+    "database": "PostgreSQL 18",
+    "realtime": "Secure WebSocket"
+  }
+}

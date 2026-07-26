@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: webhook
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+spec:
+  service: webhook
+  ownerTeam: platform
+  dataOwnership:
+  - webhook
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - webhook.delivery.failed
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

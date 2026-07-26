@@ -1,0 +1,21 @@
+{
+  "name": "edgemint-monorepo",
+  "private": true,
+  "version": "5.0.0",
+  "packageManager": "npm@11.18.0",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
+  "workspaces": [
+    "src/apps/customer-portal",
+    "src/apps/operations-portal"
+  ],
+  "scripts": {
+    "build:web": "npm run build --workspaces",
+    "test:web": "npm run test --workspaces",
+    "lint:web": "npm run lint --workspaces",
+    "verify:web": "npm run lint:web && npm run test:web && npm run build:web",
+    "validate:architecture": "python tools/validate_websocket_architecture.py"
+  }
+}

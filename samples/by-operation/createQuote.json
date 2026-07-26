@@ -1,0 +1,59 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createQuote",
+  "request": {
+    "method": "POST",
+    "path": "/quotes",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createQuote_0001",
+      "Idempotency-Key": "idem_createQuote_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "workspaceId": "wsp_01J00000000000000000000000",
+      "taskType": "document-ocr",
+      "input": {
+        "fileId": "fil_01J00000000000000000000000",
+        "contentType": "application/pdf"
+      },
+      "configuration": {
+        "outputFormat": "text",
+        "verificationLevel": "standard",
+        "priority": "batch",
+        "regionPolicy": "any_allowed",
+        "retentionDays": 0,
+        "parameters": {
+          "pageRange": "all",
+          "deskew": true
+        }
+      }
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "expiresAt": "2026-07-21T10:00:00Z",
+      "price": {
+        "amountMicros": 1,
+        "currency": "EUR"
+      },
+      "priceBookVersion": "example",
+      "breakdown": [
+        {
+          "code": "example",
+          "amountMicros": 1
+        }
+      ]
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.quotes:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

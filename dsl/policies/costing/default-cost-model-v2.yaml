@@ -1,0 +1,85 @@
+apiVersion: edgemint.io/v1
+kind: CostModel
+metadata:
+  name: default-cost-model-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - finance
+  - platform
+spec:
+  currency: EUR
+  rules:
+  - taskType: document.ocr
+    workerRewardMicros: 925
+    verifierCostMicros: 200
+    storageEgressMicros: 75
+    paymentSupportMicros: 50
+    fraudReserveMicros: 75
+    cloudFallbackExpectedMicros: 200
+  - taskType: document.extract
+    workerRewardMicros: 7400
+    verifierCostMicros: 1600
+    storageEgressMicros: 600
+    paymentSupportMicros: 400
+    fraudReserveMicros: 600
+    cloudFallbackExpectedMicros: 1600
+  - taskType: image.classify
+    workerRewardMicros: 555
+    verifierCostMicros: 120
+    storageEgressMicros: 45
+    paymentSupportMicros: 30
+    fraudReserveMicros: 45
+    cloudFallbackExpectedMicros: 120
+  - taskType: image.detect
+    workerRewardMicros: 1480
+    verifierCostMicros: 320
+    storageEgressMicros: 120
+    paymentSupportMicros: 80
+    fraudReserveMicros: 120
+    cloudFallbackExpectedMicros: 320
+  - taskType: vision.analyze
+    workerRewardMicros: 12950
+    verifierCostMicros: 2800
+    storageEgressMicros: 1050
+    paymentSupportMicros: 700
+    fraudReserveMicros: 1050
+    cloudFallbackExpectedMicros: 2800
+  - taskType: audio.transcribe
+    workerRewardMicros: 3330
+    verifierCostMicros: 720
+    storageEgressMicros: 270
+    paymentSupportMicros: 180
+    fraudReserveMicros: 270
+    cloudFallbackExpectedMicros: 720
+  - taskType: text.translate
+    workerRewardMicros: 1110
+    verifierCostMicros: 240
+    storageEgressMicros: 90
+    paymentSupportMicros: 60
+    fraudReserveMicros: 90
+    cloudFallbackExpectedMicros: 240
+  - taskType: text.generate
+    workerRewardMicros: 2405
+    verifierCostMicros: 520
+    storageEgressMicros: 195
+    paymentSupportMicros: 130
+    fraudReserveMicros: 195
+    cloudFallbackExpectedMicros: 520
+  - taskType: text.embedding
+    workerRewardMicros: 148
+    verifierCostMicros: 50
+    storageEgressMicros: 20
+    paymentSupportMicros: 20
+    fraudReserveMicros: 20
+    cloudFallbackExpectedMicros: 32
+  - taskType: document.verify
+    workerRewardMicros: 4440
+    verifierCostMicros: 960
+    storageEgressMicros: 360
+    paymentSupportMicros: 240
+    fraudReserveMicros: 360
+    cloudFallbackExpectedMicros: 960
+  cloudFallbackProbabilityBps: 800
+  supportAllocationMethod: per_verified_usage
+  reviewFrequency: monthly

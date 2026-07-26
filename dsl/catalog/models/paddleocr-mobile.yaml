@@ -1,0 +1,49 @@
+apiVersion: edgemint.io/v1
+kind: ModelProfile
+metadata:
+  name: paddleocr-mobile
+  version: 2.0.0
+  status: draft
+  description: Evaluation profile for paddleocr-mobile
+  owners:
+  - ml
+  - mobile
+  - legal
+spec:
+  family: ocr
+  quantization: INT8
+  runtime: onnxruntime
+  runtimeAbi: pending-benchmark
+  capabilities:
+  - document.ocr
+  - document.verify
+  artifacts:
+  - id: paddleocr-mobile-main
+    artifactSizeBytes: null
+    sha256: null
+    signature: null
+    signingKeyId: null
+    releaseEvidence: REQUIRED_BEFORE_PRODUCTION
+  resources:
+    minimumTier: T1
+    peakRamBytes: null
+    minimumFreeStorageBytes: null
+    singleHeavyModelResident: true
+  distribution:
+    bundled: false
+    resumable: true
+    wifiRecommended: true
+    atomicInstall: true
+  license:
+    status: review-required
+    noticePath: null
+  release:
+    state: evaluation
+    productionEligible: false
+    requiredEvidence:
+    - exact artifact bytes
+    - sha256
+    - signature
+    - license approval
+    - real-device benchmark
+    - runtime compatibility

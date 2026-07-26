@@ -1,0 +1,76 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: worker-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: attesting
+    terminal: false
+  - name: banned
+    terminal: true
+  - name: benchmarking
+    terminal: false
+  - name: cooldown
+    terminal: false
+  - name: degraded
+    terminal: false
+  - name: executing
+    terminal: false
+  - name: quarantined
+    terminal: false
+  - name: ready
+    terminal: false
+  - name: registered
+    terminal: false
+  - name: reserved
+    terminal: false
+  - name: suspended
+    terminal: false
+  transitions:
+  - from: registered
+    to: attesting
+    event: worker-lifecycle.registered_to_attesting
+  - from: attesting
+    to: benchmarking
+    event: worker-lifecycle.attesting_to_benchmarking
+  - from: benchmarking
+    to: ready
+    event: worker-lifecycle.benchmarking_to_ready
+  - from: ready
+    to: reserved
+    event: worker-lifecycle.ready_to_reserved
+  - from: reserved
+    to: executing
+    event: worker-lifecycle.reserved_to_executing
+  - from: executing
+    to: cooldown
+    event: worker-lifecycle.executing_to_cooldown
+  - from: cooldown
+    to: ready
+    event: worker-lifecycle.cooldown_to_ready
+  - from: ready
+    to: degraded
+    event: worker-lifecycle.ready_to_degraded
+  - from: degraded
+    to: ready
+    event: worker-lifecycle.degraded_to_ready
+  - from: degraded
+    to: quarantined
+    event: worker-lifecycle.degraded_to_quarantined
+  - from: quarantined
+    to: ready
+    event: worker-lifecycle.quarantined_to_ready
+  - from: quarantined
+    to: suspended
+    event: worker-lifecycle.quarantined_to_suspended
+  - from: suspended
+    to: banned
+    event: worker-lifecycle.suspended_to_banned
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

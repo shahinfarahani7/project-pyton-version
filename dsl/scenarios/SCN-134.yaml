@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-134-revision-lifecycle-quoted-to-reserved
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-134
+  stateMachineRef: StateMachine/revision-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is quoted
+  - expected version matches
+  when:
+  - event requests quoted -> reserved
+  then:
+  - state becomes reserved
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: quoted
+    to: reserved
+  expectedEvents:
+  - revision-lifecycle.quoted_to_reserved
+  expectedErrorCode: null

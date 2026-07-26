@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-166-verification-lifecycle-consensus-to-accepted
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-166
+  stateMachineRef: StateMachine/verification-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is consensus
+  - expected version matches
+  when:
+  - event requests consensus -> accepted
+  then:
+  - state becomes accepted
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: consensus
+    to: accepted
+  expectedEvents:
+  - verification-lifecycle.consensus_to_accepted
+  expectedErrorCode: null

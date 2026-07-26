@@ -1,0 +1,64 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-reportassignmentunavailable
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for reportAssignmentUnavailable.
+spec:
+  operationId: reportAssignmentUnavailable
+  api: worker
+  method: POST
+  path: /assignments/{assignmentId}:unavailable
+  summary: Report machine-detected assignment unavailability
+  classification: business_use_case
+  permissions:
+  - worker.assignments:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device
+    for worker API; MFA operator or mTLS service identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - assignments
+    - task_attempts
+    domainEvents:
+    - task.assignment.unavailable
+    - assignment-lifecycle.leased_to_failed
+    - attempt-lifecycle.leased_to_matching
+    auditRequired: true
+  responseStatuses:
+  - '200'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-030-report-assignment-unavailable@2.1.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  - IDEMPOTENCY_CONFLICT
+  - LEASE_EXPIRED
+  - WORKER_NOT_ELIGIBLE
+  - ASSIGNMENT_STALE_FENCE
+  - ASSIGNMENT_UNAVAILABLE_EVIDENCE_MISMATCH
+  - HEALTH_SNAPSHOT_NOT_CURRENT
+  contractSources:
+    openapi: contracts/openapi/edgemint-worker-api.yaml::POST /assignments/{assignmentId}:unavailable
+    request: OpenAPI requestBody/parameters for reportAssignmentUnavailable
+    response: OpenAPI responses for reportAssignmentUnavailable
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

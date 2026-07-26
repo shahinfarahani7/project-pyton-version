@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: ApiProduct
+metadata:
+  name: public-api-v1
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+spec:
+  audience: customer
+  basePath: /v1
+  authentication:
+  - oauth2
+  - api_key
+  openApiPath: contracts/openapi/edgemint-public-api.yaml
+  requiredHeaders:
+  - X-Request-Id
+  idempotencyRequiredForMutations: true
+  lifecycle: candidate

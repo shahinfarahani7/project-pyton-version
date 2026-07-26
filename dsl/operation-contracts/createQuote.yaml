@@ -1,0 +1,64 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-createquote
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for createQuote.
+spec:
+  operationId: createQuote
+  api: public
+  method: POST
+  path: /quotes
+  summary: Create immutable price quote
+  classification: business_use_case
+  permissions:
+  - customer.quotes:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - promotion_reservations
+    - quotes
+    domainEvents:
+    - promotion.budget.reserved
+    - quote.created
+    - quote.rejected
+    auditRequired: true
+  responseStatuses:
+  - '201'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-009-create-quote@2.0.0
+  - UseCase/uc-058-apply-promotion-budget@2.0.0
+  - UseCase/uc-059-reject-negative-margin-quote@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - NEGATIVE_MARGIN_FLOOR
+  - PRICE_POLICY_NOT_ACTIVE
+  - TENANT_RESOURCE_NOT_FOUND
+  - UNSUPPORTED_TASK_CONFIGURATION
+  contractSources:
+    openapi: contracts/openapi/edgemint-public-api.yaml::POST /quotes
+    request: OpenAPI requestBody/parameters for createQuote
+    response: OpenAPI responses for createQuote
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

@@ -1,0 +1,386 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.edgemint.io/release-evidence-v5.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseId",
+    "environment",
+    "commitSha",
+    "generatedAt",
+    "expiresAt",
+    "trustedRoots",
+    "repositoryState",
+    "artifacts",
+    "tests",
+    "approvals",
+    "externalInputs",
+    "canary"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "5.0"
+    },
+    "releaseId": {
+      "type": "string",
+      "pattern": "^EM-[0-9]{8}-[A-Z0-9]{6,20}$"
+    },
+    "environment": {
+      "const": "production"
+    },
+    "commitSha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trustedRoots": {
+      "$ref": "#/$defs/evidenceRef"
+    },
+    "repositoryState": {
+      "$ref": "#/$defs/evidenceRef"
+    },
+    "externalInputs": {
+      "type": "array",
+      "minItems": 37,
+      "maxItems": 37,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "verifiedAt",
+          "evidence"
+        ],
+        "properties": {
+          "name": {
+            "enum": [
+              "APPLE_APP_ATTEST_KEY_SECRET_ARN",
+              "AWS_ACCOUNT_ID",
+              "AWS_DR_REGION",
+              "AWS_PRIMARY_REGION",
+              "COGNITO_CUSTOMER_POOL_ID",
+              "COGNITO_OPERATIONS_POOL_ID",
+              "COSIGN_KMS_KEY_ARN",
+              "COSIGN_TRUSTED_PUBLIC_KEY_SHA256",
+              "DATABASE_GENERATION",
+              "EKS_ADDON_VERSION_MANIFEST",
+              "EKS_CLUSTER_VERSION",
+              "GA1_MODEL_RELEASE_MANIFEST",
+              "ISTIO_CHART_PROVENANCE_EVIDENCE",
+              "ISTIO_VERSION",
+              "MAILPIT_IMAGE",
+              "MINIO_IMAGE",
+              "MODEL_SIGNING_KMS_KEY_ARN",
+              "OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN",
+              "OPERATIONS_OIDC_CLIENT_SECRET_ARN",
+              "OPERATIONS_OIDC_ISSUER",
+              "OPERATIONS_OIDC_PROVIDER_NAME",
+              "OPERATOR_IDP_FIDO2_POLICY_EVIDENCE",
+              "PLATFORM_ADMIN_ROLE_ARN",
+              "PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN",
+              "POSTGRES_DEV_IMAGE",
+              "POSTGRES_ENGINE",
+              "POSTGRES_ENGINE_VERSION",
+              "POSTGRES_PARAMETER_GROUP_FAMILY",
+              "POSTGRES_TOOLS_IMAGE",
+              "PRODUCTION_DOMAIN",
+              "PYTHON_RUNTIME_IMAGE",
+              "ROUTE53_ZONE_ID",
+              "STRIPE_CONNECT_PLATFORM_ACCOUNT_ID",
+              "STRIPE_SECRET_KEY_ARN",
+              "STRIPE_WEBHOOK_SECRET_ARN",
+              "TERRAFORM_LOCK_TABLE",
+              "TERRAFORM_STATE_BUCKET"
+            ]
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 27,
+      "maxItems": 27,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "digest",
+          "producedAt",
+          "sbom",
+          "signatureVerification",
+          "provenance",
+          "vulnerabilityReport"
+        ],
+        "properties": {
+          "name": {
+            "enum": [
+              "api-gateway",
+              "event-relay",
+              "identity",
+              "customer",
+              "file",
+              "task-intake",
+              "pricing",
+              "router",
+              "worker-gateway",
+              "worker-registry",
+              "result",
+              "verification",
+              "billing",
+              "ledger",
+              "reward",
+              "claim",
+              "fraud",
+              "webhook",
+              "model-registry",
+              "notification",
+              "operations",
+              "customer-portal",
+              "operations-portal",
+              "android-worker",
+              "model-paddleocr-mobile",
+              "model-gemma-3n-e2b-int4",
+              "model-whisper-base-int8"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "producedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sbom": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "signatureVerification": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "provenance": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "vulnerabilityReport": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 21,
+      "maxItems": 21,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "status",
+          "startedAt",
+          "completedAt",
+          "report"
+        ],
+        "properties": {
+          "name": {
+            "enum": [
+              "unit",
+              "property",
+              "integration",
+              "contract",
+              "e2e-paid-task",
+              "database-rls-invariants",
+              "migration-upgrade",
+              "websocket-delivery-replay",
+              "load",
+              "soak",
+              "chaos",
+              "security-sast",
+              "security-dast",
+              "penetration-test",
+              "mobile-device-matrix",
+              "model-quality-resource",
+              "backup-restore",
+              "disaster-recovery",
+              "financial-reconciliation",
+              "privacy-deletion",
+              "canary-rollback"
+            ]
+          },
+          "status": {
+            "const": "passed"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "report": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "function",
+          "approverId",
+          "signingKeyId",
+          "approvedAt",
+          "releaseId",
+          "commitSha",
+          "signatureVerification"
+        ],
+        "properties": {
+          "function": {
+            "enum": [
+              "Product",
+              "Engineering",
+              "Security",
+              "SRE",
+              "Finance",
+              "Legal",
+              "Operations"
+            ]
+          },
+          "approverId": {
+            "type": "string",
+            "minLength": 3
+          },
+          "signingKeyId": {
+            "type": "string",
+            "minLength": 3
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "releaseId": {
+            "type": "string",
+            "pattern": "^EM-[0-9]{8}-[A-Z0-9]{6,20}$"
+          },
+          "commitSha": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "signatureVerification": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        }
+      }
+    },
+    "canary": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stage",
+          "status",
+          "startedAt",
+          "completedAt",
+          "report",
+          "metrics",
+          "rollbackReady"
+        ],
+        "properties": {
+          "stage": {
+            "enum": [
+              "internal",
+              "1-percent",
+              "5-percent",
+              "25-percent",
+              "100-percent"
+            ]
+          },
+          "status": {
+            "const": "passed"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "report": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "metrics": {
+            "$ref": "#/$defs/evidenceRef"
+          },
+          "rollbackReady": {
+            "const": true
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "mediaType",
+        "generatedAt",
+        "releaseId",
+        "commitSha"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^evidence/actual/[A-Za-z0-9._/-]+$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 3
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "releaseId": {
+          "type": "string",
+          "pattern": "^EM-[0-9]{8}-[A-Z0-9]{6,20}$"
+        },
+        "commitSha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        }
+      }
+    }
+  }
+}

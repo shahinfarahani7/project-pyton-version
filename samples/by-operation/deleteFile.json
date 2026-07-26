@@ -1,0 +1,34 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "deleteFile",
+  "request": {
+    "method": "DELETE",
+    "path": "/files/{fileId}",
+    "pathParameters": {
+      "fileId": "fil_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_deleteFile_0001",
+      "Idempotency-Key": "idem_deleteFile_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "If-Match": "\"1\""
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "202",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.files:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

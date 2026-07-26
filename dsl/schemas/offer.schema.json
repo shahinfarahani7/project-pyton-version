@@ -1,0 +1,133 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/offer.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "Offer"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "eligibility": {
+          "additionalProperties": false,
+          "properties": {
+            "contractRequired": {
+              "type": "boolean"
+            },
+            "selfServe": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "contractRequired",
+            "selfServe"
+          ],
+          "type": "object"
+        },
+        "entitlementRef": {
+          "type": "string"
+        },
+        "fees": {
+          "additionalProperties": false,
+          "properties": {
+            "monthlyMicros": {
+              "type": "integer"
+            },
+            "setupMicros": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "monthlyMicros",
+            "setupMicros"
+          ],
+          "type": "object"
+        },
+        "plan": {
+          "type": "string"
+        },
+        "priceBookRef": {
+          "type": "string"
+        },
+        "renewal": {
+          "type": "string"
+        },
+        "slaRef": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "eligibility",
+        "entitlementRef",
+        "fees",
+        "plan",
+        "priceBookRef",
+        "renewal",
+        "slaRef"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint Offer",
+  "type": "object"
+}

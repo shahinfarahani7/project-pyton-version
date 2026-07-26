@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-188-claim-lifecycle-confirming-to-reconciling
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-188
+  stateMachineRef: StateMachine/claim-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is confirming
+  - expected version matches
+  when:
+  - event requests confirming -> reconciling
+  then:
+  - state becomes reconciling
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: confirming
+    to: reconciling
+  expectedEvents:
+  - claim-lifecycle.confirming_to_reconciling
+  expectedErrorCode: null

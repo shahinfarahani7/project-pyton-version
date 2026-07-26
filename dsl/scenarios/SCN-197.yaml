@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-197-model-download-lifecycle-verifying-to-failed
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-197
+  stateMachineRef: StateMachine/model-download-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is verifying
+  - expected version matches
+  when:
+  - event requests verifying -> failed
+  then:
+  - state becomes failed
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: verifying
+    to: failed
+  expectedEvents:
+  - model-download-lifecycle.verifying_to_failed
+  expectedErrorCode: null

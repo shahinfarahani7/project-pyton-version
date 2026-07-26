@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-lease-003
+  version: 2.0.0
+  status: active
+  description: Worker agent auto-starts or reports machine-detected unavailability
+  owners:
+  - architecture
+spec:
+  statement: A valid assignment is started automatically by the Worker Agent. Before execution, only a canonical machine-detected
+    unavailability report is allowed; user-selected rejection is prohibited.
+  priority: must
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

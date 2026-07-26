@@ -1,0 +1,129 @@
+apiVersion: edgemint.io/v1
+kind: PriceBook
+metadata:
+  name: public-eur-2026q3-v2
+  version: 2.0.0
+  status: evaluation
+  owners:
+  - finance
+  - product
+  labels:
+    productionActivation: requires-finance-approval
+spec:
+  currency: EUR
+  effectiveFrom: '2026-08-01T00:00:00Z'
+  effectiveUntil: null
+  calculationVersion: pricing-v2
+  rounding:
+    unit: micro
+    mode: half_up
+  rules:
+  - id: document_ocr
+    taskType: document.ocr
+    measure: page
+    quantum: 1
+    unitPriceMicros: 2500
+    minimumChargeMicros: 2500
+  - id: document_extract
+    taskType: document.extract
+    measure: document
+    quantum: 1
+    unitPriceMicros: 20000
+    minimumChargeMicros: 20000
+  - id: image_classify
+    taskType: image.classify
+    measure: image
+    quantum: 1
+    unitPriceMicros: 1500
+    minimumChargeMicros: 1500
+  - id: image_detect
+    taskType: image.detect
+    measure: image
+    quantum: 1
+    unitPriceMicros: 4000
+    minimumChargeMicros: 4000
+  - id: vision_analyze
+    taskType: vision.analyze
+    measure: request
+    quantum: 1
+    unitPriceMicros: 35000
+    minimumChargeMicros: 35000
+  - id: audio_transcribe
+    taskType: audio.transcribe
+    measure: audio_second
+    quantum: 60
+    unitPriceMicros: 9000
+    minimumChargeMicros: 9000
+  - id: text_translate
+    taskType: text.translate
+    measure: input_character
+    quantum: 1000
+    unitPriceMicros: 3000
+    minimumChargeMicros: 3000
+  - id: text_generate
+    taskType: text.generate
+    measure: total_token
+    quantum: 1000
+    unitPriceMicros: 6500
+    minimumChargeMicros: 6500
+  - id: text_embedding
+    taskType: text.embedding
+    measure: input_token
+    quantum: 1000
+    unitPriceMicros: 400
+    minimumChargeMicros: 1000
+  - id: document_verify
+    taskType: document.verify
+    measure: document
+    quantum: 1
+    unitPriceMicros: 12000
+    minimumChargeMicros: 12000
+  orderedModifiers:
+  - plan
+  - priority
+  - verification
+  - region
+  - executionPolicy
+  - retention
+  multipliersBps:
+    plan:
+      developer: 11500
+      startup: 9500
+      growth: 8500
+      business: 7800
+      enterprise: 7000
+    priority:
+      batch: 7000
+      standard: 10000
+      priority: 13500
+      realtime: 22000
+    verification:
+      standard: 10000
+      verified: 14500
+      consensus: 20500
+      enterprise: 26000
+      human_review: 60000
+    region:
+      eu-north: 10000
+      eu-central: 10000
+      eu-west: 10500
+      me-west: 10800
+      ap-south: 9500
+      us-east: 10200
+    executionPolicy:
+      edge_only: 11000
+      edge_preferred: 10000
+      fastest_available: 12500
+      private_pool_only: 14500
+    retention:
+      default: 10000
+      extended: 11000
+  discountOrder:
+  - contract
+  - promotion
+  minimumChargeStage: after_discounts
+  promotionMayFundFloorDifference: true
+  floors:
+    minimumContributionMarginBps: 2000
+    negativeMarginAction: reject_unless_subsidy_reserved
+  quoteTtlSeconds: 900

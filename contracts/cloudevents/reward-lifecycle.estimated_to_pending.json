@@ -1,0 +1,24 @@
+{
+  "specversion": "1.0",
+  "id": "event_9462690c331cba6a4d1c6bf1ac",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.reward-lifecycle.estimated_to_pending.v1",
+  "subject": "reward_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "correlationId": "corr_9462690c331cba6a4d1c6bf1ac",
+  "causationId": "cmd_9462690c331cba6a4d1c6bf1ac",
+  "partitionKey": "reward_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "rewardId": "reward_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "fromStatus": "estimated",
+    "toStatus": "pending",
+    "workspaceId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

@@ -1,0 +1,74 @@
+apiVersion: edgemint.io/v1
+kind: WorkerProtocol
+metadata:
+  name: mobile-worker-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - mobile
+  - platform
+  - security
+spec:
+  authentication:
+    challengeRequired: true
+    attestationAdapterRequired: true
+    deviceKeyAlgorithm:
+    - P-256
+    - Ed25519
+    accessTokenMinutes: 15
+    refreshTokenRotation: true
+  registration:
+    required:
+    - account
+    - deviceAttestation
+    - devicePublicKey
+    - capabilities
+    - consentVersion
+    returns:
+    - workerId
+    - deviceId
+    - policyBundle
+    - protocolVersion
+  heartbeat:
+    intervalSeconds: 30
+    offlineAfterSeconds: 120
+    sequenceRequired: true
+    fields:
+    - batteryPercent
+    - charging
+    - thermalState
+    - freeRamBytes
+    - freeStorageBytes
+    - network
+    - installedModelDigests
+    - activeLease
+  offers:
+    delivery:
+    - websocket
+    - long_poll
+    offerTtlSeconds: 15
+    workerMayReject: true
+    signed: true
+  lease:
+    durationSeconds: 120
+    renewalEverySeconds: 30
+    fencingTokenRequired: true
+    serverClockAuthoritative: true
+  execution:
+    checkpointPolicyRef: CheckpointPolicy/mobile-checkpoint-v2@2.0.0
+    singleHeavyModelResident: true
+    temporaryPayloadEncrypted: true
+    nativeRuntimeRequired: true
+  result:
+    uploadMode: pre_signed
+    checksumRequired: true
+    workerSignatureRequired: true
+    staleFenceRejected: true
+  security:
+    certificatePinning: true
+    rootJailbreakRiskSignal: true
+    replayNonce: true
+    modelManifestSignature: true
+  compatibility:
+    minimumProtocolVersion: '2.0'
+    supportedPreviousMinorVersions: 1

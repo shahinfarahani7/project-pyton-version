@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-135-revision-lifecycle-quoted-to-draft
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-135
+  stateMachineRef: StateMachine/revision-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is quoted
+  - expected version matches
+  when:
+  - event requests quoted -> draft
+  then:
+  - state becomes draft
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: quoted
+    to: draft
+  expectedEvents:
+  - revision-lifecycle.quoted_to_draft
+  expectedErrorCode: null

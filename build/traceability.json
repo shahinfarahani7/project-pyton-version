@@ -1,0 +1,2061 @@
+{
+  "requirements": 80,
+  "useCases": 60,
+  "useCaseScenarios": 120,
+  "allScenarios": 215,
+  "openApiOperations": 141,
+  "operationContracts": 141,
+  "sqlTables": 75,
+  "rows": [
+    {
+      "requirement": "req-bill-001",
+      "useCases": [
+        "uc-019-review-usage"
+      ],
+      "scenarios": [
+        "scn-037-success",
+        "scn-038-failure"
+      ]
+    },
+    {
+      "requirement": "req-bill-002",
+      "useCases": [
+        "uc-020-review-balance"
+      ],
+      "scenarios": [
+        "scn-039-success",
+        "scn-040-failure"
+      ]
+    },
+    {
+      "requirement": "req-bill-003",
+      "useCases": [
+        "uc-044-reconcile-task-financials"
+      ],
+      "scenarios": [
+        "scn-087-success",
+        "scn-088-failure"
+      ]
+    },
+    {
+      "requirement": "req-bill-004",
+      "useCases": [
+        "uc-045-run-ledger-reconciliation"
+      ],
+      "scenarios": [
+        "scn-089-success",
+        "scn-090-failure"
+      ]
+    },
+    {
+      "requirement": "req-claim-001",
+      "useCases": [
+        "uc-036-create-token-claim"
+      ],
+      "scenarios": [
+        "scn-071-success",
+        "scn-072-failure"
+      ]
+    },
+    {
+      "requirement": "req-claim-002",
+      "useCases": [
+        "uc-046-approve-claim-epoch"
+      ],
+      "scenarios": [
+        "scn-091-success",
+        "scn-092-failure"
+      ]
+    },
+    {
+      "requirement": "req-claim-003",
+      "useCases": [
+        "uc-047-submit-claim-batch"
+      ],
+      "scenarios": [
+        "scn-093-success",
+        "scn-094-failure"
+      ]
+    },
+    {
+      "requirement": "req-claim-004",
+      "useCases": [
+        "uc-048-resolve-ambiguous-claim"
+      ],
+      "scenarios": [
+        "scn-095-success",
+        "scn-096-failure"
+      ]
+    },
+    {
+      "requirement": "req-consent-001",
+      "useCases": [
+        "uc-022-register-worker-device"
+      ],
+      "scenarios": [
+        "scn-043-success",
+        "scn-044-failure"
+      ]
+    },
+    {
+      "requirement": "req-consent-002",
+      "useCases": [
+        "uc-023-submit-attestation"
+      ],
+      "scenarios": [
+        "scn-045-success",
+        "scn-046-failure"
+      ]
+    },
+    {
+      "requirement": "req-consent-003",
+      "useCases": [
+        "uc-025-set-availability"
+      ],
+      "scenarios": [
+        "scn-049-success",
+        "scn-050-failure"
+      ]
+    },
+    {
+      "requirement": "req-consent-004",
+      "useCases": [
+        "uc-029-report-assignment-started"
+      ],
+      "scenarios": [
+        "scn-057-success",
+        "scn-058-failure"
+      ]
+    },
+    {
+      "requirement": "req-credit-001",
+      "useCases": [
+        "uc-010-submit-task"
+      ],
+      "scenarios": [
+        "scn-019-success",
+        "scn-020-failure"
+      ]
+    },
+    {
+      "requirement": "req-credit-002",
+      "useCases": [
+        "uc-019-review-usage"
+      ],
+      "scenarios": [
+        "scn-037-success",
+        "scn-038-failure"
+      ]
+    },
+    {
+      "requirement": "req-credit-003",
+      "useCases": [
+        "uc-020-review-balance"
+      ],
+      "scenarios": [
+        "scn-039-success",
+        "scn-040-failure"
+      ]
+    },
+    {
+      "requirement": "req-credit-004",
+      "useCases": [
+        "uc-052-finalize-task-billing"
+      ],
+      "scenarios": [
+        "scn-103-success",
+        "scn-104-failure"
+      ]
+    },
+    {
+      "requirement": "req-dispute-001",
+      "useCases": [
+        "uc-021-open-result-dispute"
+      ],
+      "scenarios": [
+        "scn-041-success",
+        "scn-042-failure"
+      ]
+    },
+    {
+      "requirement": "req-dispute-002",
+      "useCases": [
+        "uc-015-download-result"
+      ],
+      "scenarios": [
+        "scn-029-success",
+        "scn-030-failure"
+      ]
+    },
+    {
+      "requirement": "req-dispute-003",
+      "useCases": [
+        "uc-044-reconcile-task-financials"
+      ],
+      "scenarios": [
+        "scn-087-success",
+        "scn-088-failure"
+      ]
+    },
+    {
+      "requirement": "req-dispute-004",
+      "useCases": [
+        "uc-048-resolve-ambiguous-claim"
+      ],
+      "scenarios": [
+        "scn-095-success",
+        "scn-096-failure"
+      ]
+    },
+    {
+      "requirement": "req-file-001",
+      "useCases": [
+        "uc-007-create-upload-session"
+      ],
+      "scenarios": [
+        "scn-013-success",
+        "scn-014-failure"
+      ]
+    },
+    {
+      "requirement": "req-file-002",
+      "useCases": [
+        "uc-008-complete-file-upload"
+      ],
+      "scenarios": [
+        "scn-015-success",
+        "scn-016-failure"
+      ]
+    },
+    {
+      "requirement": "req-file-003",
+      "useCases": [
+        "uc-056-delete-customer-payload"
+      ],
+      "scenarios": [
+        "scn-111-success",
+        "scn-112-failure"
+      ]
+    },
+    {
+      "requirement": "req-file-004",
+      "useCases": [
+        "uc-015-download-result"
+      ],
+      "scenarios": [
+        "scn-029-success",
+        "scn-030-failure"
+      ]
+    },
+    {
+      "requirement": "req-fraud-001",
+      "useCases": [
+        "uc-042-quarantine-worker"
+      ],
+      "scenarios": [
+        "scn-083-success",
+        "scn-084-failure"
+      ]
+    },
+    {
+      "requirement": "req-fraud-002",
+      "useCases": [
+        "uc-043-review-worker-appeal"
+      ],
+      "scenarios": [
+        "scn-085-success",
+        "scn-086-failure"
+      ]
+    },
+    {
+      "requirement": "req-fraud-003",
+      "useCases": [
+        "uc-050-verify-ocr-result"
+      ],
+      "scenarios": [
+        "scn-099-success",
+        "scn-100-failure"
+      ]
+    },
+    {
+      "requirement": "req-fraud-004",
+      "useCases": [
+        "uc-051-run-consensus"
+      ],
+      "scenarios": [
+        "scn-101-success",
+        "scn-102-failure"
+      ]
+    },
+    {
+      "requirement": "req-idemp-001",
+      "useCases": [
+        "uc-004-create-api-key"
+      ],
+      "scenarios": [
+        "scn-007-success",
+        "scn-008-failure"
+      ]
+    },
+    {
+      "requirement": "req-idemp-002",
+      "useCases": [
+        "uc-005-rotate-api-key"
+      ],
+      "scenarios": [
+        "scn-009-success",
+        "scn-010-failure"
+      ]
+    },
+    {
+      "requirement": "req-idemp-003",
+      "useCases": [
+        "uc-006-revoke-api-key"
+      ],
+      "scenarios": [
+        "scn-011-success",
+        "scn-012-failure"
+      ]
+    },
+    {
+      "requirement": "req-idemp-004",
+      "useCases": [
+        "uc-053-detect-duplicate-command"
+      ],
+      "scenarios": [
+        "scn-105-success",
+        "scn-106-failure"
+      ]
+    },
+    {
+      "requirement": "req-lease-001",
+      "useCases": [
+        "uc-028-receive-auto-assigned-lease",
+        "uc-060-cloud-fallback"
+      ],
+      "scenarios": [
+        "scn-055-success",
+        "scn-056-failure",
+        "scn-119-success",
+        "scn-120-failure"
+      ]
+    },
+    {
+      "requirement": "req-lease-002",
+      "useCases": [
+        "uc-029-report-assignment-started"
+      ],
+      "scenarios": [
+        "scn-057-success",
+        "scn-058-failure"
+      ]
+    },
+    {
+      "requirement": "req-lease-003",
+      "useCases": [
+        "uc-030-report-assignment-unavailable"
+      ],
+      "scenarios": [
+        "scn-059-success",
+        "scn-060-failure"
+      ]
+    },
+    {
+      "requirement": "req-lease-004",
+      "useCases": [
+        "uc-031-renew-execution-lease"
+      ],
+      "scenarios": [
+        "scn-061-success",
+        "scn-062-failure"
+      ]
+    },
+    {
+      "requirement": "req-memory-001",
+      "useCases": [
+        "uc-024-run-benchmark"
+      ],
+      "scenarios": [
+        "scn-047-success",
+        "scn-048-failure"
+      ]
+    },
+    {
+      "requirement": "req-memory-002",
+      "useCases": [
+        "uc-032-write-checkpoint"
+      ],
+      "scenarios": [
+        "scn-063-success",
+        "scn-064-failure"
+      ]
+    },
+    {
+      "requirement": "req-memory-003",
+      "useCases": [
+        "uc-034-resume-after-restart"
+      ],
+      "scenarios": [
+        "scn-067-success",
+        "scn-068-failure"
+      ]
+    },
+    {
+      "requirement": "req-memory-004",
+      "useCases": [
+        "uc-057-handle-worker-memory-pressure"
+      ],
+      "scenarios": [
+        "scn-113-success",
+        "scn-114-failure"
+      ]
+    },
+    {
+      "requirement": "req-model-001",
+      "useCases": [
+        "uc-026-download-model"
+      ],
+      "scenarios": [
+        "scn-051-success",
+        "scn-052-failure"
+      ]
+    },
+    {
+      "requirement": "req-model-002",
+      "useCases": [
+        "uc-027-verify-model"
+      ],
+      "scenarios": [
+        "scn-053-success",
+        "scn-054-failure"
+      ]
+    },
+    {
+      "requirement": "req-model-003",
+      "useCases": [
+        "uc-040-start-model-rollout"
+      ],
+      "scenarios": [
+        "scn-079-success",
+        "scn-080-failure"
+      ]
+    },
+    {
+      "requirement": "req-model-004",
+      "useCases": [
+        "uc-041-revoke-model"
+      ],
+      "scenarios": [
+        "scn-081-success",
+        "scn-082-failure"
+      ]
+    },
+    {
+      "requirement": "req-obs-001",
+      "useCases": [
+        "uc-049-activate-economy-kill-switch"
+      ],
+      "scenarios": [
+        "scn-097-success",
+        "scn-098-failure"
+      ]
+    },
+    {
+      "requirement": "req-obs-002",
+      "useCases": [
+        "uc-055-trace-critical-flow"
+      ],
+      "scenarios": [
+        "scn-109-success",
+        "scn-110-failure"
+      ]
+    },
+    {
+      "requirement": "req-obs-003",
+      "useCases": [
+        "uc-040-start-model-rollout"
+      ],
+      "scenarios": [
+        "scn-079-success",
+        "scn-080-failure"
+      ]
+    },
+    {
+      "requirement": "req-obs-004",
+      "useCases": [
+        "uc-045-run-ledger-reconciliation"
+      ],
+      "scenarios": [
+        "scn-089-success",
+        "scn-090-failure"
+      ]
+    },
+    {
+      "requirement": "req-policy-001",
+      "useCases": [
+        "uc-037-publish-policy"
+      ],
+      "scenarios": [
+        "scn-073-success",
+        "scn-074-failure"
+      ]
+    },
+    {
+      "requirement": "req-policy-002",
+      "useCases": [
+        "uc-038-activate-policy"
+      ],
+      "scenarios": [
+        "scn-075-success",
+        "scn-076-failure"
+      ]
+    },
+    {
+      "requirement": "req-policy-003",
+      "useCases": [
+        "uc-039-rollback-policy"
+      ],
+      "scenarios": [
+        "scn-077-success",
+        "scn-078-failure"
+      ]
+    },
+    {
+      "requirement": "req-policy-004",
+      "useCases": [
+        "uc-049-activate-economy-kill-switch"
+      ],
+      "scenarios": [
+        "scn-097-success",
+        "scn-098-failure"
+      ]
+    },
+    {
+      "requirement": "req-quote-001",
+      "useCases": [
+        "uc-009-create-quote"
+      ],
+      "scenarios": [
+        "scn-017-success",
+        "scn-018-failure"
+      ]
+    },
+    {
+      "requirement": "req-quote-002",
+      "useCases": [
+        "uc-058-apply-promotion-budget"
+      ],
+      "scenarios": [
+        "scn-115-success",
+        "scn-116-failure"
+      ]
+    },
+    {
+      "requirement": "req-quote-003",
+      "useCases": [
+        "uc-059-reject-negative-margin-quote"
+      ],
+      "scenarios": [
+        "scn-117-success",
+        "scn-118-failure"
+      ]
+    },
+    {
+      "requirement": "req-quote-004",
+      "useCases": [
+        "uc-052-finalize-task-billing"
+      ],
+      "scenarios": [
+        "scn-103-success",
+        "scn-104-failure"
+      ]
+    },
+    {
+      "requirement": "req-reward-001",
+      "useCases": [
+        "uc-035-view-earnings"
+      ],
+      "scenarios": [
+        "scn-069-success",
+        "scn-070-failure"
+      ]
+    },
+    {
+      "requirement": "req-reward-002",
+      "useCases": [
+        "uc-052-finalize-task-billing"
+      ],
+      "scenarios": [
+        "scn-103-success",
+        "scn-104-failure"
+      ]
+    },
+    {
+      "requirement": "req-reward-003",
+      "useCases": [
+        "uc-043-review-worker-appeal"
+      ],
+      "scenarios": [
+        "scn-085-success",
+        "scn-086-failure"
+      ]
+    },
+    {
+      "requirement": "req-reward-004",
+      "useCases": [
+        "uc-049-activate-economy-kill-switch"
+      ],
+      "scenarios": [
+        "scn-097-success",
+        "scn-098-failure"
+      ]
+    },
+    {
+      "requirement": "req-rls-001",
+      "useCases": [
+        "uc-054-enforce-rls"
+      ],
+      "scenarios": [
+        "scn-107-success",
+        "scn-108-failure"
+      ]
+    },
+    {
+      "requirement": "req-rls-002",
+      "useCases": [
+        "uc-001-create-organization"
+      ],
+      "scenarios": [
+        "scn-001-success",
+        "scn-002-failure"
+      ]
+    },
+    {
+      "requirement": "req-rls-003",
+      "useCases": [
+        "uc-002-create-workspace"
+      ],
+      "scenarios": [
+        "scn-003-success",
+        "scn-004-failure"
+      ]
+    },
+    {
+      "requirement": "req-rls-004",
+      "useCases": [
+        "uc-011-get-task"
+      ],
+      "scenarios": [
+        "scn-021-success",
+        "scn-022-failure"
+      ]
+    },
+    {
+      "requirement": "req-task-001",
+      "useCases": [
+        "uc-010-submit-task"
+      ],
+      "scenarios": [
+        "scn-019-success",
+        "scn-020-failure"
+      ]
+    },
+    {
+      "requirement": "req-task-002",
+      "useCases": [
+        "uc-012-cancel-task"
+      ],
+      "scenarios": [
+        "scn-023-success",
+        "scn-024-failure"
+      ]
+    },
+    {
+      "requirement": "req-task-003",
+      "useCases": [
+        "uc-013-retry-task"
+      ],
+      "scenarios": [
+        "scn-025-success",
+        "scn-026-failure"
+      ]
+    },
+    {
+      "requirement": "req-task-004",
+      "useCases": [
+        "uc-014-edit-failed-task"
+      ],
+      "scenarios": [
+        "scn-027-success",
+        "scn-028-failure"
+      ]
+    },
+    {
+      "requirement": "req-tenant-001",
+      "useCases": [
+        "uc-001-create-organization"
+      ],
+      "scenarios": [
+        "scn-001-success",
+        "scn-002-failure"
+      ]
+    },
+    {
+      "requirement": "req-tenant-002",
+      "useCases": [
+        "uc-002-create-workspace"
+      ],
+      "scenarios": [
+        "scn-003-success",
+        "scn-004-failure"
+      ]
+    },
+    {
+      "requirement": "req-tenant-003",
+      "useCases": [
+        "uc-003-invite-workspace-member"
+      ],
+      "scenarios": [
+        "scn-005-success",
+        "scn-006-failure"
+      ]
+    },
+    {
+      "requirement": "req-tenant-004",
+      "useCases": [
+        "uc-011-get-task"
+      ],
+      "scenarios": [
+        "scn-021-success",
+        "scn-022-failure"
+      ]
+    },
+    {
+      "requirement": "req-verify-001",
+      "useCases": [
+        "uc-015-download-result"
+      ],
+      "scenarios": [
+        "scn-029-success",
+        "scn-030-failure"
+      ]
+    },
+    {
+      "requirement": "req-verify-002",
+      "useCases": [
+        "uc-033-submit-result"
+      ],
+      "scenarios": [
+        "scn-065-success",
+        "scn-066-failure"
+      ]
+    },
+    {
+      "requirement": "req-verify-003",
+      "useCases": [
+        "uc-050-verify-ocr-result"
+      ],
+      "scenarios": [
+        "scn-099-success",
+        "scn-100-failure"
+      ]
+    },
+    {
+      "requirement": "req-verify-004",
+      "useCases": [
+        "uc-051-run-consensus"
+      ],
+      "scenarios": [
+        "scn-101-success",
+        "scn-102-failure"
+      ]
+    },
+    {
+      "requirement": "req-webhook-001",
+      "useCases": [
+        "uc-016-create-webhook"
+      ],
+      "scenarios": [
+        "scn-031-success",
+        "scn-032-failure"
+      ]
+    },
+    {
+      "requirement": "req-webhook-002",
+      "useCases": [
+        "uc-017-rotate-webhook-secret"
+      ],
+      "scenarios": [
+        "scn-033-success",
+        "scn-034-failure"
+      ]
+    },
+    {
+      "requirement": "req-webhook-003",
+      "useCases": [
+        "uc-018-replay-webhook-delivery"
+      ],
+      "scenarios": [
+        "scn-035-success",
+        "scn-036-failure"
+      ]
+    },
+    {
+      "requirement": "req-webhook-004",
+      "useCases": [
+        "uc-055-trace-critical-flow"
+      ],
+      "scenarios": [
+        "scn-109-success",
+        "scn-110-failure"
+      ]
+    }
+  ],
+  "operationRows": [
+    {
+      "operationId": "abandonAssignment",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:abandon",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "acceptDispute",
+      "api": "operations",
+      "method": "POST",
+      "path": "/disputes/{id}:accept",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "activateClaimEpoch",
+      "api": "operations",
+      "method": "POST",
+      "path": "/claim-epochs/{id}:activate",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-046-approve-claim-epoch"
+      ]
+    },
+    {
+      "operationId": "activateEconomyKillSwitch",
+      "api": "operations",
+      "method": "POST",
+      "path": "/economy/kill-switch:activate",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-049-activate-economy-kill-switch"
+      ]
+    },
+    {
+      "operationId": "activatePolicy",
+      "api": "operations",
+      "method": "POST",
+      "path": "/policies/{policyKind}/{policyId}:activate",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-038-activate-policy"
+      ]
+    },
+    {
+      "operationId": "activatePriceBook",
+      "api": "operations",
+      "method": "POST",
+      "path": "/price-books/{id}:activate",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "activateRewardPolicy",
+      "api": "operations",
+      "method": "POST",
+      "path": "/reward-policies/{id}:activate",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "approveClaim",
+      "api": "operations",
+      "method": "POST",
+      "path": "/claims/{id}:approve",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "approveModel",
+      "api": "operations",
+      "method": "POST",
+      "path": "/models/{id}:approve",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "archiveWorkspace",
+      "api": "public",
+      "method": "DELETE",
+      "path": "/workspaces/{workspaceId}",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "cancelTask",
+      "api": "public",
+      "method": "POST",
+      "path": "/tasks/{taskId}:cancel",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-012-cancel-task"
+      ]
+    },
+    {
+      "operationId": "checkpointAssignment",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:checkpoint",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-032-write-checkpoint"
+      ]
+    },
+    {
+      "operationId": "closeFraudCase",
+      "api": "operations",
+      "method": "POST",
+      "path": "/fraud-cases/{id}:close",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "completeAssignment",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:complete",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-033-submit-result"
+      ]
+    },
+    {
+      "operationId": "completeFileUpload",
+      "api": "public",
+      "method": "POST",
+      "path": "/files/{fileId}:complete",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-008-complete-file-upload"
+      ]
+    },
+    {
+      "operationId": "createApiKey",
+      "api": "public",
+      "method": "POST",
+      "path": "/workspaces/{workspaceId}/api-keys",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-004-create-api-key"
+      ]
+    },
+    {
+      "operationId": "createAssignmentResultUploadIntent",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}/result-upload-intents",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-033-submit-result"
+      ]
+    },
+    {
+      "operationId": "createDeviceChallenge",
+      "api": "worker",
+      "method": "POST",
+      "path": "/auth/challenges",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-022-register-worker-device"
+      ]
+    },
+    {
+      "operationId": "createDispute",
+      "api": "public",
+      "method": "POST",
+      "path": "/disputes",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-021-open-result-dispute"
+      ]
+    },
+    {
+      "operationId": "createFinanceCloseRun",
+      "api": "operations",
+      "method": "POST",
+      "path": "/finance/close-runs",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "createOrganization",
+      "api": "public",
+      "method": "POST",
+      "path": "/organizations",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-001-create-organization"
+      ]
+    },
+    {
+      "operationId": "createQuote",
+      "api": "public",
+      "method": "POST",
+      "path": "/quotes",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-009-create-quote",
+        "uc-058-apply-promotion-budget",
+        "uc-059-reject-negative-margin-quote"
+      ]
+    },
+    {
+      "operationId": "createRewardClaim",
+      "api": "worker",
+      "method": "POST",
+      "path": "/reward-claims",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-036-create-token-claim"
+      ]
+    },
+    {
+      "operationId": "createSubscription",
+      "api": "public",
+      "method": "POST",
+      "path": "/subscriptions",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "createTask",
+      "api": "public",
+      "method": "POST",
+      "path": "/tasks",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-010-submit-task"
+      ]
+    },
+    {
+      "operationId": "createTaskRevision",
+      "api": "public",
+      "method": "POST",
+      "path": "/tasks/{taskId}/revisions",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-014-edit-failed-task"
+      ]
+    },
+    {
+      "operationId": "createUploadIntent",
+      "api": "public",
+      "method": "POST",
+      "path": "/files/upload-intents",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-007-create-upload-session"
+      ]
+    },
+    {
+      "operationId": "createWebhookEndpoint",
+      "api": "public",
+      "method": "POST",
+      "path": "/webhook-endpoints",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-016-create-webhook"
+      ]
+    },
+    {
+      "operationId": "createWorkspace",
+      "api": "public",
+      "method": "POST",
+      "path": "/workspaces",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-002-create-workspace"
+      ]
+    },
+    {
+      "operationId": "deactivateEconomyKillSwitch",
+      "api": "operations",
+      "method": "POST",
+      "path": "/economy/kill-switch:deactivate",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-049-activate-economy-kill-switch"
+      ]
+    },
+    {
+      "operationId": "declareIncident",
+      "api": "operations",
+      "method": "POST",
+      "path": "/incidents/{id}:declare",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "deleteFile",
+      "api": "public",
+      "method": "DELETE",
+      "path": "/files/{fileId}",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-056-delete-customer-payload"
+      ]
+    },
+    {
+      "operationId": "deprecateModel",
+      "api": "operations",
+      "method": "POST",
+      "path": "/models/{id}:deprecate",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "disableWebhookEndpoint",
+      "api": "public",
+      "method": "POST",
+      "path": "/webhook-endpoints/{endpointId}:disable",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "escalateFraudCase",
+      "api": "operations",
+      "method": "POST",
+      "path": "/fraud-cases/{id}:escalate",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "expireTask",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:expire",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "failAssignment",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:fail",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-057-handle-worker-memory-pressure"
+      ]
+    },
+    {
+      "operationId": "finalizeTaskUsage",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:finalize-usage",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-052-finalize-task-billing"
+      ]
+    },
+    {
+      "operationId": "forceVerifyTask",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:force-verify",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-050-verify-ocr-result"
+      ]
+    },
+    {
+      "operationId": "getAssignments",
+      "api": "operations",
+      "method": "GET",
+      "path": "/assignments/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getAuditEvents",
+      "api": "operations",
+      "method": "GET",
+      "path": "/audit-events/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getClaims",
+      "api": "operations",
+      "method": "GET",
+      "path": "/claims/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getCreditBalance",
+      "api": "public",
+      "method": "GET",
+      "path": "/balance",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-020-review-balance"
+      ]
+    },
+    {
+      "operationId": "getCurrentPrincipal",
+      "api": "public",
+      "method": "GET",
+      "path": "/me",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getDisputes",
+      "api": "operations",
+      "method": "GET",
+      "path": "/disputes/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getFile",
+      "api": "public",
+      "method": "GET",
+      "path": "/files/{fileId}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getFraudCases",
+      "api": "operations",
+      "method": "GET",
+      "path": "/fraud-cases/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getIncidents",
+      "api": "operations",
+      "method": "GET",
+      "path": "/incidents/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getLedgerTransactions",
+      "api": "operations",
+      "method": "GET",
+      "path": "/ledger-transactions/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getModelManifest",
+      "api": "worker",
+      "method": "GET",
+      "path": "/models/{modelVersionId}/manifest",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-026-download-model"
+      ]
+    },
+    {
+      "operationId": "getModelRollouts",
+      "api": "operations",
+      "method": "GET",
+      "path": "/model-rollouts/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getModels",
+      "api": "operations",
+      "method": "GET",
+      "path": "/models/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getNextAssignment",
+      "api": "worker",
+      "method": "GET",
+      "path": "/assignments:next",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-028-receive-auto-assigned-lease"
+      ]
+    },
+    {
+      "operationId": "getOrganization",
+      "api": "public",
+      "method": "GET",
+      "path": "/organizations/{organizationId}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getPriceBooks",
+      "api": "operations",
+      "method": "GET",
+      "path": "/price-books/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getReconciliations",
+      "api": "operations",
+      "method": "GET",
+      "path": "/reconciliations/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getResumeDecision",
+      "api": "worker",
+      "method": "GET",
+      "path": "/assignments/{assignmentId}/resume",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-034-resume-after-restart"
+      ]
+    },
+    {
+      "operationId": "getRewardPolicies",
+      "api": "operations",
+      "method": "GET",
+      "path": "/reward-policies/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getSubscription",
+      "api": "public",
+      "method": "GET",
+      "path": "/subscriptions",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getTask",
+      "api": "public",
+      "method": "GET",
+      "path": "/tasks/{taskId}",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-011-get-task"
+      ]
+    },
+    {
+      "operationId": "getTaskResult",
+      "api": "public",
+      "method": "GET",
+      "path": "/tasks/{taskId}/result",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-015-download-result"
+      ]
+    },
+    {
+      "operationId": "getTasks",
+      "api": "operations",
+      "method": "GET",
+      "path": "/tasks/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getUsage",
+      "api": "public",
+      "method": "GET",
+      "path": "/usage",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-019-review-usage"
+      ]
+    },
+    {
+      "operationId": "getWebhookDeliveries",
+      "api": "operations",
+      "method": "GET",
+      "path": "/webhook-deliveries/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getWorkerPreferences",
+      "api": "worker",
+      "method": "GET",
+      "path": "/worker-preferences",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getWorkerRewardSummary",
+      "api": "worker",
+      "method": "GET",
+      "path": "/rewards/summary",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-035-view-earnings"
+      ]
+    },
+    {
+      "operationId": "getWorkers",
+      "api": "operations",
+      "method": "GET",
+      "path": "/workers/{id}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getWorkspace",
+      "api": "public",
+      "method": "GET",
+      "path": "/workspaces/{workspaceId}",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "holdClaim",
+      "api": "operations",
+      "method": "POST",
+      "path": "/claims/{id}:hold",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "inviteWorkspaceMember",
+      "api": "public",
+      "method": "POST",
+      "path": "/workspaces/{workspaceId}/invitations",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-003-invite-workspace-member"
+      ]
+    },
+    {
+      "operationId": "listApiKeys",
+      "api": "public",
+      "method": "GET",
+      "path": "/workspaces/{workspaceId}/api-keys",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listAvailableModels",
+      "api": "public",
+      "method": "GET",
+      "path": "/models",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listDisputes",
+      "api": "public",
+      "method": "GET",
+      "path": "/disputes",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listFinanceCloseRuns",
+      "api": "operations",
+      "method": "GET",
+      "path": "/finance/close-runs",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listInvoices",
+      "api": "public",
+      "method": "GET",
+      "path": "/invoices",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listOrganizations",
+      "api": "public",
+      "method": "GET",
+      "path": "/organizations",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listTaskAttempts",
+      "api": "public",
+      "method": "GET",
+      "path": "/tasks/{taskId}/attempts",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listTaskRevisions",
+      "api": "public",
+      "method": "GET",
+      "path": "/tasks/{taskId}/revisions",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listTasks",
+      "api": "public",
+      "method": "GET",
+      "path": "/tasks",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listWebhookDeliveries",
+      "api": "public",
+      "method": "GET",
+      "path": "/webhook-deliveries",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listWebhookEndpoints",
+      "api": "public",
+      "method": "GET",
+      "path": "/webhook-endpoints",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "listWorkspaces",
+      "api": "public",
+      "method": "GET",
+      "path": "/workspaces",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "pauseModelRollout",
+      "api": "operations",
+      "method": "POST",
+      "path": "/model-rollouts/{id}:pause",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "progressAssignment",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:progress",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "publishPolicy",
+      "api": "operations",
+      "method": "POST",
+      "path": "/policies/{policyKind}/{policyId}:publish",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-037-publish-policy"
+      ]
+    },
+    {
+      "operationId": "quarantineWorker",
+      "api": "operations",
+      "method": "POST",
+      "path": "/workers/{id}:quarantine",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-042-quarantine-worker"
+      ]
+    },
+    {
+      "operationId": "reconcileTaskFinancials",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:reconcile-financials",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-044-reconcile-task-financials"
+      ]
+    },
+    {
+      "operationId": "refreshWorkerSession",
+      "api": "worker",
+      "method": "POST",
+      "path": "/sessions:refresh",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "registerWorkerDevice",
+      "api": "worker",
+      "method": "POST",
+      "path": "/workers/register",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-023-submit-attestation"
+      ]
+    },
+    {
+      "operationId": "rejectClaim",
+      "api": "operations",
+      "method": "POST",
+      "path": "/claims/{id}:reject",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "rejectDispute",
+      "api": "operations",
+      "method": "POST",
+      "path": "/disputes/{id}:reject",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "releaseWorker",
+      "api": "operations",
+      "method": "POST",
+      "path": "/workers/{id}:release",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "renewAssignment",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:renew",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-031-renew-execution-lease"
+      ]
+    },
+    {
+      "operationId": "replaceWorkerPreferences",
+      "api": "worker",
+      "method": "PUT",
+      "path": "/worker-preferences",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-025-set-availability"
+      ]
+    },
+    {
+      "operationId": "replayWebhookDelivery",
+      "api": "public",
+      "method": "POST",
+      "path": "/webhook-deliveries/{deliveryId}:replay",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-018-replay-webhook-delivery"
+      ]
+    },
+    {
+      "operationId": "replayWebhookDeliveryAsOperator",
+      "api": "operations",
+      "method": "POST",
+      "path": "/webhook-deliveries/{id}:replay",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "reportAssignmentStarted",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:started",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-029-report-assignment-started"
+      ]
+    },
+    {
+      "operationId": "reportAssignmentUnavailable",
+      "api": "worker",
+      "method": "POST",
+      "path": "/assignments/{assignmentId}:unavailable",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-030-report-assignment-unavailable"
+      ]
+    },
+    {
+      "operationId": "reportModelInstall",
+      "api": "worker",
+      "method": "POST",
+      "path": "/models/{modelVersionId}:report-install",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-027-verify-model"
+      ]
+    },
+    {
+      "operationId": "requeueTask",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:requeue",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "resolveClaimTransfer",
+      "api": "operations",
+      "method": "POST",
+      "path": "/claims/{id}:resolve-transfer",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-048-resolve-ambiguous-claim"
+      ]
+    },
+    {
+      "operationId": "resolveDispute",
+      "api": "operations",
+      "method": "POST",
+      "path": "/disputes/{id}:resolve",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "resolveFraudCase",
+      "api": "operations",
+      "method": "POST",
+      "path": "/fraud-cases/{id}:resolve",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-043-review-worker-appeal"
+      ]
+    },
+    {
+      "operationId": "resolveIncident",
+      "api": "operations",
+      "method": "POST",
+      "path": "/incidents/{id}:resolve",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "resumeModelRollout",
+      "api": "operations",
+      "method": "POST",
+      "path": "/model-rollouts/{id}:resume",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "retirePriceBook",
+      "api": "operations",
+      "method": "POST",
+      "path": "/price-books/{id}:retire",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "retireRewardPolicy",
+      "api": "operations",
+      "method": "POST",
+      "path": "/reward-policies/{id}:retire",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "retryTask",
+      "api": "public",
+      "method": "POST",
+      "path": "/tasks/{taskId}:retry",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-013-retry-task"
+      ]
+    },
+    {
+      "operationId": "revokeApiKey",
+      "api": "public",
+      "method": "POST",
+      "path": "/api-keys/{apiKeyId}:revoke",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-006-revoke-api-key"
+      ]
+    },
+    {
+      "operationId": "revokeAssignment",
+      "api": "operations",
+      "method": "POST",
+      "path": "/assignments/{id}:revoke",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "revokeModel",
+      "api": "operations",
+      "method": "POST",
+      "path": "/models/{id}:revoke",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-041-revoke-model"
+      ]
+    },
+    {
+      "operationId": "rollbackModelRollout",
+      "api": "operations",
+      "method": "POST",
+      "path": "/model-rollouts/{id}:rollback",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "rollbackPolicy",
+      "api": "operations",
+      "method": "POST",
+      "path": "/policies/{policyKind}/{policyId}:rollback",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-039-rollback-policy"
+      ]
+    },
+    {
+      "operationId": "rotateApiKey",
+      "api": "public",
+      "method": "POST",
+      "path": "/api-keys/{apiKeyId}:rotate",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-005-rotate-api-key"
+      ]
+    },
+    {
+      "operationId": "rotateWebhookSecret",
+      "api": "public",
+      "method": "POST",
+      "path": "/webhook-endpoints/{endpointId}:rotate-secret",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-017-rotate-webhook-secret"
+      ]
+    },
+    {
+      "operationId": "routeTask",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:route",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-060-cloud-fallback"
+      ]
+    },
+    {
+      "operationId": "runLedgerReconciliation",
+      "api": "operations",
+      "method": "POST",
+      "path": "/reconciliations",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-045-run-ledger-reconciliation"
+      ]
+    },
+    {
+      "operationId": "runTaskConsensus",
+      "api": "operations",
+      "method": "POST",
+      "path": "/tasks/{id}:run-consensus",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-051-run-consensus"
+      ]
+    },
+    {
+      "operationId": "searchAssignments",
+      "api": "operations",
+      "method": "GET",
+      "path": "/assignments",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchAuditEvents",
+      "api": "operations",
+      "method": "GET",
+      "path": "/audit-events",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchClaims",
+      "api": "operations",
+      "method": "GET",
+      "path": "/claims",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchDisputes",
+      "api": "operations",
+      "method": "GET",
+      "path": "/disputes",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchFraudCases",
+      "api": "operations",
+      "method": "GET",
+      "path": "/fraud-cases",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchIncidents",
+      "api": "operations",
+      "method": "GET",
+      "path": "/incidents",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchLedgerTransactions",
+      "api": "operations",
+      "method": "GET",
+      "path": "/ledger-transactions",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchModelRollouts",
+      "api": "operations",
+      "method": "GET",
+      "path": "/model-rollouts",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchModels",
+      "api": "operations",
+      "method": "GET",
+      "path": "/models",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchPriceBooks",
+      "api": "operations",
+      "method": "GET",
+      "path": "/price-books",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchReconciliations",
+      "api": "operations",
+      "method": "GET",
+      "path": "/reconciliations",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchRewardPolicies",
+      "api": "operations",
+      "method": "GET",
+      "path": "/reward-policies",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchTasks",
+      "api": "operations",
+      "method": "GET",
+      "path": "/tasks",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchWebhookDeliveries",
+      "api": "operations",
+      "method": "GET",
+      "path": "/webhook-deliveries",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "searchWorkers",
+      "api": "operations",
+      "method": "GET",
+      "path": "/workers",
+      "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "sendHeartbeat",
+      "api": "worker",
+      "method": "POST",
+      "path": "/workers/{workerId}/heartbeat",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "startModelRollout",
+      "api": "operations",
+      "method": "POST",
+      "path": "/model-rollouts",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-040-start-model-rollout"
+      ]
+    },
+    {
+      "operationId": "submitBenchmark",
+      "api": "worker",
+      "method": "POST",
+      "path": "/workers/{workerId}/benchmark",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-024-run-benchmark"
+      ]
+    },
+    {
+      "operationId": "submitClaimBatch",
+      "api": "operations",
+      "method": "POST",
+      "path": "/claim-batches",
+      "classification": "business_use_case",
+      "useCases": [
+        "uc-047-submit-claim-batch"
+      ]
+    },
+    {
+      "operationId": "suspendWorker",
+      "api": "operations",
+      "method": "POST",
+      "path": "/workers/{id}:suspend",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "testWebhookEndpoint",
+      "api": "public",
+      "method": "POST",
+      "path": "/webhook-endpoints/{endpointId}:test",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "updateOrganization",
+      "api": "public",
+      "method": "PATCH",
+      "path": "/organizations/{organizationId}",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
+      "operationId": "updateWorkspace",
+      "api": "public",
+      "method": "PATCH",
+      "path": "/workspaces/{workspaceId}",
+      "classification": "supporting_command",
+      "useCases": []
+    }
+  ],
+  "errors": []
+}

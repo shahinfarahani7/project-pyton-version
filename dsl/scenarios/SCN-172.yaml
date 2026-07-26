@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-172-reward-lifecycle-pending-to-held
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-172
+  stateMachineRef: StateMachine/reward-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is pending
+  - expected version matches
+  when:
+  - event requests pending -> held
+  then:
+  - state becomes held
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: pending
+    to: held
+  expectedEvents:
+  - reward-lifecycle.pending_to_held
+  expectedErrorCode: null

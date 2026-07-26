@@ -1,0 +1,27 @@
+{
+  "files": 9,
+  "lines": 595000,
+  "counts": {
+    "claim-vectors.jsonl": 25000,
+    "fraud-vectors.jsonl": 60000,
+    "ledger-vectors.jsonl": 90000,
+    "pricing-vectors.jsonl": 110000,
+    "reward-vectors.jsonl": 90000,
+    "routing-vectors.jsonl": 100000,
+    "task-lifecycle-vectors.jsonl": 70000,
+    "webhook-vectors.jsonl": 30000,
+    "worker-resume-vectors.jsonl": 20000
+  },
+  "semanticOracles": [
+    "claim-vectors.jsonl",
+    "fraud-vectors.jsonl",
+    "ledger-vectors.jsonl",
+    "pricing-vectors.jsonl",
+    "reward-vectors.jsonl",
+    "routing-vectors.jsonl",
+    "task-lifecycle-vectors.jsonl",
+    "webhook-vectors.jsonl",
+    "worker-resume-vectors.jsonl"
+  ],
+  "errors": 0
+}

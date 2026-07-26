@@ -1,0 +1,23 @@
+groups:
+- name: edgemint-production
+  rules:
+  - alert: ApiErrorBudgetBurn
+    expr: sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m])) / sum(rate(http_server_request_duration_seconds_count[5m])) > 0.01
+    for: 10m
+    labels: { severity: page }
+    annotations: { summary: "API error budget is burning too fast" }
+  - alert: LedgerReconciliationDrift
+    expr: edgemint_ledger_reconciliation_drift_micros != 0
+    for: 1m
+    labels: { severity: page }
+    annotations: { summary: "Ledger reconciliation drift detected" }
+  - alert: OutboxBacklog
+    expr: edgemint_outbox_oldest_unpublished_seconds > 60
+    for: 5m
+    labels: { severity: ticket }
+    annotations: { summary: "Outbox publication is delayed" }
+  - alert: WorkerAssignmentExpirySpike
+    expr: rate(edgemint_assignment_expired_total[10m]) > 5
+    for: 10m
+    labels: { severity: ticket }
+    annotations: { summary: "Worker assignments are expiring above threshold" }

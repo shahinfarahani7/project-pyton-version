@@ -1,0 +1,25 @@
+apiVersion: edgemint.io/v1
+kind: NotificationTemplate
+metadata:
+  name: worker-task-assigned
+  version: 2.1.0
+  status: active
+  owners:
+  - product
+  - security
+spec:
+  channels:
+  - push
+  - in_app
+  localeFallback: en
+  subjectKey: notification.worker-task-assigned.subject
+  bodyKey: notification.worker-task-assigned.body
+  requiredVariables:
+  - recipientName
+  - eventTime
+  - supportReference
+  forbiddenVariables:
+  - rawApiKey
+  - rawPayload
+  - fullWalletAddress
+  classification: internal

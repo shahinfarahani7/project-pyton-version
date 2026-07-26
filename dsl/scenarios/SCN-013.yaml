@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-013-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-013
+  useCaseRef: UseCase/uc-007-create-upload-session@2.0.0
+  mode: success
+  given:
+  - Use case UC-007 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.files:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createUploadIntent with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: files, file_upload_sessions.'
+  - 'Exactly these canonical events are inserted into the outbox: file.upload_session.created.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - createUploadIntent
+    requirements:
+    - REQ-FILE-001
+  expectedEvents:
+  - file.upload_session.created
+  expectedErrorCode: null

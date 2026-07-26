@@ -1,0 +1,59 @@
+apiVersion: edgemint.io/v1
+kind: ModelProfile
+metadata:
+  name: minicpm-v-4.6-q4
+  version: 2.0.0
+  status: draft
+  description: Evaluation profile for minicpm-v-4.6-q4
+  owners:
+  - ml
+  - mobile
+  - legal
+spec:
+  family: vision-language
+  quantization: Q4_K_M
+  runtime: llama.cpp
+  runtimeAbi: pending-benchmark
+  capabilities:
+  - document.ocr
+  - document.extract
+  - vision.analyze
+  - image.classify
+  - image.detect
+  - document.verify
+  artifacts:
+  - id: minicpm-v-4.6-q4-main
+    artifactSizeBytes: null
+    sha256: null
+    signature: null
+    signingKeyId: null
+    releaseEvidence: REQUIRED_BEFORE_PRODUCTION
+  - id: minicpm-v-4.6-q4-projector
+    artifactSizeBytes: null
+    sha256: null
+    signature: null
+    signingKeyId: null
+    releaseEvidence: REQUIRED_BEFORE_PRODUCTION
+  resources:
+    minimumTier: T2
+    peakRamBytes: null
+    minimumFreeStorageBytes: null
+    singleHeavyModelResident: true
+  distribution:
+    bundled: false
+    resumable: true
+    wifiRecommended: true
+    atomicInstall: true
+  license:
+    status: review-required
+    noticePath: null
+  release:
+    state: evaluation
+    productionEligible: false
+    requiredEvidence:
+    - exact artifact bytes
+    - sha256
+    - signature
+    - license approval
+    - real-device benchmark
+    - runtime compatibility

@@ -1,0 +1,23 @@
+{
+  "specversion": "1.0",
+  "id": "event_4bc6f436d6d66da5447c38e7e0",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.task.checkpoint.saved.v1",
+  "subject": "task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "correlationId": "corr_4bc6f436d6d66da5447c38e7e0",
+  "causationId": "cmd_4bc6f436d6d66da5447c38e7e0",
+  "partitionKey": "task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "taskId": "task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "saved",
+    "workspaceId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

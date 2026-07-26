@@ -1,0 +1,38 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createUploadIntent",
+  "request": {
+    "method": "POST",
+    "path": "/files/upload-intents",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createUploadIntent_0001",
+      "Idempotency-Key": "idem_createUploadIntent_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "workspaceId": "wsp_01J00000000000000000000000",
+      "fileName": "Example Name",
+      "contentType": "application/json",
+      "sizeBytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "active",
+      "sizeBytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.files:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

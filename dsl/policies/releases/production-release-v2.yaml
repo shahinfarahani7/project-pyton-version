@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: ReleasePolicy
+metadata:
+  name: production-release-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - release-management
+spec:
+  requiredGates:
+  - contract_integrity
+  - product_integrity
+  - financial_integrity
+  - security_privacy
+  - reliability
+  tokenClaimAdditionalGates:
+  - legal
+  - kyc_aml
+  - tax
+  - treasury
+  - contract_audit
+  rollbackEvidenceRequired: true
+  modelPlaceholderBlocksProduction: true

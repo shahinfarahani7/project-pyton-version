@@ -1,0 +1,195 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/claimpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "ClaimPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "batch": {
+          "additionalProperties": false,
+          "properties": {
+            "ambiguousTransferAction": {
+              "type": "string"
+            },
+            "maximumClaims": {
+              "type": "integer"
+            },
+            "schedule": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ambiguousTransferAction",
+            "maximumClaims",
+            "schedule"
+          ],
+          "type": "object"
+        },
+        "eligibility": {
+          "additionalProperties": false,
+          "properties": {
+            "destinationVerificationRequired": {
+              "type": "boolean"
+            },
+            "fraudHoldMustBeClear": {
+              "type": "boolean"
+            },
+            "jurisdictionAllowlistRequired": {
+              "type": "boolean"
+            },
+            "kycRequired": {
+              "type": "boolean"
+            },
+            "minimumVerifiedRewardMicros": {
+              "type": "integer"
+            },
+            "sanctionsScreeningRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "destinationVerificationRequired",
+            "fraudHoldMustBeClear",
+            "jurisdictionAllowlistRequired",
+            "kycRequired",
+            "minimumVerifiedRewardMicros",
+            "sanctionsScreeningRequired"
+          ],
+          "type": "object"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "epoch": {
+          "additionalProperties": false,
+          "properties": {
+            "conversionRounding": {
+              "type": "string"
+            },
+            "dustAction": {
+              "type": "string"
+            },
+            "rateSource": {
+              "type": "string"
+            },
+            "rateValiditySeconds": {
+              "type": "integer"
+            },
+            "treasuryCapRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "conversionRounding",
+            "dustAction",
+            "rateSource",
+            "rateValiditySeconds",
+            "treasuryCapRequired"
+          ],
+          "type": "object"
+        },
+        "fees": {
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "type": "object"
+        },
+        "killSwitch": {
+          "type": "string"
+        },
+        "rewardUnit": {
+          "type": "string"
+        },
+        "tokenDecimals": {
+          "type": "integer"
+        },
+        "tokenSymbol": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch",
+        "eligibility",
+        "enabled",
+        "epoch",
+        "fees",
+        "killSwitch",
+        "rewardUnit",
+        "tokenDecimals",
+        "tokenSymbol"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint ClaimPolicy",
+  "type": "object"
+}

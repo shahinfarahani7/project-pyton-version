@@ -1,0 +1,22 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: claim
+  version: 2.0.0
+  status: active
+  owners:
+  - finance-platform
+spec:
+  service: claim
+  ownerTeam: finance-platform
+  dataOwnership:
+  - claim
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - claim.created
+  - claim.submitted
+  - claim.settled
+  - claim.reconciling
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: restricted

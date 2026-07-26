@@ -1,0 +1,40 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-059-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-059
+  useCaseRef: UseCase/uc-030-report-assignment-unavailable@2.1.0
+  mode: success
+  given:
+  - Use case UC-030 policy dependencies are active and their hashes are pinned for
+    the request.
+  - Actor Worker App is authenticated and has permissions worker.assignments:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared
+    preconditions.
+  when:
+  - Invoke reportAssignmentUnavailable automatically with a canonical machine-detected
+    reason and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - 'Exactly these entities are written: assignments, task_attempts.'
+  - 'Exactly these canonical events are inserted into the outbox: task.assignment.unavailable,
+    assignment-lifecycle.leased_to_failed, attempt-lifecycle.leased_to_matching.'
+  - No per-task worker confirmation is requested or recorded.
+  - The response, audit evidence, trace identifiers and financial effects match the
+    UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - reportAssignmentUnavailable
+    requirements:
+    - REQ-LEASE-003
+  expectedEvents:
+  - task.assignment.unavailable
+  - assignment-lifecycle.leased_to_failed
+  - attempt-lifecycle.leased_to_matching
+  expectedErrorCode: null

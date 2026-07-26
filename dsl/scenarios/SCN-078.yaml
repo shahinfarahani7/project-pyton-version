@@ -1,0 +1,30 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-078-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-078
+  useCaseRef: UseCase/uc-039-rollback-policy@2.0.0
+  mode: failure
+  given:
+  - Use case UC-039 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Operations Agent is authenticated and has permissions ops.policies:rollback.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke rollbackPolicy with the deterministic precondition that produces POLICY_ROLLBACK_TARGET_INVALID.
+  then:
+  - The API returns canonical error code POLICY_ROLLBACK_TARGET_INVALID with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Operations Agent
+    operationIds:
+    - rollbackPolicy
+    requirements:
+    - REQ-POLICY-003
+  expectedEvents: []
+  expectedErrorCode: POLICY_ROLLBACK_TARGET_INVALID

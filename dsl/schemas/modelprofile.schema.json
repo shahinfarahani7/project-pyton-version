@@ -1,0 +1,229 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/modelprofile.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "ModelProfile"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "artifacts": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "artifactSizeBytes": {
+                "type": "null"
+              },
+              "id": {
+                "type": "string"
+              },
+              "releaseEvidence": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "null"
+              },
+              "signature": {
+                "type": "null"
+              },
+              "signingKeyId": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "artifactSizeBytes",
+              "id",
+              "releaseEvidence",
+              "sha256",
+              "signature",
+              "signingKeyId"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "distribution": {
+          "additionalProperties": false,
+          "properties": {
+            "atomicInstall": {
+              "type": "boolean"
+            },
+            "bundled": {
+              "type": "boolean"
+            },
+            "resumable": {
+              "type": "boolean"
+            },
+            "wifiRecommended": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "atomicInstall",
+            "bundled",
+            "resumable",
+            "wifiRecommended"
+          ],
+          "type": "object"
+        },
+        "family": {
+          "type": "string"
+        },
+        "license": {
+          "additionalProperties": false,
+          "properties": {
+            "noticePath": {
+              "type": "null"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "noticePath",
+            "status"
+          ],
+          "type": "object"
+        },
+        "quantization": {
+          "type": "string"
+        },
+        "release": {
+          "additionalProperties": false,
+          "properties": {
+            "productionEligible": {
+              "type": "boolean"
+            },
+            "requiredEvidence": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "state": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "productionEligible",
+            "requiredEvidence",
+            "state"
+          ],
+          "type": "object"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "properties": {
+            "minimumFreeStorageBytes": {
+              "type": "null"
+            },
+            "minimumTier": {
+              "type": "string"
+            },
+            "peakRamBytes": {
+              "type": "null"
+            },
+            "singleHeavyModelResident": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "minimumFreeStorageBytes",
+            "minimumTier",
+            "peakRamBytes",
+            "singleHeavyModelResident"
+          ],
+          "type": "object"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "runtimeAbi": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifacts",
+        "capabilities",
+        "distribution",
+        "family",
+        "license",
+        "quantization",
+        "release",
+        "resources",
+        "runtime",
+        "runtimeAbi"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint ModelProfile",
+  "type": "object"
+}

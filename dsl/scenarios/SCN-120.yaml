@@ -1,0 +1,30 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-120-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-120
+  useCaseRef: UseCase/uc-060-cloud-fallback@2.0.0
+  mode: failure
+  given:
+  - Use case UC-060 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Router is authenticated and has permissions ops.routing:route-task.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke routeTask with the deterministic precondition that produces EDGE_CAPACITY_UNAVAILABLE.
+  then:
+  - The API returns canonical error code EDGE_CAPACITY_UNAVAILABLE with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Router
+    operationIds:
+    - routeTask
+    requirements:
+    - REQ-LEASE-001
+  expectedEvents: []
+  expectedErrorCode: EDGE_CAPACITY_UNAVAILABLE

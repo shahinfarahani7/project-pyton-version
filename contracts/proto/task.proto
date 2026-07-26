@@ -1,0 +1,9 @@
+syntax = "proto3";
+package edgemint.v1;
+option csharp_namespace = "EdgeMint.Contracts.V1";
+import "common.proto";
+service TaskInternalApi { rpc GetTask(GetTaskRequest) returns (TaskRecord); rpc CreateAttempt(CreateAttemptRequest) returns (AttemptRecord); }
+message GetTaskRequest { RequestContext context = 1; string task_id = 2; }
+message CreateAttemptRequest { RequestContext context = 1; string revision_id = 2; string idempotency_key = 3; }
+message TaskRecord { string task_id = 1; string workspace_id = 2; string task_type = 3; string status = 4; string current_revision_id = 5; int64 version = 6; }
+message AttemptRecord { string attempt_id = 1; string revision_id = 2; int32 attempt_number = 3; string status = 4; }

@@ -1,0 +1,158 @@
+apiVersion: edgemint.io/v1
+kind: LedgerPolicy
+metadata:
+  name: platform-ledger-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - finance
+spec:
+  currencyMode: single_currency_per_transaction
+  accounts:
+  - code: '1000'
+    name: Cash
+    type: asset
+  - code: '1100'
+    name: PaymentProcessorReceivable
+    type: asset
+  - code: '1150'
+    name: TokenTreasuryAsset
+    type: asset
+  - code: '1200'
+    name: CustomerReceivable
+    type: asset
+  - code: '1250'
+    name: FXClearing
+    type: asset
+  - code: '2000'
+    name: CustomerCreditLiability
+    type: liability
+  - code: '2050'
+    name: CustomerRefundPayable
+    type: liability
+  - code: '2100'
+    name: WorkerRewardPayable
+    type: liability
+  - code: '2200'
+    name: VerifierRewardPayable
+    type: liability
+  - code: '2300'
+    name: RefundReserve
+    type: liability
+  - code: '2400'
+    name: TokenSettlementClearing
+    type: liability
+  - code: '2500'
+    name: TaxPayable
+    type: liability
+  - code: '4000'
+    name: ComputeRevenue
+    type: revenue
+  - code: '4100'
+    name: SubscriptionRevenue
+    type: revenue
+  - code: '4200'
+    name: VerificationRevenue
+    type: revenue
+  - code: '4300'
+    name: ProfessionalServicesRevenue
+    type: revenue
+  - code: '4400'
+    name: ContraRevenue
+    type: contra_revenue
+  - code: '5000'
+    name: WorkerComputeExpense
+    type: expense
+  - code: '5050'
+    name: VerifierExpense
+    type: expense
+  - code: '5100'
+    name: CloudFallbackExpense
+    type: expense
+  - code: '5200'
+    name: StorageAndEgressExpense
+    type: expense
+  - code: '5300'
+    name: PaymentFees
+    type: expense
+  - code: '5400'
+    name: PromotionRewardExpense
+    type: expense
+  - code: '5500'
+    name: NetworkFeeExpense
+    type: expense
+  - code: '5600'
+    name: ServiceCreditExpense
+    type: expense
+  reservationAccounting: subledger_hold_no_general_ledger_posting
+  postingRules:
+    customer.credit.settled:
+    - account: '1000'
+      side: debit
+      amount: grossMicros
+    - account: '2000'
+      side: credit
+      amount: creditMicros
+    - account: '2500'
+      side: credit
+      amount: taxMicros
+    task.usage.charged:
+    - account: '2000'
+      side: debit
+      amount: totalChargeMicros
+    - account: '4000'
+      side: credit
+      amount: computeRevenueMicros
+    - account: '4200'
+      side: credit
+      amount: verificationRevenueMicros
+    worker.reward.verified:
+    - account: '5000'
+      side: debit
+      amount: rewardMicros
+    - account: '2100'
+      side: credit
+      amount: rewardMicros
+    verifier.reward.verified:
+    - account: '5050'
+      side: debit
+      amount: rewardMicros
+    - account: '2200'
+      side: credit
+      amount: rewardMicros
+    worker.reward.claim_reserved:
+    - account: '2100'
+      side: debit
+      amount: claimMicros
+    - account: '2400'
+      side: credit
+      amount: claimMicros
+    worker.reward.claim_settled:
+    - account: '2400'
+      side: debit
+      amount: claimMicros
+    - account: '1150'
+      side: credit
+      amount: claimMicros
+    customer.refund.balance:
+    - account: '4400'
+      side: debit
+      amount: refundMicros
+    - account: '2000'
+      side: credit
+      amount: refundMicros
+    customer.service_credit:
+    - account: '5600'
+      side: debit
+      amount: creditMicros
+    - account: '2000'
+      side: credit
+      amount: creditMicros
+  reconciliation:
+    daily: true
+    taskFinancialInvariant: reservedMicros = chargedMicros + releasedMicros
+    doubleEntryInvariant: sumDebitMicros = sumCreditMicros
+    claimInvariant: reservedRewardMicros = settledMicros + releasedMicros
+  manualAdjustment:
+    compensatingOnly: true
+    dualApprovalAboveMicros: 100000000

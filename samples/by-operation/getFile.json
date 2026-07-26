@@ -1,0 +1,32 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "getFile",
+  "request": {
+    "method": "GET",
+    "path": "/files/{fileId}",
+    "pathParameters": {
+      "fileId": "fil_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getFile_0001",
+      "Authorization": "Bearer customer_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "active",
+      "sizeBytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.files:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

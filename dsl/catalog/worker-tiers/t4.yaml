@@ -1,0 +1,36 @@
+apiVersion: edgemint.io/v1
+kind: WorkerTier
+metadata:
+  name: t4
+  version: 2.0.0
+  status: active
+  owners:
+  - mobile
+  - platform
+spec:
+  code: T4
+  minimum:
+    cpuCores: 8
+    ramBytes: 12884901888
+    benchmarkScoreMilli: 1000
+  supportedTasks:
+  - audio.transcribe
+  - document.extract
+  - document.ocr
+  - document.verify
+  - image.classify
+  - image.detect
+  - text.embedding
+  - text.generate
+  - text.translate
+  - vision.analyze
+  resourceLimits:
+    maxConcurrentTasks: 2
+    maxSingleArtifactBytes: 8000000000
+    maxInferenceWorkingSetBytes: 7000000000
+    thermalCeiling: fair
+    minimumBatteryPercent: 25
+  scheduling:
+    chargingPreferred: true
+    cellularAllowedDefault: false
+  rewardMultiplierBps: 12500

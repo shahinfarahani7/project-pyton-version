@@ -1,0 +1,307 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/workerprotocol.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "WorkerProtocol"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "authentication": {
+          "additionalProperties": false,
+          "properties": {
+            "accessTokenMinutes": {
+              "type": "integer"
+            },
+            "attestationAdapterRequired": {
+              "type": "boolean"
+            },
+            "challengeRequired": {
+              "type": "boolean"
+            },
+            "deviceKeyAlgorithm": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "refreshTokenRotation": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "accessTokenMinutes",
+            "attestationAdapterRequired",
+            "challengeRequired",
+            "deviceKeyAlgorithm",
+            "refreshTokenRotation"
+          ],
+          "type": "object"
+        },
+        "compatibility": {
+          "additionalProperties": false,
+          "properties": {
+            "minimumProtocolVersion": {
+              "type": "string"
+            },
+            "supportedPreviousMinorVersions": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimumProtocolVersion",
+            "supportedPreviousMinorVersions"
+          ],
+          "type": "object"
+        },
+        "execution": {
+          "additionalProperties": false,
+          "properties": {
+            "checkpointPolicyRef": {
+              "type": "string"
+            },
+            "nativeRuntimeRequired": {
+              "type": "boolean"
+            },
+            "singleHeavyModelResident": {
+              "type": "boolean"
+            },
+            "temporaryPayloadEncrypted": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "checkpointPolicyRef",
+            "nativeRuntimeRequired",
+            "singleHeavyModelResident",
+            "temporaryPayloadEncrypted"
+          ],
+          "type": "object"
+        },
+        "heartbeat": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "intervalSeconds": {
+              "type": "integer"
+            },
+            "offlineAfterSeconds": {
+              "type": "integer"
+            },
+            "sequenceRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "fields",
+            "intervalSeconds",
+            "offlineAfterSeconds",
+            "sequenceRequired"
+          ],
+          "type": "object"
+        },
+        "lease": {
+          "additionalProperties": false,
+          "properties": {
+            "durationSeconds": {
+              "type": "integer"
+            },
+            "fencingTokenRequired": {
+              "type": "boolean"
+            },
+            "renewalEverySeconds": {
+              "type": "integer"
+            },
+            "serverClockAuthoritative": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "durationSeconds",
+            "fencingTokenRequired",
+            "renewalEverySeconds",
+            "serverClockAuthoritative"
+          ],
+          "type": "object"
+        },
+        "offers": {
+          "additionalProperties": false,
+          "properties": {
+            "delivery": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "offerTtlSeconds": {
+              "type": "integer"
+            },
+            "signed": {
+              "type": "boolean"
+            },
+            "workerMayReject": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "delivery",
+            "offerTtlSeconds",
+            "signed",
+            "workerMayReject"
+          ],
+          "type": "object"
+        },
+        "registration": {
+          "additionalProperties": false,
+          "properties": {
+            "required": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "returns": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "required",
+            "returns"
+          ],
+          "type": "object"
+        },
+        "result": {
+          "additionalProperties": false,
+          "properties": {
+            "checksumRequired": {
+              "type": "boolean"
+            },
+            "staleFenceRejected": {
+              "type": "boolean"
+            },
+            "uploadMode": {
+              "type": "string"
+            },
+            "workerSignatureRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "checksumRequired",
+            "staleFenceRejected",
+            "uploadMode",
+            "workerSignatureRequired"
+          ],
+          "type": "object"
+        },
+        "security": {
+          "additionalProperties": false,
+          "properties": {
+            "certificatePinning": {
+              "type": "boolean"
+            },
+            "modelManifestSignature": {
+              "type": "boolean"
+            },
+            "replayNonce": {
+              "type": "boolean"
+            },
+            "rootJailbreakRiskSignal": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "certificatePinning",
+            "modelManifestSignature",
+            "replayNonce",
+            "rootJailbreakRiskSignal"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "authentication",
+        "compatibility",
+        "execution",
+        "heartbeat",
+        "lease",
+        "offers",
+        "registration",
+        "result",
+        "security"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint WorkerProtocol",
+  "type": "object"
+}

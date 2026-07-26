@@ -1,0 +1,56 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-activaterewardpolicy
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for activateRewardPolicy.
+spec:
+  operationId: activateRewardPolicy
+  api: operations
+  method: POST
+  path: /reward-policies/{id}:activate
+  summary: Activate reward-policie
+  classification: supporting_command
+  permissions:
+  - ops.operations:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - policy_activations
+    - policy_documents
+    domainEvents:
+    - policy.activated
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs: []
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-operations-api.yaml::POST /reward-policies/{id}:activate
+    request: OpenAPI requestBody/parameters for activateRewardPolicy
+    response: OpenAPI responses for activateRewardPolicy
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

@@ -1,0 +1,782 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/verificationpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "VerificationPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "billingEffects": {
+          "additionalProperties": false,
+          "properties": {
+            "customerInputFailure": {
+              "type": "string"
+            },
+            "platformFailure": {
+              "type": "string"
+            },
+            "validWorkerPlatformFailure": {
+              "type": "string"
+            },
+            "workerInvalidResult": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "customerInputFailure",
+            "platformFailure",
+            "validWorkerPlatformFailure",
+            "workerInvalidResult"
+          ],
+          "type": "object"
+        },
+        "evidenceRetentionDays": {
+          "type": "integer"
+        },
+        "humanReviewQueue": {
+          "type": "string"
+        },
+        "maximumAutomaticRetries": {
+          "type": "integer"
+        },
+        "outcomes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "profiles": {
+          "additionalProperties": false,
+          "properties": {
+            "audio.transcribe": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "document.extract": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "document.ocr": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "document.verify": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "image.classify": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "image.detect": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "text.embedding": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "text.generate": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "text.translate": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            },
+            "vision.analyze": {
+              "additionalProperties": false,
+              "properties": {
+                "confidence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "automaticAcceptMilli": {
+                      "type": "integer"
+                    },
+                    "minimumMilli": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "automaticAcceptMilli",
+                    "minimumMilli"
+                  ],
+                  "type": "object"
+                },
+                "consensus": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "minimumSimilarityMilli": {
+                      "type": "integer"
+                    },
+                    "minimumWorkers": {
+                      "type": "integer"
+                    },
+                    "requiredFor": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "similarityMetric": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "minimumSimilarityMilli",
+                    "minimumWorkers",
+                    "requiredFor",
+                    "similarityMetric"
+                  ],
+                  "type": "object"
+                },
+                "failureOutcome": {
+                  "type": "string"
+                },
+                "requiredSteps": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "confidence",
+                "consensus",
+                "failureOutcome",
+                "requiredSteps"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "audio.transcribe",
+            "document.extract",
+            "document.ocr",
+            "document.verify",
+            "image.classify",
+            "image.detect",
+            "text.embedding",
+            "text.generate",
+            "text.translate",
+            "vision.analyze"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "billingEffects",
+        "evidenceRetentionDays",
+        "humanReviewQueue",
+        "maximumAutomaticRetries",
+        "outcomes",
+        "profiles"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint VerificationPolicy",
+  "type": "object"
+}

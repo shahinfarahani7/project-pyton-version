@@ -1,0 +1,35 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createDispute",
+  "request": {
+    "method": "POST",
+    "path": "/disputes",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createDispute_0001",
+      "Idempotency-Key": "idem_createDispute_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "taskId": "tsk_01J00000000000000000000000",
+      "reason": "example"
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "taskId": "tsk_01J00000000000000000000000",
+      "status": "active",
+      "reason": "example"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.disputes:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

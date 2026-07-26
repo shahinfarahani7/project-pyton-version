@@ -1,0 +1,35 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-097-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-097
+  useCaseRef: UseCase/uc-049-activate-economy-kill-switch@2.0.0
+  mode: success
+  given:
+  - Use case UC-049 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Operations Agent is authenticated and has permissions ops.operations:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke activateEconomyKillSwitch, deactivateEconomyKillSwitch with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: feature_flags.'
+  - 'Exactly these canonical events are inserted into the outbox: economy.kill_switch.changed.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Operations Agent
+    operationIds:
+    - activateEconomyKillSwitch
+    - deactivateEconomyKillSwitch
+    requirements:
+    - REQ-OBS-001
+    - REQ-POLICY-004
+    - REQ-REWARD-004
+  expectedEvents:
+  - economy.kill_switch.changed
+  expectedErrorCode: null

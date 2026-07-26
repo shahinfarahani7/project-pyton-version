@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-210-worker-lifecycle-ready-to-degraded
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-210
+  stateMachineRef: StateMachine/worker-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is ready
+  - expected version matches
+  when:
+  - event requests ready -> degraded
+  then:
+  - state becomes degraded
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: ready
+    to: degraded
+  expectedEvents:
+  - worker-lifecycle.ready_to_degraded
+  expectedErrorCode: null

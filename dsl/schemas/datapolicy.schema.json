@@ -1,0 +1,178 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/datapolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "DataPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "classification": {
+          "type": "string"
+        },
+        "deletion": {
+          "additionalProperties": false,
+          "properties": {
+            "automatic": {
+              "type": "boolean"
+            },
+            "deletionEvidenceRequired": {
+              "type": "boolean"
+            },
+            "legalHoldSupported": {
+              "type": "boolean"
+            },
+            "workerSecureCleanupRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "automatic",
+            "deletionEvidenceRequired",
+            "legalHoldSupported",
+            "workerSecureCleanupRequired"
+          ],
+          "type": "object"
+        },
+        "encryption": {
+          "additionalProperties": false,
+          "properties": {
+            "atRest": {
+              "type": "string"
+            },
+            "customerManagedKeySupported": {
+              "type": "boolean"
+            },
+            "inTransitMinimum": {
+              "type": "string"
+            },
+            "workerEnvelopeEncryptionRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "atRest",
+            "customerManagedKeySupported",
+            "inTransitMinimum",
+            "workerEnvelopeEncryptionRequired"
+          ],
+          "type": "object"
+        },
+        "processing": {
+          "additionalProperties": false,
+          "properties": {
+            "allowedExecutionPolicies": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "regionEnforcement": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "allowedExecutionPolicies",
+            "regionEnforcement"
+          ],
+          "type": "object"
+        },
+        "retention": {
+          "additionalProperties": false,
+          "properties": {
+            "auditDays": {
+              "type": "integer"
+            },
+            "inputHours": {
+              "type": "integer"
+            },
+            "resultDays": {
+              "type": "integer"
+            },
+            "workerTemporaryMinutes": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "auditDays",
+            "inputHours",
+            "resultDays",
+            "workerTemporaryMinutes"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "classification",
+        "deletion",
+        "encryption",
+        "processing",
+        "retention"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint DataPolicy",
+  "type": "object"
+}

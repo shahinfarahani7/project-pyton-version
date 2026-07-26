@@ -1,0 +1,33 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-065-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-065
+  useCaseRef: UseCase/uc-033-submit-result@2.0.0
+  mode: success
+  given:
+  - Use case UC-033 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Worker App is authenticated and has permissions worker.assignments:complete, worker.assignments:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createAssignmentResultUploadIntent, completeAssignment with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - 'Exactly these entities are written: file_upload_sessions, results.'
+  - 'Exactly these canonical events are inserted into the outbox: task.result.submitted.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - createAssignmentResultUploadIntent
+    - completeAssignment
+    requirements:
+    - REQ-VERIFY-002
+  expectedEvents:
+  - task.result.submitted
+  expectedErrorCode: null

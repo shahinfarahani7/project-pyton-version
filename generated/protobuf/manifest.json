@@ -1,0 +1,11 @@
+{
+  "source": "contracts/proto",
+  "files": [
+    "common.proto",
+    "ledger.proto",
+    "result.proto",
+    "task.proto",
+    "worker.proto"
+  ],
+  "package": "edgemint.v1"
+}

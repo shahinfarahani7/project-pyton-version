@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-125-task-lifecycle-active-to-completed
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-125
+  stateMachineRef: StateMachine/task-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is active
+  - expected version matches
+  when:
+  - event requests active -> completed
+  then:
+  - state becomes completed
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: active
+    to: completed
+  expectedEvents:
+  - task-lifecycle.active_to_completed
+  expectedErrorCode: null

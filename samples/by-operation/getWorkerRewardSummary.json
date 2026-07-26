@@ -1,0 +1,28 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "getWorkerRewardSummary",
+  "request": {
+    "method": "GET",
+    "path": "/rewards/summary",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getWorkerRewardSummary_0001",
+      "Authorization": "Bearer worker_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "registered"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.rewards:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

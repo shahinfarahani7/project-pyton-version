@@ -1,0 +1,34 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "refreshWorkerSession",
+  "request": {
+    "method": "POST",
+    "path": "/sessions:refresh",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_refreshWorkerSession_0001",
+      "Idempotency-Key": "idem_refreshWorkerSession_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "refreshToken": "example"
+    }
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "workerId": "wrk_01J00000000000000000000000",
+      "deviceId": "dev_01J00000000000000000000000",
+      "accessToken": "example",
+      "expiresAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.registration:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

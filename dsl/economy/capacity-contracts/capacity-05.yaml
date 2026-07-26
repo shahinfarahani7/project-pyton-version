@@ -1,0 +1,29 @@
+apiVersion: edgemint.io/v1
+kind: CapacityContract
+metadata:
+  name: capacity-1000000
+  version: 2.0.0
+  status: evaluation
+  owners:
+  - sales
+  - finance
+  labels:
+    productionActivation: requires-finance-approval
+spec:
+  commitment:
+    minimumMonthlyQuanta: 1000000
+    minimumMonthlySpendMicros: 2000000000
+  period:
+    months: 12
+    renewal: manual
+  allowances:
+    includedQuanta: 1000000
+    burstBps: 2000
+  overage:
+    rateMultiplierBps: 9500
+    hardCap: false
+  slaRef: SLAPlan/enterprise@2.0.0
+  trueUp:
+    frequency: quarterly
+    unusedRolloverBps: 1000
+    shortfallInvoice: true

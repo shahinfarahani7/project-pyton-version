@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.edgemint.io/repository-state-v1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseId",
+    "commitSha",
+    "subject",
+    "status",
+    "verified",
+    "generatedAt",
+    "producer",
+    "headCommitSha",
+    "workingTreeClean",
+    "submodulesClean",
+    "packageManifestSha256",
+    "checksumsSha256"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "releaseId": {
+      "type": "string",
+      "pattern": "^EM-[0-9]{8}-[A-Z0-9]{6,20}$"
+    },
+    "commitSha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "subject": {
+      "const": "repository-state"
+    },
+    "status": {
+      "const": "verified"
+    },
+    "verified": {
+      "const": true
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer": {
+      "type": "string",
+      "minLength": 3
+    },
+    "headCommitSha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "workingTreeClean": {
+      "const": true
+    },
+    "submodulesClean": {
+      "const": true
+    },
+    "packageManifestSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "checksumsSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

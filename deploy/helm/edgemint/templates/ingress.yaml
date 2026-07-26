@@ -1,0 +1,28 @@
+{{- if and (eq .Values.global.environment "production") .Values.global.fixtureOnly }}{{- fail "global.fixtureOnly must be false in production" }}{{- end }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: edgemint
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health/ready
+    alb.ingress.kubernetes.io/wafv2-acl-arn: {{ required "global.wafArn is required" .Values.global.wafArn | quote }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ required "global.certificateArn is required" .Values.global.certificateArn | quote }}
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=3600,routing.http2.enabled=true
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=300,deregistration_delay.timeout_seconds=60
+spec:
+  ingressClassName: {{ .Values.global.ingressClassName }}
+  tls: [{ hosts: [{{ .Values.global.domain | quote }}] }]
+  rules:
+    - host: {{ .Values.global.domain }}
+      http:
+        paths:
+          - path: /events/v1
+            pathType: Prefix
+            backend: { service: { name: api-gateway, port: { number: 80 } } }
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: api-gateway, port: { number: 80 } } }

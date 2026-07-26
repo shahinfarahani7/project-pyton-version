@@ -1,0 +1,23 @@
+{
+  "specversion": "1.0",
+  "id": "event_c141b35d4ddb81f1ec6b572c20",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.task.expired.v1",
+  "subject": "task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "correlationId": "corr_c141b35d4ddb81f1ec6b572c20",
+  "causationId": "cmd_c141b35d4ddb81f1ec6b572c20",
+  "partitionKey": "task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "taskId": "task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "expired",
+    "workspaceId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

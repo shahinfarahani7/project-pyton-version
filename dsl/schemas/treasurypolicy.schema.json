@@ -1,0 +1,182 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/treasurypolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "TreasuryPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "approvals": {
+          "additionalProperties": false,
+          "properties": {
+            "manualTransfer": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "policyActivation": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "tokenRelease": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "manualTransfer",
+            "policyActivation",
+            "tokenRelease"
+          ],
+          "type": "object"
+        },
+        "killSwitches": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reporting": {
+          "additionalProperties": false,
+          "properties": {
+            "claimCoverageReport": {
+              "type": "boolean"
+            },
+            "dailyReconciliation": {
+              "type": "boolean"
+            },
+            "monthlyBoardReport": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "claimCoverageReport",
+            "dailyReconciliation",
+            "monthlyBoardReport"
+          ],
+          "type": "object"
+        },
+        "reservesBps": {
+          "additionalProperties": false,
+          "properties": {
+            "claimCoverage": {
+              "type": "integer"
+            },
+            "fraud": {
+              "type": "integer"
+            },
+            "refund": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "claimCoverage",
+            "fraud",
+            "refund"
+          ],
+          "type": "object"
+        },
+        "runway": {
+          "additionalProperties": false,
+          "properties": {
+            "minimumMonths": {
+              "type": "integer"
+            },
+            "warningMonths": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimumMonths",
+            "warningMonths"
+          ],
+          "type": "object"
+        },
+        "waterfall": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "approvals",
+        "killSwitches",
+        "reporting",
+        "reservesBps",
+        "runway",
+        "waterfall"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint TreasuryPolicy",
+  "type": "object"
+}

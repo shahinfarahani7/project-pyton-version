@@ -1,0 +1,32 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "getModelManifest",
+  "request": {
+    "method": "GET",
+    "path": "/models/{modelVersionId}/manifest",
+    "pathParameters": {
+      "modelVersionId": "id_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getModelManifest_0001",
+      "Authorization": "Bearer worker_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "active",
+      "version": 1,
+      "updatedAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.models:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

@@ -1,0 +1,46 @@
+apiVersion: edgemint.io/v1
+kind: TreasuryPolicy
+metadata:
+  name: commercial-v2
+  version: 2.0.0
+  status: evaluation
+  owners:
+  - finance
+  - executive
+  labels:
+    productionActivation: requires-finance-approval
+spec:
+  waterfall:
+  - tax_and_processor
+  - worker_and_verifier_payables
+  - refund_and_fraud_reserves
+  - infrastructure
+  - operating_runway
+  - growth_budget
+  - token_claim_reserve
+  reservesBps:
+    refund: 500
+    fraud: 300
+    claimCoverage: 10000
+  runway:
+    minimumMonths: 18
+    warningMonths: 24
+  approvals:
+    manualTransfer:
+    - finance
+    - executive
+    tokenRelease:
+    - finance
+    - legal
+    - executive
+    policyActivation:
+    - finance
+    - product
+  reporting:
+    dailyReconciliation: true
+    monthlyBoardReport: true
+    claimCoverageReport: true
+  killSwitches:
+  - passive_rewards
+  - token_claims
+  - negative_margin_quotes

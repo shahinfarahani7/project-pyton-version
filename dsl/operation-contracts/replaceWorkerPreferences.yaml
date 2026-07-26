@@ -1,0 +1,59 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-replaceworkerpreferences
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for future-assignment availability
+    and execution preferences. Availability changes never act as per-task rejection
+    and never cancel an active lease.
+spec:
+  operationId: replaceWorkerPreferences
+  api: worker
+  method: PUT
+  path: /worker-preferences
+  summary: Replace worker execution preferences
+  classification: business_use_case
+  permissions:
+  - worker.preferences:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device
+    for worker API; MFA operator or mTLS service identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - worker_preferences
+    domainEvents:
+    - worker.availability.changed
+    auditRequired: true
+  responseStatuses:
+  - '200'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-025-set-availability@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  - VERSION_CONFLICT
+  contractSources:
+    openapi: contracts/openapi/edgemint-worker-api.yaml::PUT /worker-preferences
+    request: OpenAPI requestBody/parameters for replaceWorkerPreferences
+    response: OpenAPI responses for replaceWorkerPreferences
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

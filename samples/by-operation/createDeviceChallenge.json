@@ -1,0 +1,33 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "createDeviceChallenge",
+  "request": {
+    "method": "POST",
+    "path": "/auth/challenges",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createDeviceChallenge_0001",
+      "Idempotency-Key": "idem_createDeviceChallenge_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "installationId": "id_01J00000000000000000000000"
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "challengeId": "id_01J00000000000000000000000",
+      "nonce": "example",
+      "expiresAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.registration:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

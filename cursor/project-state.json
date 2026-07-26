@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "updatedAt": null,
+  "active": [],
+  "completed": [],
+  "blocked": [],
+  "nextEligible": [
+    "WP-000"
+  ],
+  "packVersion": "5.0.0",
+  "workPackageCount": 27
+}

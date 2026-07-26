@@ -1,0 +1,34 @@
+{
+  "packageVersion": "3.0.0",
+  "language": "English",
+  "executedAt": "2026-07-21T09:00:00Z",
+  "results": {
+    "dslDocuments": 608,
+    "dslKinds": 38,
+    "openApiOperations": 141,
+    "canonicalEvents": 186,
+    "cloudEventExamples": 186,
+    "requirements": 80,
+    "useCases": 60,
+    "scenarios": 215,
+    "sqlMigrations": 22,
+    "sqlTables": 59,
+    "semanticVectors": 595000,
+    "terraformHclFilesParsed": 11,
+    "helmServicesStaticallyChecked": 20,
+    "webWorkspacesLinted": 2,
+    "webTestSuitesPassed": 2,
+    "webProductionBuildsPassed": 2,
+    "auditFindingsResolved": 147,
+    "unresolvedDesignBlockers": 0,
+    "nonEnglishScriptFiles": 0
+  },
+  "notExecutedInAuthoringEnvironment": [
+    "Python 3.13.14 restore/build/test because the SDK was not installed and external binary download was unavailable",
+    "Flutter analyze/test and Android real-device testing because Flutter/Android toolchains were not installed",
+    "Terraform provider initialization and target-account plan because the Terraform CLI and AWS credentials were unavailable",
+    "Helm render/kubeconform because Helm and cluster CRDs were unavailable",
+    "Live AWS, Stripe, mobile-attestation, model-signing, load, penetration, backup/restore, DR, legal, finance, and canary evidence"
+  ],
+  "policy": "Unexecuted runtime and external checks are mandatory Cursor work-package and production-gate evidence; they are not represented as passed."
+}

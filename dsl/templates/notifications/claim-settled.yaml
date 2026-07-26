@@ -1,0 +1,25 @@
+apiVersion: edgemint.io/v1
+kind: NotificationTemplate
+metadata:
+  name: claim-settled
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - security
+spec:
+  channels:
+  - email
+  - in_app
+  localeFallback: en
+  subjectKey: notification.claim-settled.subject
+  bodyKey: notification.claim-settled.body
+  requiredVariables:
+  - recipientName
+  - eventTime
+  - supportReference
+  forbiddenVariables:
+  - rawApiKey
+  - rawPayload
+  - fullWalletAddress
+  classification: internal

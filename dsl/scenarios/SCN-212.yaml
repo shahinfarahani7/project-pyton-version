@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-212-worker-lifecycle-degraded-to-quarantined
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-212
+  stateMachineRef: StateMachine/worker-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is degraded
+  - expected version matches
+  when:
+  - event requests degraded -> quarantined
+  then:
+  - state becomes quarantined
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: degraded
+    to: quarantined
+  expectedEvents:
+  - worker-lifecycle.degraded_to_quarantined
+  expectedErrorCode: null

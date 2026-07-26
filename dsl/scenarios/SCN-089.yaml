@@ -1,0 +1,33 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-089-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-089
+  useCaseRef: UseCase/uc-045-run-ledger-reconciliation@2.0.0
+  mode: success
+  given:
+  - Use case UC-045 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Finance Operator is authenticated and has permissions ops.finance:reconcile-ledger.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke runLedgerReconciliation with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: reconciliation_runs, ledger_transactions, ledger_entries.'
+  - 'Exactly these canonical events are inserted into the outbox: ledger.reconciliation.completed.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Finance Operator
+    operationIds:
+    - runLedgerReconciliation
+    requirements:
+    - REQ-BILL-004
+    - REQ-OBS-004
+  expectedEvents:
+  - ledger.reconciliation.completed
+  expectedErrorCode: null

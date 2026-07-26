@@ -1,0 +1,33 @@
+apiVersion: edgemint.io/v1
+kind: CheckpointPolicy
+metadata:
+  name: mobile-checkpoint-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - mobile
+  - platform
+spec:
+  allowedTaskTypes:
+  - audio.transcribe
+  - text.generate
+  - vision.analyze
+  minimumProgressDeltaMilli: 100
+  maximumIntervalSeconds: 60
+  requiredFields:
+  - assignmentId
+  - attemptId
+  - fencingToken
+  - modelDigest
+  - inputDigest
+  - progressMilli
+  - runtimeStateDigest
+  encryptionRequired: true
+  resumeRequires:
+  - activeLease
+  - matchingFencingToken
+  - matchingInputDigest
+  - matchingModelDigest
+  - unexpiredCheckpoint
+  invalidCheckpointAction: abandon_attempt_and_requeue
+  retentionMinutes: 60

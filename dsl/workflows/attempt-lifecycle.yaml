@@ -1,0 +1,76 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: attempt-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: abandoned
+    terminal: true
+  - name: created
+    terminal: false
+  - name: expired
+    terminal: true
+  - name: failed
+    terminal: true
+  - name: leased
+    terminal: false
+  - name: matching
+    terminal: false
+  - name: result_submitted
+    terminal: false
+  - name: running
+    terminal: false
+  - name: succeeded
+    terminal: true
+  - name: verifying
+    terminal: false
+  transitions:
+  - from: created
+    to: matching
+    event: attempt-lifecycle.created_to_matching
+  - from: matching
+    to: leased
+    event: attempt-lifecycle.matching_to_leased
+  - from: leased
+    to: running
+    event: attempt-lifecycle.leased_to_running
+  - from: leased
+    to: matching
+    event: attempt-lifecycle.leased_to_matching
+  - from: leased
+    to: failed
+    event: attempt-lifecycle.leased_to_failed
+  - from: leased
+    to: abandoned
+    event: attempt-lifecycle.leased_to_abandoned
+  - from: running
+    to: result_submitted
+    event: attempt-lifecycle.running_to_result_submitted
+  - from: running
+    to: failed
+    event: attempt-lifecycle.running_to_failed
+  - from: running
+    to: abandoned
+    event: attempt-lifecycle.running_to_abandoned
+  - from: result_submitted
+    to: verifying
+    event: attempt-lifecycle.result_submitted_to_verifying
+  - from: verifying
+    to: succeeded
+    event: attempt-lifecycle.verifying_to_succeeded
+  - from: verifying
+    to: failed
+    event: attempt-lifecycle.verifying_to_failed
+  - from: matching
+    to: expired
+    event: attempt-lifecycle.matching_to_expired
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence
+  - matching to leased atomically reserves capacity and allocates the fence token
+  - offered and accepted attempt states are forbidden

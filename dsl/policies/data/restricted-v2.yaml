@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: DataPolicy
+metadata:
+  name: restricted-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - security
+  - privacy
+spec:
+  classification: restricted
+  retention:
+    inputHours: 24
+    resultDays: 30
+    auditDays: 2555
+    workerTemporaryMinutes: 10
+  encryption:
+    inTransitMinimum: TLS1.2
+    atRest: managed-kms
+    customerManagedKeySupported: true
+    workerEnvelopeEncryptionRequired: true
+  processing:
+    allowedExecutionPolicies:
+    - edge_only
+    - edge_preferred
+    - private_pool_only
+    regionEnforcement: true
+  deletion:
+    automatic: true
+    legalHoldSupported: true
+    workerSecureCleanupRequired: true
+    deletionEvidenceRequired: true

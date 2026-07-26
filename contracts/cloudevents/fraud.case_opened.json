@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_0a2c33937c13eb9d4d76fb3acc",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.fraud.case_opened.v1",
+  "subject": "fraud_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_0a2c33937c13eb9d4d76fb3acc",
+  "causationId": "cmd_0a2c33937c13eb9d4d76fb3acc",
+  "partitionKey": "fraud_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "fraudId": "fraud_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "case_opened",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

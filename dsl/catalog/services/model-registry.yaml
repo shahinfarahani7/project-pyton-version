@@ -1,0 +1,20 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: model-registry
+  version: 2.0.0
+  status: active
+  owners:
+  - ml-platform
+spec:
+  service: model-registry
+  ownerTeam: ml-platform
+  dataOwnership:
+  - model-registry
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - model.rollout.started
+  - model.revoked
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

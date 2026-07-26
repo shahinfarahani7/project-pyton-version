@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_66d03214721a739baedb3fd29d",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.promotion.budget.reserved.v1",
+  "subject": "promotion_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_66d03214721a739baedb3fd29d",
+  "causationId": "cmd_66d03214721a739baedb3fd29d",
+  "partitionKey": "promotion_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "promotionId": "promotion_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "reserved",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

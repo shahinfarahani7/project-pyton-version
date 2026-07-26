@@ -1,0 +1,25 @@
+apiVersion: edgemint.io/v1
+kind: NotificationTemplate
+metadata:
+  name: security-alert
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - security
+spec:
+  channels:
+  - email
+  - in_app
+  localeFallback: en
+  subjectKey: notification.security-alert.subject
+  bodyKey: notification.security-alert.body
+  requiredVariables:
+  - recipientName
+  - eventTime
+  - supportReference
+  forbiddenVariables:
+  - rawApiKey
+  - rawPayload
+  - fullWalletAddress
+  classification: internal

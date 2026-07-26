@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-consent-001
+  version: 2.0.0
+  status: active
+  description: Worker resource use requires explicit current consent
+  owners:
+  - architecture
+spec:
+  statement: Worker resource use requires explicit current consent; control variant 1.
+  priority: must
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

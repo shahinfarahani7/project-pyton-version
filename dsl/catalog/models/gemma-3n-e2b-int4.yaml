@@ -1,0 +1,52 @@
+apiVersion: edgemint.io/v1
+kind: ModelProfile
+metadata:
+  name: gemma-3n-e2b-int4
+  version: 2.0.0
+  status: draft
+  description: Evaluation profile for gemma-3n-e2b-int4
+  owners:
+  - ml
+  - mobile
+  - legal
+spec:
+  family: multimodal
+  quantization: INT4
+  runtime: litert
+  runtimeAbi: pending-benchmark
+  capabilities:
+  - vision.analyze
+  - document.extract
+  - text.translate
+  - text.generate
+  - audio.transcribe
+  artifacts:
+  - id: gemma-3n-e2b-int4-main
+    artifactSizeBytes: null
+    sha256: null
+    signature: null
+    signingKeyId: null
+    releaseEvidence: REQUIRED_BEFORE_PRODUCTION
+  resources:
+    minimumTier: T3
+    peakRamBytes: null
+    minimumFreeStorageBytes: null
+    singleHeavyModelResident: true
+  distribution:
+    bundled: false
+    resumable: true
+    wifiRecommended: true
+    atomicInstall: true
+  license:
+    status: review-required
+    noticePath: null
+  release:
+    state: evaluation
+    productionEligible: false
+    requiredEvidence:
+    - exact artifact bytes
+    - sha256
+    - signature
+    - license approval
+    - real-device benchmark
+    - runtime compatibility

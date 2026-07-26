@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-task-004
+  version: 2.0.0
+  status: active
+  description: Task lifecycle must preserve immutable revisions and traceable attempts
+  owners:
+  - architecture
+spec:
+  statement: Task lifecycle must preserve immutable revisions and traceable attempts; control variant 4.
+  priority: should
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

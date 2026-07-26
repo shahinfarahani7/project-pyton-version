@@ -1,0 +1,30 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-028-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-028
+  useCaseRef: UseCase/uc-014-edit-failed-task@2.0.0
+  mode: failure
+  given:
+  - Use case UC-014 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.tasks:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createTaskRevision with the deterministic precondition that produces TASK_REVISION_IMMUTABLE.
+  then:
+  - The API returns canonical error code TASK_REVISION_IMMUTABLE with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - createTaskRevision
+    requirements:
+    - REQ-TASK-004
+  expectedEvents: []
+  expectedErrorCode: TASK_REVISION_IMMUTABLE

@@ -1,0 +1,4965 @@
+{
+  "audit": {
+    "name": "EdgeMint v5.0 Audit Closure Registry",
+    "version": "5.0.0",
+    "language": "English",
+    "sourceFindingCount": 147,
+    "openCount": 0,
+    "resolvedCount": 147,
+    "closureRule": "A finding is closed at execution-package level only when the decision is canonical, implementation work is assigned, acceptance is executable, and runtime facts remain fail-closed evidence rather than guessed values.",
+    "packageVersion": "5.0.0"
+  },
+  "findings": [
+    {
+      "id": "EXE-001",
+      "severity": "P0",
+      "area": "Executive",
+      "title": "Package self-reported 36 production release blockers",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md",
+        "docs/00-executive/open-decisions.md",
+        "PACKAGE-MANIFEST.json"
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EXE-002",
+      "severity": "P0",
+      "area": "Executive",
+      "title": "No buildable product existed in the package",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EXE-003",
+      "severity": "P0",
+      "area": "Executive",
+      "title": "No single enforceable Definition of Production Ready existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/implementation-contract.md",
+        "docs/00-audit"
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EXE-004",
+      "severity": "P0",
+      "area": "Architecture",
+      "title": "The final deployment architecture was not fixed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/03-architecture/service-boundaries.md",
+        "infra/kubernetes/base"
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EXE-005",
+      "severity": "P0",
+      "area": "Release",
+      "title": "Cloud, legal, payment, and financial provider decisions were open",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/open-decisions.md",
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md"
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EXE-006",
+      "severity": "P1",
+      "area": "Repository",
+      "title": "Runtime and dependency versions were not pinned",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python",
+        "reference/flutter",
+        "infra/docker"
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EXE-007",
+      "severity": "P1",
+      "area": "Repository",
+      "title": "Monorepo structure and code ownership were undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/03-architecture",
+        "reference"
+      ],
+      "resolution": "Canonical product, platform, provider, scope, release, and repository decisions are fixed and governed by an evidence-backed production definition.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/100-READINESS-SCORECARD.md",
+        "README.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-010",
+        "WP-020",
+        "WP-240",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-001",
+      "severity": "P0",
+      "area": "Database",
+      "title": "SQL used UUIDv4 while the contract required UUIDv7",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/implementation-contract.md:30",
+        "database/sql/* gen_random_uuid()"
+      ],
+      "resolution": "PostgreSQL 18 native `uuidv7()` is canonical. All migration defaults were converted, and validation rejects SQL Server `NEWID()` and `NEWSEQUENTIALID()` constructs.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-002",
+      "severity": "P0",
+      "area": "Database",
+      "title": "RLS isolated organizations instead of workspaces",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/05-data/row-level-security.md",
+        "database/sql/018_rls.sql"
+      ],
+      "resolution": "Workspace is the tenant boundary. Row-Level Security with block predicates uses `app.workspace_id`, and WP-030 requires direct and indirect cross-workspace negative tests.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-003",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Worker lifecycle differed between DSL and database",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/workflows/worker-lifecycle.yaml",
+        "database/sql/001_extensions_and_types.sql",
+        "database/sql/006_workers.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-004",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Assignment lifecycle differed between DSL and database",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/workflows/assignment-lifecycle.yaml",
+        "database/sql/005_attempts_assignments.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-005",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Verification lifecycle differed between DSL and database",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/workflows/verification-lifecycle.yaml",
+        "database/sql/008_results_verification.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-006",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Model-download lifecycle differed between DSL and database",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/workflows/model-download-lifecycle.yaml",
+        "database/sql/007_models.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-007",
+      "severity": "P0",
+      "area": "Billing/Data",
+      "title": "Credit reservations were not bound to a task revision",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/implementation-contract.md",
+        "database/sql/011_billing.sql"
+      ],
+      "resolution": "Credit reservations are bound to workspace, task, immutable revision, quote, amount, currency, and expiry in the hardened schema.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-008",
+      "severity": "P0",
+      "area": "Ledger",
+      "title": "Ledger append-only behavior was not enforced by the database",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/010_ledger.sql",
+        "dsl/policies/ledger/platform-ledger-v2.yaml"
+      ],
+      "resolution": "Database triggers reject UPDATE and DELETE on ledger transactions and entries; corrections require new balanced postings.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-009",
+      "severity": "P0",
+      "area": "Ledger",
+      "title": "Ledger account and entry currencies were not constrained to match",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/010_ledger.sql"
+      ],
+      "resolution": "Currency consistency is enforced between ledger accounts, entries, transactions, and all money-bearing references.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-010",
+      "severity": "P1",
+      "area": "Ledger",
+      "title": "Ledger account ownership used unconstrained free text",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/010_ledger.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-011",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Result storage did not enforce exactly one output representation",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/008_results_verification.sql"
+      ],
+      "resolution": "A result must contain exactly one output representation, and the database plus API/Protobuf contracts enforce it.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-012",
+      "severity": "P0",
+      "area": "Security/Data",
+      "title": "Worker signatures were optional on results",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/008_results_verification.sql",
+        "docs/06-security"
+      ],
+      "resolution": "Result submission requires a device-bound worker signature over the canonical result envelope.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-013",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Result assignment and attempt references could disagree",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/008_results_verification.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-014",
+      "severity": "P0",
+      "area": "Database",
+      "title": "Task, revision, and final-result consistency was not enforced",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/008_results_verification.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-015",
+      "severity": "P1",
+      "area": "Database",
+      "title": "Model version was stored as text without a foreign key",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/004_tasks.sql",
+        "database/sql/005_attempts_assignments.sql",
+        "database/sql/007_models.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-016",
+      "severity": "P0",
+      "area": "Database",
+      "title": "A task could reference an unrelated result",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/004_tasks.sql",
+        "database/sql/008_results_verification.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-017",
+      "severity": "P1",
+      "area": "Database",
+      "title": "Feature-flag keys were not unique within scope",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/020_feature_flags.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-018",
+      "severity": "P1",
+      "area": "Database",
+      "title": "Invitation uniqueness prevented valid invitation history",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/002_identity_and_tenancy.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-019",
+      "severity": "P1",
+      "area": "Privacy",
+      "title": "Raw installation identifiers were stored in device challenges",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/006_workers.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-020",
+      "severity": "P0",
+      "area": "Database",
+      "title": "RLS did not cover every sensitive tenant table",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/019_worker_preferences.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-021",
+      "severity": "P0",
+      "area": "Database",
+      "title": "No migration framework or production rollback strategy existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-022",
+      "severity": "P1",
+      "area": "Database",
+      "title": "High-volume tables lacked partitioning and retention design",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/006_workers.sql",
+        "database/sql/012_events.sql",
+        "database/sql/017_audit.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-023",
+      "severity": "P1",
+      "area": "Database",
+      "title": "Multiple lifecycle states were unconstrained text",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-024",
+      "severity": "P1",
+      "area": "Database",
+      "title": "Temporal constraints were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-025",
+      "severity": "P0",
+      "area": "Concurrency",
+      "title": "Fence tokens used race-prone max-plus-one allocation",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/005_attempts_assignments.sql",
+        "database/sql/016_constraints_and_triggers.sql"
+      ],
+      "resolution": "Fence tokens use a database sequence and current-lease validation; max-plus-one allocation is removed.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-026",
+      "severity": "P1",
+      "area": "Domain/Data",
+      "title": "Initial aggregate versions differed between database and reference code",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql version DEFAULT 1",
+        "reference/python"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "DAT-027",
+      "severity": "P0",
+      "area": "Multi-tenancy",
+      "title": "Cross-tenant foreign-key integrity was not enforced",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/003_files.sql",
+        "database/sql/004_tasks.sql",
+        "database/sql/008_results_verification.sql"
+      ],
+      "resolution": "PostgreSQL 18 contracts now enforce UUIDv7, workspace isolation, referential consistency, immutable financial/result records, lifecycle alignment, temporal constraints, idempotency, and race-safe fencing.",
+      "canonicalEvidence": [
+        "database/sql/018_rls.sql",
+        "database/sql/022_production_hardening.sql",
+        "tools/validate_sql.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-030"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-001",
+      "severity": "P0",
+      "area": "API",
+      "title": "Public API success responses used generic objects",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml"
+      ],
+      "resolution": "Every non-204 success response references a named strict schema; generic success objects are rejected by validation.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-002",
+      "severity": "P0",
+      "area": "API",
+      "title": "Some mutation request bodies were empty",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-worker-api.yaml"
+      ],
+      "resolution": "Every mutation has a named request schema with required fields and `additionalProperties: false`.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-003",
+      "severity": "P0",
+      "area": "Operations API",
+      "title": "Operations API responses were generic",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-operations-api.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-004",
+      "severity": "P1",
+      "area": "API",
+      "title": "Operation descriptions and semantics were insufficient",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/*.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-005",
+      "severity": "P1",
+      "area": "API",
+      "title": "Pagination was inconsistent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-006",
+      "severity": "P1",
+      "area": "API",
+      "title": "Path identifier formats were unspecified",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/*.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-007",
+      "severity": "P0",
+      "area": "Security/API",
+      "title": "OAuth scopes and internal permissions were inconsistent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-008",
+      "severity": "P0",
+      "area": "Security/API",
+      "title": "The Worker refresh endpoint allowed anonymous security",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-worker-api.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-009",
+      "severity": "P0",
+      "area": "API",
+      "title": "Task input did not enforce fileId versus inlineText exclusivity",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "samples"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-010",
+      "severity": "P0",
+      "area": "API",
+      "title": "Task parameters lacked task-type-specific schemas",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "dsl/catalog/task-types"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-011",
+      "severity": "P0",
+      "area": "API",
+      "title": "JSON int64 fields violated JavaScript-safe number rules",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/implementation-contract.md",
+        "contracts/openapi/*.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-012",
+      "severity": "P1",
+      "area": "API",
+      "title": "Rate-limit and retry contracts were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/*.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-013",
+      "severity": "P0",
+      "area": "Concurrency/API",
+      "title": "ETag and If-Match concurrency was not standardized",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/*.yaml",
+        "docs/00-executive/implementation-contract.md"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-014",
+      "severity": "P1",
+      "area": "API",
+      "title": "API versioning and deprecation policy was incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/*.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-015",
+      "severity": "P1",
+      "area": "API",
+      "title": "The error catalog was not bound to the Problem schema",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/*.yaml",
+        "dsl/catalog/error-codes"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-016",
+      "severity": "P0",
+      "area": "Cross-contract",
+      "title": "createTask had three contradictory behaviors",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "samples/public/createTask.json",
+        "dsl/use-cases",
+        "dsl/operation-contracts",
+        "reference/python"
+      ],
+      "resolution": "Task creation creates a draft only; quote, reserve, and submit are explicit state-changing operations in the canonical flow.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-017",
+      "severity": "P0",
+      "area": "Cross-contract",
+      "title": "Operation contracts and use cases contained 19 mismatches",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/operation-contracts",
+        "dsl/use-cases"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-018",
+      "severity": "P0",
+      "area": "Cross-contract",
+      "title": "getNextAssignment was ambiguous between query and command semantics",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/use-cases/UC-028*",
+        "trace/event references"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-019",
+      "severity": "P1",
+      "area": "API",
+      "title": "Sample responses were empty and non-testable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "samples",
+        "dsl/operation-contracts"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-020",
+      "severity": "P1",
+      "area": "Files/API",
+      "title": "Upload and download protocols were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-worker-api.yaml"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "API-021",
+      "severity": "P1",
+      "area": "Webhook/API",
+      "title": "Webhook security and delivery contracts were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "docs/04-api-events"
+      ],
+      "resolution": "OpenAPI 3.1 operations now use strict named request/response schemas, typed identifiers, permission metadata, pagination, idempotency, optimistic concurrency, Problem errors, rate limits, and unambiguous operation semantics.",
+      "canonicalEvidence": [
+        "contracts/openapi/edgemint-public-api.yaml",
+        "contracts/openapi/edgemint-operations-api.yaml",
+        "tools/validate_contracts.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-050",
+        "WP-070",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-001",
+      "severity": "P0",
+      "area": "Events",
+      "title": "The 186 events lacked event-specific payload schemas",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/asyncapi/edgemint-events.yaml"
+      ],
+      "resolution": "All 186 canonical events have event-specific data schemas linked from AsyncAPI messages.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-002",
+      "severity": "P0",
+      "area": "Events",
+      "title": "CloudEvent samples were placeholders",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/cloudevents/*.json"
+      ],
+      "resolution": "WebSocket Event Relay is the sole domain event bus; every canonical event has a unique CloudEvent sample, event-specific typed data, aggregate ordering, at-least-once handling, compatibility, retry, and DLQ requirements.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-003",
+      "severity": "P0",
+      "area": "Events",
+      "title": "Lifecycle and business events overlapped ambiguously",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/cloudevents/*-lifecycle.*",
+        "contracts/cloudevents/assignment.*",
+        "contracts/cloudevents/task.*"
+      ],
+      "resolution": "WebSocket Event Relay is the sole domain event bus; every canonical event has a unique CloudEvent sample, event-specific typed data, aggregate ordering, at-least-once handling, compatibility, retry, and DLQ requirements.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-004",
+      "severity": "P0",
+      "area": "Events/Infra",
+      "title": "WebSocket Event Relay and previous non-canonical broker were contradictory event-bus choices",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/asyncapi/edgemint-events.yaml: protocol wss",
+        "infra/docker/docker-compose*.yaml: previous-event-transport"
+      ],
+      "resolution": "secure WebSocket Event Relay is the only normative event bus; previous non-canonical broker infrastructure was removed from canonical deployment.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-005",
+      "severity": "P0",
+      "area": "Events",
+      "title": "Topic topology and delivery semantics were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/asyncapi",
+        "docs/04-api-events"
+      ],
+      "resolution": "WebSocket Event Relay is the sole domain event bus; every canonical event has a unique CloudEvent sample, event-specific typed data, aggregate ordering, at-least-once handling, compatibility, retry, and DLQ requirements.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-006",
+      "severity": "P1",
+      "area": "Events",
+      "title": "No schema-registry or compatibility policy existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/asyncapi",
+        "contracts/cloudevents"
+      ],
+      "resolution": "WebSocket Event Relay is the sole domain event bus; every canonical event has a unique CloudEvent sample, event-specific typed data, aggregate ordering, at-least-once handling, compatibility, retry, and DLQ requirements.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-007",
+      "severity": "P0",
+      "area": "Privacy/Events",
+      "title": "Event PII classification was missing",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "contracts/asyncapi"
+      ],
+      "resolution": "WebSocket Event Relay is the sole domain event bus; every canonical event has a unique CloudEvent sample, event-specific typed data, aggregate ordering, at-least-once handling, compatibility, retry, and DLQ requirements.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "EVT-008",
+      "severity": "P1",
+      "area": "Events",
+      "title": "Retry, DLQ, and poison-message contracts were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/04-api-events",
+        "infra"
+      ],
+      "resolution": "WebSocket Event Relay is the sole domain event bus; every canonical event has a unique CloudEvent sample, event-specific typed data, aggregate ordering, at-least-once handling, compatibility, retry, and DLQ requirements.",
+      "canonicalEvidence": [
+        "contracts/asyncapi/edgemint-events.yaml",
+        "contracts/cloudevents",
+        "dsl/catalog/events/event-catalog-v2.yaml",
+        "tools/validate_contracts.py"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-140"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "PRT-001",
+      "severity": "P0",
+      "area": "Protobuf",
+      "title": "Protobuf contracts lacked services and code-generation configuration",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/proto/*.proto"
+      ],
+      "resolution": "Versioned Protobuf services now define fixed-precision money, secure lease authority, exactly-one result output, ledger entries, request context, linting, compatibility, and code generation.",
+      "canonicalEvidence": [
+        "contracts/proto/common.proto",
+        "contracts/proto/task.proto",
+        "contracts/proto/worker.proto",
+        "contracts/proto/result.proto",
+        "contracts/proto/ledger.proto",
+        "contracts/proto/buf.yaml"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-120",
+        "WP-130"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "PRT-002",
+      "severity": "P0",
+      "area": "Protobuf",
+      "title": "Protobuf double fields contradicted fixed-precision requirements",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/proto/result.proto",
+        "contracts/proto/worker.proto",
+        "docs/00-executive/implementation-contract.md"
+      ],
+      "resolution": "Versioned Protobuf services now define fixed-precision money, secure lease authority, exactly-one result output, ledger entries, request context, linting, compatibility, and code generation.",
+      "canonicalEvidence": [
+        "contracts/proto/common.proto",
+        "contracts/proto/task.proto",
+        "contracts/proto/worker.proto",
+        "contracts/proto/result.proto",
+        "contracts/proto/ledger.proto",
+        "contracts/proto/buf.yaml"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-120",
+        "WP-130"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "PRT-003",
+      "severity": "P0",
+      "area": "Protobuf",
+      "title": "The assignment envelope was insufficient for secure execution",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/proto/task.proto",
+        "contracts/openapi/edgemint-worker-api.yaml"
+      ],
+      "resolution": "Versioned Protobuf services now define fixed-precision money, secure lease authority, exactly-one result output, ledger entries, request context, linting, compatibility, and code generation.",
+      "canonicalEvidence": [
+        "contracts/proto/common.proto",
+        "contracts/proto/task.proto",
+        "contracts/proto/worker.proto",
+        "contracts/proto/result.proto",
+        "contracts/proto/ledger.proto",
+        "contracts/proto/buf.yaml"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-120",
+        "WP-130"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "PRT-004",
+      "severity": "P0",
+      "area": "Protobuf/Ledger",
+      "title": "The ledger Protobuf contract was ambiguous",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/proto/ledger.proto",
+        "dsl/policies/ledger/platform-ledger-v2.yaml"
+      ],
+      "resolution": "Versioned Protobuf services now define fixed-precision money, secure lease authority, exactly-one result output, ledger entries, request context, linting, compatibility, and code generation.",
+      "canonicalEvidence": [
+        "contracts/proto/common.proto",
+        "contracts/proto/task.proto",
+        "contracts/proto/worker.proto",
+        "contracts/proto/result.proto",
+        "contracts/proto/ledger.proto",
+        "contracts/proto/buf.yaml"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-120",
+        "WP-130"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "PRT-005",
+      "severity": "P1",
+      "area": "Contracts",
+      "title": "Protobuf, OpenAPI, and database models had no canonical alignment rule",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/proto",
+        "contracts/openapi",
+        "database/sql"
+      ],
+      "resolution": "Versioned Protobuf services now define fixed-precision money, secure lease authority, exactly-one result output, ledger entries, request context, linting, compatibility, and code generation.",
+      "canonicalEvidence": [
+        "contracts/proto/common.proto",
+        "contracts/proto/task.proto",
+        "contracts/proto/worker.proto",
+        "contracts/proto/result.proto",
+        "contracts/proto/ledger.proto",
+        "contracts/proto/buf.yaml"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-100",
+        "WP-120",
+        "WP-130"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-001",
+      "severity": "P0",
+      "area": "Pricing",
+      "title": "Policy required HALF_UP but reference code implemented ceiling",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "docs/01-business/advanced/pricing-calculation-order.md",
+        "reference/python/Pricing/PricingEngine.cs",
+        "tests/oracles/vector_oracles.py"
+      ],
+      "resolution": "Basis-point multiplication uses checked HALF_UP arithmetic; the previous ceiling formula is prohibited and tested by an independent oracle.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-002",
+      "severity": "P0",
+      "area": "Pricing",
+      "title": "The reference pricing engine omitted required cost components",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python/Pricing/PricingEngine.cs",
+        "docs/01-business/advanced/pricing-calculation-order.md",
+        "dsl/policies/pricing"
+      ],
+      "resolution": "Financial arithmetic, provider choices, policy ordering, margin floors, reward limits, reconciliation, dual control, token exclusion, and signed activation evidence are deterministic and fail closed.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-003",
+      "severity": "P0",
+      "area": "Finance",
+      "title": "Pricing, reward, and treasury policies were not production-approved",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md",
+        "dsl/policies"
+      ],
+      "resolution": "Financial arithmetic, provider choices, policy ordering, margin floors, reward limits, reconciliation, dual control, token exclusion, and signed activation evidence are deterministic and fail closed.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-004",
+      "severity": "P0",
+      "area": "Finance/Legal",
+      "title": "Payment, payout, VAT, KYC, and tax decisions were unresolved",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/open-decisions.md"
+      ],
+      "resolution": "Stripe Billing, Tax, Identity, and Connect are the GA1 adapters; country and tax evidence remain typed release inputs and fail closed.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-005",
+      "severity": "P0",
+      "area": "Legal",
+      "title": "EDGE token legal classification was unresolved",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md"
+      ],
+      "resolution": "Token settlement and public token sale are excluded from GA1; rewards and liabilities are denominated in EUR micro-units.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-006",
+      "severity": "P1",
+      "area": "Finance",
+      "title": "Overflow and negative-adjustment behavior was incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python/Pricing",
+        "dsl/policies"
+      ],
+      "resolution": "Financial arithmetic, provider choices, policy ordering, margin floors, reward limits, reconciliation, dual control, token exclusion, and signed activation evidence are deterministic and fail closed.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-007",
+      "severity": "P0",
+      "area": "Finance",
+      "title": "Financial reconciliation was conceptual only",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/runbooks",
+        "dsl/use-cases",
+        "dsl/operation-contracts"
+      ],
+      "resolution": "Financial arithmetic, provider choices, policy ordering, margin floors, reward limits, reconciliation, dual control, token exclusion, and signed activation evidence are deterministic and fail closed.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "FIN-008",
+      "severity": "P0",
+      "area": "Finance/Security",
+      "title": "Dual control for sensitive financial operations was not enforced",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "contracts/openapi/edgemint-operations-api.yaml"
+      ],
+      "resolution": "Financial arithmetic, provider choices, policy ordering, margin floors, reward limits, reconciliation, dual control, token exclusion, and signed activation evidence are deterministic and fail closed.",
+      "canonicalEvidence": [
+        "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+        "dsl/policies/rewards/worker-reward-v2.yaml",
+        "dsl/economy/treasury/commercial-v2.yaml",
+        "production/canonical-decisions.yaml",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-060",
+        "WP-130",
+        "WP-170",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-001",
+      "severity": "P0",
+      "area": "Backend",
+      "title": "No real Python solution existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "A Python 3.13.14 solution with shared building blocks, domain types, service hosts, health endpoints, Dockerfiles, and CI build stages now exists.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-002",
+      "severity": "P0",
+      "area": "Worker App",
+      "title": "No Flutter application existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/flutter",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "A Flutter Worker application scaffold, test, UI shell, and native-runtime contract now exist; WP-080 through WP-110 complete the production runtime.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-003",
+      "severity": "P0",
+      "area": "Worker App",
+      "title": "AssignmentCoordinator was empty",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/flutter"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-004",
+      "severity": "P0",
+      "area": "Worker App",
+      "title": "The native inference runtime was not selected",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/flutter",
+        "dsl/catalog/models"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-005",
+      "severity": "P0",
+      "area": "Worker Security",
+      "title": "Secure storage, device binding, and attestation code was absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/flutter",
+        "docs/06-security"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-006",
+      "severity": "P0",
+      "area": "Worker App",
+      "title": "Checkpoint and local database encryption was absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/flutter",
+        "docs/02-product"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-007",
+      "severity": "P0",
+      "area": "Frontend",
+      "title": "The customer web application was absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "contracts/openapi/edgemint-public-api.yaml"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-008",
+      "severity": "P0",
+      "area": "Frontend",
+      "title": "The operations and administration application was absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "contracts/openapi/edgemint-operations-api.yaml"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-009",
+      "severity": "P0",
+      "area": "Backend",
+      "title": "Service hosts and adapters were absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-010",
+      "severity": "P0",
+      "area": "Idempotency",
+      "title": "Request hashing did not define canonical JSON",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python/Idempotency/RequestHasher.cs"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-011",
+      "severity": "P0",
+      "area": "Router",
+      "title": "The reference router did not score multiple candidates",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python/Routing/DeterministicRouter.cs",
+        "dsl/policies/routing/smart-router-v2.yaml"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-012",
+      "severity": "P0",
+      "area": "Domain",
+      "title": "TaskAggregate conflicted with the edit and revision flow",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python/Tasks/TaskAggregate.cs",
+        "dsl/use-cases"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-013",
+      "severity": "P0",
+      "area": "Code/Data",
+      "title": "Status and version code differed from database contracts",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python",
+        "database/sql",
+        "dsl/workflows"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-014",
+      "severity": "P1",
+      "area": "SDK",
+      "title": "Client SDK generation was absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi",
+        "contracts/proto"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "APP-015",
+      "severity": "P1",
+      "area": "UX",
+      "title": "Localization and accessibility were not executable requirements",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/02-product",
+        "reference/flutter"
+      ],
+      "resolution": "A buildable monorepo scaffold and exact implementation packages now cover backend hosts, Worker runtime, portals, generated clients, secure execution, localization, accessibility, and architecture boundaries.",
+      "canonicalEvidence": [
+        "src/backend/pyproject.toml",
+        "src/apps/worker/pubspec.yaml",
+        "src/apps/customer-portal/package.json",
+        "src/apps/operations-portal/package.json",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-080",
+        "WP-110",
+        "WP-150",
+        "WP-160"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-001",
+      "severity": "P0",
+      "area": "Terraform",
+      "title": "Terraform contained no real resources",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/terraform"
+      ],
+      "resolution": "The canonical Terraform root contains concrete AWS resources for VPC, EKS, RDS, previous managed broker, previous non-canonical cache, KMS, ECR, S3, Cognito, WAF, backup, audit, and cost controls.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-002",
+      "severity": "P0",
+      "area": "Terraform",
+      "title": "Terraform lacked a root module, remote state, and environments",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/terraform"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-003",
+      "severity": "P0",
+      "area": "Kubernetes",
+      "title": "The production Kubernetes overlay contained only an evidence note",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes/overlays/production/REQUIRED-EVIDENCE.md"
+      ],
+      "resolution": "The canonical deployment is the fail-closed Helm chart under `deploy/helm/edgemint`; the obsolete evidence-only overlay was removed.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-004",
+      "severity": "P0",
+      "area": "Supply Chain",
+      "title": "Nineteen service images lacked immutable digests and provenance",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md",
+        "infra/kubernetes/base"
+      ],
+      "resolution": "Helm requires immutable SHA-256 image digests and IRSA roles; the production gate requires SBOM, signature, provenance, and vulnerability evidence for every artifact.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-005",
+      "severity": "P0",
+      "area": "Infrastructure Security",
+      "title": "Secrets, KMS, IAM, and workload identity were undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes",
+        "infra/terraform",
+        "docs/06-security"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-006",
+      "severity": "P0",
+      "area": "Network",
+      "title": "Ingress, TLS, DNS, WAF, and egress were not finalized",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes",
+        "infra/terraform"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-007",
+      "severity": "P0",
+      "area": "Data Infrastructure",
+      "title": "Managed database, broker, cache, and object-storage topology was undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/terraform",
+        "infra/docker"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-008",
+      "severity": "P0",
+      "area": "Deployment",
+      "title": "Migration jobs and release ordering were undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes",
+        "database/sql"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-009",
+      "severity": "P1",
+      "area": "Scaling",
+      "title": "Every HPA used the same CPU-only threshold",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes/base"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-010",
+      "severity": "P1",
+      "area": "Availability",
+      "title": "Topology spread allowed scheduling imbalance",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes/base"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-011",
+      "severity": "P1",
+      "area": "Capacity",
+      "title": "Backpressure and capacity controls were not executable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/03-architecture",
+        "infra/kubernetes",
+        "dsl/policies/routing"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-012",
+      "severity": "P1",
+      "area": "Local Infra",
+      "title": "Local Compose files used inconsistent PostgreSQL and broker versions",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/docker/docker-compose.yml",
+        "infra/docker/docker-compose.dev.yaml"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-013",
+      "severity": "P0",
+      "area": "Local Development",
+      "title": "Local Compose did not include application services",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/docker/docker-compose*.yaml"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-014",
+      "severity": "P1",
+      "area": "Containers",
+      "title": "Dependency container images were not immutably pinned",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/docker/docker-compose*.yaml"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-015",
+      "severity": "P0",
+      "area": "Backup/DR",
+      "title": "Backup and restore infrastructure was not executable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/runbooks",
+        "infra/terraform",
+        "infra/kubernetes"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "INF-016",
+      "severity": "P1",
+      "area": "Observability",
+      "title": "The telemetry stack was not deployable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/kubernetes",
+        "docs/07-operations"
+      ],
+      "resolution": "The canonical AWS/Terraform and EKS/Helm implementation now defines real resources, identities, encryption, networking, managed data services, scaling, observability, backup/DR, release ordering, and fail-closed artifact inputs.",
+      "canonicalEvidence": [
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "compose.yaml",
+        "tools/validate_infra.py",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-200",
+        "WP-210",
+        "WP-230"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-001",
+      "severity": "P0",
+      "area": "Security",
+      "title": "Security controls were generic templates",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-002",
+      "severity": "P0",
+      "area": "Operations",
+      "title": "Operations runbooks were not executable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/07-operations/runbooks",
+        "docs/runbooks"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-003",
+      "severity": "P0",
+      "area": "Identity",
+      "title": "Identity provider, MFA, and session policy were not final",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi",
+        "docs/06-security"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-004",
+      "severity": "P0",
+      "area": "Cryptography",
+      "title": "Key hierarchy and rotation were not executable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "database/sql"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-005",
+      "severity": "P1",
+      "area": "API Security",
+      "title": "API-key hashing was underspecified",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/002_identity_and_tenancy.sql",
+        "contracts/openapi"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-006",
+      "severity": "P1",
+      "area": "Service Security",
+      "title": "Service mTLS and PKI lifecycle were undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "infra/kubernetes"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-007",
+      "severity": "P0",
+      "area": "Webhook Security",
+      "title": "Webhook SSRF and DNS-rebinding controls were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi",
+        "docs/06-security"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-008",
+      "severity": "P0",
+      "area": "Audit",
+      "title": "Audit storage was not tamper-evident or WORM-capable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql/017_audit.sql",
+        "docs/06-security"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-009",
+      "severity": "P0",
+      "area": "Supply Chain",
+      "title": "License, SBOM, signature, and provenance controls were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "SOURCES-AND-LEGAL-NOTES.md",
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-010",
+      "severity": "P0",
+      "area": "Security Testing",
+      "title": "Vulnerability management and penetration testing were not executable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "CI absence"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-011",
+      "severity": "P0",
+      "area": "Mobile Security",
+      "title": "Root, jailbreak, and mobile tamper policy was incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "reference/flutter"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-012",
+      "severity": "P0",
+      "area": "Privacy/Legal",
+      "title": "DPIA, consent, and retention approvals were missing",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/06-security",
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-013",
+      "severity": "P0",
+      "area": "Data Residency",
+      "title": "Data-residency policy was not bound to infrastructure and routing",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/policies",
+        "docs/06-security",
+        "infra/terraform"
+      ],
+      "resolution": "Identity, authorization, cryptography, worker trust, webhook defenses, audit integrity, supply-chain controls, privacy, residency, vulnerability management, and approval evidence are explicit and testable.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SEC-014",
+      "severity": "P0",
+      "area": "Authorization",
+      "title": "The IAM and RBAC matrix was not canonical",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts/openapi",
+        "docs/06-security"
+      ],
+      "resolution": "Operation permissions, OIDC claims, service roles, Worker identity, and administrative roles are governed by canonical authorization work packages and contract metadata.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/07-security",
+        "deploy/terraform/aws",
+        "deploy/helm/edgemint",
+        "evidence/schemas/release-evidence.schema.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-040",
+        "WP-080",
+        "WP-090",
+        "WP-180",
+        "WP-220",
+        "WP-240"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SRE-001",
+      "severity": "P0",
+      "area": "SRE",
+      "title": "Production SLO definitions were insufficient",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/policies/slo/platform-slo-v2.yaml",
+        "docs/07-operations"
+      ],
+      "resolution": "SLOs, alerts, error budgets, capacity, cost controls, incident ownership, backup, DR, canary, rollback, RPO, and RTO are quantified and evidence-gated.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/08-sre",
+        "deploy/observability",
+        "deploy/terraform/aws",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-210",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SRE-002",
+      "severity": "P0",
+      "area": "SRE",
+      "title": "Dashboards and alert rules were not deployable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/07-operations",
+        "infra"
+      ],
+      "resolution": "SLOs, alerts, error budgets, capacity, cost controls, incident ownership, backup, DR, canary, rollback, RPO, and RTO are quantified and evidence-gated.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/08-sre",
+        "deploy/observability",
+        "deploy/terraform/aws",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-210",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SRE-003",
+      "severity": "P0",
+      "area": "DR",
+      "title": "RTO, RPO, and failover were not proven",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/07-operations",
+        "infra"
+      ],
+      "resolution": "SLOs, alerts, error budgets, capacity, cost controls, incident ownership, backup, DR, canary, rollback, RPO, and RTO are quantified and evidence-gated.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/08-sre",
+        "deploy/observability",
+        "deploy/terraform/aws",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-210",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SRE-004",
+      "severity": "P1",
+      "area": "Incident",
+      "title": "Escalation, on-call, and contact procedures were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/runbooks"
+      ],
+      "resolution": "SLOs, alerts, error budgets, capacity, cost controls, incident ownership, backup, DR, canary, rollback, RPO, and RTO are quantified and evidence-gated.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/08-sre",
+        "deploy/observability",
+        "deploy/terraform/aws",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-210",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "SRE-005",
+      "severity": "P1",
+      "area": "FinOps",
+      "title": "FinOps guardrails existed only as policy prose",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/policies/routing/smart-router-v2.yaml",
+        "docs/07-operations"
+      ],
+      "resolution": "SLOs, alerts, error budgets, capacity, cost controls, incident ownership, backup, DR, canary, rollback, RPO, and RTO are quantified and evidence-gated.",
+      "canonicalEvidence": [
+        "production/canonical-decisions.yaml",
+        "docs/08-sre",
+        "deploy/observability",
+        "deploy/terraform/aws",
+        "cursor/work-packages.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-190",
+        "WP-210",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-001",
+      "severity": "P0",
+      "area": "Testing",
+      "title": "The 595,000 vectors were not independent from their oracle",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "tests/oracles/vector_oracles.py",
+        "tools/verify_vectors.py",
+        "build/reports/verify-vectors.json"
+      ],
+      "resolution": "Existing vectors remain regression inputs, while WP-060/WP-100/WP-130 require an independently implemented oracle and differential results before acceptance.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-002",
+      "severity": "P0",
+      "area": "Testing",
+      "title": "No real Python unit or integration tests existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/python",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-003",
+      "severity": "P0",
+      "area": "Testing",
+      "title": "No Worker test suite or device matrix existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "reference/flutter",
+        "docs/02-product"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-004",
+      "severity": "P0",
+      "area": "Testing",
+      "title": "No real end-to-end test existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "tests",
+        "infra/docker"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-005",
+      "severity": "P0",
+      "area": "Testing",
+      "title": "Database concurrency and transaction tests were absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "database/sql",
+        "tests"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-006",
+      "severity": "P0",
+      "area": "Testing",
+      "title": "Load, soak, chaos, and security tests were absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "tests",
+        "docs/07-operations"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-007",
+      "severity": "P1",
+      "area": "Testing",
+      "title": "Use-case scenarios were not executable",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "dsl/use-cases",
+        "dsl/scenarios"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-008",
+      "severity": "P1",
+      "area": "Testing",
+      "title": "No test-data factory or virtual clock existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "tests",
+        "reference"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-009",
+      "severity": "P0",
+      "area": "CI/CD",
+      "title": "CI performed file validation only",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "tools/validate_all.sh",
+        "build/reports"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-010",
+      "severity": "P0",
+      "area": "CI/CD",
+      "title": "Contract compatibility gates were incomplete",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "contracts",
+        "tools"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "TST-011",
+      "severity": "P0",
+      "area": "Release",
+      "title": "Promotion, canary, and rollback verification was absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra",
+        "docs/07-operations"
+      ],
+      "resolution": "The execution plan requires independent oracles and concrete unit, property, integration, contract, database, mobile, end-to-end, load, soak, chaos, security, DR, and canary evidence; CI cannot promote without it.",
+      "canonicalEvidence": [
+        "tests/vectors",
+        "tests/oracles",
+        "tools/verify_vectors.py",
+        ".github/workflows/ci.yml",
+        "cursor/work-packages.json",
+        "evidence/required-release-sets.json"
+      ],
+      "implementationWorkPackages": [
+        "WP-020",
+        "WP-030",
+        "WP-110",
+        "WP-120",
+        "WP-130",
+        "WP-200",
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-001",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "Cursor had to guess unapproved decisions",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "docs/00-executive/open-decisions.md"
+      ],
+      "resolution": "All technology, provider, data, security, commercial, mobile, and release choices needed for implementation are fixed in the canonical decision set.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-002",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "The backlog was not dependency-driven",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs",
+        "dsl",
+        "reference"
+      ],
+      "resolution": "The 27 work packages form a validated acyclic dependency DAG with explicit eligibility and path-overlap rules.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-003",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "Tasks lacked an executable Definition of Done",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive",
+        "tools"
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-004",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "No zero-to-running bootstrap existed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "infra/docker",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-005",
+      "severity": "P1",
+      "area": "Cursor Readiness",
+      "title": "Source-of-truth precedence was unspecified",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs",
+        "dsl",
+        "contracts",
+        "database",
+        "reference",
+        "samples"
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-006",
+      "severity": "P1",
+      "area": "Cursor Readiness",
+      "title": "Frontend stack and design tokens were not fixed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence.",
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-007",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "Mobile background-execution behavior was not fixed",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-audit/EXTERNAL-RELEASE-BLOCKERS.md",
+        "docs/02-product"
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-008",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "Cloud-fallback contract and provider were undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/00-executive/open-decisions.md",
+        "dsl/policies/routing"
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-009",
+      "severity": "P0",
+      "area": "Cursor Readiness",
+      "title": "Service, table, API, and event ownership was undefined",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "docs/03-architecture/service-boundaries.md",
+        "database/sql",
+        "contracts"
+      ],
+      "resolution": "Cursor now has canonical precedence, a dependency DAG, allowed paths, exact outputs, commands, evidence paths, state tracking, stop rules, external-input contracts, and an unambiguous completion gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    },
+    {
+      "id": "CUR-010",
+      "severity": "P1",
+      "area": "Cursor Readiness",
+      "title": "Cursor stop rules and safety rails were absent",
+      "status": "resolved_in_v5_python_postgresql_pack",
+      "v2Evidence": [
+        "Original v2 evidence item was non-English and is superseded by the canonical v4 evidence."
+      ],
+      "resolution": "Cursor must stop on contradiction, missing evidence, failed invariant, unsafe migration, unsupported geography, or any request to weaken a gate.",
+      "canonicalEvidence": [
+        "cursor/CURSOR-MASTER-PROMPT.md",
+        "cursor/work-packages.json",
+        "cursor/STOP-RULES.md",
+        "cursor/project-state.json",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "implementationWorkPackages": [
+        "WP-000",
+        "WP-250"
+      ],
+      "acceptanceCriteria": [
+        "The canonical artifact is present and machine-validated.",
+        "The assigned work package contains executable runtime acceptance criteria and evidence paths.",
+        "No lower-precedence artifact may reintroduce the v2.1 ambiguity."
+      ],
+      "validation": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_production_pack.py"
+      ]
+    }
+  ]
+}

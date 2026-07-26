@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-memory-003
+  version: 2.0.0
+  status: active
+  description: Mobile execution must obey memory/thermal budgets
+  owners:
+  - architecture
+spec:
+  statement: Mobile execution must obey memory/thermal budgets; control variant 3.
+  priority: must
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

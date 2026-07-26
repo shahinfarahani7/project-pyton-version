@@ -1,0 +1,37 @@
+apiVersion: edgemint.io/v1
+kind: TokenPolicy
+metadata:
+  name: claim-enabled
+  version: 2.0.0
+  status: draft
+  owners:
+  - legal
+  - product
+spec:
+  mode: claim-enabled
+  utility:
+  - cosmetics
+  - worker_level
+  - api_discount
+  - worker_claim
+  claimPolicyRef: ClaimPolicy/edge-claim-v2@2.0.0
+  claimEnabled: true
+  activationGates:
+  - legal_opinion
+  - kyc_aml
+  - tax
+  - treasury_coverage
+  - contract_audit
+  - store_disclosure
+  prohibitions:
+  - guaranteed_return
+  - guaranteed_price
+  - investment_promise
+  - unlimited_passive_minting
+  - chance_based_real_value_reward
+  storePresentation:
+    describeAs: edge AI worker rewards
+    forbiddenTerms:
+    - crypto mining
+    - passive crypto miner
+    - guaranteed income

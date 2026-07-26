@@ -1,0 +1,67 @@
+name: production-release-gate
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Exact 40-character commit SHA bound to the evidence manifest
+        required: true
+        type: string
+      evidence_run_id:
+        description: GitHub Actions run containing the signed edgemint-release-evidence artifact
+        required: true
+        type: string
+      evidence_artifact_name:
+        description: Evidence artifact name
+        required: true
+        default: edgemint-release-evidence
+        type: string
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  packages: read
+jobs:
+  gate:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate commit input
+        shell: bash
+        run: |
+          [[ "${{ inputs.commit_sha }}" =~ ^[a-f0-9]{40}$ ]] || { echo "Invalid commit SHA"; exit 2; }
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13.14'
+      - name: Install validation dependencies
+        run: pip install --require-hashes -r tools/requirements.lock
+      - name: Download signed release evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.evidence_artifact_name }}
+          run-id: ${{ inputs.evidence_run_id }}
+          github-token: ${{ github.token }}
+          path: evidence/actual
+      - name: Validate execution pack
+        run: bash tools/validate_all.sh
+      - name: Verify exact checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ inputs.commit_sha }}"
+          git diff --exit-code
+          git status --porcelain --untracked-files=all | grep -q . && { echo "Untracked files detected"; exit 2; } || true
+      - name: Run fail-closed production evidence gate
+        env:
+          COSIGN_TRUSTED_PUBLIC_KEY_SHA256: ${{ vars.COSIGN_TRUSTED_PUBLIC_KEY_SHA256 }}
+        run: >-
+          python tools/production_gate.py
+          --evidence-dir evidence/actual
+          --expected-commit-sha "${{ inputs.commit_sha }}"
+          --manifest-signature evidence/actual/release-evidence.sig
+          --trusted-key evidence/actual/trusted-release-key.pem
+          --expected-trusted-key-sha256 "${COSIGN_TRUSTED_PUBLIC_KEY_SHA256:?protected environment variable is required}"
+      - name: Gate result
+        run: echo "Signed evidence for the exact commit passed. Deployment promotion may proceed only through the separately protected deployment workflow."

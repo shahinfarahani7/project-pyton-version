@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-025-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-025
+  useCaseRef: UseCase/uc-013-retry-task@2.0.0
+  mode: success
+  given:
+  - Use case UC-013 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.tasks:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke retryTask with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: task_attempts.'
+  - 'Exactly these canonical events are inserted into the outbox: task.attempt.created.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - retryTask
+    requirements:
+    - REQ-TASK-003
+  expectedEvents:
+  - task.attempt.created
+  expectedErrorCode: null

@@ -1,0 +1,55 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: assignment-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: completed
+    terminal: true
+  - name: expired
+    terminal: true
+  - name: failed
+    terminal: true
+  - name: leased
+    terminal: false
+  - name: revoked
+    terminal: false
+  - name: running
+    terminal: false
+  - name: stale
+    terminal: true
+  transitions:
+  - from: leased
+    to: running
+    event: assignment-lifecycle.leased_to_running
+  - from: leased
+    to: failed
+    event: assignment-lifecycle.leased_to_failed
+  - from: leased
+    to: expired
+    event: assignment-lifecycle.leased_to_expired
+  - from: leased
+    to: revoked
+    event: assignment-lifecycle.leased_to_revoked
+  - from: running
+    to: completed
+    event: assignment-lifecycle.running_to_completed
+  - from: running
+    to: revoked
+    event: assignment-lifecycle.running_to_revoked
+  - from: running
+    to: expired
+    event: assignment-lifecycle.running_to_expired
+  - from: revoked
+    to: stale
+    event: assignment-lifecycle.revoked_to_stale
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence
+  - leased is created atomically by the router without worker confirmation
+  - offered accepted and rejected states are forbidden

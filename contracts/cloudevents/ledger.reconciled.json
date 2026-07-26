@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_d8bbb7e0ccdc4eeccff64962af",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.ledger.reconciled.v1",
+  "subject": "ledger_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_d8bbb7e0ccdc4eeccff64962af",
+  "causationId": "cmd_d8bbb7e0ccdc4eeccff64962af",
+  "partitionKey": "ledger_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "ledgerId": "ledger_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "reconciled",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

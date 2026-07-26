@@ -1,0 +1,36 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createOrganization",
+  "request": {
+    "method": "POST",
+    "path": "/organizations",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createOrganization_0001",
+      "Idempotency-Key": "idem_createOrganization_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "name": "Example Name"
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "name": "Example Name",
+      "status": "active",
+      "version": 1,
+      "createdAt": "2026-07-21T10:00:00Z",
+      "updatedAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.organizations:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

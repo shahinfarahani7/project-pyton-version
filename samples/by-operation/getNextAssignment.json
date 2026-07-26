@@ -1,0 +1,39 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "getNextAssignment",
+  "request": {
+    "method": "GET",
+    "path": "/assignments:next",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getNextAssignment_0001",
+      "Authorization": "Bearer worker_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "assignmentId": "asn_01J00000000000000000000000",
+      "attemptId": "att_01J00000000000000000000000",
+      "revisionId": "id_01J00000000000000000000000",
+      "leaseToken": "example",
+      "fenceToken": 1,
+      "leaseExpiresAt": "2026-07-21T10:00:00Z",
+      "taskType": "example",
+      "modelVersionId": "id_01J00000000000000000000000",
+      "inputManifestUrl": "example",
+      "outputUploadUrl": "example",
+      "assignmentMode": "auto",
+      "executionStartsAutomatically": true,
+      "startDeadlineAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.assignments:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

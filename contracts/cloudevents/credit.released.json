@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_76aa9e52f400b9e0a01abf88da",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.credit.released.v1",
+  "subject": "credit_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_76aa9e52f400b9e0a01abf88da",
+  "causationId": "cmd_76aa9e52f400b9e0a01abf88da",
+  "partitionKey": "credit_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "creditId": "credit_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "released",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

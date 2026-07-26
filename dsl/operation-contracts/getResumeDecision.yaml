@@ -1,0 +1,56 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-getresumedecision
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for getResumeDecision.
+spec:
+  operationId: getResumeDecision
+  api: worker
+  method: GET
+  path: /assignments/{assignmentId}/resume
+  summary: Get authoritative resume decision
+  classification: business_use_case
+  permissions:
+  - worker.assignments:read
+  idempotency:
+    required: false
+    scope: not applicable to safe read; Request-Id is tracing only
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: read_only
+    isolation: read_only_repeatable_read
+    writes: []
+    domainEvents: []
+    auditRequired: false
+  responseStatuses:
+  - '200'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-034-resume-after-restart@2.0.0
+  errorCodes:
+  - ASSIGNMENT_STALE_FENCE
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - CHECKPOINT_NOT_RESUMABLE
+  - INPUT_SCHEMA_INVALID
+  - LEASE_EXPIRED
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-worker-api.yaml::GET /assignments/{assignmentId}/resume
+    request: OpenAPI requestBody/parameters for getResumeDecision
+    response: OpenAPI responses for getResumeDecision
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

@@ -1,0 +1,31 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-096-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-096
+  useCaseRef: UseCase/uc-048-resolve-ambiguous-claim@2.0.0
+  mode: failure
+  given:
+  - Use case UC-048 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Treasury Operator is authenticated and has permissions ops.claims:resolve-transfer.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke resolveClaimTransfer with the deterministic precondition that produces PROVIDER_RESULT_AMBIGUOUS.
+  then:
+  - The API returns canonical error code PROVIDER_RESULT_AMBIGUOUS with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Treasury Operator
+    operationIds:
+    - resolveClaimTransfer
+    requirements:
+    - REQ-CLAIM-004
+    - REQ-DISPUTE-004
+  expectedEvents: []
+  expectedErrorCode: PROVIDER_RESULT_AMBIGUOUS

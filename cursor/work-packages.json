@@ -1,0 +1,1535 @@
+{
+  "version": "5.0.0",
+  "executionMode": "dependency-dag",
+  "selectionRule": "Select the lowest numbered ready package whose dependencies are complete. Never execute two packages that overlap allowedPaths concurrently.",
+  "workPackages": [
+    {
+      "id": "WP-000",
+      "title": "Baseline integrity and authority",
+      "status": "ready",
+      "dependencies": [],
+      "objective": "Verify package checksum/catalog consistency; validate all JSON/YAML/DSL/OpenAPI/AsyncAPI/CloudEvents/SQL; confirm English-only content and zero unresolved implementation ambiguity.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "tools",
+        "production",
+        "contracts",
+        "dsl"
+      ],
+      "requiredOutputs": [
+        "Verify package checksum/catalog consistency; validate all JSON/YAML/DSL/OpenAPI/AsyncAPI/CloudEvents/SQL; confirm English-only content and zero unresolved implementation ambiguity."
+      ],
+      "acceptanceCriteria": [
+        "`bash tools/validate_all.sh` exits 0.",
+        "`python tools/validate_production_pack.py` reports all three scores as 100.",
+        "No file contains Arabic/Persian script or obsolete authoritative archive content."
+      ],
+      "verificationCommands": [
+        "python tools/verify_package.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-000.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-010",
+      "title": "Pin and lock the complete toolchain",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-000"
+      ],
+      "objective": "Pin exact Python runtime/dependency/base-image digests, Node/npm dependencies, Flutter/Dart SDK, Python dependencies, Terraform providers, Helm chart dependencies, container images, and code-generation tools; generate lockfiles and dependency inventory.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/pyproject.toml",
+        "src/backend/requirements-backend.lock",
+        "src/backend/uv.lock",
+        "src/backend/.python-version",
+        ".python-version",
+        ".tool-versions",
+        ".nvmrc",
+        "package.json",
+        "package-lock.json",
+        "src/apps/worker/pubspec.lock",
+        "tools/requirements.lock",
+        ".github/workflows",
+        "src/backend/services/*/Dockerfile",
+        "compose.yaml",
+        "deploy/terraform/aws/.terraform.lock.hcl",
+        "deploy/helm/edgemint/Chart.lock",
+        "deploy"
+      ],
+      "requiredOutputs": [
+        "Pin exact Python runtime, full transitive Python dependency graph, immutable base-image digests, Node/npm dependencies, Flutter/Dart SDK, Terraform providers, Helm chart dependencies, GitHub Actions, container images, and code-generation tools.",
+        "A generated and committed src/backend/uv.lock plus a hash-pinned exported requirements-backend.lock verified on a clean Python 3.13.14 runner.",
+        "A dependency inventory with licenses, vulnerability baseline, and approved exception records."
+      ],
+      "acceptanceCriteria": [
+        "No `latest`, floating tag, unbounded package range, or unverified binary remains in executable paths.",
+        "Toolchain setup is reproducible on a clean runner.",
+        "Dependency licenses and vulnerability baseline are recorded."
+      ],
+      "verificationCommands": [
+        "python tools/validate_dependency_locks.py",
+        "test -f src/backend/uv.lock",
+        "python -m pip install --require-hashes -r src/backend/requirements-backend.lock",
+        "python -m pip check",
+        "npm ci",
+        "cd src/apps/worker && flutter pub get --enforce-lockfile",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-010.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-020",
+      "title": "Monorepo build and generated-contract pipeline",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-010"
+      ],
+      "objective": "Complete the monorepo build graph; generate typed Python, TypeScript, Dart, and Protobuf clients from canonical contracts; fail CI on generated-code drift; add shared analyzers, formatting, test coverage, and deterministic builds.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src",
+        "contracts",
+        "generated",
+        ".github",
+        "tools"
+      ],
+      "requiredOutputs": [
+        "tools/check_generated_drift.sh",
+        "generated/python/",
+        "generated/typescript/",
+        "generated/dart/",
+        "generated/protobuf/",
+        "Complete the monorepo build graph; generate typed Python, TypeScript, Dart, and Protobuf clients from canonical contracts; fail CI on generated-code drift; add shared analyzers, formatting, test coverage, and deterministic builds."
+      ],
+      "acceptanceCriteria": [
+        "A clean clone builds backend, both portals, Worker shell, and generated clients.",
+        "Regeneration produces no uncommitted diff.",
+        "Warnings are errors and coverage thresholds are enforced."
+      ],
+      "verificationCommands": [
+        "python -m compileall -q src/backend/edgemint src/backend/tests && PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "npm run verify:web",
+        "cd src/apps/worker && flutter analyze && flutter test",
+        "bash tools/check_generated_drift.sh",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-020.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-030",
+      "title": "PostgreSQL clean install, upgrade, RLS, and invariants",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-020"
+      ],
+      "objective": "Implement and validate the PostgreSQL 18 schema, transactional migrations, workspace Row-Level Security, session-context lifecycle, relational integrity, ledger immutability, assignment fencing, backup-compatible upgrades, and production-sized migration rehearsal.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "database",
+        "tests/database",
+        "src/backend/EdgeMint.Persistence",
+        "tools",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "tools/test_database.py",
+        "src/backend/tests/",
+        "tests/database/",
+        "Implement migration runner and persistence layer; test clean install and every supported upgrade path; enforce UUIDv7, workspace Row-Level Security with block predicates, immutable revisions/results/ledger, balanced ledger, exact currency, fencing, idempotency, outbox/inbox, temporal constraints, backup-safe migrations, and least-privilege roles."
+      ],
+      "acceptanceCriteria": [
+        "All migrations run transactionally on PostgreSQL 18.",
+        "Cross-workspace tests prove read/write denial through direct and indirect paths.",
+        "Concurrency tests prove idempotency, fence rejection, and balanced ledger.",
+        "Migration rollback or forward-fix procedure is documented and tested."
+      ],
+      "verificationCommands": [
+        "python tools/validate_sql.py",
+        "docker compose up -d postgresql",
+        "docker compose run --rm postgresql-init",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-030.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-040",
+      "title": "Identity, authorization, tenant context, and audit",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-030"
+      ],
+      "objective": "Implement Cognito OIDC validation, customer/operator separation, phishing-resistant operator MFA policy, service IRSA+mTLS identity, workspace context propagation, permission policies, API-key hashing/rotation/revocation, optimistic concurrency, and tamper-evident audit.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md",
+        "production/BROWSER-SESSION-AND-WEBSOCKET-AUTH.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/identity",
+        "src/backend/EdgeMint.Security",
+        "tests/security",
+        "contracts/openapi",
+        "tools",
+        "src/backend",
+        "src/backend/services/api-gateway"
+      ],
+      "requiredOutputs": [
+        "tools/test_openapi_authorization_coverage.py",
+        "src/backend/tests/",
+        "Implement Cognito OIDC validation, customer/operator separation, phishing-resistant operator MFA policy, service IRSA+mTLS identity, workspace context propagation, permission policies, API-key hashing/rotation/revocation, optimistic concurrency, and tamper-evident audit.",
+        "src/backend/services/api-gateway with server-side OIDC token custody, session rotation, CSRF enforcement, revocation, and workspace binding"
+      ],
+      "acceptanceCriteria": [
+        "Every operation maps to exactly one tested authorization policy.",
+        "Workspace claim and database session context cannot be overridden by request input.",
+        "Privilege-escalation, confused-deputy, token replay, and revoked-key tests pass.",
+        "Audit records include actor, workspace, action, target, correlation, result, and integrity chain.",
+        "Browser sessions satisfy the BFF, cookie, CSRF, rotation, workspace binding, logout, and revocation contract."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tools/test_openapi_authorization_coverage.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-040.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-045",
+      "title": "Durable WebSocket Event Relay and service event clients",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-040"
+      ],
+      "objective": "Implement the production WebSocket Event Relay, PostgreSQL outbox/inbox and delivery workers, authenticated subscriptions, resume-token rotation, per-aggregate ordering, backpressure, acknowledgement-after-commit, retry, dead-letter replay, client SDK, observability, and graceful rolling deployment.",
+      "inputs": [
+        "production/WEBSOCKET-EVENT-RELAY-ARCHITECTURE.md",
+        "contracts/websocket/frame.schema.json",
+        "contracts/asyncapi/edgemint-events.yaml",
+        "database/sql/004_durable_websocket_eventing.sql",
+        "database/sql/005_stored_procedures_and_invariants.sql",
+        "production/BROWSER-SESSION-AND-WEBSOCKET-AUTH.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/event-relay",
+        "src/backend/EdgeMint.BuildingBlocks",
+        "tests/event-relay",
+        "database/sql",
+        "contracts/websocket",
+        "contracts/asyncapi",
+        "deploy/helm/edgemint",
+        "tools",
+        "evidence",
+        "src/backend/services/api-gateway"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/event_relay/",
+        "src/backend/tests/event_relay/",
+        "src/backend/edgemint/building_blocks/eventing/durable_websocket_client.py",
+        "src/backend/edgemint/building_blocks/eventing/transactional_outbox.py",
+        "src/backend/edgemint/building_blocks/eventing/transactional_inbox.py",
+        "tools/run_event_relay_load_test.py",
+        "src/backend/services/api-gateway browser WebSocket edge with delegated-token relay proxy and bounded bidirectional buffers"
+      ],
+      "acceptanceCriteria": [
+        "A business transaction and its outbox row commit atomically in PostgreSQL.",
+        "Consumers persist inbox and side effects before acknowledgement.",
+        "Reconnect with a rotated resume token replays every unacknowledged delivery without replaying acknowledged sequence positions.",
+        "Duplicate and reordered frames are idempotent and per-aggregate order is preserved.",
+        "Slow consumers cannot exceed 256 in-flight deliveries and cannot exhaust relay or database resources.",
+        "Expired leases are recovered after process and pod failure.",
+        "Dead-letter replay requires authorization, requester identity, reason, and audit evidence.",
+        "Cross-workspace subscriptions and event delivery are impossible.",
+        "Load, soak, rolling restart, network partition, SQL failover, and reconnect tests satisfy the declared SLOs.",
+        "Browser upgrades authenticate only through a valid same-origin BFF session cookie; credentials are absent from URLs and frames."
+      ],
+      "verificationCommands": [
+        "python tools/validate_websocket_architecture.py",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tools/run_event_relay_load_test.py --contract-only",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-045.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A transport acknowledgement would occur before consumer commit.",
+        "A change would weaken PostgreSQL durability, workspace isolation, authentication, replay integrity, or bounded backpressure."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One cohesive event-relay capability per commit.",
+        "testRule": "Unit, integration, failure, and load contracts are mandatory.",
+        "evidenceRule": "Evidence is written only after every verification command exits zero.",
+        "completionRule": "Complete only after durable publish, consume, replay, failover, and authorization criteria pass."
+      }
+    },
+    {
+      "id": "WP-050",
+      "title": "Secure file lifecycle and object storage",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-040",
+        "WP-045"
+      ],
+      "objective": "Implement upload intent, multipart upload, content-length/type enforcement, SHA-256 verification, malware scanning, KMS encryption, workspace-bound object keys, signed URL TTL, quarantine, retention/legal hold, deletion, and audit events.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/file",
+        "contracts/openapi",
+        "tests/e2e",
+        "deploy",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "tests/e2e/file_lifecycle.py",
+        "Implement upload intent, multipart upload, content-length/type enforcement, SHA-256 verification, malware scanning, KMS encryption, workspace-bound object keys, signed URL TTL, quarantine, retention/legal hold, deletion, and audit events."
+      ],
+      "acceptanceCriteria": [
+        "A caller cannot read, overwrite, finalize, or delete another workspace file.",
+        "Hash mismatch, oversize, malware, expired URL, incomplete multipart, and replay paths fail closed.",
+        "Lifecycle and deletion evidence reconcile database and S3."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tests/e2e/file_lifecycle.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-050.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-060",
+      "title": "Deterministic pricing, quote, and margin engine",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-040",
+        "WP-045"
+      ],
+      "objective": "Implement integer micro-EUR calculations, HALF_UP basis-point multiplication, ordered modifiers, quote snapshots, signed policy versions, TTL, contract discounts, promotion reservations, expected/stressed cost models, and margin floors.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/pricing",
+        "dsl/policies/pricing",
+        "tests/vectors",
+        "tests/oracles",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "Implement integer micro-EUR calculations, HALF_UP basis-point multiplication, ordered modifiers, quote snapshots, signed policy versions, TTL, contract discounts, promotion reservations, expected/stressed cost models, and margin floors."
+      ],
+      "acceptanceCriteria": [
+        "All 110,000 pricing vectors pass against an independent oracle.",
+        "Overflow, negative inputs, stale quote, incompatible currency, missing cost component, and margin-floor cases fail closed.",
+        "A quote is immutable and fully reproducible from stored policy/input versions."
+      ],
+      "verificationCommands": [
+        "python tools/verify_vectors.py",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-060.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-070",
+      "title": "Task admission, revision, reservation, and submission",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-050",
+        "WP-060"
+      ],
+      "objective": "Implement draft creation, strict type-specific parameters, immutable revisions, quote binding, atomic credit reservation, submission, cancellation, expiry, idempotency, outbox events, and admission limits.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/task-intake",
+        "contracts/openapi",
+        "contracts/asyncapi",
+        "database",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "tests/e2e/task_admission.py",
+        "Implement draft creation, strict type-specific parameters, immutable revisions, quote binding, atomic credit reservation, submission, cancellation, expiry, idempotency, outbox events, and admission limits."
+      ],
+      "acceptanceCriteria": [
+        "Create/submit semantics exactly match OpenAPI and lifecycle DSL.",
+        "Reservation binds workspace, task, revision, quote, currency, amount, and expiry atomically.",
+        "Duplicate/reordered requests cannot double-reserve or mutate a submitted revision."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tests/e2e/task_admission.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-070.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-080",
+      "title": "Worker enrollment, device trust, consent, and readiness",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-040",
+        "WP-045"
+      ],
+      "objective": "Implement account/device registration, nonce challenge, device-bound P-256 keys, Play Integrity/App Attest verification, anti-replay, consent versioning, benchmark signing, tiering, preferences, availability, heartbeat sequence checks, reliability, quarantine, and ban flows.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/worker-registry",
+        "src/apps/worker",
+        "contracts/proto",
+        "tests/mobile",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "src/apps/worker/integration_test/enrollment_test.dart",
+        "Implement account/device registration, nonce challenge, device-bound P-256 keys, Play Integrity/App Attest verification, anti-replay, consent versioning, benchmark signing, tiering, preferences, availability, heartbeat sequence checks, reliability, quarantine, and ban flows."
+      ],
+      "acceptanceCriteria": [
+        "Cloned keys, stale attestation, emulator policy breach, replayed nonce/heartbeat, rooted-device policy, and consent mismatch are rejected.",
+        "Worker state transitions match the canonical lifecycle.",
+        "No paid work is auto-assigned without current attestation, consent, Available status, and readiness."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "cd src/apps/worker && flutter test integration_test/enrollment_test.dart",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-080.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-090",
+      "title": "Model registry, license gate, signed distribution, and rollback",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-050",
+        "WP-080"
+      ],
+      "objective": "Implement GA1 model build/promotion pipeline, model BOM/license evidence, KMS signature, digest-pinned manifests, encrypted/resumable download, storage admission, atomic install, runtime ABI check, staged rollout, health telemetry, quarantine, revocation, and rollback.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/model-registry",
+        "dsl/catalog/models",
+        "src/apps/worker",
+        "evidence",
+        "tools",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "src/apps/worker/integration_test/model_delivery_test.dart",
+        "tools/validate_model_release_evidence.py",
+        "Implement GA1 model build/promotion pipeline, model BOM/license evidence, KMS signature, digest-pinned manifests, encrypted/resumable download, storage admission, atomic install, runtime ABI check, staged rollout, health telemetry, quarantine, revocation, and rollback."
+      ],
+      "acceptanceCriteria": [
+        "A model without exact digest, signature, approved license, benchmark, and rollback version cannot become active.",
+        "Corrupt/chunk-replay/downgrade/revoked-model tests pass.",
+        "Device compatibility and resource envelopes are enforced before automatic lease routing."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "cd src/apps/worker && flutter test integration_test/model_delivery_test.dart",
+        "python tools/validate_model_release_evidence.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-090.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "GA1_MODEL_RELEASE_MANIFEST",
+        "MODEL_SIGNING_KMS_KEY_ARN"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-100",
+      "title": "Router, automatic lease, retry, and fencing",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-070",
+        "WP-080",
+        "WP-090"
+      ],
+      "objective": "Implement eligibility filtering, deterministic scoring, capacity/tier/model/residency checks, fairness, atomic server-side auto-lease, monotonic fence token, durable targeted delivery, automatic agent start, machine-detected unavailability, renew/revoke/expire, retry budget, straggler handling, consensus fan-out, and cloud fallback policy. Per-task worker confirmation is forbidden.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/router",
+        "contracts/proto",
+        "dsl/policies/routing",
+        "tests/vectors",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "Implement eligibility filtering, deterministic scoring, capacity/tier/model/residency checks, fairness, atomic server-side auto-lease and automatic agent start, monotonic fence token, renew/revoke/expire, retry budget, straggler handling, consensus fan-out, and cloud fallback policy."
+      ],
+      "acceptanceCriteria": [
+        "All 100,000 routing vectors pass.",
+        "Only one current lease authority can submit; stale fences always fail.",
+        "Deadline, margin, residency, anti-affinity, fairness, and no-capacity paths are tested.",
+        "Router decisions are explainable and auditable.",
+        "No offered/accepted/rejected assignment state exists.",
+        "No worker Accept/Reject UI or API exists.",
+        "WebSocket ACK is verified as transport receipt only."
+      ],
+      "verificationCommands": [
+        "python tools/verify_vectors.py",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-100.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-110",
+      "title": "Android Worker execution runtime",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-090",
+        "WP-100"
+      ],
+      "objective": "Implement foreground-service execution, visible status, charging/network/battery/thermal/schedule constraints, encrypted inputs/checkpoints/outputs, native ONNX/LiteRT adapters, sandbox/resource limits, progress, crash-safe resume, cancellation, signed result submission, local cleanup, and privacy disclosures.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/apps/worker",
+        "contracts/proto",
+        "tests/mobile",
+        "tests"
+      ],
+      "requiredOutputs": [
+        "tests/mobile/run_device_matrix.py",
+        "Implement foreground-service execution, visible status, charging/network/battery/thermal/schedule constraints, encrypted inputs/checkpoints/outputs, native ONNX/LiteRT adapters, sandbox/resource limits, progress, crash-safe resume, cancellation, signed result submission, local cleanup, and privacy disclosures."
+      ],
+      "acceptanceCriteria": [
+        "No hidden computation occurs; user controls and OS status remain visible.",
+        "Kill/restart/network-loss/thermal/storage/battery/lease-revocation scenarios preserve safety and exactly-once semantics.",
+        "Golden OCR/extraction/transcription outputs meet quality, latency, energy, memory, and thermal thresholds on the device matrix."
+      ],
+      "verificationCommands": [
+        "cd src/apps/worker && flutter analyze && flutter test",
+        "python tests/mobile/run_device_matrix.py --platform android --profile ga1",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-110.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-120",
+      "title": "Result intake, verification, consensus, and human review",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-100",
+        "WP-110"
+      ],
+      "objective": "Implement lease/signature/input/model binding, exactly-one output, schema validation, duplicate detection, encrypted storage, automatic verifier, golden tasks, consensus, retry, warning, rejection, human-review queue, immutable decision evidence, and dispute-ready lineage.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/result",
+        "src/backend/services/verification",
+        "contracts",
+        "tests/e2e",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "tests/e2e/result_verification.py",
+        "Implement lease/signature/input/model binding, exactly-one output, schema validation, duplicate detection, encrypted storage, automatic verifier, golden tasks, consensus, retry, warning, rejection, human-review queue, immutable decision evidence, and dispute-ready lineage."
+      ],
+      "acceptanceCriteria": [
+        "Forged, stale-fence, mismatched model/input/assignment, malformed, oversized, duplicate, and conflicting results fail correctly.",
+        "Verification decisions are deterministic for the same evidence and version.",
+        "Consensus cannot be gamed by the same worker/device identity."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tests/e2e/result_verification.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-120.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-130",
+      "title": "Usage, billing, ledger, reward, and reconciliation",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-060",
+        "WP-120"
+      ],
+      "objective": "Implement usage metering, reservation capture/release, invoice lines, double-entry postings, reward accrual/holds/reversals/expiry, verifier payment, refunds, disputes, daily reconciliation, immutable evidence, and financial close reports.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/billing",
+        "src/backend/services/ledger",
+        "src/backend/services/reward",
+        "database",
+        "tests/vectors",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "tests/e2e/paid_task_reconciliation.py",
+        "Implement usage metering, reservation capture/release, invoice lines, double-entry postings, reward accrual/holds/reversals/expiry, verifier payment, refunds, disputes, daily reconciliation, immutable evidence, and financial close reports."
+      ],
+      "acceptanceCriteria": [
+        "Pricing/reward/ledger vectors pass independent oracles.",
+        "Every economic event is balanced, idempotent, currency-consistent, and traceable to task/revision/result/policy.",
+        "Crash and duplicate event injection never double-charge or double-reward.",
+        "Daily reconciliation reaches zero unexplained difference."
+      ],
+      "verificationCommands": [
+        "python tools/verify_vectors.py",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tests/e2e/paid_task_reconciliation.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-130.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-140",
+      "title": "Webhooks and notifications",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-070",
+        "WP-130"
+      ],
+      "objective": "Implement endpoint ownership, secret rotation, signed canonical payloads, timestamp/replay window, ordered attempt history, exponential backoff with jitter, DLQ, replay authorization, customer event filters, email templates, and delivery metrics.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/webhook",
+        "src/backend/services/notification",
+        "contracts",
+        "tests/vectors",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "Implement endpoint ownership, secret rotation, signed canonical payloads, timestamp/replay window, ordered attempt history, exponential backoff with jitter, DLQ, replay authorization, customer event filters, email templates, and delivery metrics."
+      ],
+      "acceptanceCriteria": [
+        "All webhook vectors pass.",
+        "SSRF, DNS rebinding, private-address targets, signature replay, endpoint takeover, and unbounded retry are blocked.",
+        "Replay creates a new delivery attempt without duplicating the domain event."
+      ],
+      "verificationCommands": [
+        "python tools/verify_vectors.py",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-140.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-150",
+      "title": "Customer portal production implementation",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-040",
+        "WP-045",
+        "WP-070",
+        "WP-130",
+        "WP-140"
+      ],
+      "objective": "Implement OIDC login, workspace switch, tasks/files/results, API keys, webhooks, usage, balance/invoices, disputes, team/RBAC, accessibility, localization shell, telemetry, secure error handling, CSP, and generated client integration.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md",
+        "production/BROWSER-SESSION-AND-WEBSOCKET-AUTH.md"
+      ],
+      "allowedPaths": [
+        "src/apps/customer-portal",
+        "contracts/openapi",
+        "generated/typescript",
+        "src/backend/services/api-gateway"
+      ],
+      "requiredOutputs": [
+        "Implement OIDC login, workspace switch, tasks/files/results, API keys, webhooks, usage, balance/invoices, disputes, team/RBAC, accessibility, localization shell, telemetry, secure error handling, CSP, and generated client integration."
+      ],
+      "acceptanceCriteria": [
+        "No manually duplicated API DTO remains.",
+        "WCAG 2.2 AA automated and manual checks pass for critical journeys.",
+        "Authorization, CSRF/XSS/CSP, stale ETag, expired session, and cross-workspace UI tests pass.",
+        "Portal authentication uses the server-side BFF session contract and never exposes provider tokens to browser JavaScript."
+      ],
+      "verificationCommands": [
+        "npm ci",
+        "npm run lint --workspace @edgemint/customer-portal",
+        "npm run test --workspace @edgemint/customer-portal",
+        "npm run build --workspace @edgemint/customer-portal",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-150.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-160",
+      "title": "Operations portal and controlled administrative actions",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-120",
+        "WP-130"
+      ],
+      "objective": "Implement SSO/MFA, least-privilege roles, task/worker/model/fraud/dispute/reconciliation/incident views, four-eyes approvals, reason codes, ETag, sensitive-data masking, audited exports, emergency controls, and session recording hooks.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/apps/operations-portal",
+        "src/backend/services/operations",
+        "contracts/openapi",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "Implement SSO/MFA, least-privilege roles, task/worker/model/fraud/dispute/reconciliation/incident views, four-eyes approvals, reason codes, ETag, sensitive-data masking, audited exports, emergency controls, and session recording hooks."
+      ],
+      "acceptanceCriteria": [
+        "Every mutating operation requires explicit permission, reason, concurrency token, and audit record.",
+        "High-risk actions require independent approvers and cannot approve self.",
+        "Break-glass is time-bound, paged, recorded, and retrospectively reviewed."
+      ],
+      "verificationCommands": [
+        "npm run lint --workspace @edgemint/operations-portal",
+        "npm run test --workspace @edgemint/operations-portal",
+        "npm run build --workspace @edgemint/operations-portal",
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-160.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-170",
+      "title": "Stripe billing, tax, KYC, and payout adapters",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-130"
+      ],
+      "objective": "Implement Stripe Billing/Tax/Identity/Connect adapters behind ports, webhook verification, idempotency, customer credit funding, tax evidence, worker onboarding/eligibility, payout batches, failed payout recovery, country restrictions, sanctions/KYC holds, and provider reconciliation.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/billing",
+        "src/backend/services/claim",
+        "production",
+        "tests/integration",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "tests/integration/stripe_reconciliation.py",
+        "Implement Stripe Billing/Tax/Identity/Connect adapters behind ports, webhook verification, idempotency, customer credit funding, tax evidence, worker onboarding/eligibility, payout batches, failed payout recovery, country restrictions, sanctions/KYC holds, and provider reconciliation."
+      ],
+      "acceptanceCriteria": [
+        "Provider retries/webhook reorder cannot duplicate money movement.",
+        "Unsupported countries and incomplete KYC fail closed.",
+        "Sandbox integration and signed fixture tests pass; live-mode credentials are never stored in source.",
+        "Provider and internal ledger reconcile."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "python tests/integration/stripe_reconciliation.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-170.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "STRIPE_SECRET_KEY_ARN",
+        "STRIPE_WEBHOOK_SECRET_ARN",
+        "STRIPE_CONNECT_PLATFORM_ACCOUNT_ID"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-180",
+      "title": "Fraud, abuse, privacy, and security automation",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-120",
+        "WP-170"
+      ],
+      "objective": "Implement device/account graph signals, collusion detection, golden-task traps, velocity/anomaly rules, holds/quarantine/case workflow, appeal evidence, privacy minimization, retention deletion, DSAR, secret detection, SAST/DAST/dependency/container/IaC scanning, and incident playbooks.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "src/backend/services/fraud",
+        "src/backend/EdgeMint.Security",
+        "tests/security",
+        "docs/07-security",
+        "tools",
+        "tests",
+        "src/backend"
+      ],
+      "requiredOutputs": [
+        "src/backend/tests/",
+        "tools/security_scan.sh",
+        "tests/security/privacy_deletion.py",
+        "Implement device/account graph signals, collusion detection, golden-task traps, velocity/anomaly rules, holds/quarantine/case workflow, appeal evidence, privacy minimization, retention deletion, DSAR, secret detection, SAST/DAST/dependency/container/IaC scanning, and incident playbooks."
+      ],
+      "acceptanceCriteria": [
+        "Fraud actions are versioned, explainable, reversible when policy permits, and audited.",
+        "Security scans have zero unapproved critical/high findings.",
+        "Privacy deletion propagates to all permitted stores while preserving required financial/audit records."
+      ],
+      "verificationCommands": [
+        "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+        "bash tools/security_scan.sh",
+        "python tests/security/privacy_deletion.py",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-180.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-190",
+      "title": "AWS primary/DR infrastructure and Kubernetes platform",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-010",
+        "WP-045"
+      ],
+      "objective": "Provision remote state, VPC and three availability zones, EKS and IRSA, KMS, ECR, S3, Amazon RDS for PostgreSQL Multi-AZ, Cognito, WAF/TLS/DNS integration, External Secrets, WebSocket ingress, network policies, autoscaling, observability, backups, DR copy, budgets, and least-privilege IAM.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "deploy/terraform",
+        "deploy/helm",
+        "deploy/observability",
+        "docs/08-sre"
+      ],
+      "requiredOutputs": [
+        "Provision remote state, VPC/three AZs, EKS/IRSA, KMS, ECR, S3, Amazon RDS for PostgreSQL and the WebSocket Event Relay, Cognito, WAF/TLS/DNS integration, External Secrets, network policies, autoscaling, observability, backups, DR copy, budgets, and least-privilege IAM."
+      ],
+      "acceptanceCriteria": [
+        "Terraform fmt/validate, tflint, Checkov, Helm lint/template, kubeconform, and policy tests pass.",
+        "No production secret or mutable image tag exists in values/state output.",
+        "Failure of one AZ preserves service; endpoint access and security groups are restricted.",
+        "DR resources and restore procedures meet RPO/RTO design."
+      ],
+      "verificationCommands": [
+        "terraform -chdir=deploy/terraform/aws fmt -check -recursive",
+        "terraform -chdir=deploy/terraform/aws init -backend=false",
+        "terraform -chdir=deploy/terraform/aws validate",
+        "helm lint deploy/helm/edgemint -f deploy/helm/edgemint/values-ci.yaml",
+        "helm template edgemint deploy/helm/edgemint -f deploy/helm/edgemint/values-ci.yaml | kubeconform -strict",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-190.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "AWS_ACCOUNT_ID",
+        "AWS_PRIMARY_REGION",
+        "AWS_DR_REGION",
+        "ROUTE53_ZONE_ID",
+        "PRODUCTION_DOMAIN",
+        "TERRAFORM_STATE_BUCKET",
+        "TERRAFORM_LOCK_TABLE"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-200",
+      "title": "CI/CD, artifact signing, provenance, and release automation",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-020",
+        "WP-190"
+      ],
+      "objective": "Implement protected-branch CI, ephemeral integration environments, reproducible multi-arch images, SBOM/model BOM, vulnerability/license gates, SLSA provenance, Cosign KMS signatures, contract compatibility, migration gates, GitOps promotion, canary stages, automatic rollback, and evidence assembly.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        ".github",
+        "tools",
+        "deploy",
+        "evidence"
+      ],
+      "requiredOutputs": [
+        "tools/validate_ci_policy.py",
+        "tools/verify_release_artifacts.py",
+        "Implement protected-branch CI, ephemeral integration environments, reproducible multi-arch images, SBOM/model BOM, vulnerability/license gates, SLSA provenance, Cosign KMS signatures, contract compatibility, migration gates, GitOps promotion, canary stages, automatic rollback, and evidence assembly."
+      ],
+      "acceptanceCriteria": [
+        "Every deployable artifact is digest-pinned, signed, scanned, and traceable to source/runner.",
+        "No pull request can bypass required gates or self-approve production.",
+        "Rollback uses the previous signed artifact and compatible schema."
+      ],
+      "verificationCommands": [
+        "bash tools/validate_all.sh",
+        "python tools/validate_ci_policy.py",
+        "python tools/verify_release_artifacts.py --evidence-dir evidence/actual",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-200.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-210",
+      "title": "Capacity, performance, reliability, and unit economics",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-130",
+        "WP-190"
+      ],
+      "objective": "Implement load/soak/stress profiles, realistic Worker fleet simulator, queue/backpressure limits, autoscaling signals, hot-key tests, database/event capacity plans, cloud-fallback load, cost telemetry, expected/stressed margin dashboards, and capacity runbooks.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "tests/performance",
+        "docs/08-sre",
+        "deploy/observability",
+        "dsl/economy",
+        "tools",
+        "tests"
+      ],
+      "requiredOutputs": [
+        "tests/performance/public-api.js",
+        "tests/performance/worker_fleet_simulator.py",
+        "tools/evaluate_capacity_evidence.py",
+        "Implement load/soak/stress profiles, realistic Worker fleet simulator, queue/backpressure limits, autoscaling signals, hot-key tests, database/event capacity plans, cloud-fallback load, cost telemetry, expected/stressed margin dashboards, and capacity runbooks."
+      ],
+      "acceptanceCriteria": [
+        "Public API/task admission/heartbeat SLO thresholds pass at forecast peak plus approved headroom.",
+        "72-hour soak has no leak, unbounded queue, reconciliation drift, or thermal-policy breach.",
+        "Stressed contribution margin stays at or above 15%; otherwise admission fails closed."
+      ],
+      "verificationCommands": [
+        "k6 run tests/performance/public-api.js",
+        "python tests/performance/worker_fleet_simulator.py",
+        "python tools/evaluate_capacity_evidence.py evidence/actual",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-210.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package."
+      ],
+      "requiredExternalInputs": [],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-220",
+      "title": "Independent security verification and penetration closure",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-180",
+        "WP-200"
+      ],
+      "objective": "Complete threat-model review, external penetration test, mobile reverse-engineering/tamper test, API authorization matrix, cloud/IAM review, supply-chain verification, cryptography review, privacy review, and remediation retest.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "tests/security",
+        "evidence",
+        "docs/07-security",
+        "tools"
+      ],
+      "requiredOutputs": [
+        "tools/validate_security_evidence.py",
+        "Complete threat-model review, external penetration test, mobile reverse-engineering/tamper test, API authorization matrix, cloud/IAM review, supply-chain verification, cryptography review, privacy review, and remediation retest."
+      ],
+      "acceptanceCriteria": [
+        "No unapproved critical/high finding remains.",
+        "All findings have owner, severity, evidence, remediation, retest, and risk acceptance where permitted.",
+        "Workspace isolation, money movement, worker trust, artifact signing, and operations break-glass receive explicit independent coverage."
+      ],
+      "verificationCommands": [
+        "python tools/validate_security_evidence.py evidence/actual/security",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-220.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "INDEPENDENT_PENETRATION_TEST_REPORT",
+        "SECURITY_EXCEPTION_REGISTER"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-230",
+      "title": "Backup, restore, regional disaster recovery, and operational game days",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-190",
+        "WP-200"
+      ],
+      "objective": "Automate encrypted backups/PITR, cross-region copies, restore isolation, dependency reconfiguration, DNS/traffic failover, reconciliation after restore, quarterly game day, communication, and return-to-primary procedure.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "docs/08-sre",
+        "evidence",
+        "deploy",
+        "tools"
+      ],
+      "requiredOutputs": [
+        "tools/run_dr_drill.py",
+        "tools/validate_dr_evidence.py",
+        "Automate encrypted backups/PITR, cross-region copies, restore isolation, dependency reconfiguration, DNS/traffic failover, reconciliation after restore, quarterly game day, communication, and return-to-primary procedure."
+      ],
+      "acceptanceCriteria": [
+        "Restore uses production-like data volume and verifies integrity/RLS/ledger/event checkpoints.",
+        "Measured RPO is <=5 minutes and RTO <=60 minutes.",
+        "Runbook is executable by on-call staff without author assistance."
+      ],
+      "verificationCommands": [
+        "python tools/run_dr_drill.py --environment staging --write-evidence evidence/actual/dr",
+        "python tools/validate_dr_evidence.py evidence/actual/dr",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-230.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "STAGING_AWS_ACCOUNT_ID",
+        "DR_DRILL_WINDOW",
+        "BACKUP_RESTORE_TARGET"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-240",
+      "title": "Legal, privacy, finance, model-license, and commercial approvals",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-170",
+        "WP-220"
+      ],
+      "objective": "Finalize customer/worker terms, privacy notice, DPA/subprocessors, data residency, retention, payout/tax/KYC countries, consumer/labor analysis, model licenses/notices, pricing/reward/treasury approvals, insurance, incident obligations, and signed approval records.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "docs/09-legal",
+        "production",
+        "evidence",
+        "dsl/catalog/models",
+        "dsl/policies",
+        "tools"
+      ],
+      "requiredOutputs": [
+        "tools/validate_legal_finance_evidence.py",
+        "Finalize customer/worker terms, privacy notice, DPA/subprocessors, data residency, retention, payout/tax/KYC countries, consumer/labor analysis, model licenses/notices, pricing/reward/treasury approvals, insurance, incident obligations, and signed approval records."
+      ],
+      "acceptanceCriteria": [
+        "All GA1 countries, task types, data classes, models, payment flows, and retention periods map to approved controls.",
+        "No product surface promises guaranteed earnings, hidden computation, token value, or unsupported geography.",
+        "Approvals are signed, current, and reference exact policy/model versions."
+      ],
+      "verificationCommands": [
+        "python tools/validate_legal_finance_evidence.py evidence/actual",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-240.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "RELEASE_APPROVAL_MANIFEST",
+        "LEGAL_PRIVACY_APPROVAL",
+        "FINANCE_TAX_PAYOUT_APPROVAL",
+        "MODEL_LICENSE_APPROVAL"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    },
+    {
+      "id": "WP-250",
+      "title": "Production canary, reconciliation, and final release",
+      "status": "blocked_by_dependencies",
+      "dependencies": [
+        "WP-210",
+        "WP-220",
+        "WP-230",
+        "WP-240"
+      ],
+      "objective": "Assemble signed release manifest; deploy internal then 1%, 5%, 25%, and 100% canaries; verify SLO/error budget/security/margin/reconciliation at each stage; test rollback; complete paid OCR journey and Worker payout; hand over operations.",
+      "inputs": [
+        "README.md",
+        "production/canonical-decisions.yaml",
+        "production/DEFINITION-OF-PRODUCTION-READY.md",
+        "production/AMBIGUITY-REGISTER.md"
+      ],
+      "allowedPaths": [
+        "evidence",
+        "deploy",
+        ".github",
+        "docs/12-operations",
+        "tools"
+      ],
+      "requiredOutputs": [
+        "tools/verify_canary_evidence.py",
+        "Assemble signed release manifest; deploy internal then 1%, 5%, 25%, and 100% canaries; verify SLO/error budget/security/margin/reconciliation at each stage; test rollback; complete paid OCR journey and Worker payout; hand over operations."
+      ],
+      "acceptanceCriteria": [
+        "`tools/production_gate.py` passes with genuine evidence.",
+        "Each canary stage meets observation windows and no automatic rollback threshold.",
+        "End-to-end customer charge, verified Worker reward, payout, and ledger/provider reconciliation complete.",
+        "All seven functions approve the exact immutable release."
+      ],
+      "verificationCommands": [
+        "python tools/production_gate.py --evidence-dir evidence/actual --expected-commit-sha \"${GITHUB_SHA:?GITHUB_SHA is required}\" --manifest-signature evidence/actual/release-evidence.sig --trusted-key evidence/actual/trusted-release-key.pem --expected-trusted-key-sha256 \"${COSIGN_TRUSTED_PUBLIC_KEY_SHA256:?protected trust anchor is required}\"",
+        "python tools/verify_canary_evidence.py evidence/actual/canary",
+        "bash tools/validate_all.sh"
+      ],
+      "evidencePath": "evidence/actual/work-packages/wp-250.json",
+      "completionStateWrite": "cursor/project-state.json",
+      "stopConditions": [
+        "Any condition in cursor/STOP-RULES.md.",
+        "A required command fails.",
+        "A change would weaken a canonical invariant or alter higher-precedence contracts without an approved contract-change work package.",
+        "A work-package-specific requiredExternalInputs value is absent, unverified, expired, or does not match production/RELEASE-INPUTS.yaml."
+      ],
+      "requiredExternalInputs": [
+        "ALL_PRODUCTION_RELEASE_INPUTS",
+        "SIGNED_RELEASE_EVIDENCE_MANIFEST"
+      ],
+      "executionContract": {
+        "changeScope": "Only allowedPaths may be modified unless a dependency work package explicitly expands ownership.",
+        "commitScope": "One execution unit or one cohesive infrastructure capability per commit.",
+        "testRule": "Implement required outputs before running verification commands; no command may be skipped or converted to a warning.",
+        "evidenceRule": "Write machine-readable evidence only after all verification commands exit zero.",
+        "completionRule": "Mark complete only after output existence, tests, evidence hash, and dependency state are verified."
+      }
+    }
+  ]
+}

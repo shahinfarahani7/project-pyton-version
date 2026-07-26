@@ -1,0 +1,48 @@
+apiVersion: edgemint.io/v1
+kind: ModelProfile
+metadata:
+  name: whisper-base-int8
+  version: 2.0.0
+  status: draft
+  description: Evaluation profile for whisper-base-int8
+  owners:
+  - ml
+  - mobile
+  - legal
+spec:
+  family: speech
+  quantization: INT8
+  runtime: onnxruntime
+  runtimeAbi: pending-benchmark
+  capabilities:
+  - audio.transcribe
+  artifacts:
+  - id: whisper-base-int8-main
+    artifactSizeBytes: null
+    sha256: null
+    signature: null
+    signingKeyId: null
+    releaseEvidence: REQUIRED_BEFORE_PRODUCTION
+  resources:
+    minimumTier: T2
+    peakRamBytes: null
+    minimumFreeStorageBytes: null
+    singleHeavyModelResident: true
+  distribution:
+    bundled: false
+    resumable: true
+    wifiRecommended: true
+    atomicInstall: true
+  license:
+    status: review-required
+    noticePath: null
+  release:
+    state: evaluation
+    productionEligible: false
+    requiredEvidence:
+    - exact artifact bytes
+    - sha256
+    - signature
+    - license approval
+    - real-device benchmark
+    - runtime compatibility

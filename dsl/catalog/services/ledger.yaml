@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: ledger
+  version: 2.0.0
+  status: active
+  owners:
+  - finance-platform
+spec:
+  service: ledger
+  ownerTeam: finance-platform
+  dataOwnership:
+  - ledger
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - ledger.reconciliation.failed
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateful-api
+  piiAccess: metadata_only

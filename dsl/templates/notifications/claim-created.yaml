@@ -1,0 +1,25 @@
+apiVersion: edgemint.io/v1
+kind: NotificationTemplate
+metadata:
+  name: claim-created
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - security
+spec:
+  channels:
+  - email
+  - in_app
+  localeFallback: en
+  subjectKey: notification.claim-created.subject
+  bodyKey: notification.claim-created.body
+  requiredVariables:
+  - recipientName
+  - eventTime
+  - supportReference
+  forbiddenVariables:
+  - rawApiKey
+  - rawPayload
+  - fullWalletAddress
+  classification: internal

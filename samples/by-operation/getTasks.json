@@ -1,0 +1,34 @@
+{
+  "api": "edgemint-operations-api",
+  "operationId": "getTasks",
+  "request": {
+    "method": "GET",
+    "path": "/tasks/{id}",
+    "pathParameters": {
+      "id": "id_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getTasks_0001",
+      "Authorization": "Bearer operator_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "taskType": "example",
+      "status": "draft",
+      "version": 1,
+      "createdAt": "2026-07-21T10:00:00Z",
+      "updatedAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "ops.operations:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

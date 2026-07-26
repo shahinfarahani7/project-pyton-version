@@ -1,0 +1,73 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: model-download-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: deleted
+    terminal: true
+  - name: deleting
+    terminal: false
+  - name: downloading
+    terminal: false
+  - name: failed
+    terminal: true
+  - name: installed
+    terminal: false
+  - name: offered
+    terminal: false
+  - name: paused
+    terminal: false
+  - name: quarantined
+    terminal: false
+  - name: queued
+    terminal: false
+  - name: ready
+    terminal: false
+  - name: verifying
+    terminal: false
+  transitions:
+  - from: offered
+    to: queued
+    event: model-download-lifecycle.offered_to_queued
+  - from: queued
+    to: downloading
+    event: model-download-lifecycle.queued_to_downloading
+  - from: downloading
+    to: paused
+    event: model-download-lifecycle.downloading_to_paused
+  - from: paused
+    to: downloading
+    event: model-download-lifecycle.paused_to_downloading
+  - from: downloading
+    to: verifying
+    event: model-download-lifecycle.downloading_to_verifying
+  - from: verifying
+    to: installed
+    event: model-download-lifecycle.verifying_to_installed
+  - from: verifying
+    to: failed
+    event: model-download-lifecycle.verifying_to_failed
+  - from: installed
+    to: ready
+    event: model-download-lifecycle.installed_to_ready
+  - from: ready
+    to: quarantined
+    event: model-download-lifecycle.ready_to_quarantined
+  - from: ready
+    to: deleting
+    event: model-download-lifecycle.ready_to_deleting
+  - from: quarantined
+    to: deleting
+    event: model-download-lifecycle.quarantined_to_deleting
+  - from: deleting
+    to: deleted
+    event: model-download-lifecycle.deleting_to_deleted
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

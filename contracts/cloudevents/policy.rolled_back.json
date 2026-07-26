@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_1f015164359a8b6ed93e08fb29",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.policy.rolled_back.v1",
+  "subject": "policy_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_1f015164359a8b6ed93e08fb29",
+  "causationId": "cmd_1f015164359a8b6ed93e08fb29",
+  "partitionKey": "policy_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "policyId": "policy_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "rolled_back",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

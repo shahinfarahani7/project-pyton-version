@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-185-claim-lifecycle-submitted-to-confirming
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-185
+  stateMachineRef: StateMachine/claim-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is submitted
+  - expected version matches
+  when:
+  - event requests submitted -> confirming
+  then:
+  - state becomes confirming
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: submitted
+    to: confirming
+  expectedEvents:
+  - claim-lifecycle.submitted_to_confirming
+  expectedErrorCode: null

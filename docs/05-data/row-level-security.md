@@ -1,0 +1,3 @@
+# Tenant Isolation and RLS
+
+Every customer-owned table carries `workspace_id`. Each customer-scoped database operation uses `WorkspaceSqlConnectionScope`. The scope opens the SQL connection, clears any prior context, sets `transaction-local app.workspace_id(N'workspace_id')`, and clears it before returning the physical connection to the pool. If cleanup fails, the connection is removed from the pool. PostgreSQL security policies require equality to that server-side context value. Operations roles use separate audited database roles and cannot be reached by public API credentials. Background jobs must set the workspace explicitly or use a narrowly scoped service role with query-level tenant predicates and tests.

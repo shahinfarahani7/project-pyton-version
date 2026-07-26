@@ -1,0 +1,118 @@
+apiVersion: edgemint.io/v1
+kind: UseCase
+metadata:
+  name: uc-029-report-assignment-started
+  version: 2.1.0
+  status: active
+  description: Report automatic assignment start
+  owners:
+  - product
+  - qa
+spec:
+  id: UC-029
+  title: Report automatic assignment start
+  actors: &id001
+  - Worker App
+  preconditions:
+  - authenticated or trusted service identity
+  - required policy versions active
+  - tenant scope resolved when applicable
+  trigger: worker agent completed local preflight automatically
+  mainFlow:
+  - Resolve the authenticated principal and authorize reportAssignmentStarted against
+    the attested worker and device boundary.
+  - Validate the OpenAPI request, current lease, monotonic fence, active policy hashes
+    and device binding; return only canonical ErrorCatalog codes.
+  - Execute with transaction isolation read_committed_with_targeted_row_locks and
+    concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - Transition the server-auto-leased assignment from leased to running and the attempt
+    from leased to running.
+  - Record agent-generated start sequence and start timestamp; no user decision is
+    accepted.
+  - Insert the canonical outbox event in the same PostgreSQL transaction as the assignment
+    state change.
+  - Return the exact OpenAPI response including requestId, traceId and resource version.
+  alternateFlows:
+  - condition: validation or policy failure
+    outcome: reject with stable error code and no unauthorized financial side effect
+  - condition: dependency unavailable
+    outcome: persist safe state, retry idempotently or return explicit asynchronous
+      status
+  postconditions:
+  - domain state satisfies invariant
+  - outbox/audit evidence exists
+  - financial effects match failure matrix
+  acceptanceCriteria:
+  - cross-tenant and cross-device access denied
+  - correlation and policy hashes recorded
+  - No per-task Accept or Reject user interaction exists.
+  - Replaying the same Idempotency-Key with the same canonical body returns the original
+    status and resource without duplicate side effects.
+  - Reusing the same Idempotency-Key with a different canonical body returns IDEMPOTENCY_CONFLICT.
+  trace:
+    requirements:
+    - REQ-LEASE-002
+    - REQ-CONSENT-004
+    apiOperations:
+    - reportAssignmentStarted
+    events: &id003
+    - task.assignment.started
+    - assignment.started
+    - assignment-lifecycle.leased_to_running
+    - attempt-lifecycle.leased_to_running
+    entities: &id002
+    - assignments
+    - task_attempts
+    tests:
+    - AT-UC-029-POS
+    - AT-UC-029-NEG
+  implementation:
+    transport:
+    - operationId: reportAssignmentStarted
+      method: POST
+      path: /assignments/{assignmentId}:started
+    authorization:
+      principalTypes: *id001
+      permissionSource: worker.assignments:write
+      tenantBoundary: Customer resources are scoped by organization_id and workspace_id;
+        worker resources by attested worker_id/device_id; control operations by mTLS
+        service or MFA operator identity.
+    idempotency:
+      mode: required
+      scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+    transaction:
+      isolation: read_committed_with_targeted_row_locks
+      writes: *id002
+      outboxEvents: *id003
+    concurrency:
+      strategy: lease_fence_token_plus_monotonic_sequence
+      fenceRequired: true
+      expectedVersionRequired: false
+    financialEffects:
+    - No charge, reservation, reward, token conversion or ledger entry is permitted
+      for this operation.
+    errorCodes:
+    - AUTH_INVALID_CREDENTIAL
+    - AUTH_SCOPE_REQUIRED
+    - INPUT_SCHEMA_INVALID
+    - TENANT_RESOURCE_NOT_FOUND
+    - IDEMPOTENCY_CONFLICT
+    - LEASE_EXPIRED
+    - WORKER_NOT_ELIGIBLE
+    - ASSIGNMENT_STALE_FENCE
+    - ASSIGNMENT_ALREADY_STARTED
+    - ASSIGNMENT_START_WINDOW_EXPIRED
+    observability:
+    - Record requestId, traceId, operationId, actorId, organizationId/workspaceId
+      or workerId, resourceVersion and active policy hashes.
+    - For every mutation or privileged read, write an append-only audit event with
+      reason/ticket where required.
+    - Never log credentials, API keys, refresh tokens, raw customer payload, model
+      input/output, signed URLs or envelope keys.
+    retention:
+    - 'Customer payload and result retention follows the workspace-selected DataPolicy;
+      default confidential-v2: input 24 hours, result 90 days, audit 2555 days.'
+    - Restricted-v2 workloads retain input 24 hours, result 30 days, audit 2555 days
+      and worker temporary data 10 minutes.
+    - Financial and security evidence is retained independently of payload deletion
+      and remains append-only while legal hold is active.

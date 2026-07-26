@@ -1,0 +1,25 @@
+apiVersion: edgemint.io/v1
+kind: NotificationTemplate
+metadata:
+  name: worker-reward-verified
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - security
+spec:
+  channels:
+  - email
+  - in_app
+  localeFallback: en
+  subjectKey: notification.worker-reward-verified.subject
+  bodyKey: notification.worker-reward-verified.body
+  requiredVariables:
+  - recipientName
+  - eventTime
+  - supportReference
+  forbiddenVariables:
+  - rawApiKey
+  - rawPayload
+  - fullWalletAddress
+  classification: internal

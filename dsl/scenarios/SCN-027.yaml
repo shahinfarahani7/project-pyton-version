@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-027-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-027
+  useCaseRef: UseCase/uc-014-edit-failed-task@2.0.0
+  mode: success
+  given:
+  - Use case UC-014 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.tasks:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createTaskRevision with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy expected_version_compare_and_swap_plus_idempotency.
+  - 'Exactly these entities are written: task_revisions.'
+  - 'Exactly these canonical events are inserted into the outbox: task.revision.created.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - createTaskRevision
+    requirements:
+    - REQ-TASK-004
+  expectedEvents:
+  - task.revision.created
+  expectedErrorCode: null

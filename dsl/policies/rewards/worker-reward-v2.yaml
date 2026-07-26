@@ -1,0 +1,86 @@
+apiVersion: edgemint.io/v1
+kind: RewardPolicy
+metadata:
+  name: worker-reward-v2
+  version: 2.0.0
+  status: evaluation
+  owners:
+  - finance
+  - worker-economy
+  labels:
+    productionActivation: requires-finance-approval
+spec:
+  unit: EUR_REWARD_MICROS
+  calculationVersion: reward-v2
+  rules:
+  - taskType: document.ocr
+    baseRewardMicrosPerQuantum: 925
+  - taskType: document.extract
+    baseRewardMicrosPerQuantum: 7400
+  - taskType: image.classify
+    baseRewardMicrosPerQuantum: 555
+  - taskType: image.detect
+    baseRewardMicrosPerQuantum: 1480
+  - taskType: vision.analyze
+    baseRewardMicrosPerQuantum: 12950
+  - taskType: audio.transcribe
+    baseRewardMicrosPerQuantum: 3330
+  - taskType: text.translate
+    baseRewardMicrosPerQuantum: 1110
+  - taskType: text.generate
+    baseRewardMicrosPerQuantum: 2405
+  - taskType: text.embedding
+    baseRewardMicrosPerQuantum: 148
+  - taskType: document.verify
+    baseRewardMicrosPerQuantum: 4440
+  orderedMultipliers:
+  - tier
+  - quality
+  - urgency
+  - scarcity
+  - reliability
+  multipliersBps:
+    tier:
+      T1: 8000
+      T2: 10000
+      T3: 11250
+      T4: 12500
+    urgency:
+      batch: 7000
+      standard: 10000
+      priority: 13500
+      realtime: 22000
+  qualityBands:
+  - minimumMilli: 0
+    multiplierBps: 0
+  - minimumMilli: 800
+    multiplierBps: 6000
+  - minimumMilli: 900
+    multiplierBps: 8500
+  - minimumMilli: 950
+    multiplierBps: 10000
+  - minimumMilli: 980
+    multiplierBps: 11200
+  scarcityBoundsBps:
+    minimum: 9000
+    maximum: 15000
+  reliabilityBoundsBps:
+    minimum: 8000
+    maximum: 11000
+  holds:
+    defaultHours: 24
+    newWorkerHours: 168
+    fraudReviewHours: 720
+  caps:
+    maximumWorkerShareOfNetTaskRevenueBps: 5500
+    passiveShareOfMonthlyRewardsBps: 500
+    passiveShareOfNetRevenueBps: 200
+    maxDailyPassiveRewardMicrosPerWorker: 50000
+  eligibility:
+    minimumTrustMilli: 650
+    attestationRequired: true
+    verifiedResultRequired: true
+  failurePayments:
+    platformLostAcknowledgedResult: pay_full
+    customerCancelledAfterStart: policy_fraction
+    workerInvalidResult: zero

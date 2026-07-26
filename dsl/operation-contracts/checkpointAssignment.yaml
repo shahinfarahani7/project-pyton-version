@@ -1,0 +1,59 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-checkpointassignment
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for checkpointAssignment.
+spec:
+  operationId: checkpointAssignment
+  api: worker
+  method: POST
+  path: /assignments/{assignmentId}:checkpoint
+  summary: Checkpoint assignment
+  classification: business_use_case
+  permissions:
+  - worker.assignments:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - assignment_checkpoints
+    domainEvents:
+    - task.checkpoint.saved
+    auditRequired: true
+  responseStatuses:
+  - '200'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-032-write-checkpoint@2.0.0
+  errorCodes:
+  - ASSIGNMENT_STALE_FENCE
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - CHECKPOINT_DIGEST_MISMATCH
+  - CHECKPOINT_SEQUENCE_INVALID
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-worker-api.yaml::POST /assignments/{assignmentId}:checkpoint
+    request: OpenAPI requestBody/parameters for checkpointAssignment
+    response: OpenAPI responses for checkpointAssignment
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

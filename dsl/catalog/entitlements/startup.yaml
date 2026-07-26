@@ -1,0 +1,24 @@
+apiVersion: edgemint.io/v1
+kind: EntitlementPolicy
+metadata:
+  name: startup-entitlements-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - billing
+spec:
+  plan: startup
+  limits:
+    concurrentLeases: 25
+    monthlyIncludedCreditMicros: 25000000000
+    logRetentionDays: 30
+    apiRequestsPerMinute: 1000
+  features:
+    rbac: true
+    sso: false
+    dedicatedPool: false
+    customKeys: false
+    humanReview: false
+  priceMultiplierBps: 9500
+  hardLimitBehavior: reject_with_upgrade_required

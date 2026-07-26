@@ -1,0 +1,7 @@
+syntax = "proto3";
+package edgemint.v1;
+option csharp_namespace = "EdgeMint.Contracts.V1";
+import "common.proto";
+service ResultInternalApi { rpc SubmitResult(SubmitResultRequest) returns (SubmitResultResponse); }
+message SubmitResultRequest { RequestContext context = 1; string assignment_id = 2; string attempt_id = 3; int64 fence_token = 4; string output_sha256 = 5; oneof output { string output_file_id = 6; bytes output_inline_json = 7; } bytes worker_signature = 8; int32 schema_version = 9; }
+message SubmitResultResponse { string result_id = 1; bool duplicate = 2; string status = 3; }

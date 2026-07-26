@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-161-verification-lifecycle-automatic-to-accepted
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-161
+  stateMachineRef: StateMachine/verification-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is automatic
+  - expected version matches
+  when:
+  - event requests automatic -> accepted
+  then:
+  - state becomes accepted
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: automatic
+    to: accepted
+  expectedEvents:
+  - verification-lifecycle.automatic_to_accepted
+  expectedErrorCode: null

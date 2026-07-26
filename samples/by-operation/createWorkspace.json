@@ -1,0 +1,37 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createWorkspace",
+  "request": {
+    "method": "POST",
+    "path": "/workspaces",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createWorkspace_0001",
+      "Idempotency-Key": "idem_createWorkspace_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "organizationId": "org_01J00000000000000000000000",
+      "name": "Example Name",
+      "environment": "example"
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "organizationId": "org_01J00000000000000000000000",
+      "name": "Example Name",
+      "environment": "example",
+      "version": 1
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.workspaces:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

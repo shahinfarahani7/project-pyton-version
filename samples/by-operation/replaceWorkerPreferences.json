@@ -1,0 +1,43 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "replaceWorkerPreferences",
+  "request": {
+    "method": "PUT",
+    "path": "/worker-preferences",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_replaceWorkerPreferences_0001",
+      "Idempotency-Key": "idem_replaceWorkerPreferences_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json",
+      "If-Match": "\"1\""
+    },
+    "body": {
+      "expectedVersion": 1,
+      "availability": "available",
+      "networkPolicy": "wifi_only",
+      "chargingPolicy": "required",
+      "minimumBatteryPercent": 25,
+      "schedule": {
+        "mode": "always",
+        "timezone": "example"
+      }
+    }
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.preferences:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

@@ -1,0 +1,12 @@
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS citext;
+CREATE SCHEMA IF NOT EXISTS security;
+CREATE SCHEMA IF NOT EXISTS eventing;
+CREATE SCHEMA IF NOT EXISTS audit;
+CREATE TABLE IF NOT EXISTS public.schema_migrations (
+  version varchar(32) PRIMARY KEY,
+  applied_at_utc timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  checksum_sha256 char(64) NOT NULL
+);
+COMMIT;

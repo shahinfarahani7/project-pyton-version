@@ -1,0 +1,273 @@
+{
+  "unresolvedDesignBlockers": 0,
+  "externalEvidenceRequirementCount": 38,
+  "externalEvidenceRequirements": [
+    {
+      "category": "cloud",
+      "name": "AWS_ACCOUNT_ID",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[0-9]{12}$"
+    },
+    {
+      "category": "cloud",
+      "name": "AWS_PRIMARY_REGION",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "eu-central-1"
+    },
+    {
+      "category": "cloud",
+      "name": "AWS_DR_REGION",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "eu-west-1"
+    },
+    {
+      "category": "cloud",
+      "name": "ROUTE53_ZONE_ID",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^Z[A-Z0-9]+$"
+    },
+    {
+      "category": "cloud",
+      "name": "PRODUCTION_DOMAIN",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[a-z0-9.-]+$"
+    },
+    {
+      "category": "cloud",
+      "name": "TERRAFORM_STATE_BUCKET",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[a-z0-9.-]+$"
+    },
+    {
+      "category": "cloud",
+      "name": "TERRAFORM_LOCK_TABLE",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[A-Za-z0-9_.-]+$"
+    },
+    {
+      "category": "cloud",
+      "name": "EKS_CLUSTER_VERSION",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^1\\.[0-9]+$"
+    },
+    {
+      "category": "cloud",
+      "name": "EKS_ADDON_VERSION_MANIFEST",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^evidence/actual/platform/eks-addon-versions\\.json$"
+    },
+    {
+      "category": "cloud",
+      "name": "PLATFORM_ADMIN_ROLE_ARN",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^arn:aws:iam::[0-9]{12}:role/"
+    },
+    {
+      "category": "cloud",
+      "name": "DATABASE_GENERATION",
+      "owner": "Database",
+      "secret": false,
+      "validation": "^[A-Za-z0-9._-]+$"
+    },
+    {
+      "category": "cloud",
+      "name": "POSTGRES_ENGINE",
+      "owner": "Database",
+      "secret": false,
+      "validation": "postgres"
+    },
+    {
+      "category": "cloud",
+      "name": "POSTGRES_ENGINE_VERSION",
+      "owner": "Database",
+      "secret": false,
+      "validation": "18.4"
+    },
+    {
+      "category": "cloud",
+      "name": "POSTGRES_PARAMETER_GROUP_FAMILY",
+      "owner": "Database",
+      "secret": false,
+      "validation": "postgres18"
+    },
+    {
+      "category": "identity",
+      "name": "COGNITO_CUSTOMER_POOL_ID",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^[a-z0-9-]+_[A-Za-z0-9]+$"
+    },
+    {
+      "category": "identity",
+      "name": "COGNITO_OPERATIONS_POOL_ID",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^[a-z0-9-]+_[A-Za-z0-9]+$"
+    },
+    {
+      "category": "identity",
+      "name": "PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN",
+      "owner": "Mobile Security",
+      "secret": true,
+      "validation": "^arn:aws:secretsmanager:"
+    },
+    {
+      "category": "identity",
+      "name": "APPLE_APP_ATTEST_KEY_SECRET_ARN",
+      "owner": "Mobile Security",
+      "secret": true,
+      "validation": "^arn:aws:secretsmanager:"
+    },
+    {
+      "category": "identity",
+      "name": "OPERATIONS_OIDC_PROVIDER_NAME",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^[A-Za-z0-9_-]{3,32}$"
+    },
+    {
+      "category": "identity",
+      "name": "OPERATIONS_OIDC_ISSUER",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^https://"
+    },
+    {
+      "category": "identity",
+      "name": "OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN",
+      "owner": "Security",
+      "secret": true,
+      "validation": "^arn:aws:secretsmanager:"
+    },
+    {
+      "category": "identity",
+      "name": "OPERATIONS_OIDC_CLIENT_SECRET_ARN",
+      "owner": "Security",
+      "secret": true,
+      "validation": "^arn:aws:secretsmanager:"
+    },
+    {
+      "category": "identity",
+      "name": "OPERATOR_IDP_FIDO2_POLICY_EVIDENCE",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^evidence/actual/identity/operator-fido2-policy\\.json$"
+    },
+    {
+      "category": "payments",
+      "name": "STRIPE_SECRET_KEY_ARN",
+      "owner": "Finance",
+      "secret": true,
+      "validation": "^arn:aws:secretsmanager:"
+    },
+    {
+      "category": "payments",
+      "name": "STRIPE_WEBHOOK_SECRET_ARN",
+      "owner": "Finance",
+      "secret": true,
+      "validation": "^arn:aws:secretsmanager:"
+    },
+    {
+      "category": "payments",
+      "name": "STRIPE_CONNECT_PLATFORM_ACCOUNT_ID",
+      "owner": "Finance",
+      "secret": false,
+      "validation": "^acct_[A-Za-z0-9]+$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "COSIGN_KMS_KEY_ARN",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^arn:aws:kms:"
+    },
+    {
+      "category": "supplyChain",
+      "name": "COSIGN_TRUSTED_PUBLIC_KEY_SHA256",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^[a-f0-9]{64}$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "MODEL_SIGNING_KMS_KEY_ARN",
+      "owner": "ML Platform",
+      "secret": false,
+      "validation": "^arn:aws:kms:"
+    },
+    {
+      "category": "supplyChain",
+      "name": "ISTIO_VERSION",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "ISTIO_CHART_PROVENANCE_EVIDENCE",
+      "owner": "Security",
+      "secret": false,
+      "validation": "^evidence/actual/platform/istio-provenance\\.json$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "MINIO_IMAGE",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "MAILPIT_IMAGE",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "PYTHON_RUNTIME_IMAGE",
+      "owner": "Platform",
+      "secret": false,
+      "validation": "^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "POSTGRES_DEV_IMAGE",
+      "owner": "Database",
+      "secret": false,
+      "validation": "^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$"
+    },
+    {
+      "category": "supplyChain",
+      "name": "POSTGRES_TOOLS_IMAGE",
+      "owner": "Database",
+      "secret": false,
+      "validation": "^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$"
+    },
+    {
+      "category": "models",
+      "name": "GA1_MODEL_RELEASE_MANIFEST",
+      "owner": "ML Lead",
+      "secret": false,
+      "validation": "^evidence/actual/models/.+\\.json$"
+    },
+    {
+      "category": "approvals",
+      "name": "RELEASE_APPROVAL_MANIFEST",
+      "owner": "Release Manager",
+      "secret": false,
+      "validation": "^evidence/actual/release-evidence\\.json$"
+    }
+  ],
+  "errors": []
+}

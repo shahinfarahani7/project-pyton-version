@@ -1,0 +1,4 @@
+receivers: { otlp: { protocols: { grpc: {}, http: {} } } }
+processors: { memory_limiter: { limit_mib: 1024 }, batch: {}, attributes/redact: { actions: [{ key: http.request.header.authorization, action: delete }, { key: enduser.id, action: hash }] } }
+exporters: { otlphttp: { endpoint: "${OBSERVABILITY_OTLP_ENDPOINT}", headers: { Authorization: "${OBSERVABILITY_AUTH_HEADER}" } } }
+service: { pipelines: { traces: { receivers: [otlp], processors: [memory_limiter, attributes/redact, batch], exporters: [otlphttp] }, metrics: { receivers: [otlp], processors: [memory_limiter, batch], exporters: [otlphttp] }, logs: { receivers: [otlp], processors: [memory_limiter, attributes/redact, batch], exporters: [otlphttp] } } }

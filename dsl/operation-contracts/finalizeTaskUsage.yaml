@@ -1,0 +1,64 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-finalizetaskusage
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for finalizeTaskUsage.
+spec:
+  operationId: finalizeTaskUsage
+  api: operations
+  method: POST
+  path: /tasks/{id}:finalize-usage
+  summary: Finalize usage capture revenue and worker reward atomically
+  classification: business_use_case
+  permissions:
+  - ops.finance:finalize-usage
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - credit_reservations
+    - ledger_entries
+    - ledger_transactions
+    - reward_accruals
+    - usage_events
+    domainEvents:
+    - task.usage.charged
+    - worker.reward.pending
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-052-finalize-task-billing@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - LEDGER_INVARIANT_FAILED
+  - TENANT_RESOURCE_NOT_FOUND
+  - USAGE_ALREADY_FINALIZED
+  - VERIFICATION_NOT_FINAL
+  contractSources:
+    openapi: contracts/openapi/edgemint-operations-api.yaml::POST /tasks/{id}:finalize-usage
+    request: OpenAPI requestBody/parameters for finalizeTaskUsage
+    response: OpenAPI responses for finalizeTaskUsage
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

@@ -1,0 +1,375 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.edgemint.io/websocket/frame-v1.json",
+  "title": "EdgeMint WebSocket Frame v1",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/hello"
+    },
+    {
+      "$ref": "#/$defs/welcome"
+    },
+    {
+      "$ref": "#/$defs/subscribe"
+    },
+    {
+      "$ref": "#/$defs/subscribed"
+    },
+    {
+      "$ref": "#/$defs/event"
+    },
+    {
+      "$ref": "#/$defs/ack"
+    },
+    {
+      "$ref": "#/$defs/ping"
+    },
+    {
+      "$ref": "#/$defs/pong"
+    },
+    {
+      "$ref": "#/$defs/error"
+    }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "hello": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "clientId",
+        "clientVersion"
+      ],
+      "properties": {
+        "type": {
+          "const": "hello"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "clientId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "clientVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[0-9A-Za-z.+_-]+$"
+        },
+        "resumeToken": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 128
+        }
+      },
+      "additionalProperties": false
+    },
+    "welcome": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "connectionId",
+        "heartbeatSeconds",
+        "maxInFlight",
+        "resumeToken"
+      ],
+      "properties": {
+        "type": {
+          "const": "welcome"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "connectionId": {
+          "type": "string"
+        },
+        "heartbeatSeconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 120
+        },
+        "maxInFlight": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "resumeToken": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "subscribe": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "subscriptionId",
+        "eventTypes"
+      ],
+      "properties": {
+        "type": {
+          "const": "subscribe"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "subscriptionId": {
+          "type": "string",
+          "pattern": "^sub_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "workspaceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventTypes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 186,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          }
+        },
+        "fromSequence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "subscribed": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "subscriptionId",
+        "nextSequence"
+      ],
+      "properties": {
+        "type": {
+          "const": "subscribed"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "subscriptionId": {
+          "type": "string",
+          "pattern": "^sub_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "nextSequence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "deliveryId",
+        "subscriptionId",
+        "sequence",
+        "cloudEvent",
+        "ackDeadlineUtc"
+      ],
+      "properties": {
+        "type": {
+          "const": "event"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "deliveryId": {
+          "type": "string",
+          "pattern": "^del_[0-9a-f]{32}$"
+        },
+        "subscriptionId": {
+          "type": "string",
+          "pattern": "^sub_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cloudEvent": {
+          "type": "object",
+          "required": [
+            "specversion",
+            "id",
+            "source",
+            "type",
+            "time",
+            "data"
+          ],
+          "properties": {
+            "specversion": {
+              "const": "1.0"
+            },
+            "id": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "time": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "datacontenttype": {
+              "const": "application/json"
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": true
+        },
+        "ackDeadlineUtc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ack": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "deliveryId",
+        "sequence"
+      ],
+      "properties": {
+        "type": {
+          "const": "ack"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "deliveryId": {
+          "type": "string",
+          "pattern": "^del_[0-9a-f]{32}$"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "ping": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "sentAtUtc"
+      ],
+      "properties": {
+        "type": {
+          "const": "ping"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "sentAtUtc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pong": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "sentAtUtc"
+      ],
+      "properties": {
+        "type": {
+          "const": "pong"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "sentAtUtc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "type",
+        "requestId",
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "type": {
+          "const": "error"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^req_[0-9A-HJKMNP-TV-Z]{26}$"
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "retryAfterMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

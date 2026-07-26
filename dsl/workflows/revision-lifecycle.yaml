@@ -1,0 +1,43 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: revision-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: draft
+    terminal: false
+  - name: queued
+    terminal: false
+  - name: quoted
+    terminal: false
+  - name: reserved
+    terminal: false
+  - name: terminal
+    terminal: true
+  transitions:
+  - from: draft
+    to: quoted
+    event: revision-lifecycle.draft_to_quoted
+  - from: quoted
+    to: reserved
+    event: revision-lifecycle.quoted_to_reserved
+  - from: quoted
+    to: draft
+    event: revision-lifecycle.quoted_to_draft
+  - from: reserved
+    to: queued
+    event: revision-lifecycle.reserved_to_queued
+  - from: reserved
+    to: draft
+    event: revision-lifecycle.reserved_to_draft
+  - from: queued
+    to: terminal
+    event: revision-lifecycle.queued_to_terminal
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

@@ -1,0 +1,150 @@
+apiVersion: edgemint.io/v1
+kind: RoutingPolicy
+metadata:
+  name: smart-router-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+  - ml
+spec:
+  eligibility:
+    heartbeatMaximumAgeSeconds: 90
+    minimumTrustMilli: 650
+    minimumBatteryPercent: 25
+    disallowedThermalStates:
+    - serious
+    - critical
+    requireAttestationForPaidTasks: true
+    requireCurrentConsent: true
+    requireModelDigestMatch: true
+    requireRuntimeAbiMatch: true
+    respectCustomerRegion: true
+    respectWorkerNetworkPolicy: true
+    requireAvailableStatus: true
+  score:
+    scale: 10000
+    weightsBps:
+      modelLocality: 2200
+      trust: 2000
+      predictedLatency: 1700
+      batteryCharging: 800
+      network: 700
+      regionalCompliance: 1200
+      priceEfficiency: 900
+      reliability: 500
+    normalization: canonical_feature_formulas_v1
+    tieBreaker: hmac_sha256(taskId,workerId,routerEpoch)
+    featureFormulas:
+      modelLocality:
+        exactModelLoadedBps: 10000
+        exactModelInstalledBps: 8500
+        verifiedLocalArtifactCacheBps: 7000
+        otherwiseBps: 0
+      trust: clamp(worker_trust_score_bps,0,10000)
+      predictedLatency: clamp(10000 - floor(predicted_p95_ms * 10000 / max(deadline_budget_ms,1)),0,10000)
+      batteryCharging:
+        chargingBps: 10000
+        notChargingBps: 3000
+      network:
+        ethernetBps: 10000
+        wifiBps: 8500
+        cellularBps: 5000
+        offlineBps: 0
+      regionalCompliance:
+        allowedBps: 10000
+        notAllowedBps: 0
+      priceEfficiency: clamp(10000 - floor(predicted_worker_cost_micros * 10000 /
+        max(quote_worker_cost_budget_micros,1)),0,10000)
+      reliability: floor(completion_rate_bps * 6000 / 10000) + floor(on_time_rate_bps
+        * 4000 / 10000)
+  capacity:
+    reservationMode: compare_and_swap
+    maximumActiveLeasesPerWorker: tier_limit
+    overbookingAllowed: false
+  fallback:
+    defaultPolicy: edge_preferred
+    cloudAfterSeconds: 45
+    maxWorkerReassignments: 2
+    requoteRequired: false
+    dailyCloudCostCapMicros: 500000000
+    reassignmentLimitAction: expire_attempt_then_apply_retry_policy_or_cloud_fallback
+  timeouts:
+    assignmentDeliverySeconds: 30
+    autoStartGraceSeconds: 20
+    leaseSeconds: 120
+    leaseRenewalSeconds: 30
+    heartbeatSeconds: 30
+    executionByTaskType:
+      document.ocr: 300
+      document.extract: 600
+      image.classify: 180
+      image.detect: 240
+      vision.analyze: 600
+      audio.transcribe: 1800
+      text.translate: 180
+      text.generate: 600
+      text.embedding: 120
+      document.verify: 300
+  antiAffinity:
+    consensusDifferentAccount: true
+    consensusDifferentDevice: true
+    consensusDifferentNetworkClusterWhenPossible: true
+  fencing:
+    monotonicPerAttempt: true
+    staleResultAction: store_rejected_evidence_no_reward
+  assignmentMode: server_auto_lease
+  perTaskWorkerConfirmation: false
+  workerOptInAuthority: current_consent_and_available_status
+  deliveryAcknowledgementMeaning: transport_receipt_only
+  runtimeUnavailability:
+    reporting: automatic_agent_only
+    allowedReasonCodes:
+    - battery_low
+    - thermal_block
+    - network_policy_blocked
+    - model_unavailable
+    - insufficient_storage
+    - runtime_incompatible
+    - resource_pressure
+    validatedPenalty: worker_neutral
+    reassignment: immediate_with_higher_fence
+    evidenceValidation:
+      snapshotMustBeLatest: true
+      maximumSnapshotAgeSeconds: 90
+      observedAtToleranceSeconds: 5
+      reasonMustMatchPersistedTelemetryOrImmutableTaskRequirements: true
+      mismatchAction: reject_without_reassignment
+  queueSelection:
+    algorithm: workspace_deficit_round_robin_then_earliest_deadline
+    candidateWindowSize: 200
+    workspaceFairness:
+      quantumUnits: 1
+      costUnits: estimated_execution_milliseconds_ceiling_div_1000
+      maximumConsecutiveAssignmentsPerWorkspace: 5
+      idleWorkspaceCreditCapUnits: 20
+    priorityOrder:
+      critical: 4000
+      high: 3000
+      standard: 2000
+      batch: 1000
+    aging:
+      boostBpsPerWaitingMinute: 25
+      maximumBoostBps: 2000
+    deterministicOrder:
+    - fairness_deficit_desc
+    - effective_priority_bps_desc
+    - deadline_at_utc_asc_nulls_last
+    - submitted_at_utc_asc
+    - task_id_asc
+    starvationLimitSeconds: 300
+    expiredDeadlineAction: expire_without_assignment
+    priorityAuthority: server_derived_from_entitlement_execution_mode_and_authorized_operations_override
+    priorityClassDerivation:
+      critical: enterprise_entitlement_or_authorized_operations_override_only
+      high: business_or_enterprise_sla
+      standard: default_for_interactive_tasks
+      batch: explicit_batch_execution_mode
+    clientSuppliedPriorityTrusted: false
+    starvationOverride: oldest_waiting_task_at_or_above_limit_precedes_normal_fairness_order
+  availabilityChangeEffect: future_assignments_only_active_leases_continue

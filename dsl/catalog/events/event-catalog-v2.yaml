@@ -1,0 +1,756 @@
+apiVersion: edgemint.io/v1
+kind: EventCatalog
+metadata:
+  name: event-catalog-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  specVersion: '1.0'
+  sourcePrefix: https://events.edgemint.io
+  events:
+  - name: api_key.created
+    type: io.edgemint.api_key.created.v1
+    subjectType: api_key
+    schemaVersion: 1.0.0
+  - name: api_key.revoked
+    type: io.edgemint.api_key.revoked.v1
+    subjectType: api_key
+    schemaVersion: 1.0.0
+  - name: api_key.rotated
+    type: io.edgemint.api_key.rotated.v1
+    subjectType: api_key
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.leased_to_revoked
+    type: io.edgemint.assignment-lifecycle.leased_to_revoked.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.running_to_completed
+    type: io.edgemint.assignment-lifecycle.running_to_completed.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.running_to_expired
+    type: io.edgemint.assignment-lifecycle.running_to_expired.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.running_to_revoked
+    type: io.edgemint.assignment-lifecycle.running_to_revoked.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.leased_to_running
+    type: io.edgemint.assignment-lifecycle.leased_to_running.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.leased_to_expired
+    type: io.edgemint.assignment-lifecycle.leased_to_expired.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.leased_to_failed
+    type: io.edgemint.assignment-lifecycle.leased_to_failed.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment-lifecycle.revoked_to_stale
+    type: io.edgemint.assignment-lifecycle.revoked_to_stale.v1
+    subjectType: assignment-lifecycle
+    schemaVersion: 1.0.0
+  - name: assignment.started
+    type: io.edgemint.assignment.started.v1
+    subjectType: assignment
+    schemaVersion: 1.0.0
+  - name: assignment.lease_renewed
+    type: io.edgemint.assignment.lease_renewed.v1
+    subjectType: assignment
+    schemaVersion: 1.0.0
+  - name: assignment.leased
+    type: io.edgemint.assignment.leased.v1
+    subjectType: assignment
+    schemaVersion: 1.0.0
+  - name: assignment.revoked
+    type: io.edgemint.assignment.revoked.v1
+    subjectType: assignment
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.created_to_matching
+    type: io.edgemint.attempt-lifecycle.created_to_matching.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.leased_to_abandoned
+    type: io.edgemint.attempt-lifecycle.leased_to_abandoned.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.leased_to_running
+    type: io.edgemint.attempt-lifecycle.leased_to_running.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.matching_to_expired
+    type: io.edgemint.attempt-lifecycle.matching_to_expired.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.matching_to_leased
+    type: io.edgemint.attempt-lifecycle.matching_to_leased.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.leased_to_matching
+    type: io.edgemint.attempt-lifecycle.leased_to_matching.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.leased_to_failed
+    type: io.edgemint.attempt-lifecycle.leased_to_failed.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.result_submitted_to_verifying
+    type: io.edgemint.attempt-lifecycle.result_submitted_to_verifying.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.running_to_abandoned
+    type: io.edgemint.attempt-lifecycle.running_to_abandoned.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.running_to_failed
+    type: io.edgemint.attempt-lifecycle.running_to_failed.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.running_to_result_submitted
+    type: io.edgemint.attempt-lifecycle.running_to_result_submitted.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.verifying_to_failed
+    type: io.edgemint.attempt-lifecycle.verifying_to_failed.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt-lifecycle.verifying_to_succeeded
+    type: io.edgemint.attempt-lifecycle.verifying_to_succeeded.v1
+    subjectType: attempt-lifecycle
+    schemaVersion: 1.0.0
+  - name: attempt.created
+    type: io.edgemint.attempt.created.v1
+    subjectType: attempt
+    schemaVersion: 1.0.0
+  - name: attempt.failed
+    type: io.edgemint.attempt.failed.v1
+    subjectType: attempt
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.batched_to_submitted
+    type: io.edgemint.claim-lifecycle.batched_to_submitted.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.confirming_to_failed_released
+    type: io.edgemint.claim-lifecycle.confirming_to_failed_released.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.confirming_to_reconciling
+    type: io.edgemint.claim-lifecycle.confirming_to_reconciling.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.confirming_to_settled
+    type: io.edgemint.claim-lifecycle.confirming_to_settled.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.draft_to_eligibility_check
+    type: io.edgemint.claim-lifecycle.draft_to_eligibility_check.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.eligibility_check_to_rejected
+    type: io.edgemint.claim-lifecycle.eligibility_check_to_rejected.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.eligibility_check_to_reserved
+    type: io.edgemint.claim-lifecycle.eligibility_check_to_reserved.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.reconciling_to_failed_released
+    type: io.edgemint.claim-lifecycle.reconciling_to_failed_released.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.reconciling_to_settled
+    type: io.edgemint.claim-lifecycle.reconciling_to_settled.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.reserved_to_batched
+    type: io.edgemint.claim-lifecycle.reserved_to_batched.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim-lifecycle.submitted_to_confirming
+    type: io.edgemint.claim-lifecycle.submitted_to_confirming.v1
+    subjectType: claim-lifecycle
+    schemaVersion: 1.0.0
+  - name: claim.completed
+    type: io.edgemint.claim.completed.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.created
+    type: io.edgemint.claim.created.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.epoch.activated
+    type: io.edgemint.claim.epoch.activated.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.reconciling
+    type: io.edgemint.claim.reconciling.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.rejected
+    type: io.edgemint.claim.rejected.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.requested
+    type: io.edgemint.claim.requested.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.settled
+    type: io.edgemint.claim.settled.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: claim.submitted
+    type: io.edgemint.claim.submitted.v1
+    subjectType: claim
+    schemaVersion: 1.0.0
+  - name: credit.released
+    type: io.edgemint.credit.released.v1
+    subjectType: credit
+    schemaVersion: 1.0.0
+  - name: credit.reserved
+    type: io.edgemint.credit.reserved.v1
+    subjectType: credit
+    schemaVersion: 1.0.0
+  - name: dispute.opened
+    type: io.edgemint.dispute.opened.v1
+    subjectType: dispute
+    schemaVersion: 1.0.0
+  - name: dispute.resolved
+    type: io.edgemint.dispute.resolved.v1
+    subjectType: dispute
+    schemaVersion: 1.0.0
+  - name: economy.kill_switch.changed
+    type: io.edgemint.economy.kill_switch.changed.v1
+    subjectType: economy
+    schemaVersion: 1.0.0
+  - name: file.deleted
+    type: io.edgemint.file.deleted.v1
+    subjectType: file
+    schemaVersion: 1.0.0
+  - name: file.ready
+    type: io.edgemint.file.ready.v1
+    subjectType: file
+    schemaVersion: 1.0.0
+  - name: file.upload_intent.created
+    type: io.edgemint.file.upload_intent.created.v1
+    subjectType: file
+    schemaVersion: 1.0.0
+  - name: file.upload_session.created
+    type: io.edgemint.file.upload_session.created.v1
+    subjectType: file
+    schemaVersion: 1.0.0
+  - name: fraud.case.resolved
+    type: io.edgemint.fraud.case.resolved.v1
+    subjectType: fraud
+    schemaVersion: 1.0.0
+  - name: fraud.case_opened
+    type: io.edgemint.fraud.case_opened.v1
+    subjectType: fraud
+    schemaVersion: 1.0.0
+  - name: ledger.reconciled
+    type: io.edgemint.ledger.reconciled.v1
+    subjectType: ledger
+    schemaVersion: 1.0.0
+  - name: ledger.reconciliation.completed
+    type: io.edgemint.ledger.reconciliation.completed.v1
+    subjectType: ledger
+    schemaVersion: 1.0.0
+  - name: ledger.reconciliation.failed
+    type: io.edgemint.ledger.reconciliation.failed.v1
+    subjectType: ledger
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.deleting_to_deleted
+    type: io.edgemint.model-download-lifecycle.deleting_to_deleted.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.downloading_to_paused
+    type: io.edgemint.model-download-lifecycle.downloading_to_paused.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.downloading_to_verifying
+    type: io.edgemint.model-download-lifecycle.downloading_to_verifying.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.installed_to_ready
+    type: io.edgemint.model-download-lifecycle.installed_to_ready.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.offered_to_queued
+    type: io.edgemint.model-download-lifecycle.offered_to_queued.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.paused_to_downloading
+    type: io.edgemint.model-download-lifecycle.paused_to_downloading.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.quarantined_to_deleting
+    type: io.edgemint.model-download-lifecycle.quarantined_to_deleting.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.queued_to_downloading
+    type: io.edgemint.model-download-lifecycle.queued_to_downloading.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.ready_to_deleting
+    type: io.edgemint.model-download-lifecycle.ready_to_deleting.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.ready_to_quarantined
+    type: io.edgemint.model-download-lifecycle.ready_to_quarantined.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.verifying_to_failed
+    type: io.edgemint.model-download-lifecycle.verifying_to_failed.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model-download-lifecycle.verifying_to_installed
+    type: io.edgemint.model-download-lifecycle.verifying_to_installed.v1
+    subjectType: model-download-lifecycle
+    schemaVersion: 1.0.0
+  - name: model.download.started
+    type: io.edgemint.model.download.started.v1
+    subjectType: model
+    schemaVersion: 1.0.0
+  - name: model.installed
+    type: io.edgemint.model.installed.v1
+    subjectType: model
+    schemaVersion: 1.0.0
+  - name: model.revoked
+    type: io.edgemint.model.revoked.v1
+    subjectType: model
+    schemaVersion: 1.0.0
+  - name: model.rollout.started
+    type: io.edgemint.model.rollout.started.v1
+    subjectType: model
+    schemaVersion: 1.0.0
+  - name: model.rollout_paused
+    type: io.edgemint.model.rollout_paused.v1
+    subjectType: model
+    schemaVersion: 1.0.0
+  - name: model.rollout_rolled_back
+    type: io.edgemint.model.rollout_rolled_back.v1
+    subjectType: model
+    schemaVersion: 1.0.0
+  - name: organization.created
+    type: io.edgemint.organization.created.v1
+    subjectType: organization
+    schemaVersion: 1.0.0
+  - name: policy.activated
+    type: io.edgemint.policy.activated.v1
+    subjectType: policy
+    schemaVersion: 1.0.0
+  - name: policy.published
+    type: io.edgemint.policy.published.v1
+    subjectType: policy
+    schemaVersion: 1.0.0
+  - name: policy.rolled_back
+    type: io.edgemint.policy.rolled_back.v1
+    subjectType: policy
+    schemaVersion: 1.0.0
+  - name: promotion.budget.reserved
+    type: io.edgemint.promotion.budget.reserved.v1
+    subjectType: promotion
+    schemaVersion: 1.0.0
+  - name: quote.created
+    type: io.edgemint.quote.created.v1
+    subjectType: quote
+    schemaVersion: 1.0.0
+  - name: quote.rejected
+    type: io.edgemint.quote.rejected.v1
+    subjectType: quote
+    schemaVersion: 1.0.0
+  - name: revision-lifecycle.draft_to_quoted
+    type: io.edgemint.revision-lifecycle.draft_to_quoted.v1
+    subjectType: revision-lifecycle
+    schemaVersion: 1.0.0
+  - name: revision-lifecycle.queued_to_terminal
+    type: io.edgemint.revision-lifecycle.queued_to_terminal.v1
+    subjectType: revision-lifecycle
+    schemaVersion: 1.0.0
+  - name: revision-lifecycle.quoted_to_draft
+    type: io.edgemint.revision-lifecycle.quoted_to_draft.v1
+    subjectType: revision-lifecycle
+    schemaVersion: 1.0.0
+  - name: revision-lifecycle.quoted_to_reserved
+    type: io.edgemint.revision-lifecycle.quoted_to_reserved.v1
+    subjectType: revision-lifecycle
+    schemaVersion: 1.0.0
+  - name: revision-lifecycle.reserved_to_draft
+    type: io.edgemint.revision-lifecycle.reserved_to_draft.v1
+    subjectType: revision-lifecycle
+    schemaVersion: 1.0.0
+  - name: revision-lifecycle.reserved_to_queued
+    type: io.edgemint.revision-lifecycle.reserved_to_queued.v1
+    subjectType: revision-lifecycle
+    schemaVersion: 1.0.0
+  - name: revision.created
+    type: io.edgemint.revision.created.v1
+    subjectType: revision
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.claim_reserved_to_settled
+    type: io.edgemint.reward-lifecycle.claim_reserved_to_settled.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.claim_reserved_to_verified
+    type: io.edgemint.reward-lifecycle.claim_reserved_to_verified.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.estimated_to_pending
+    type: io.edgemint.reward-lifecycle.estimated_to_pending.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.held_to_reversed
+    type: io.edgemint.reward-lifecycle.held_to_reversed.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.held_to_verified
+    type: io.edgemint.reward-lifecycle.held_to_verified.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.pending_to_held
+    type: io.edgemint.reward-lifecycle.pending_to_held.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.pending_to_verified
+    type: io.edgemint.reward-lifecycle.pending_to_verified.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.verified_to_claim_reserved
+    type: io.edgemint.reward-lifecycle.verified_to_claim_reserved.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: reward-lifecycle.verified_to_expired
+    type: io.edgemint.reward-lifecycle.verified_to_expired.v1
+    subjectType: reward-lifecycle
+    schemaVersion: 1.0.0
+  - name: subscription.changed
+    type: io.edgemint.subscription.changed.v1
+    subjectType: subscription
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.active_to_cancelled
+    type: io.edgemint.task-lifecycle.active_to_cancelled.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.active_to_completed
+    type: io.edgemint.task-lifecycle.active_to_completed.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.active_to_expired
+    type: io.edgemint.task-lifecycle.active_to_expired.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.active_to_failed
+    type: io.edgemint.task-lifecycle.active_to_failed.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.completed_to_disputed
+    type: io.edgemint.task-lifecycle.completed_to_disputed.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.disputed_to_completed
+    type: io.edgemint.task-lifecycle.disputed_to_completed.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.disputed_to_failed
+    type: io.edgemint.task-lifecycle.disputed_to_failed.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.draft_to_cancelled
+    type: io.edgemint.task-lifecycle.draft_to_cancelled.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.draft_to_submitted
+    type: io.edgemint.task-lifecycle.draft_to_submitted.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.failed_to_disputed
+    type: io.edgemint.task-lifecycle.failed_to_disputed.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.submitted_to_active
+    type: io.edgemint.task-lifecycle.submitted_to_active.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task-lifecycle.submitted_to_cancelled
+    type: io.edgemint.task-lifecycle.submitted_to_cancelled.v1
+    subjectType: task-lifecycle
+    schemaVersion: 1.0.0
+  - name: task.assigned
+    type: io.edgemint.task.assigned.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.assignment.started
+    type: io.edgemint.task.assignment.started.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.assignment.renewed
+    type: io.edgemint.task.assignment.renewed.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.attempt.created
+    type: io.edgemint.task.attempt.created.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.cancelled
+    type: io.edgemint.task.cancelled.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.charged
+    type: io.edgemint.task.charged.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.checkpoint.saved
+    type: io.edgemint.task.checkpoint.saved.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.completed
+    type: io.edgemint.task.completed.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.created
+    type: io.edgemint.task.created.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.credit_reserved
+    type: io.edgemint.task.credit_reserved.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.disputed
+    type: io.edgemint.task.disputed.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.execution.resumed
+    type: io.edgemint.task.execution.resumed.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.expired
+    type: io.edgemint.task.expired.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.failed
+    type: io.edgemint.task.failed.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.fallback.cloud
+    type: io.edgemint.task.fallback.cloud.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.assignment.leased
+    type: io.edgemint.task.assignment.leased.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.assignment.unavailable
+    type: io.edgemint.task.assignment.unavailable.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.progress
+    type: io.edgemint.task.progress.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.progressed
+    type: io.edgemint.task.progressed.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.queued
+    type: io.edgemint.task.queued.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.result.submitted
+    type: io.edgemint.task.result.submitted.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.revision.created
+    type: io.edgemint.task.revision.created.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.started
+    type: io.edgemint.task.started.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.submitted
+    type: io.edgemint.task.submitted.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.usage.charged
+    type: io.edgemint.task.usage.charged.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: task.verification.accepted
+    type: io.edgemint.task.verification.accepted.v1
+    subjectType: task
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.automatic_to_accepted
+    type: io.edgemint.verification-lifecycle.automatic_to_accepted.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.automatic_to_consensus
+    type: io.edgemint.verification-lifecycle.automatic_to_consensus.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.automatic_to_human_review
+    type: io.edgemint.verification-lifecycle.automatic_to_human_review.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.automatic_to_retry
+    type: io.edgemint.verification-lifecycle.automatic_to_retry.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.automatic_to_warning
+    type: io.edgemint.verification-lifecycle.automatic_to_warning.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.consensus_to_accepted
+    type: io.edgemint.verification-lifecycle.consensus_to_accepted.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.consensus_to_human_review
+    type: io.edgemint.verification-lifecycle.consensus_to_human_review.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.consensus_to_retry
+    type: io.edgemint.verification-lifecycle.consensus_to_retry.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.human_review_to_accepted
+    type: io.edgemint.verification-lifecycle.human_review_to_accepted.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.human_review_to_rejected
+    type: io.edgemint.verification-lifecycle.human_review_to_rejected.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification-lifecycle.pending_to_automatic
+    type: io.edgemint.verification-lifecycle.pending_to_automatic.v1
+    subjectType: verification-lifecycle
+    schemaVersion: 1.0.0
+  - name: verification.completed
+    type: io.edgemint.verification.completed.v1
+    subjectType: verification
+    schemaVersion: 1.0.0
+  - name: verification.conflicted
+    type: io.edgemint.verification.conflicted.v1
+    subjectType: verification
+    schemaVersion: 1.0.0
+  - name: verification.started
+    type: io.edgemint.verification.started.v1
+    subjectType: verification
+    schemaVersion: 1.0.0
+  - name: webhook.delivery.failed
+    type: io.edgemint.webhook.delivery.failed.v1
+    subjectType: webhook
+    schemaVersion: 1.0.0
+  - name: webhook.delivery.replayed
+    type: io.edgemint.webhook.delivery.replayed.v1
+    subjectType: webhook
+    schemaVersion: 1.0.0
+  - name: webhook.endpoint.created
+    type: io.edgemint.webhook.endpoint.created.v1
+    subjectType: webhook
+    schemaVersion: 1.0.0
+  - name: webhook.secret.rotated
+    type: io.edgemint.webhook.secret.rotated.v1
+    subjectType: webhook
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.attesting_to_benchmarking
+    type: io.edgemint.worker-lifecycle.attesting_to_benchmarking.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.benchmarking_to_ready
+    type: io.edgemint.worker-lifecycle.benchmarking_to_ready.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.cooldown_to_ready
+    type: io.edgemint.worker-lifecycle.cooldown_to_ready.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.degraded_to_quarantined
+    type: io.edgemint.worker-lifecycle.degraded_to_quarantined.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.degraded_to_ready
+    type: io.edgemint.worker-lifecycle.degraded_to_ready.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.executing_to_cooldown
+    type: io.edgemint.worker-lifecycle.executing_to_cooldown.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.quarantined_to_ready
+    type: io.edgemint.worker-lifecycle.quarantined_to_ready.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.quarantined_to_suspended
+    type: io.edgemint.worker-lifecycle.quarantined_to_suspended.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.ready_to_degraded
+    type: io.edgemint.worker-lifecycle.ready_to_degraded.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.ready_to_reserved
+    type: io.edgemint.worker-lifecycle.ready_to_reserved.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.registered_to_attesting
+    type: io.edgemint.worker-lifecycle.registered_to_attesting.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.reserved_to_executing
+    type: io.edgemint.worker-lifecycle.reserved_to_executing.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker-lifecycle.suspended_to_banned
+    type: io.edgemint.worker-lifecycle.suspended_to_banned.v1
+    subjectType: worker-lifecycle
+    schemaVersion: 1.0.0
+  - name: worker.attested
+    type: io.edgemint.worker.attested.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.availability.changed
+    type: io.edgemint.worker.availability.changed.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.benchmarked
+    type: io.edgemint.worker.benchmarked.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.degraded
+    type: io.edgemint.worker.degraded.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.quarantined
+    type: io.edgemint.worker.quarantined.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.ready
+    type: io.edgemint.worker.ready.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.registered
+    type: io.edgemint.worker.registered.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.reward.pending
+    type: io.edgemint.worker.reward.pending.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.reward.reversed
+    type: io.edgemint.worker.reward.reversed.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: worker.reward.verified
+    type: io.edgemint.worker.reward.verified.v1
+    subjectType: worker
+    schemaVersion: 1.0.0
+  - name: workspace.created
+    type: io.edgemint.workspace.created.v1
+    subjectType: workspace
+    schemaVersion: 1.0.0
+  - name: workspace.member.invited
+    type: io.edgemint.workspace.member.invited.v1
+    subjectType: workspace
+    schemaVersion: 1.0.0

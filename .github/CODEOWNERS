@@ -1,0 +1,17 @@
+* @edgemint/engineering
+/production/ @edgemint/architecture @edgemint/security @edgemint/sre
+/contracts/ @edgemint/architecture @edgemint/api
+/database/ @edgemint/data @edgemint/security
+/src/backend/services/billing/ @edgemint/finance-platform
+/src/backend/services/ledger/ @edgemint/finance-platform @edgemint/security
+/src/backend/services/reward/ @edgemint/worker-economy @edgemint/finance-platform
+/src/backend/services/claim/ @edgemint/worker-economy @edgemint/finance-platform
+/src/backend/services/worker-gateway/ @edgemint/worker-platform @edgemint/security
+/src/backend/services/worker-registry/ @edgemint/worker-platform @edgemint/security
+/src/backend/services/router/ @edgemint/routing
+/src/apps/worker/ @edgemint/mobile @edgemint/security
+/src/apps/customer-portal/ @edgemint/customer-experience
+/src/apps/operations-portal/ @edgemint/operations @edgemint/security
+/deploy/ @edgemint/platform @edgemint/sre @edgemint/security
+/evidence/ @edgemint/release-management @edgemint/security
+/.github/ @edgemint/platform @edgemint/security

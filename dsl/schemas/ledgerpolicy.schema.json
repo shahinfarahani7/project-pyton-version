@@ -1,0 +1,354 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/ledgerpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "LedgerPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "accounts": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "name",
+              "type"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "currencyMode": {
+          "type": "string"
+        },
+        "manualAdjustment": {
+          "additionalProperties": false,
+          "properties": {
+            "compensatingOnly": {
+              "type": "boolean"
+            },
+            "dualApprovalAboveMicros": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "compensatingOnly",
+            "dualApprovalAboveMicros"
+          ],
+          "type": "object"
+        },
+        "postingRules": {
+          "additionalProperties": false,
+          "properties": {
+            "customer.credit.settled": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "customer.refund.balance": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "customer.service_credit": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "task.usage.charged": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "verifier.reward.verified": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "worker.reward.claim_reserved": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "worker.reward.claim_settled": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "worker.reward.verified": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "side": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "account",
+                  "amount",
+                  "side"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "customer.credit.settled",
+            "customer.refund.balance",
+            "customer.service_credit",
+            "task.usage.charged",
+            "verifier.reward.verified",
+            "worker.reward.claim_reserved",
+            "worker.reward.claim_settled",
+            "worker.reward.verified"
+          ],
+          "type": "object"
+        },
+        "reconciliation": {
+          "additionalProperties": false,
+          "properties": {
+            "claimInvariant": {
+              "type": "string"
+            },
+            "daily": {
+              "type": "boolean"
+            },
+            "doubleEntryInvariant": {
+              "type": "string"
+            },
+            "taskFinancialInvariant": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "claimInvariant",
+            "daily",
+            "doubleEntryInvariant",
+            "taskFinancialInvariant"
+          ],
+          "type": "object"
+        },
+        "reservationAccounting": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accounts",
+        "currencyMode",
+        "manualAdjustment",
+        "postingRules",
+        "reconciliation",
+        "reservationAccounting"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint LedgerPolicy",
+  "type": "object"
+}

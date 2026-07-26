@@ -1,0 +1,33 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-087-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-087
+  useCaseRef: UseCase/uc-044-reconcile-task-financials@2.0.0
+  mode: success
+  given:
+  - Use case UC-044 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Finance Operator is authenticated and has permissions ops.finance:reconcile-task.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke reconcileTaskFinancials with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: credit_reservations, ledger_transactions, ledger_entries, reward_accruals.'
+  - 'Exactly these canonical events are inserted into the outbox: ledger.reconciled.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Finance Operator
+    operationIds:
+    - reconcileTaskFinancials
+    requirements:
+    - REQ-BILL-003
+    - REQ-DISPUTE-003
+  expectedEvents:
+  - ledger.reconciled
+  expectedErrorCode: null

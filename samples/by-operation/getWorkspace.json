@@ -1,0 +1,33 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "getWorkspace",
+  "request": {
+    "method": "GET",
+    "path": "/workspaces/{workspaceId}",
+    "pathParameters": {
+      "workspaceId": "wsp_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getWorkspace_0001",
+      "Authorization": "Bearer customer_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "organizationId": "org_01J00000000000000000000000",
+      "name": "Example Name",
+      "environment": "example",
+      "version": 1
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.workspaces:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

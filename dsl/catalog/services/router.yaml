@@ -1,0 +1,21 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: router
+  version: 2.0.0
+  status: active
+  owners:
+  - edge-platform
+spec:
+  service: router
+  ownerTeam: edge-platform
+  dataOwnership:
+  - router
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - task.assignment.leased
+  - assignment.leased
+  - attempt-lifecycle.matching_to_leased
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

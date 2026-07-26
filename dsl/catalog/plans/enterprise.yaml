@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: SLAPlan
+metadata:
+  name: enterprise
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - sre
+spec:
+  availabilityBps: 9990
+  latencyClass: premium
+  p95AssignmentSeconds: 30
+  support:
+    channel: ticket
+    responseHours: 2
+  serviceCredits:
+    enabled: true
+    monthlyCapBps: 2000

@@ -1,0 +1,373 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/tasktype.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "TaskType"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "billing": {
+          "additionalProperties": false,
+          "properties": {
+            "measure": {
+              "type": "string"
+            },
+            "minimumQuanta": {
+              "type": "integer"
+            },
+            "quantum": {
+              "type": "integer"
+            },
+            "rounding": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "measure",
+            "minimumQuanta",
+            "quantum",
+            "rounding"
+          ],
+          "type": "object"
+        },
+        "code": {
+          "type": "string"
+        },
+        "dataPolicyRef": {
+          "type": "string"
+        },
+        "defaultVerification": {
+          "type": "string"
+        },
+        "editableAfterSubmit": {
+          "type": "boolean"
+        },
+        "idempotencyScope": {
+          "type": "string"
+        },
+        "inputLimits": {
+          "additionalProperties": false,
+          "properties": {
+            "allowedContentTypes": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "maximumBytes": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "allowedContentTypes",
+            "maximumBytes"
+          ],
+          "type": "object"
+        },
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "properties": {
+              "additionalProperties": false,
+              "properties": {
+                "assetRef": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "pattern": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "pattern",
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "options": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "assetRef",
+                "options"
+              ],
+              "type": "object"
+            },
+            "required": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "additionalProperties",
+            "properties",
+            "required",
+            "type"
+          ],
+          "type": "object"
+        },
+        "lifecycle": {
+          "type": "string"
+        },
+        "modelCandidates": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "modelRef": {
+                "type": "string"
+              },
+              "priority": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "modelRef",
+              "priority"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "properties": {
+              "additionalProperties": false,
+              "properties": {
+                "data": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "metrics": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "status": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "enum": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "enum"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "data",
+                "metrics",
+                "status"
+              ],
+              "type": "object"
+            },
+            "required": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "additionalProperties",
+            "properties",
+            "required",
+            "type"
+          ],
+          "type": "object"
+        },
+        "requiredCapabilities": {
+          "additionalProperties": false,
+          "properties": {
+            "attestationRequired": {
+              "type": "boolean"
+            },
+            "maximumExecutionSeconds": {
+              "type": "integer"
+            },
+            "minimumWorkerTier": {
+              "type": "string"
+            },
+            "secureNetworkRequired": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "attestationRequired",
+            "maximumExecutionSeconds",
+            "minimumWorkerTier",
+            "secureNetworkRequired"
+          ],
+          "type": "object"
+        },
+        "retention": {
+          "additionalProperties": false,
+          "properties": {
+            "inputHours": {
+              "type": "integer"
+            },
+            "resultDays": {
+              "type": "integer"
+            },
+            "workerTemporaryMinutes": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "inputHours",
+            "resultDays",
+            "workerTemporaryMinutes"
+          ],
+          "type": "object"
+        },
+        "safety": {
+          "additionalProperties": false,
+          "properties": {
+            "contentPolicy": {
+              "type": "string"
+            },
+            "humanReviewAllowed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "contentPolicy",
+            "humanReviewAllowed"
+          ],
+          "type": "object"
+        },
+        "verificationPolicyRef": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "billing",
+        "code",
+        "dataPolicyRef",
+        "defaultVerification",
+        "editableAfterSubmit",
+        "idempotencyScope",
+        "inputLimits",
+        "inputSchema",
+        "lifecycle",
+        "modelCandidates",
+        "outputSchema",
+        "requiredCapabilities",
+        "retention",
+        "safety",
+        "verificationPolicyRef"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint TaskType",
+  "type": "object"
+}

@@ -1,0 +1,61 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-createrewardclaim
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for createRewardClaim.
+spec:
+  operationId: createRewardClaim
+  api: worker
+  method: POST
+  path: /reward-claims
+  summary: Create claim when claim mode enabled
+  classification: business_use_case
+  permissions:
+  - worker.rewards:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - reward_claims
+    domainEvents:
+    - claim.created
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-036-create-token-claim@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - CLAIM_COMPLIANCE_HOLD
+  - CLAIM_MINIMUM_NOT_MET
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - JURISDICTION_NOT_ALLOWED
+  - KYC_REQUIRED
+  - TENANT_RESOURCE_NOT_FOUND
+  - TOKEN_CLAIM_NOT_ENABLED
+  contractSources:
+    openapi: contracts/openapi/edgemint-worker-api.yaml::POST /reward-claims
+    request: OpenAPI requestBody/parameters for createRewardClaim
+    response: OpenAPI responses for createRewardClaim
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

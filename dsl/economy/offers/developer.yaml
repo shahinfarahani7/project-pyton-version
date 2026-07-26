@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: Offer
+metadata:
+  name: developer
+  version: 2.0.0
+  status: evaluation
+  owners:
+  - product
+  - finance
+  labels:
+    productionActivation: requires-finance-approval
+spec:
+  plan: developer
+  fees:
+    monthlyMicros: 29000000
+    setupMicros: 0
+  entitlementRef: EntitlementPolicy/developer-entitlements-v2@2.0.0
+  slaRef: SLAPlan/developer@2.0.0
+  priceBookRef: PriceBook/public-eur-2026q3-v2@2.0.0
+  eligibility:
+    selfServe: true
+    contractRequired: false
+  renewal: monthly

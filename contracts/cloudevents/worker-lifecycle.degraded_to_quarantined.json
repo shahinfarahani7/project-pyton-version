@@ -1,0 +1,24 @@
+{
+  "specversion": "1.0",
+  "id": "event_f01092e6e88577b9ee03b70759",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.worker-lifecycle.degraded_to_quarantined.v1",
+  "subject": "worker_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "correlationId": "corr_f01092e6e88577b9ee03b70759",
+  "causationId": "cmd_f01092e6e88577b9ee03b70759",
+  "partitionKey": "worker_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "workerId": "worker_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "fromStatus": "degraded",
+    "toStatus": "quarantined",
+    "workspaceId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

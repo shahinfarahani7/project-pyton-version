@@ -1,0 +1,74 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: text-translate
+  version: 2.0.0
+  status: active
+  description: Production task contract for text.translate
+  labels:
+    domain: text
+  owners:
+  - product
+  - platform
+spec:
+  code: text.translate
+  lifecycle: commercial-candidate
+  billing:
+    measure: input_character
+    quantum: 1000
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    - options
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+    additionalProperties: false
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+      metrics:
+        type: object
+    additionalProperties: false
+  inputLimits:
+    maximumBytes: 1048576
+    allowedContentTypes:
+    - application/json
+    - text/plain
+  requiredCapabilities:
+    minimumWorkerTier: T1
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 180
+  modelCandidates:
+  - modelRef: ModelProfile/gemma-3n-e2b-int4@2.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

@@ -1,0 +1,31 @@
+apiVersion: edgemint.io/v1
+kind: WorkerTier
+metadata:
+  name: t1
+  version: 2.0.0
+  status: active
+  owners:
+  - mobile
+  - platform
+spec:
+  code: T1
+  minimum:
+    cpuCores: 2
+    ramBytes: 4294967296
+    benchmarkScoreMilli: 800
+  supportedTasks:
+  - document.ocr
+  - document.verify
+  - image.classify
+  - image.detect
+  - text.embedding
+  resourceLimits:
+    maxConcurrentTasks: 1
+    maxSingleArtifactBytes: 800000000
+    maxInferenceWorkingSetBytes: 1800000000
+    thermalCeiling: fair
+    minimumBatteryPercent: 25
+  scheduling:
+    chargingPreferred: false
+    cellularAllowedDefault: false
+  rewardMultiplierBps: 8000

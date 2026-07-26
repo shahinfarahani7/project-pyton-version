@@ -1,0 +1,150 @@
+{
+  "apiVersion": "edgemint.io/v1",
+  "kinds": {
+    "ApiProduct": {
+      "count": 2,
+      "schema": "dsl/schemas/apiproduct.schema.json"
+    },
+    "BillingPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/billingpolicy.schema.json"
+    },
+    "CapacityContract": {
+      "count": 6,
+      "schema": "dsl/schemas/capacitycontract.schema.json"
+    },
+    "CheckpointPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/checkpointpolicy.schema.json"
+    },
+    "ClaimPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/claimpolicy.schema.json"
+    },
+    "ConsentPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/consentpolicy.schema.json"
+    },
+    "CostModel": {
+      "count": 1,
+      "schema": "dsl/schemas/costmodel.schema.json"
+    },
+    "DataPolicy": {
+      "count": 4,
+      "schema": "dsl/schemas/datapolicy.schema.json"
+    },
+    "DisputePolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/disputepolicy.schema.json"
+    },
+    "EntitlementPolicy": {
+      "count": 5,
+      "schema": "dsl/schemas/entitlementpolicy.schema.json"
+    },
+    "ErrorCatalog": {
+      "count": 1,
+      "schema": "dsl/schemas/errorcatalog.schema.json"
+    },
+    "EventCatalog": {
+      "count": 1,
+      "schema": "dsl/schemas/eventcatalog.schema.json"
+    },
+    "LedgerPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/ledgerpolicy.schema.json"
+    },
+    "ModelProfile": {
+      "count": 5,
+      "schema": "dsl/schemas/modelprofile.schema.json"
+    },
+    "NotificationTemplate": {
+      "count": 12,
+      "schema": "dsl/schemas/notificationtemplate.schema.json"
+    },
+    "Offer": {
+      "count": 5,
+      "schema": "dsl/schemas/offer.schema.json"
+    },
+    "PriceBook": {
+      "count": 1,
+      "schema": "dsl/schemas/pricebook.schema.json"
+    },
+    "PromotionPolicy": {
+      "count": 4,
+      "schema": "dsl/schemas/promotionpolicy.schema.json"
+    },
+    "ReleasePolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/releasepolicy.schema.json"
+    },
+    "Requirement": {
+      "count": 80,
+      "schema": "dsl/schemas/requirement.schema.json"
+    },
+    "RewardPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/rewardpolicy.schema.json"
+    },
+    "RoutingPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/routingpolicy.schema.json"
+    },
+    "SLAPlan": {
+      "count": 5,
+      "schema": "dsl/schemas/slaplan.schema.json"
+    },
+    "SLOPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/slopolicy.schema.json"
+    },
+    "Scenario": {
+      "count": 215,
+      "schema": "dsl/schemas/scenario.schema.json"
+    },
+    "ServiceDefinition": {
+      "count": 18,
+      "schema": "dsl/schemas/servicedefinition.schema.json"
+    },
+    "SettlementPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/settlementpolicy.schema.json"
+    },
+    "StateMachine": {
+      "count": 9,
+      "schema": "dsl/schemas/statemachine.schema.json"
+    },
+    "TaskType": {
+      "count": 10,
+      "schema": "dsl/schemas/tasktype.schema.json"
+    },
+    "TokenPolicy": {
+      "count": 3,
+      "schema": "dsl/schemas/tokenpolicy.schema.json"
+    },
+    "TreasuryPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/treasurypolicy.schema.json"
+    },
+    "UseCase": {
+      "count": 60,
+      "schema": "dsl/schemas/usecase.schema.json"
+    },
+    "VerificationPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/verificationpolicy.schema.json"
+    },
+    "WebhookPolicy": {
+      "count": 1,
+      "schema": "dsl/schemas/webhookpolicy.schema.json"
+    },
+    "WorkerProtocol": {
+      "count": 1,
+      "schema": "dsl/schemas/workerprotocol.schema.json"
+    },
+    "WorkerTier": {
+      "count": 4,
+      "schema": "dsl/schemas/workertier.schema.json"
+    }
+  },
+  "schemaVersion": "2.0.0"
+}

@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-182-claim-lifecycle-eligibility_check-to-rejected
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-182
+  stateMachineRef: StateMachine/claim-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is eligibility_check
+  - expected version matches
+  when:
+  - event requests eligibility_check -> rejected
+  then:
+  - state becomes rejected
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: eligibility_check
+    to: rejected
+  expectedEvents:
+  - claim-lifecycle.eligibility_check_to_rejected
+  expectedErrorCode: null

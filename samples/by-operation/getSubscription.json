@@ -1,0 +1,30 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "getSubscription",
+  "request": {
+    "method": "GET",
+    "path": "/subscriptions",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getSubscription_0001",
+      "Authorization": "Bearer customer_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "plan": "example",
+      "status": "active",
+      "currentPeriodEnd": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.billing:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

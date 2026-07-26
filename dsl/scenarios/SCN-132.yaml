@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-132-task-lifecycle-disputed-to-failed
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-132
+  stateMachineRef: StateMachine/task-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is disputed
+  - expected version matches
+  when:
+  - event requests disputed -> failed
+  then:
+  - state becomes failed
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: disputed
+    to: failed
+  expectedEvents:
+  - task-lifecycle.disputed_to_failed
+  expectedErrorCode: null

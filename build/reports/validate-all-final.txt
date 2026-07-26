@@ -1,0 +1,239 @@
+{
+  "documents": 608,
+  "kinds": 38,
+  "errors": 0
+}
+{
+  "operationIds": 141,
+  "canonicalEvents": 186,
+  "cloudEventExamples": 186,
+  "asyncChannels": 186,
+  "errors": 0
+}
+{
+  "requirements": 80,
+  "useCases": 60,
+  "useCaseScenarios": 120,
+  "allScenarios": 215,
+  "openApiOperations": 141,
+  "operationContracts": 141,
+  "sqlTables": 59,
+  "errors": 0
+}
+{
+  "files": 9,
+  "lines": 595000,
+  "counts": {
+    "claim-vectors.jsonl": 25000,
+    "fraud-vectors.jsonl": 60000,
+    "ledger-vectors.jsonl": 90000,
+    "pricing-vectors.jsonl": 110000,
+    "reward-vectors.jsonl": 90000,
+    "routing-vectors.jsonl": 100000,
+    "task-lifecycle-vectors.jsonl": 70000,
+    "webhook-vectors.jsonl": 30000,
+    "worker-resume-vectors.jsonl": 20000
+  },
+  "semanticOracles": [
+    "claim-vectors.jsonl",
+    "fraud-vectors.jsonl",
+    "ledger-vectors.jsonl",
+    "pricing-vectors.jsonl",
+    "reward-vectors.jsonl",
+    "routing-vectors.jsonl",
+    "task-lifecycle-vectors.jsonl",
+    "webhook-vectors.jsonl",
+    "worker-resume-vectors.jsonl"
+  ],
+  "errors": 0
+}
+{
+  "migrations": 21,
+  "requiredTables": 59,
+  "errors": 0
+}
+{
+  "deployments": 19,
+  "services": 19,
+  "serviceAccounts": 19,
+  "releaseBlockers": [
+    {
+      "type": "image-digest",
+      "name": "api-gateway",
+      "image": "registry.example/edgemint/api-gateway:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "billing",
+      "image": "registry.example/edgemint/billing:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "claim",
+      "image": "registry.example/edgemint/claim:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "customer",
+      "image": "registry.example/edgemint/customer:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "file",
+      "image": "registry.example/edgemint/file:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "fraud",
+      "image": "registry.example/edgemint/fraud:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "identity",
+      "image": "registry.example/edgemint/identity:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "model-registry",
+      "image": "registry.example/edgemint/model-registry:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "notification",
+      "image": "registry.example/edgemint/notification:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "operations",
+      "image": "registry.example/edgemint/operations:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "pricing",
+      "image": "registry.example/edgemint/pricing:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "result",
+      "image": "registry.example/edgemint/result:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "reward",
+      "image": "registry.example/edgemint/reward:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "router",
+      "image": "registry.example/edgemint/router:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "task-intake",
+      "image": "registry.example/edgemint/task-intake:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "verification",
+      "image": "registry.example/edgemint/verification:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "webhook",
+      "image": "registry.example/edgemint/webhook:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "worker-gateway",
+      "image": "registry.example/edgemint/worker-gateway:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    },
+    {
+      "type": "image-digest",
+      "name": "worker-registry",
+      "image": "registry.example/edgemint/worker-registry:RELEASE_DIGEST_REQUIRED",
+      "missing": [
+        "immutable release image digest"
+      ]
+    }
+  ],
+  "errors": []
+}
+{
+  "referenceFiles": 19,
+  "errors": 0
+}
+{
+  "operations": 141,
+  "operationSamples": 141,
+  "journeys": 20,
+  "errors": 0
+}
+{
+  "blockerCount": 36,
+  "byType": {
+    "external-decision": 9,
+    "financial-policy": 3,
+    "image-digest": 19,
+    "model": 5
+  },
+  "errors": []
+}
+{
+  "markdownFiles": 191,
+  "errors": []
+}
+compiled 608 documents

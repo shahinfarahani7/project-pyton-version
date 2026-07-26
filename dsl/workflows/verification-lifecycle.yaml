@@ -1,0 +1,64 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: verification-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: accepted
+    terminal: true
+  - name: automatic
+    terminal: false
+  - name: consensus
+    terminal: false
+  - name: human_review
+    terminal: false
+  - name: pending
+    terminal: false
+  - name: rejected
+    terminal: true
+  - name: retry
+    terminal: true
+  - name: warning
+    terminal: true
+  transitions:
+  - from: pending
+    to: automatic
+    event: verification-lifecycle.pending_to_automatic
+  - from: automatic
+    to: accepted
+    event: verification-lifecycle.automatic_to_accepted
+  - from: automatic
+    to: warning
+    event: verification-lifecycle.automatic_to_warning
+  - from: automatic
+    to: consensus
+    event: verification-lifecycle.automatic_to_consensus
+  - from: automatic
+    to: human_review
+    event: verification-lifecycle.automatic_to_human_review
+  - from: automatic
+    to: retry
+    event: verification-lifecycle.automatic_to_retry
+  - from: consensus
+    to: accepted
+    event: verification-lifecycle.consensus_to_accepted
+  - from: consensus
+    to: human_review
+    event: verification-lifecycle.consensus_to_human_review
+  - from: consensus
+    to: retry
+    event: verification-lifecycle.consensus_to_retry
+  - from: human_review
+    to: accepted
+    event: verification-lifecycle.human_review_to_accepted
+  - from: human_review
+    to: rejected
+    event: verification-lifecycle.human_review_to_rejected
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

@@ -1,0 +1,39 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "failAssignment",
+  "request": {
+    "method": "POST",
+    "path": "/assignments/{assignmentId}:fail",
+    "pathParameters": {
+      "assignmentId": "asn_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_failAssignment_0001",
+      "Idempotency-Key": "idem_failAssignment_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "leaseToken": "example",
+      "fenceToken": 1,
+      "errorCode": "example",
+      "retryable": true
+    }
+  },
+  "expected": {
+    "successStatus": "202",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.assignments:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

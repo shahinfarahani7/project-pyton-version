@@ -1,0 +1,56 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createTaskRevision",
+  "request": {
+    "method": "POST",
+    "path": "/tasks/{taskId}/revisions",
+    "pathParameters": {
+      "taskId": "tsk_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createTaskRevision_0001",
+      "Idempotency-Key": "idem_createTaskRevision_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "changeReason": "example",
+      "input": {
+        "fileId": "fil_01J00000000000000000000000",
+        "contentType": "application/pdf"
+      },
+      "configuration": {
+        "outputFormat": "text",
+        "verificationLevel": "standard",
+        "priority": "batch",
+        "regionPolicy": "any_allowed",
+        "retentionDays": 0,
+        "parameters": {
+          "pageRange": "all",
+          "deskew": true
+        }
+      }
+    }
+  },
+  "expected": {
+    "successStatus": "202",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "workspaceId": "wsp_01J00000000000000000000000",
+      "taskType": "document-ocr",
+      "currentRevisionId": "id_01J00000000000000000000000",
+      "createdAt": "2026-07-21T10:00:00Z",
+      "version": 1,
+      "lifecycleStatus": "submitted",
+      "executionStatus": "queued",
+      "billingStatus": "reserved"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.tasks:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

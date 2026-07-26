@@ -1,0 +1,118 @@
+apiVersion: edgemint.io/v1
+kind: UseCase
+metadata:
+  name: uc-030-report-assignment-unavailable
+  version: 2.1.0
+  status: active
+  description: Report machine-detected assignment unavailability
+  owners:
+  - product
+  - qa
+spec:
+  id: UC-030
+  title: Report machine-detected assignment unavailability
+  actors: &id001
+  - Worker App
+  preconditions:
+  - authenticated or trusted service identity
+  - required policy versions active
+  - tenant scope resolved when applicable
+  trigger: worker agent local preflight detects a canonical block
+  mainFlow:
+  - Resolve the authenticated principal and authorize reportAssignmentUnavailable
+    against the attested worker and device boundary.
+  - Validate the OpenAPI request, current lease, monotonic fence, active policy hashes
+    and device binding; return only canonical ErrorCatalog codes.
+  - Execute with transaction isolation read_committed_with_targeted_row_locks and
+    concurrency strategy lease_fence_token_plus_monotonic_sequence.
+  - Validate reasonCode against the closed machine-generated enum and correlate it
+    with the latest health snapshot.
+  - Mark the assignment failed or revoked, return the attempt to matching when retry
+    policy permits, and preserve strict fence monotonicity.
+  - Do not apply a worker penalty for validated environmental unavailability; repeated
+    anomalies feed reliability and fraud signals.
+  - Insert the canonical outbox event in the same PostgreSQL transaction as the assignment
+    state change.
+  - Return the exact OpenAPI response including requestId, traceId and resource version.
+  alternateFlows:
+  - condition: validation or policy failure
+    outcome: reject with stable error code and no unauthorized financial side effect
+  - condition: dependency unavailable
+    outcome: persist safe state, retry idempotently or return explicit asynchronous
+      status
+  postconditions:
+  - domain state satisfies invariant
+  - outbox/audit evidence exists
+  - financial effects match failure matrix
+  acceptanceCriteria:
+  - cross-tenant and cross-device access denied
+  - correlation and policy hashes recorded
+  - No per-task Accept or Reject user interaction exists.
+  - Replaying the same Idempotency-Key with the same canonical body returns the original
+    status and resource without duplicate side effects.
+  - Reusing the same Idempotency-Key with a different canonical body returns IDEMPOTENCY_CONFLICT.
+  trace:
+    requirements:
+    - REQ-LEASE-003
+    apiOperations:
+    - reportAssignmentUnavailable
+    events: &id003
+    - task.assignment.unavailable
+    - assignment-lifecycle.leased_to_failed
+    - attempt-lifecycle.leased_to_matching
+    entities: &id002
+    - assignments
+    - task_attempts
+    tests:
+    - AT-UC-030-POS
+    - AT-UC-030-NEG
+  implementation:
+    transport:
+    - operationId: reportAssignmentUnavailable
+      method: POST
+      path: /assignments/{assignmentId}:unavailable
+    authorization:
+      principalTypes: *id001
+      permissionSource: worker.assignments:write
+      tenantBoundary: Customer resources are scoped by organization_id and workspace_id;
+        worker resources by attested worker_id/device_id; control operations by mTLS
+        service or MFA operator identity.
+    idempotency:
+      mode: required
+      scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+    transaction:
+      isolation: read_committed_with_targeted_row_locks
+      writes: *id002
+      outboxEvents: *id003
+    concurrency:
+      strategy: lease_fence_token_plus_monotonic_sequence
+      fenceRequired: true
+      expectedVersionRequired: false
+    financialEffects:
+    - No charge, reservation, reward, token conversion or ledger entry is permitted
+      for this operation.
+    errorCodes:
+    - AUTH_INVALID_CREDENTIAL
+    - AUTH_SCOPE_REQUIRED
+    - INPUT_SCHEMA_INVALID
+    - TENANT_RESOURCE_NOT_FOUND
+    - IDEMPOTENCY_CONFLICT
+    - LEASE_EXPIRED
+    - WORKER_NOT_ELIGIBLE
+    - ASSIGNMENT_STALE_FENCE
+    - ASSIGNMENT_UNAVAILABLE_EVIDENCE_MISMATCH
+    - HEALTH_SNAPSHOT_NOT_CURRENT
+    observability:
+    - Record requestId, traceId, operationId, actorId, organizationId/workspaceId
+      or workerId, resourceVersion and active policy hashes.
+    - For every mutation or privileged read, write an append-only audit event with
+      reason/ticket where required.
+    - Never log credentials, API keys, refresh tokens, raw customer payload, model
+      input/output, signed URLs or envelope keys.
+    retention:
+    - 'Customer payload and result retention follows the workspace-selected DataPolicy;
+      default confidential-v2: input 24 hours, result 90 days, audit 2555 days.'
+    - Restricted-v2 workloads retain input 24 hours, result 30 days, audit 2555 days
+      and worker temporary data 10 minutes.
+    - Financial and security evidence is retained independently of payload deletion
+      and remains append-only while legal hold is active.

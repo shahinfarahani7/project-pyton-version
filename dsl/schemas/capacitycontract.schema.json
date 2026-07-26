@@ -1,0 +1,172 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/capacitycontract.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "CapacityContract"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "allowances": {
+          "additionalProperties": false,
+          "properties": {
+            "burstBps": {
+              "type": "integer"
+            },
+            "includedQuanta": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "burstBps",
+            "includedQuanta"
+          ],
+          "type": "object"
+        },
+        "commitment": {
+          "additionalProperties": false,
+          "properties": {
+            "minimumMonthlyQuanta": {
+              "type": "integer"
+            },
+            "minimumMonthlySpendMicros": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "minimumMonthlyQuanta",
+            "minimumMonthlySpendMicros"
+          ],
+          "type": "object"
+        },
+        "overage": {
+          "additionalProperties": false,
+          "properties": {
+            "hardCap": {
+              "type": "boolean"
+            },
+            "rateMultiplierBps": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "hardCap",
+            "rateMultiplierBps"
+          ],
+          "type": "object"
+        },
+        "period": {
+          "additionalProperties": false,
+          "properties": {
+            "months": {
+              "type": "integer"
+            },
+            "renewal": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "months",
+            "renewal"
+          ],
+          "type": "object"
+        },
+        "slaRef": {
+          "type": "string"
+        },
+        "trueUp": {
+          "additionalProperties": false,
+          "properties": {
+            "frequency": {
+              "type": "string"
+            },
+            "shortfallInvoice": {
+              "type": "boolean"
+            },
+            "unusedRolloverBps": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "frequency",
+            "shortfallInvoice",
+            "unusedRolloverBps"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "allowances",
+        "commitment",
+        "overage",
+        "period",
+        "slaRef",
+        "trueUp"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint CapacityContract",
+  "type": "object"
+}

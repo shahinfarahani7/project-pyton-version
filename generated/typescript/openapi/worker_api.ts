@@ -1,0 +1,45 @@
+// Auto-generated from canonical OpenAPI. Do not edit manually.
+// Source: contracts/openapi/edgemint-worker-api.yaml
+
+export type AbandonAssignmentResponse = CommandReceipt;
+export type Assignment = { assignmentId: string; attemptId: string; revisionId: string; leaseToken: string; fenceToken: Int64String; leaseExpiresAt: string; taskType: string; modelVersionId: string; inputManifestUrl: string; outputUploadUrl: string; executionLimits?: Record<string, unknown>; assignmentMode: string; executionStartsAutomatically: boolean; startDeadlineAt: string };
+export type Challenge = { challengeId: string; nonce: string; expiresAt: string };
+export type Checkpoint = { leaseToken: string; fenceToken: number; sequence: number; modelVersionId: string; inputSha256: string; checkpointSha256: string; encryptedBlobRef: string };
+export type CheckpointAssignmentResponse = CommandReceipt;
+export type CommandReceipt = { operationId: string; accepted: boolean; resourceId?: PublicId; status: string; occurredAt: string; requestId?: string };
+export type CompleteAssignmentResponse = CommandReceipt;
+export type Completion = { leaseToken: string; fenceToken: number; resultSha256: string; outputArtifactId: string; metrics: Record<string, unknown>; signature: string };
+export type CreateAssignmentResultUploadIntentResponse = { challengeId: string; nonce: string; expiresAt: string };
+export type CreateDeviceChallengeResponse = { challengeId: string; nonce: string; expiresAt: string };
+export type CreateRewardClaimResponse = Reward;
+export type DeviceRegistration = { installationId: string; platform: string; appVersion: string; capabilities: Record<string, unknown>; attestation: Record<string, unknown>; publicKey?: string };
+export type FailAssignmentResponse = CommandReceipt;
+export type GetModelManifestResponse = Model;
+export type GetNextAssignmentResponse = { assignmentId: string; attemptId: string; revisionId: string; leaseToken: string; fenceToken: number; leaseExpiresAt: string; taskType: string; modelVersionId: string; inputManifestUrl: string; outputUploadUrl: string; assignmentMode: string; executionStartsAutomatically: boolean; startDeadlineAt: string };
+export type GetResumeDecisionResponse = Resource;
+export type GetWorkerPreferencesResponse = WorkerPreferences;
+export type GetWorkerRewardSummaryResponse = Worker;
+export type Heartbeat = { sequence: number; observedAt: string; batteryBps: number; charging: boolean; thermalState: string; freeRamBytes: number; freeStorageBytes: number; network: string; currentLeases: string[]; installedModels: { modelVersionId: string; artifactSha256: string }[] };
+export type Int64String = string;
+export type Model = { id: PublicId; status: string; version: number; updatedAt?: string };
+export type PageInfo = { limit: number; nextCursor?: unknown; hasMore: boolean };
+export type Problem = { type: string; title: string; status: number; code: string; detail?: string; requestId?: string; traceId: string; retryable?: boolean; errors?: { path: string; message: string; code?: string }[]; instance?: string };
+export type Progress = { leaseToken: string; fenceToken: number; sequence: number; stage: string; progressBps: number; metrics?: Record<string, unknown> };
+export type ProgressAssignmentResponse = CommandReceipt;
+export type PublicId = string;
+export type RefreshWorkerSessionResponse = { workerId: string; deviceId: string; accessToken: string; expiresAt: string };
+export type RegisterWorkerDeviceResponse = { workerId: string; deviceId: string; accessToken: string; expiresAt: string };
+export type RenewAssignmentResponse = CommandReceipt;
+export type ReplaceWorkerPreferencesRequest = { availability: string; networkPolicy: string; chargingPolicy: string; minimumBatteryPercent: number; schedule: { mode: string; timezone: string; windows?: { days: string[]; startLocal: string; endLocal: string }[] }; expectedVersion: number };
+export type ReplaceWorkerPreferencesResponse = CommandReceipt;
+export type ReportAssignmentStartedResponse = CommandReceipt;
+export type ReportAssignmentUnavailableResponse = CommandReceipt;
+export type ReportModelInstallResponse = CommandReceipt;
+export type Resource = { id: PublicId; status: string; version: number; updatedAt?: string };
+export type Reward = { id: PublicId; status: string; version: number; updatedAt?: string };
+export type SendHeartbeatResponse = CommandReceipt;
+export type SubmitBenchmarkRequest = { suiteVersion: string; measuredAt: string; results: { metric: string; value: number; unit: string }[]; signature: string };
+export type SubmitBenchmarkResponse = CommandReceipt;
+export type Worker = { id: PublicId; status: string; tier?: string; trustScoreBps?: number; lastHeartbeatAt?: string };
+export type WorkerPreferences = { version: number; availability: string; networkPolicy: string; chargingPolicy: string; minimumBatteryPercent: number; schedule: { mode: string; timezone: string; windows?: { days: string[]; startLocal: string; endLocal: string }[] } };
+export type WorkerSession = { workerId: string; deviceId: string; accessToken: string; expiresAt: string; heartbeatIntervalSeconds?: number };

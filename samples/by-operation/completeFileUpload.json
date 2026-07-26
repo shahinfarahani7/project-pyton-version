@@ -1,0 +1,36 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "completeFileUpload",
+  "request": {
+    "method": "POST",
+    "path": "/files/{fileId}:complete",
+    "pathParameters": {
+      "fileId": "fil_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_completeFileUpload_0001",
+      "Idempotency-Key": "idem_completeFileUpload_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "etag": "example"
+    }
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "active",
+      "sizeBytes": 1,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.files:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

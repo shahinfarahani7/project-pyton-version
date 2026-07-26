@@ -1,0 +1,1028 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "global",
+    "services",
+    "irsaRoles"
+  ],
+  "properties": {
+    "global": {
+      "type": "object",
+      "required": [
+        "imageRegistry",
+        "environment",
+        "otelEndpoint",
+        "domain",
+        "wafArn"
+      ],
+      "properties": {
+        "imageRegistry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "environment": {
+          "enum": [
+            "staging",
+            "production",
+            "ci"
+          ]
+        },
+        "otelEndpoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wafArn": {
+          "type": "string",
+          "pattern": "^arn:aws:wafv2:"
+        }
+      }
+    },
+    "irsaRoles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "api-gateway",
+        "identity",
+        "customer",
+        "file",
+        "task-intake",
+        "pricing",
+        "router",
+        "worker-gateway",
+        "worker-registry",
+        "result",
+        "verification",
+        "billing",
+        "ledger",
+        "reward",
+        "claim",
+        "fraud",
+        "webhook",
+        "model-registry",
+        "notification",
+        "operations",
+        "event-relay"
+      ],
+      "properties": {
+        "api-gateway": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "identity": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "customer": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "task-intake": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "pricing": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "router": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "worker-gateway": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "worker-registry": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "result": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "verification": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "billing": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "ledger": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "reward": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "claim": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "fraud": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "webhook": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "model-registry": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "notification": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "operations": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        },
+        "event-relay": {
+          "type": "string",
+          "pattern": "^arn:aws:iam::[0-9]{12}:role/.+"
+        }
+      }
+    },
+    "services": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "api-gateway",
+        "identity",
+        "customer",
+        "file",
+        "task-intake",
+        "pricing",
+        "router",
+        "worker-gateway",
+        "worker-registry",
+        "result",
+        "verification",
+        "billing",
+        "ledger",
+        "reward",
+        "claim",
+        "fraud",
+        "webhook",
+        "model-registry",
+        "notification",
+        "operations"
+      ],
+      "properties": {
+        "api-gateway": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "identity": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "customer": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "file": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "task-intake": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "pricing": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "router": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "worker-gateway": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "worker-registry": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "billing": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "ledger": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "reward": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "claim": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "fraud": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "webhook": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "model-registry": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "notification": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "operations": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

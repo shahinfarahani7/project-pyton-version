@@ -1,0 +1,30 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-042-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-042
+  useCaseRef: UseCase/uc-021-open-result-dispute@2.0.0
+  mode: failure
+  given:
+  - Use case UC-021 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.disputes:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createDispute with the deterministic precondition that produces INPUT_SCHEMA_INVALID.
+  then:
+  - The API returns canonical error code INPUT_SCHEMA_INVALID with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - createDispute
+    requirements:
+    - REQ-DISPUTE-001
+  expectedEvents: []
+  expectedErrorCode: INPUT_SCHEMA_INVALID

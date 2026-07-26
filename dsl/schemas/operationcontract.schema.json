@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.edgemint.example/v1/operationcontract.schema.json",
+  "title": "EdgeMint OperationContract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "OperationContract"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ]
+        },
+        "owners": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationId",
+        "api",
+        "method",
+        "path",
+        "summary",
+        "classification",
+        "permissions",
+        "idempotency",
+        "tenantBoundary",
+        "transaction",
+        "responseStatuses",
+        "useCaseRefs",
+        "errorCodes",
+        "contractSources"
+      ],
+      "properties": {
+        "operationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "api": {
+          "type": "string",
+          "enum": [
+            "public",
+            "worker",
+            "operations"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "classification": {
+          "type": "string",
+          "enum": [
+            "business_use_case",
+            "supporting_query",
+            "supporting_command"
+          ]
+        },
+        "permissions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "idempotency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required",
+            "scope"
+          ],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "scope": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "tenantBoundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transaction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "isolation",
+            "writes",
+            "domainEvents",
+            "auditRequired"
+          ],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "read_only",
+                "command"
+              ]
+            },
+            "isolation": {
+              "type": "string"
+            },
+            "writes": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "domainEvents": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "auditRequired": {
+              "type": "boolean"
+            }
+          }
+        },
+        "responseStatuses": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "useCaseRefs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "errorCodes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "contractSources": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "openapi",
+            "request",
+            "response",
+            "errors"
+          ],
+          "properties": {
+            "openapi": {
+              "type": "string"
+            },
+            "request": {
+              "type": "string"
+            },
+            "response": {
+              "type": "string"
+            },
+            "errors": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: verification
+  version: 2.0.0
+  status: active
+  owners:
+  - ml-platform
+spec:
+  service: verification
+  ownerTeam: ml-platform
+  dataOwnership:
+  - verification
+  synchronousDependencies: []
+  asynchronousEventsProduced: []
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

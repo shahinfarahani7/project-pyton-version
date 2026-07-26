@@ -1,0 +1,30 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-006-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-006
+  useCaseRef: UseCase/uc-003-invite-workspace-member@2.0.0
+  mode: failure
+  given:
+  - Use case UC-003 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Workspace Admin is authenticated and has permissions workspace.members:invite.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke inviteWorkspaceMember with the deterministic precondition that produces INVITATION_ALREADY_PENDING.
+  then:
+  - The API returns canonical error code INVITATION_ALREADY_PENDING with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Workspace Admin
+    operationIds:
+    - inviteWorkspaceMember
+    requirements:
+    - REQ-TENANT-003
+  expectedEvents: []
+  expectedErrorCode: INVITATION_ALREADY_PENDING

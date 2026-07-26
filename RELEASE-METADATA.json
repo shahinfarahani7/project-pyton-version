@@ -1,0 +1,18 @@
+{
+  "packageName": "EdgeMint-Production-Execution-Pack",
+  "version": "5.0.0",
+  "releasedAt": "2026-07-26T05:38:19Z",
+  "language": "English",
+  "artifactScope": "Python 3.13/FastAPI/PostgreSQL 18 production execution contract",
+  "architecture": {
+    "database": "PostgreSQL 18 only",
+    "realtimeTransport": "Secure WebSocket only",
+    "durableEventAuthority": "PostgreSQL transactional event tables"
+  },
+  "assignmentProtocol": {
+    "mode": "server_auto_lease",
+    "perTaskWorkerConfirmation": false,
+    "workerOptInAuthority": "current consent plus Available status",
+    "deliveryAcknowledgement": "transport receipt only; never execution consent"
+  }
+}

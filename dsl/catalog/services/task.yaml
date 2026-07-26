@@ -1,0 +1,35 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: task
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+spec:
+  service: task
+  ownerTeam: platform
+  dataOwnership:
+  - task
+  synchronousDependencies: []
+  asynchronousEventsProduced:
+  - task.created
+  - task.revision.created
+  - task.queued
+  - task.attempt.created
+  - task.assignment.leased
+  - task.assignment.started
+  - task.assignment.unavailable
+  - task.started
+  - task.progressed
+  - task.result.submitted
+  - task.verification.accepted
+  - task.completed
+  - task.failed
+  - task.cancelled
+  - task.expired
+  - task.disputed
+  - task.usage.charged
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

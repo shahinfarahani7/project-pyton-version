@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-140-attempt-lifecycle-matching-to-leased
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-140
+  stateMachineRef: StateMachine/attempt-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is matching
+  - expected version matches
+  when:
+  - event requests matching -> leased
+  then:
+  - state becomes leased
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: matching
+    to: leased
+  expectedEvents:
+  - attempt-lifecycle.matching_to_leased
+  expectedErrorCode: null

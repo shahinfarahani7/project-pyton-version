@@ -1,0 +1,67 @@
+apiVersion: edgemint.io/v1
+kind: StateMachine
+metadata:
+  name: task-lifecycle
+  version: 2.0.0
+  status: active
+  owners:
+  - architecture
+spec:
+  states:
+  - name: active
+    terminal: false
+  - name: cancelled
+    terminal: true
+  - name: completed
+    terminal: false
+  - name: disputed
+    terminal: false
+  - name: draft
+    terminal: false
+  - name: expired
+    terminal: true
+  - name: failed
+    terminal: false
+  - name: submitted
+    terminal: false
+  transitions:
+  - from: draft
+    to: submitted
+    event: task-lifecycle.draft_to_submitted
+  - from: draft
+    to: cancelled
+    event: task-lifecycle.draft_to_cancelled
+  - from: submitted
+    to: active
+    event: task-lifecycle.submitted_to_active
+  - from: submitted
+    to: cancelled
+    event: task-lifecycle.submitted_to_cancelled
+  - from: active
+    to: completed
+    event: task-lifecycle.active_to_completed
+  - from: active
+    to: failed
+    event: task-lifecycle.active_to_failed
+  - from: active
+    to: cancelled
+    event: task-lifecycle.active_to_cancelled
+  - from: active
+    to: expired
+    event: task-lifecycle.active_to_expired
+  - from: completed
+    to: disputed
+    event: task-lifecycle.completed_to_disputed
+  - from: failed
+    to: disputed
+    event: task-lifecycle.failed_to_disputed
+  - from: disputed
+    to: completed
+    event: task-lifecycle.disputed_to_completed
+  - from: disputed
+    to: failed
+    event: task-lifecycle.disputed_to_failed
+  invariants:
+  - transitions require expected current version
+  - terminal states reject unlisted transitions
+  - every transition emits audit evidence

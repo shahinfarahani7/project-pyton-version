@@ -1,0 +1,39 @@
+{
+  "api": "edgemint-operations-api",
+  "operationId": "searchPriceBooks",
+  "request": {
+    "method": "GET",
+    "path": "/price-books",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_searchPriceBooks_0001",
+      "Authorization": "Bearer operator_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "items": [
+        {
+          "id": "id_01J00000000000000000000000",
+          "status": "active",
+          "version": 1,
+          "updatedAt": "2026-07-21T10:00:00Z"
+        }
+      ],
+      "page": {
+        "limit": 1,
+        "hasMore": true,
+        "nextCursor": "example"
+      }
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "ops.operations:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

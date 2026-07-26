@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-149-attempt-lifecycle-verifying-to-succeeded
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-149
+  stateMachineRef: StateMachine/attempt-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is verifying
+  - expected version matches
+  when:
+  - event requests verifying -> succeeded
+  then:
+  - state becomes succeeded
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: verifying
+    to: succeeded
+  expectedEvents:
+  - attempt-lifecycle.verifying_to_succeeded
+  expectedErrorCode: null

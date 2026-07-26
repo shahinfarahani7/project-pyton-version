@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: SLOPolicy
+metadata:
+  name: platform-slo-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - sre
+spec:
+  windowDays: 30
+  objectives:
+  - name: task-intake-availability
+    targetBps: 9995
+  - name: accepted-request-durability
+    targetBps: 9999
+  - name: webhook-first-delivery
+    targetBps: 9900
+  errorBudgetPolicy: freeze_risky_rollouts_when_exhausted

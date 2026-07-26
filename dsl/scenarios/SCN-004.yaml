@@ -1,0 +1,31 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-004-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-004
+  useCaseRef: UseCase/uc-002-create-workspace@2.0.0
+  mode: failure
+  given:
+  - Use case UC-002 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Owner is authenticated and has permissions customer.workspaces:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createWorkspace with the deterministic precondition that produces INPUT_SCHEMA_INVALID.
+  then:
+  - The API returns canonical error code INPUT_SCHEMA_INVALID with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Customer Owner
+    operationIds:
+    - createWorkspace
+    requirements:
+    - REQ-TENANT-002
+    - REQ-RLS-003
+  expectedEvents: []
+  expectedErrorCode: INPUT_SCHEMA_INVALID

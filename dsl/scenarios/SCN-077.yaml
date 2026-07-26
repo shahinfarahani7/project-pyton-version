@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-077-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-077
+  useCaseRef: UseCase/uc-039-rollback-policy@2.0.0
+  mode: success
+  given:
+  - Use case UC-039 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Operations Agent is authenticated and has permissions ops.policies:rollback.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke rollbackPolicy with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy expected_version_compare_and_swap_plus_idempotency.
+  - 'Exactly these entities are written: policy_activations.'
+  - 'Exactly these canonical events are inserted into the outbox: policy.activated.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Operations Agent
+    operationIds:
+    - rollbackPolicy
+    requirements:
+    - REQ-POLICY-003
+  expectedEvents:
+  - policy.activated
+  expectedErrorCode: null

@@ -1,0 +1,31 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-020-failure
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-020
+  useCaseRef: UseCase/uc-010-submit-task@2.0.0
+  mode: failure
+  given:
+  - Use case UC-010 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Customer Developer is authenticated and has permissions customer.tasks:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke createTask with the deterministic precondition that produces FILE_NOT_READY.
+  then:
+  - The API returns canonical error code FILE_NOT_READY with its ErrorCatalog HTTP status and retryable flag.
+  - The transaction performs no unauthorized domain, billing, reward, token or ledger side effect.
+  - The failed command remains auditable by requestId and traceId without logging protected payload data.
+  fixtures:
+    actor: Customer Developer
+    operationIds:
+    - createTask
+    requirements:
+    - REQ-TASK-001
+    - REQ-CREDIT-001
+  expectedEvents: []
+  expectedErrorCode: FILE_NOT_READY

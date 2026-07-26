@@ -1,0 +1,39 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "createWebhookEndpoint",
+  "request": {
+    "method": "POST",
+    "path": "/webhook-endpoints",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createWebhookEndpoint_0001",
+      "Idempotency-Key": "idem_createWebhookEndpoint_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "url": "https://example.invalid/resource",
+      "events": [
+        "example"
+      ]
+    }
+  },
+  "expected": {
+    "successStatus": "201",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "url": "example",
+      "events": [
+        "example"
+      ],
+      "enabled": true
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.webhooks:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

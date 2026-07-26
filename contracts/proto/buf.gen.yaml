@@ -1,0 +1,10 @@
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/python:v30.2
+    out: ../../generated/python
+  - remote: buf.build/grpc/python:v1.71.0
+    out: ../../generated/python
+  - remote: buf.build/protocolbuffers/dart:v22.0.0
+    out: ../../generated/dart
+  - remote: buf.build/community/stephenh-ts-proto:v2.7.5
+    out: ../../generated/typescript

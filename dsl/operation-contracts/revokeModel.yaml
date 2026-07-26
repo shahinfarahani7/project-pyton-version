@@ -1,0 +1,59 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-revokemodel
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for revokeModel.
+spec:
+  operationId: revokeModel
+  api: operations
+  method: POST
+  path: /models/{id}:revoke
+  summary: Emergency revoke model version and stop new assignments
+  classification: business_use_case
+  permissions:
+  - ops.models:revoke
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - model_versions
+    domainEvents:
+    - model.revoked
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-041-revoke-model@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - MODEL_HAS_ACTIVE_ASSIGNMENTS
+  - MODEL_REVOCATION_REASON_REQUIRED
+  - TENANT_RESOURCE_NOT_FOUND
+  - VERSION_CONFLICT
+  contractSources:
+    openapi: contracts/openapi/edgemint-operations-api.yaml::POST /models/{id}:revoke
+    request: OpenAPI requestBody/parameters for revokeModel
+    response: OpenAPI responses for revokeModel
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

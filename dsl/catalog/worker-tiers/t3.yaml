@@ -1,0 +1,36 @@
+apiVersion: edgemint.io/v1
+kind: WorkerTier
+metadata:
+  name: t3
+  version: 2.0.0
+  status: active
+  owners:
+  - mobile
+  - platform
+spec:
+  code: T3
+  minimum:
+    cpuCores: 6
+    ramBytes: 8589934592
+    benchmarkScoreMilli: 1000
+  supportedTasks:
+  - audio.transcribe
+  - document.extract
+  - document.ocr
+  - document.verify
+  - image.classify
+  - image.detect
+  - text.embedding
+  - text.generate
+  - text.translate
+  - vision.analyze
+  resourceLimits:
+    maxConcurrentTasks: 1
+    maxSingleArtifactBytes: 4500000000
+    maxInferenceWorkingSetBytes: 4500000000
+    thermalCeiling: fair
+    minimumBatteryPercent: 25
+  scheduling:
+    chargingPreferred: true
+    cellularAllowedDefault: false
+  rewardMultiplierBps: 11250

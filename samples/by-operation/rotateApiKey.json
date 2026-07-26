@@ -1,0 +1,33 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "rotateApiKey",
+  "request": {
+    "method": "POST",
+    "path": "/api-keys/{apiKeyId}:rotate",
+    "pathParameters": {
+      "apiKeyId": "id_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_rotateApiKey_0001",
+      "Idempotency-Key": "idem_rotateApiKey_0001",
+      "Authorization": "Bearer customer_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.api-keys:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

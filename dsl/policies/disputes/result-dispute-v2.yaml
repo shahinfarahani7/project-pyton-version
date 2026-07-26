@@ -1,0 +1,35 @@
+apiVersion: edgemint.io/v1
+kind: DisputePolicy
+metadata:
+  name: result-dispute-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - support
+  - quality
+  - finance
+spec:
+  submissionWindowDays: 30
+  allowedReasons:
+  - incorrect_output
+  - missing_output
+  - duplicate_charge
+  - sla_failure
+  - privacy_concern
+  states:
+  - opened
+  - triaged
+  - under_review
+  - resolved_customer
+  - resolved_platform
+  - rejected
+  - closed
+  financialHold:
+    scope: disputed_amount_only
+    workerRewardHoldWhenEvidenceRelevant: true
+  resolutionActions:
+  - full_credit
+  - partial_credit
+  - reprocess
+  - no_change
+  manualEvidenceRequired: true

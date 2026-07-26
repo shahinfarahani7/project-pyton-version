@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-045-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-045
+  useCaseRef: UseCase/uc-023-submit-attestation@2.0.0
+  mode: success
+  given:
+  - Use case UC-023 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Worker App is authenticated and has permissions worker.registration:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke registerWorkerDevice with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: workers, worker_devices, worker_sessions.'
+  - 'Exactly these canonical events are inserted into the outbox: worker.attested.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - registerWorkerDevice
+    requirements:
+    - REQ-CONSENT-002
+  expectedEvents:
+  - worker.attested
+  expectedErrorCode: null

@@ -1,0 +1,45 @@
+apiVersion: edgemint.io/v1
+kind: FraudPolicy
+metadata:
+  name: fraud-score-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - trust-safety
+  - finance
+spec:
+  scoreScaleBps: 10000
+  signals:
+    impossibleSpeed:
+      weightBps: 3000
+    goldenFailure:
+      weightBps: 2500
+    invalidModelDigest:
+      weightBps: 2000
+    replayNonce:
+      weightBps: 1500
+    linkedAccounts:
+      weightBps: 1000
+  actionBands:
+  - minimumScoreBps: 7000
+    actions:
+    - quarantine
+    - hold_rewards
+    - open_case
+    rewardHold: true
+  - minimumScoreBps: 4000
+    actions:
+    - limit
+    - hold_rewards
+    - challenge
+    rewardHold: true
+  - minimumScoreBps: 2000
+    actions:
+    - observe
+    - challenge
+    rewardHold: false
+  - minimumScoreBps: 0
+    actions: []
+    rewardHold: false
+  evidenceRetentionDays: 2555
+  appealAllowed: true

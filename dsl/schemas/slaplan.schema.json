@@ -1,0 +1,125 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/slaplan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "SLAPlan"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "availabilityBps": {
+          "type": "integer"
+        },
+        "latencyClass": {
+          "type": "string"
+        },
+        "p95AssignmentSeconds": {
+          "type": "integer"
+        },
+        "serviceCredits": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "monthlyCapBps": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "enabled",
+            "monthlyCapBps"
+          ],
+          "type": "object"
+        },
+        "support": {
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "responseHours": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "channel",
+            "responseHours"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "availabilityBps",
+        "latencyClass",
+        "p95AssignmentSeconds",
+        "serviceCredits",
+        "support"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint SLAPlan",
+  "type": "object"
+}

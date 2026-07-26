@@ -1,0 +1,40 @@
+{
+  "api": "edgemint-operations-api",
+  "operationId": "submitClaimBatch",
+  "request": {
+    "method": "POST",
+    "path": "/claim-batches",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_submitClaimBatch_0001",
+      "Idempotency-Key": "idem_submitClaimBatch_0001",
+      "Authorization": "Bearer operator_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "epochId": "id_01J00000000000000000000000",
+      "claimIds": [
+        "id_01J00000000000000000000000"
+      ],
+      "providerId": "id_01J00000000000000000000000",
+      "reason": "example",
+      "ticketId": "id_01J00000000000000000000000"
+    }
+  },
+  "expected": {
+    "successStatus": "202",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "ops.claims:submit-batch"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

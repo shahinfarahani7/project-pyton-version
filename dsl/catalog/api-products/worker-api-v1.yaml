@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: ApiProduct
+metadata:
+  name: worker-api-v1
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+  - mobile
+spec:
+  audience: worker
+  basePath: /v1
+  authentication:
+  - device_bearer
+  openApiPath: contracts/openapi/edgemint-worker-api.yaml
+  requiredHeaders:
+  - X-Request-Id
+  idempotencyRequiredForMutations: true
+  lifecycle: candidate

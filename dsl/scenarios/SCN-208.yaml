@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-208-worker-lifecycle-executing-to-cooldown
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-208
+  stateMachineRef: StateMachine/worker-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is executing
+  - expected version matches
+  when:
+  - event requests executing -> cooldown
+  then:
+  - state becomes cooldown
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: executing
+    to: cooldown
+  expectedEvents:
+  - worker-lifecycle.executing_to_cooldown
+  expectedErrorCode: null

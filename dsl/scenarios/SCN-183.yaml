@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-183-claim-lifecycle-reserved-to-batched
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-183
+  stateMachineRef: StateMachine/claim-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is reserved
+  - expected version matches
+  when:
+  - event requests reserved -> batched
+  then:
+  - state becomes batched
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: reserved
+    to: batched
+  expectedEvents:
+  - claim-lifecycle.reserved_to_batched
+  expectedErrorCode: null

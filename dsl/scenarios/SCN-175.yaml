@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-175-reward-lifecycle-held-to-reversed
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-175
+  stateMachineRef: StateMachine/reward-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is held
+  - expected version matches
+  when:
+  - event requests held -> reversed
+  then:
+  - state becomes reversed
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: held
+    to: reversed
+  expectedEvents:
+  - reward-lifecycle.held_to_reversed
+  expectedErrorCode: null

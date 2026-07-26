@@ -1,0 +1,34 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "createRewardClaim",
+  "request": {
+    "method": "POST",
+    "path": "/reward-claims",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_createRewardClaim_0001",
+      "Idempotency-Key": "idem_createRewardClaim_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "amountRewardMicros": 1
+    }
+  },
+  "expected": {
+    "successStatus": "202",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "active",
+      "version": 1,
+      "updatedAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.rewards:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

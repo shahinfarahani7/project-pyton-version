@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-215-worker-lifecycle-suspended-to-banned
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-215
+  stateMachineRef: StateMachine/worker-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is suspended
+  - expected version matches
+  when:
+  - event requests suspended -> banned
+  then:
+  - state becomes banned
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: suspended
+    to: banned
+  expectedEvents:
+  - worker-lifecycle.suspended_to_banned
+  expectedErrorCode: null

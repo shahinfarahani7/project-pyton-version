@@ -1,0 +1,358 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/pricebook.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "PriceBook"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "calculationVersion": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "discountOrder": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "effectiveFrom": {
+          "type": "string"
+        },
+        "effectiveUntil": {
+          "type": "null"
+        },
+        "floors": {
+          "additionalProperties": false,
+          "properties": {
+            "minimumContributionMarginBps": {
+              "type": "integer"
+            },
+            "negativeMarginAction": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "minimumContributionMarginBps",
+            "negativeMarginAction"
+          ],
+          "type": "object"
+        },
+        "minimumChargeStage": {
+          "type": "string"
+        },
+        "multipliersBps": {
+          "additionalProperties": false,
+          "properties": {
+            "executionPolicy": {
+              "additionalProperties": false,
+              "properties": {
+                "edge_only": {
+                  "type": "integer"
+                },
+                "edge_preferred": {
+                  "type": "integer"
+                },
+                "fastest_available": {
+                  "type": "integer"
+                },
+                "private_pool_only": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "edge_only",
+                "edge_preferred",
+                "fastest_available",
+                "private_pool_only"
+              ],
+              "type": "object"
+            },
+            "plan": {
+              "additionalProperties": false,
+              "properties": {
+                "business": {
+                  "type": "integer"
+                },
+                "developer": {
+                  "type": "integer"
+                },
+                "enterprise": {
+                  "type": "integer"
+                },
+                "growth": {
+                  "type": "integer"
+                },
+                "startup": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "business",
+                "developer",
+                "enterprise",
+                "growth",
+                "startup"
+              ],
+              "type": "object"
+            },
+            "priority": {
+              "additionalProperties": false,
+              "properties": {
+                "batch": {
+                  "type": "integer"
+                },
+                "priority": {
+                  "type": "integer"
+                },
+                "realtime": {
+                  "type": "integer"
+                },
+                "standard": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "batch",
+                "priority",
+                "realtime",
+                "standard"
+              ],
+              "type": "object"
+            },
+            "region": {
+              "additionalProperties": false,
+              "properties": {
+                "ap-south": {
+                  "type": "integer"
+                },
+                "eu-central": {
+                  "type": "integer"
+                },
+                "eu-north": {
+                  "type": "integer"
+                },
+                "eu-west": {
+                  "type": "integer"
+                },
+                "me-west": {
+                  "type": "integer"
+                },
+                "us-east": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "ap-south",
+                "eu-central",
+                "eu-north",
+                "eu-west",
+                "me-west",
+                "us-east"
+              ],
+              "type": "object"
+            },
+            "retention": {
+              "additionalProperties": false,
+              "properties": {
+                "default": {
+                  "type": "integer"
+                },
+                "extended": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "default",
+                "extended"
+              ],
+              "type": "object"
+            },
+            "verification": {
+              "additionalProperties": false,
+              "properties": {
+                "consensus": {
+                  "type": "integer"
+                },
+                "enterprise": {
+                  "type": "integer"
+                },
+                "human_review": {
+                  "type": "integer"
+                },
+                "standard": {
+                  "type": "integer"
+                },
+                "verified": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "consensus",
+                "enterprise",
+                "human_review",
+                "standard",
+                "verified"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "executionPolicy",
+            "plan",
+            "priority",
+            "region",
+            "retention",
+            "verification"
+          ],
+          "type": "object"
+        },
+        "orderedModifiers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "promotionMayFundFloorDifference": {
+          "type": "boolean"
+        },
+        "quoteTtlSeconds": {
+          "type": "integer"
+        },
+        "rounding": {
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "type": "string"
+            },
+            "unit": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode",
+            "unit"
+          ],
+          "type": "object"
+        },
+        "rules": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "measure": {
+                "type": "string"
+              },
+              "minimumChargeMicros": {
+                "type": "integer"
+              },
+              "quantum": {
+                "type": "integer"
+              },
+              "taskType": {
+                "type": "string"
+              },
+              "unitPriceMicros": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "measure",
+              "minimumChargeMicros",
+              "quantum",
+              "taskType",
+              "unitPriceMicros"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "calculationVersion",
+        "currency",
+        "discountOrder",
+        "effectiveFrom",
+        "effectiveUntil",
+        "floors",
+        "minimumChargeStage",
+        "multipliersBps",
+        "orderedModifiers",
+        "promotionMayFundFloorDifference",
+        "quoteTtlSeconds",
+        "rounding",
+        "rules"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint PriceBook",
+  "type": "object"
+}

@@ -1,0 +1,169 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/promotionpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "PromotionPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "antiAbuse": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "benefit": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type",
+            "value"
+          ],
+          "type": "object"
+        },
+        "budget": {
+          "additionalProperties": false,
+          "properties": {
+            "amountMicros": {
+              "type": "integer"
+            },
+            "hardStop": {
+              "type": "boolean"
+            },
+            "owner": {
+              "type": "string"
+            },
+            "unit": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "amountMicros",
+            "hardStop",
+            "owner",
+            "unit"
+          ],
+          "type": "object"
+        },
+        "caps": {
+          "additionalProperties": false,
+          "properties": {
+            "globalBudgetHardStop": {
+              "type": "boolean"
+            },
+            "perAccountDailyMicros": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "globalBudgetHardStop",
+            "perAccountDailyMicros"
+          ],
+          "type": "object"
+        },
+        "eligibilityRules": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "fundsFloorDifference": {
+          "type": "boolean"
+        },
+        "killSwitch": {
+          "additionalProperties": false,
+          "properties": {
+            "automaticFraudRateBps": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "automaticFraudRateBps"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "antiAbuse",
+        "benefit",
+        "budget",
+        "caps",
+        "eligibilityRules",
+        "fundsFloorDifference",
+        "killSwitch"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint PromotionPolicy",
+  "type": "object"
+}

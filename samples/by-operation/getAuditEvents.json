@@ -1,0 +1,32 @@
+{
+  "api": "edgemint-operations-api",
+  "operationId": "getAuditEvents",
+  "request": {
+    "method": "GET",
+    "path": "/audit-events/{id}",
+    "pathParameters": {
+      "id": "id_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_getAuditEvents_0001",
+      "Authorization": "Bearer operator_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "status": "active",
+      "version": 1,
+      "updatedAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": false,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "ops.operations:read"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

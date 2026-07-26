@@ -1,0 +1,480 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/routingpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "RoutingPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "antiAffinity": {
+          "additionalProperties": false,
+          "properties": {
+            "consensusDifferentAccount": {
+              "type": "boolean"
+            },
+            "consensusDifferentDevice": {
+              "type": "boolean"
+            },
+            "consensusDifferentNetworkClusterWhenPossible": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "consensusDifferentAccount",
+            "consensusDifferentDevice",
+            "consensusDifferentNetworkClusterWhenPossible"
+          ],
+          "type": "object"
+        },
+        "capacity": {
+          "additionalProperties": false,
+          "properties": {
+            "maximumActiveLeasesPerWorker": {
+              "type": "string"
+            },
+            "overbookingAllowed": {
+              "type": "boolean"
+            },
+            "reservationMode": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "maximumActiveLeasesPerWorker",
+            "overbookingAllowed",
+            "reservationMode"
+          ],
+          "type": "object"
+        },
+        "eligibility": {
+          "additionalProperties": false,
+          "properties": {
+            "disallowedThermalStates": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "heartbeatMaximumAgeSeconds": {
+              "type": "integer"
+            },
+            "minimumBatteryPercent": {
+              "type": "integer"
+            },
+            "minimumTrustMilli": {
+              "type": "integer"
+            },
+            "requireAttestationForPaidTasks": {
+              "type": "boolean"
+            },
+            "requireCurrentConsent": {
+              "type": "boolean"
+            },
+            "requireModelDigestMatch": {
+              "type": "boolean"
+            },
+            "requireRuntimeAbiMatch": {
+              "type": "boolean"
+            },
+            "respectCustomerRegion": {
+              "type": "boolean"
+            },
+            "respectWorkerNetworkPolicy": {
+              "type": "boolean"
+            },
+            "requireAvailableStatus": {
+              "const": true
+            }
+          },
+          "required": [
+            "disallowedThermalStates",
+            "heartbeatMaximumAgeSeconds",
+            "minimumBatteryPercent",
+            "minimumTrustMilli",
+            "requireAttestationForPaidTasks",
+            "requireCurrentConsent",
+            "requireModelDigestMatch",
+            "requireRuntimeAbiMatch",
+            "respectCustomerRegion",
+            "respectWorkerNetworkPolicy",
+            "requireAvailableStatus"
+          ],
+          "type": "object"
+        },
+        "fallback": {
+          "additionalProperties": false,
+          "properties": {
+            "cloudAfterSeconds": {
+              "type": "integer"
+            },
+            "dailyCloudCostCapMicros": {
+              "type": "integer"
+            },
+            "defaultPolicy": {
+              "type": "string"
+            },
+            "maxWorkerReassignments": {
+              "type": "integer"
+            },
+            "requoteRequired": {
+              "type": "boolean"
+            },
+            "reassignmentLimitAction": {
+              "const": "expire_attempt_then_apply_retry_policy_or_cloud_fallback"
+            }
+          },
+          "required": [
+            "cloudAfterSeconds",
+            "dailyCloudCostCapMicros",
+            "defaultPolicy",
+            "maxWorkerReassignments",
+            "requoteRequired",
+            "reassignmentLimitAction"
+          ],
+          "type": "object"
+        },
+        "fencing": {
+          "additionalProperties": false,
+          "properties": {
+            "monotonicPerAttempt": {
+              "type": "boolean"
+            },
+            "staleResultAction": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "monotonicPerAttempt",
+            "staleResultAction"
+          ],
+          "type": "object"
+        },
+        "score": {
+          "additionalProperties": false,
+          "properties": {
+            "normalization": {
+              "type": "string"
+            },
+            "scale": {
+              "type": "integer"
+            },
+            "tieBreaker": {
+              "type": "string"
+            },
+            "weightsBps": {
+              "additionalProperties": false,
+              "properties": {
+                "batteryCharging": {
+                  "type": "integer"
+                },
+                "modelLocality": {
+                  "type": "integer"
+                },
+                "network": {
+                  "type": "integer"
+                },
+                "predictedLatency": {
+                  "type": "integer"
+                },
+                "priceEfficiency": {
+                  "type": "integer"
+                },
+                "regionalCompliance": {
+                  "type": "integer"
+                },
+                "reliability": {
+                  "type": "integer"
+                },
+                "trust": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "batteryCharging",
+                "modelLocality",
+                "network",
+                "predictedLatency",
+                "priceEfficiency",
+                "regionalCompliance",
+                "reliability",
+                "trust"
+              ],
+              "type": "object"
+            },
+            "featureFormulas": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "normalization",
+            "scale",
+            "tieBreaker",
+            "weightsBps",
+            "featureFormulas"
+          ],
+          "type": "object"
+        },
+        "timeouts": {
+          "additionalProperties": false,
+          "properties": {
+            "executionByTaskType": {
+              "additionalProperties": false,
+              "properties": {
+                "audio.transcribe": {
+                  "type": "integer"
+                },
+                "document.extract": {
+                  "type": "integer"
+                },
+                "document.ocr": {
+                  "type": "integer"
+                },
+                "document.verify": {
+                  "type": "integer"
+                },
+                "image.classify": {
+                  "type": "integer"
+                },
+                "image.detect": {
+                  "type": "integer"
+                },
+                "text.embedding": {
+                  "type": "integer"
+                },
+                "text.generate": {
+                  "type": "integer"
+                },
+                "text.translate": {
+                  "type": "integer"
+                },
+                "vision.analyze": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "audio.transcribe",
+                "document.extract",
+                "document.ocr",
+                "document.verify",
+                "image.classify",
+                "image.detect",
+                "text.embedding",
+                "text.generate",
+                "text.translate",
+                "vision.analyze"
+              ],
+              "type": "object"
+            },
+            "heartbeatSeconds": {
+              "type": "integer"
+            },
+            "leaseRenewalSeconds": {
+              "type": "integer"
+            },
+            "leaseSeconds": {
+              "type": "integer"
+            },
+            "assignmentDeliverySeconds": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 120
+            },
+            "autoStartGraceSeconds": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 120
+            }
+          },
+          "required": [
+            "assignmentDeliverySeconds",
+            "autoStartGraceSeconds",
+            "executionByTaskType",
+            "heartbeatSeconds",
+            "leaseRenewalSeconds",
+            "leaseSeconds"
+          ],
+          "type": "object"
+        },
+        "assignmentMode": {
+          "enum": [
+            "server_auto_lease"
+          ]
+        },
+        "perTaskWorkerConfirmation": {
+          "const": false
+        },
+        "workerOptInAuthority": {
+          "enum": [
+            "current_consent_and_available_status"
+          ]
+        },
+        "deliveryAcknowledgementMeaning": {
+          "enum": [
+            "transport_receipt_only"
+          ]
+        },
+        "runtimeUnavailability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "reporting": {
+              "enum": [
+                "automatic_agent_only"
+              ]
+            },
+            "allowedReasonCodes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "battery_low",
+                  "thermal_block",
+                  "network_policy_blocked",
+                  "model_unavailable",
+                  "insufficient_storage",
+                  "runtime_incompatible",
+                  "resource_pressure"
+                ]
+              }
+            },
+            "validatedPenalty": {
+              "enum": [
+                "worker_neutral"
+              ]
+            },
+            "reassignment": {
+              "enum": [
+                "immediate_with_higher_fence"
+              ]
+            },
+            "evidenceValidation": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "snapshotMustBeLatest": {
+                  "const": true
+                },
+                "maximumSnapshotAgeSeconds": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "observedAtToleranceSeconds": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "reasonMustMatchPersistedTelemetryOrImmutableTaskRequirements": {
+                  "const": true
+                },
+                "mismatchAction": {
+                  "const": "reject_without_reassignment"
+                }
+              },
+              "required": [
+                "snapshotMustBeLatest",
+                "maximumSnapshotAgeSeconds",
+                "observedAtToleranceSeconds",
+                "reasonMustMatchPersistedTelemetryOrImmutableTaskRequirements",
+                "mismatchAction"
+              ]
+            }
+          },
+          "required": [
+            "reporting",
+            "allowedReasonCodes",
+            "validatedPenalty",
+            "reassignment",
+            "evidenceValidation"
+          ]
+        },
+        "queueSelection": {
+          "type": "object"
+        },
+        "availabilityChangeEffect": {
+          "const": "future_assignments_only_active_leases_continue"
+        }
+      },
+      "required": [
+        "antiAffinity",
+        "capacity",
+        "eligibility",
+        "fallback",
+        "fencing",
+        "score",
+        "timeouts",
+        "assignmentMode",
+        "perTaskWorkerConfirmation",
+        "workerOptInAuthority",
+        "deliveryAcknowledgementMeaning",
+        "runtimeUnavailability",
+        "queueSelection",
+        "availabilityChangeEffect"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint RoutingPolicy",
+  "type": "object"
+}

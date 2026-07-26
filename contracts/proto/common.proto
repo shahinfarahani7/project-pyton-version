@@ -1,0 +1,7 @@
+syntax = "proto3";
+package edgemint.v1;
+option csharp_namespace = "EdgeMint.Contracts.V1";
+message PublicId { string value = 1; }
+message MoneyMicros { int64 value = 1; string currency = 2; }
+message RequestContext { string request_id = 1; string correlation_id = 2; string causation_id = 3; string workspace_id = 4; string principal_id = 5; }
+message Problem { string code = 1; string title = 2; string detail = 3; string trace_id = 4; }

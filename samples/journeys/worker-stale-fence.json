@@ -1,0 +1,15 @@
+{
+  "invariants": [
+    "same correlationId across causal chain",
+    "mutations use stable idempotency key",
+    "immutable revision is never edited",
+    "financial effects reconcile before terminal response",
+    "assignment was auto-leased without worker confirmation"
+  ],
+  "journey": "worker-stale-fence",
+  "orderedOperations": [
+    "reportAssignmentStarted",
+    "renewAssignment",
+    "completeAssignment"
+  ]
+}

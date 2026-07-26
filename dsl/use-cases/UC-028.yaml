@@ -1,0 +1,92 @@
+apiVersion: edgemint.io/v1
+kind: UseCase
+metadata:
+  name: uc-028-receive-auto-assigned-lease
+  version: 2.1.0
+  status: active
+  description: Receive current auto-assigned lease
+  owners:
+  - product
+  - qa
+spec:
+  id: UC-028
+  title: Receive current auto-assigned lease
+  actors: &id001
+  - Worker App
+  preconditions:
+  - authenticated or trusted service identity
+  - required policy versions active
+  - tenant scope resolved when applicable
+  trigger: durable WebSocket notification or reconnect long poll
+  mainFlow:
+  - Resolve the attested Worker App identity and bind it to the current worker device.
+  - Return only an already server-created current lease targeted to that device; never create an offer and never request acceptance.
+  - Return 204 when no current assignment exists before the long-poll timeout.
+  - Expose lease token, fence token, automatic-execution flag and start deadline without customer identity or protected payload.
+  alternateFlows:
+  - condition: validation or policy failure
+    outcome: reject with stable error code and no unauthorized financial side effect
+  - condition: dependency unavailable
+    outcome: persist safe state, retry idempotently or return explicit asynchronous status
+  postconditions:
+  - domain state satisfies invariant
+  - outbox/audit evidence exists
+  - financial effects match failure matrix
+  acceptanceCriteria:
+  - cross-device assignment access denied
+  - response identifies automatic execution
+  - 204 is a normal empty result
+  - no domain or financial write occurs
+  - no per-task confirmation field or action is present
+  trace:
+    requirements:
+    - REQ-LEASE-001
+    apiOperations:
+    - getNextAssignment
+    events:
+    - task.assignment.leased
+    entities:
+    - assignments
+    tests:
+    - AT-UC-028-POS
+    - AT-UC-028-NEG
+  implementation:
+    transport:
+    - operationId: getNextAssignment
+      method: GET
+      path: /assignments:next
+    authorization:
+      principalTypes: *id001
+      permissionSource: worker.assignments:read
+      tenantBoundary: Customer resources are scoped by organization_id and workspace_id; worker resources by attested worker_id/device_id;
+        control operations by mTLS service or MFA operator identity.
+    idempotency:
+      mode: not_applicable
+      scope: HTTP safe read; Request-Id and traceId are observability identifiers only.
+    transaction:
+      isolation: read_only_repeatable_read
+      writes: []
+      outboxEvents: []
+    concurrency:
+      strategy: consistent_authorized_snapshot
+      fenceRequired: false
+      expectedVersionRequired: false
+    financialEffects:
+    - No charge, reservation, reward, token conversion or ledger entry is permitted for this operation.
+    errorCodes:
+    - AUTH_INVALID_CREDENTIAL
+    - AUTH_SCOPE_REQUIRED
+    - INPUT_SCHEMA_INVALID
+    - TENANT_RESOURCE_NOT_FOUND
+    - WORKER_NOT_ELIGIBLE
+    observability:
+    - Record requestId, traceId, operationId, actorId, organizationId/workspaceId or workerId, resourceVersion and active
+      policy hashes.
+    - For every mutation or privileged read, write an append-only audit event with reason/ticket where required.
+    - Never log credentials, API keys, refresh tokens, raw customer payload, model input/output, signed URLs or envelope keys.
+    retention:
+    - 'Customer payload and result retention follows the workspace-selected DataPolicy; default confidential-v2: input 24
+      hours, result 90 days, audit 2555 days.'
+    - Restricted-v2 workloads retain input 24 hours, result 30 days, audit 2555 days and worker temporary data 10 minutes.
+    - Financial and security evidence is retained independently of payload deletion and remains append-only while legal hold
+      is active.

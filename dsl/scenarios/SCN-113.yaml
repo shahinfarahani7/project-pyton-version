@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-113-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-113
+  useCaseRef: UseCase/uc-057-handle-worker-memory-pressure@2.0.0
+  mode: success
+  given:
+  - Use case UC-057 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Worker App is authenticated and has permissions worker.assignments:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke failAssignment with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: task_attempts.'
+  - 'Exactly these canonical events are inserted into the outbox: task.failed.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - failAssignment
+    requirements:
+    - REQ-MEMORY-004
+  expectedEvents:
+  - task.failed
+  expectedErrorCode: null

@@ -1,0 +1,58 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-retrytask
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for retryTask.
+spec:
+  operationId: retryTask
+  api: public
+  method: POST
+  path: /tasks/{taskId}:retry
+  summary: Retry task
+  classification: business_use_case
+  permissions:
+  - customer.tasks:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - task_attempts
+    domainEvents:
+    - task.attempt.created
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-013-retry-task@2.0.0
+  errorCodes:
+  - ATTEMPT_LIMIT_REACHED
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TASK_REVISION_NOT_RETRYABLE
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-public-api.yaml::POST /tasks/{taskId}:retry
+    request: OpenAPI requestBody/parameters for retryTask
+    response: OpenAPI responses for retryTask
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

@@ -1,0 +1,32 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-111-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-111
+  useCaseRef: UseCase/uc-056-delete-customer-payload@2.0.0
+  mode: success
+  given:
+  - Use case UC-056 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Privacy Operator is authenticated and has permissions customer.files:write.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke deleteFile with a schema-valid request and a new Idempotency-Key.
+  then:
+  - The operation commits with concurrency strategy unique_constraints_plus_idempotency.
+  - 'Exactly these entities are written: files.'
+  - 'Exactly these canonical events are inserted into the outbox: file.deleted.'
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Privacy Operator
+    operationIds:
+    - deleteFile
+    requirements:
+    - REQ-FILE-003
+  expectedEvents:
+  - file.deleted
+  expectedErrorCode: null

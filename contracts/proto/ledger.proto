@@ -1,0 +1,8 @@
+syntax = "proto3";
+package edgemint.v1;
+option csharp_namespace = "EdgeMint.Contracts.V1";
+import "common.proto";
+service LedgerInternalApi { rpc PostTransaction(PostLedgerTransactionRequest) returns (PostLedgerTransactionResponse); }
+message LedgerEntry { string account_id = 1; string direction = 2; MoneyMicros amount = 3; }
+message PostLedgerTransactionRequest { RequestContext context = 1; string transaction_type = 2; string reference_type = 3; string reference_id = 4; string idempotency_key = 5; repeated LedgerEntry entries = 6; }
+message PostLedgerTransactionResponse { string transaction_id = 1; bool duplicate = 2; }

@@ -1,0 +1,23 @@
+{
+  "specversion": "1.0",
+  "id": "event_beb0b4e5b26339813952870091",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.assignment.lease_renewed.v1",
+  "subject": "assignment_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "correlationId": "corr_beb0b4e5b26339813952870091",
+  "causationId": "cmd_beb0b4e5b26339813952870091",
+  "partitionKey": "assignment_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "assignmentId": "assignment_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "lease_renewed",
+    "workspaceId": "workspace_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

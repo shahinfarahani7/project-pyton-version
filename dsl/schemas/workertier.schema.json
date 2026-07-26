@@ -1,0 +1,161 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/workertier.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "WorkerTier"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "minimum": {
+          "additionalProperties": false,
+          "properties": {
+            "benchmarkScoreMilli": {
+              "type": "integer"
+            },
+            "cpuCores": {
+              "type": "integer"
+            },
+            "ramBytes": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "benchmarkScoreMilli",
+            "cpuCores",
+            "ramBytes"
+          ],
+          "type": "object"
+        },
+        "resourceLimits": {
+          "additionalProperties": false,
+          "properties": {
+            "maxConcurrentTasks": {
+              "type": "integer"
+            },
+            "maxInferenceWorkingSetBytes": {
+              "type": "integer"
+            },
+            "maxSingleArtifactBytes": {
+              "type": "integer"
+            },
+            "minimumBatteryPercent": {
+              "type": "integer"
+            },
+            "thermalCeiling": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "maxConcurrentTasks",
+            "maxInferenceWorkingSetBytes",
+            "maxSingleArtifactBytes",
+            "minimumBatteryPercent",
+            "thermalCeiling"
+          ],
+          "type": "object"
+        },
+        "rewardMultiplierBps": {
+          "type": "integer"
+        },
+        "scheduling": {
+          "additionalProperties": false,
+          "properties": {
+            "cellularAllowedDefault": {
+              "type": "boolean"
+            },
+            "chargingPreferred": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "cellularAllowedDefault",
+            "chargingPreferred"
+          ],
+          "type": "object"
+        },
+        "supportedTasks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "minimum",
+        "resourceLimits",
+        "rewardMultiplierBps",
+        "scheduling",
+        "supportedTasks"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint WorkerTier",
+  "type": "object"
+}

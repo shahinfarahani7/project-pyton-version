@@ -1,0 +1,105 @@
+apiVersion: edgemint.io/v1
+kind: UseCase
+metadata:
+  name: uc-045-run-ledger-reconciliation
+  version: 2.0.0
+  status: active
+  description: Run ledger reconciliation
+  owners:
+  - product
+  - qa
+spec:
+  id: UC-045
+  title: Run ledger reconciliation
+  actors: &id001
+  - Finance Operator
+  preconditions:
+  - authenticated or trusted service identity
+  - required policy versions active
+  - tenant scope resolved when applicable
+  trigger: run reconciliation
+  mainFlow:
+  - Resolve the authenticated principal and authorize runLedgerReconciliation against the declared tenant, worker or control
+    boundary.
+  - Validate the OpenAPI request, referenced resources, active policy hashes and all preconditions; return only canonical
+    ErrorCatalog codes.
+  - Execute with transaction isolation serializable and concurrency strategy unique_constraints_plus_idempotency.
+  - Persist reconciliation_runs, ledger_transactions, ledger_entries.
+  - Insert outbox events ledger.reconciliation.completed in the same commit as domain writes.
+  - Return the exact OpenAPI response including requestId, traceId, resource version and asynchronous lifecycle projection
+    where applicable.
+  alternateFlows:
+  - condition: validation or policy failure
+    outcome: reject with stable error code and no unauthorized financial side effect
+  - condition: dependency unavailable
+    outcome: persist safe state, retry idempotently or return explicit asynchronous status
+  postconditions:
+  - domain state satisfies invariant
+  - outbox/audit evidence exists
+  - financial effects match failure matrix
+  acceptanceCriteria:
+  - cross-tenant access denied
+  - correlation and policy hashes recorded
+  - Replaying the same Idempotency-Key with the same canonical body returns the original status and resource without duplicate
+    side effects.
+  - Reusing the same Idempotency-Key with a different canonical body returns IDEMPOTENCY_CONFLICT.
+  trace:
+    requirements:
+    - REQ-BILL-004
+    - REQ-OBS-004
+    apiOperations:
+    - runLedgerReconciliation
+    events: &id002
+    - ledger.reconciliation.completed
+    entities:
+    - reconciliation_runs
+    - ledger_transactions
+    - ledger_entries
+    tests:
+    - AT-UC-045-POS
+    - AT-UC-045-NEG
+  implementation:
+    transport:
+    - operationId: runLedgerReconciliation
+      method: POST
+      path: /reconciliations
+    authorization:
+      principalTypes: *id001
+      permissionSource: ops.finance:reconcile-ledger
+      tenantBoundary: Customer resources are scoped by organization_id and workspace_id; worker resources by attested worker_id/device_id;
+        control operations by mTLS service or MFA operator identity.
+    idempotency:
+      mode: required
+      scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+    transaction:
+      isolation: serializable
+      writes:
+      - reconciliation_runs
+      - ledger_transactions
+      - ledger_entries
+      outboxEvents: *id002
+    concurrency:
+      strategy: unique_constraints_plus_idempotency
+      fenceRequired: false
+      expectedVersionRequired: false
+    financialEffects:
+    - Read and compare ledger projections. On imbalance, open an incident and activate the configured finance kill switch.
+    errorCodes:
+    - AUTH_INVALID_CREDENTIAL
+    - AUTH_SCOPE_REQUIRED
+    - INPUT_SCHEMA_INVALID
+    - TENANT_RESOURCE_NOT_FOUND
+    - IDEMPOTENCY_CONFLICT
+    - RECONCILIATION_ALREADY_RUNNING
+    - LEDGER_IMBALANCE_DETECTED
+    observability:
+    - Record requestId, traceId, operationId, actorId, organizationId/workspaceId or workerId, resourceVersion and active
+      policy hashes.
+    - For every mutation or privileged read, write an append-only audit event with reason/ticket where required.
+    - Never log credentials, API keys, refresh tokens, raw customer payload, model input/output, signed URLs or envelope keys.
+    retention:
+    - 'Customer payload and result retention follows the workspace-selected DataPolicy; default confidential-v2: input 24
+      hours, result 90 days, audit 2555 days.'
+    - Restricted-v2 workloads retain input 24 hours, result 30 days, audit 2555 days and worker temporary data 10 minutes.
+    - Financial and security evidence is retained independently of payload deletion and remains append-only while legal hold
+      is active.

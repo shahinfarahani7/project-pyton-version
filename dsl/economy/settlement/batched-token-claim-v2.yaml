@@ -1,0 +1,28 @@
+apiVersion: edgemint.io/v1
+kind: SettlementPolicy
+metadata:
+  name: batched-token-claim-v2
+  version: 2.0.0
+  status: draft
+  owners:
+  - finance
+  - legal
+spec:
+  unitOfAccount: EUR_REWARD_MICROS
+  claimPolicyRef: ClaimPolicy/edge-claim-v2@2.0.0
+  conversion:
+    mode: claim_epoch
+    rateLockSeconds: 900
+    integerAtomicUnits: true
+    dustAction: retain
+  claimWindows:
+    enabled: false
+    schedule: daily
+  reconciliation:
+    offchainToBatch: true
+    batchToProviderOrChain: true
+    requiredBeforeClose: true
+  failureStates:
+  - failed_released
+  - reconciling
+  - manual_review

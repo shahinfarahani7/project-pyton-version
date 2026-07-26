@@ -1,0 +1,100 @@
+apiVersion: edgemint.io/v1
+kind: UseCase
+metadata:
+  name: uc-039-rollback-policy
+  version: 2.0.0
+  status: active
+  description: Rollback policy
+  owners:
+  - product
+  - qa
+spec:
+  id: UC-039
+  title: Rollback policy
+  actors: &id001
+  - Operations Agent
+  preconditions:
+  - authenticated or trusted service identity
+  - required policy versions active
+  - tenant scope resolved when applicable
+  trigger: rollback policy
+  mainFlow:
+  - Resolve the authenticated principal and authorize rollbackPolicy against the declared tenant, worker or control boundary.
+  - Validate the OpenAPI request, referenced resources, active policy hashes and all preconditions; return only canonical
+    ErrorCatalog codes.
+  - Execute with transaction isolation read_committed_with_targeted_row_locks and concurrency strategy expected_version_compare_and_swap_plus_idempotency.
+  - Persist policy_activations.
+  - Insert outbox events policy.activated in the same commit as domain writes.
+  - Return the exact OpenAPI response including requestId, traceId, resource version and asynchronous lifecycle projection
+    where applicable.
+  alternateFlows:
+  - condition: validation or policy failure
+    outcome: reject with stable error code and no unauthorized financial side effect
+  - condition: dependency unavailable
+    outcome: persist safe state, retry idempotently or return explicit asynchronous status
+  postconditions:
+  - domain state satisfies invariant
+  - outbox/audit evidence exists
+  - financial effects match failure matrix
+  acceptanceCriteria:
+  - cross-tenant access denied
+  - correlation and policy hashes recorded
+  - Replaying the same Idempotency-Key with the same canonical body returns the original status and resource without duplicate
+    side effects.
+  - Reusing the same Idempotency-Key with a different canonical body returns IDEMPOTENCY_CONFLICT.
+  trace:
+    requirements:
+    - REQ-POLICY-003
+    apiOperations:
+    - rollbackPolicy
+    events: &id002
+    - policy.activated
+    entities:
+    - policy_activations
+    tests:
+    - AT-UC-039-POS
+    - AT-UC-039-NEG
+  implementation:
+    transport:
+    - operationId: rollbackPolicy
+      method: POST
+      path: /policies/{policyKind}/{policyId}:rollback
+    authorization:
+      principalTypes: *id001
+      permissionSource: ops.policies:rollback
+      tenantBoundary: Customer resources are scoped by organization_id and workspace_id; worker resources by attested worker_id/device_id;
+        control operations by mTLS service or MFA operator identity.
+    idempotency:
+      mode: required
+      scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+    transaction:
+      isolation: read_committed_with_targeted_row_locks
+      writes:
+      - policy_activations
+      outboxEvents: *id002
+    concurrency:
+      strategy: expected_version_compare_and_swap_plus_idempotency
+      fenceRequired: false
+      expectedVersionRequired: true
+    financialEffects:
+    - No charge, reservation, reward, token conversion or ledger entry is permitted for this operation.
+    errorCodes:
+    - AUTH_INVALID_CREDENTIAL
+    - AUTH_SCOPE_REQUIRED
+    - INPUT_SCHEMA_INVALID
+    - TENANT_RESOURCE_NOT_FOUND
+    - IDEMPOTENCY_CONFLICT
+    - VERSION_CONFLICT
+    - POLICY_ROLLBACK_TARGET_INVALID
+    - POLICY_DEPENDENCY_CONFLICT
+    observability:
+    - Record requestId, traceId, operationId, actorId, organizationId/workspaceId or workerId, resourceVersion and active
+      policy hashes.
+    - For every mutation or privileged read, write an append-only audit event with reason/ticket where required.
+    - Never log credentials, API keys, refresh tokens, raw customer payload, model input/output, signed URLs or envelope keys.
+    retention:
+    - 'Customer payload and result retention follows the workspace-selected DataPolicy; default confidential-v2: input 24
+      hours, result 90 days, audit 2555 days.'
+    - Restricted-v2 workloads retain input 24 hours, result 30 days, audit 2555 days and worker temporary data 10 minutes.
+    - Financial and security evidence is retained independently of payload deletion and remains append-only while legal hold
+      is active.

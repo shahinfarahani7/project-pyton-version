@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_7288450f852f71aff19039793e",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.dispute.resolved.v1",
+  "subject": "dispute_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_7288450f852f71aff19039793e",
+  "causationId": "cmd_7288450f852f71aff19039793e",
+  "partitionKey": "dispute_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "disputeId": "dispute_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "resolved",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

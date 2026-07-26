@@ -1,0 +1,3365 @@
+openapi: 3.1.0
+info:
+  title: EdgeMint Mobile Worker API
+  version: 2.1.0
+  description: Normative worker protocol. Assignments are server-auto-leased with no per-task worker confirmation. Lease token
+    plus monotonic fence token prevents stale completion; WebSocket ACK is transport receipt only.
+servers:
+- url: https://worker.edgemint.example/v1
+tags:
+- name: registration
+- name: health
+- name: assignments
+- name: models
+- name: rewards
+- name: preferences
+paths:
+  /auth/challenges:
+    post:
+      operationId: createDeviceChallenge
+      summary: Create attestation challenge
+      tags:
+      - registration
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDeviceChallengeResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - installationId
+              properties:
+                installationId:
+                  type: string
+      security: []
+      x-required-permissions:
+      - worker.registration:write
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Create attestation challenge This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /workers/register:
+    post:
+      operationId: registerWorkerDevice
+      summary: Register attested device
+      tags:
+      - registration
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterWorkerDeviceResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegistration'
+      security: []
+      x-required-permissions:
+      - worker.registration:write
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Register attested device This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /sessions:refresh:
+    post:
+      operationId: refreshWorkerSession
+      summary: Rotate worker session token
+      tags:
+      - registration
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshWorkerSessionResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      security: []
+      x-required-permissions:
+      - worker.registration:write
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Rotate worker session token This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /workers/{workerId}/benchmark:
+    post:
+      operationId: submitBenchmark
+      summary: Submit signed benchmark
+      tags:
+      - registration
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitBenchmarkResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: workerId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitBenchmarkRequest'
+      x-required-permissions:
+      - worker.registration:write
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Submit signed benchmark This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /workers/{workerId}/heartbeat:
+    post:
+      operationId: sendHeartbeat
+      summary: Send sequenced health snapshot
+      tags:
+      - health
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendHeartbeatResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: workerId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Heartbeat'
+      x-required-permissions:
+      - worker.health:write
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Send sequenced health snapshot This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments:next:
+    get:
+      operationId: getNextAssignment
+      summary: Long poll for current auto-assigned lease
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNextAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '204':
+          description: No current auto-assigned lease before timeout
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: waitSeconds
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 30
+      x-required-permissions:
+      - worker.assignments:read
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Returns the worker device current server-auto-leased assignment, or 204 when no assignment is leased before
+        the long-poll timeout. This endpoint never returns an offer and requires no worker acceptance.
+  /assignments/{assignmentId}:renew:
+    post:
+      operationId: renewAssignment
+      summary: Renew assignment
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenewAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - leaseToken
+              - fenceToken
+              properties:
+                leaseToken:
+                  type: string
+                fenceToken:
+                  type: integer
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Renew assignment This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments/{assignmentId}:progress:
+    post:
+      operationId: progressAssignment
+      summary: Progress assignment
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Progress'
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Progress assignment This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments/{assignmentId}:checkpoint:
+    post:
+      operationId: checkpointAssignment
+      summary: Checkpoint assignment
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckpointAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Checkpoint'
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Checkpoint assignment This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments/{assignmentId}:complete:
+    post:
+      operationId: completeAssignment
+      summary: Complete assignment
+      tags:
+      - assignments
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Completion'
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Complete assignment This operation enforces tenant scope, authorization, idempotency where applicable,
+        structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments/{assignmentId}:fail:
+    post:
+      operationId: failAssignment
+      summary: Fail assignment
+      tags:
+      - assignments
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FailAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - leaseToken
+              - fenceToken
+              - errorCode
+              - retryable
+              properties:
+                leaseToken:
+                  type: string
+                fenceToken:
+                  type: integer
+                errorCode:
+                  type: string
+                retryable:
+                  type: boolean
+                diagnostics:
+                  type: object
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Fail assignment This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments/{assignmentId}:abandon:
+    post:
+      operationId: abandonAssignment
+      summary: Abandon assignment
+      tags:
+      - assignments
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbandonAssignmentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - leaseToken
+              - fenceToken
+              - reasonCode
+              properties:
+                leaseToken:
+                  type: string
+                fenceToken:
+                  type: integer
+                reasonCode:
+                  type: string
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Abandon assignment This operation enforces tenant scope, authorization, idempotency where applicable, structured
+        Problem responses, audit requirements, and optimistic concurrency defined by the canonical OperationContract.
+  /assignments/{assignmentId}/resume:
+    get:
+      operationId: getResumeDecision
+      summary: Get authoritative resume decision
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetResumeDecisionResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      - name: checkpointSha256
+        in: query
+        required: true
+        schema:
+          type: string
+      x-required-permissions:
+      - worker.assignments:read
+      x-edgemint-owner: resource
+      x-edgemint-contract-version: 5.0.0
+      description: Get authoritative resume decision This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /models/{modelVersionId}/manifest:
+    get:
+      operationId: getModelManifest
+      summary: Get signed model artifact manifest
+      tags:
+      - models
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetModelManifestResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - name: modelVersionId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      x-required-permissions:
+      - worker.models:read
+      x-edgemint-owner: model
+      x-edgemint-contract-version: 5.0.0
+      description: Get signed model artifact manifest This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /models/{modelVersionId}:report-install:
+    post:
+      operationId: reportModelInstall
+      summary: Report verified model installation
+      tags:
+      - models
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportModelInstallResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: modelVersionId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - artifactSha256
+              - status
+              properties:
+                artifactSha256:
+                  type: string
+                status:
+                  type: string
+      x-required-permissions:
+      - worker.models:write
+      x-edgemint-owner: model
+      x-edgemint-contract-version: 5.0.0
+      description: Report verified model installation This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /rewards/summary:
+    get:
+      operationId: getWorkerRewardSummary
+      summary: Get pending verified and claimable reward micros
+      tags:
+      - rewards
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWorkerRewardSummaryResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      x-required-permissions:
+      - worker.rewards:read
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Get pending verified and claimable reward micros This operation enforces tenant scope, authorization, idempotency
+        where applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /reward-claims:
+    post:
+      operationId: createRewardClaim
+      summary: Create claim when claim mode enabled
+      tags:
+      - rewards
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRewardClaimResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - amountRewardMicros
+              properties:
+                amountRewardMicros:
+                  type: integer
+                destinationId:
+                  type: string
+      x-required-permissions:
+      - worker.rewards:write
+      x-edgemint-owner: reward
+      x-edgemint-contract-version: 5.0.0
+      description: Create claim when claim mode enabled This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract.
+  /worker-preferences:
+    get:
+      operationId: getWorkerPreferences
+      summary: Get worker execution preferences
+      tags:
+      - preferences
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWorkerPreferencesResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      x-required-permissions:
+      - worker.preferences:read
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Get worker execution preferences This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract. Availability is the only worker-controlled opt-in/out for new automatic assignments; it is not
+        a per-task decision.
+    put:
+      operationId: replaceWorkerPreferences
+      summary: Replace worker execution preferences
+      tags:
+      - preferences
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplaceWorkerPreferencesResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: If-Match
+        in: header
+        required: true
+        schema:
+          type: string
+          pattern: ^(?:W/)?"[1-9][0-9]*"$
+        description: Required optimistic-concurrency ETag.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceWorkerPreferencesRequest'
+      x-required-permissions:
+      - worker.preferences:write
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Replace worker execution preferences This operation enforces tenant scope, authorization, idempotency where
+        applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
+        OperationContract. Availability is the only worker-controlled opt-in/out for new automatic assignments; it is not
+        a per-task decision.
+  /assignments/{assignmentId}/result-upload-intents:
+    post:
+      operationId: createAssignmentResultUploadIntent
+      summary: Create signed upload intent for assignment result
+      tags:
+      - assignments
+      x-required-permissions:
+      - worker.assignments:complete
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAssignmentResultUploadIntentResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - leaseToken
+              - fenceToken
+              - contentType
+              - contentLength
+              - contentSha256
+              properties:
+                leaseToken:
+                  type: string
+                fenceToken:
+                  type: integer
+                  minimum: 1
+                contentType:
+                  type: string
+                contentLength:
+                  type: integer
+                  minimum: 1
+                contentSha256:
+                  type: string
+                  pattern: ^[a-f0-9]{64}$
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Create signed upload intent for assignment result This operation enforces tenant scope, authorization,
+        idempotency where applicable, structured Problem responses, audit requirements, and optimistic concurrency defined
+        by the canonical OperationContract.
+  /assignments/{assignmentId}:started:
+    post:
+      operationId: reportAssignmentStarted
+      summary: Report automatic assignment start
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportAssignmentStartedResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - leaseToken
+              - fenceToken
+              - startSequence
+              - startedAt
+              properties:
+                leaseToken:
+                  type: string
+                  minLength: 20
+                fenceToken:
+                  type: integer
+                startSequence:
+                  type: integer
+                  minimum: 1
+                startedAt:
+                  type: string
+                  format: date-time
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Called automatically by the Worker Agent after validating the server-created lease, fence, signature, model
+        and resource gates. It is not a user confirmation.
+  /assignments/{assignmentId}:unavailable:
+    post:
+      operationId: reportAssignmentUnavailable
+      summary: Report machine-detected assignment unavailability
+      tags:
+      - assignments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportAssignmentUnavailableResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+                minimum: 1
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+                minimum: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+                minimum: 0
+              description: Unix epoch seconds.
+        '400':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '412':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - name: assignmentId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/PublicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - leaseToken
+              - fenceToken
+              - reasonCode
+              - healthSnapshotSequence
+              - observedAt
+              properties:
+                leaseToken:
+                  type: string
+                  minLength: 20
+                fenceToken:
+                  type: integer
+                reasonCode:
+                  type: string
+                  enum:
+                  - battery_low
+                  - thermal_block
+                  - network_policy_blocked
+                  - model_unavailable
+                  - insufficient_storage
+                  - runtime_incompatible
+                  - resource_pressure
+                healthSnapshotSequence:
+                  type: integer
+                  minimum: 1
+                observedAt:
+                  type: string
+                  format: date-time
+      x-required-permissions:
+      - worker.assignments:write
+      x-edgemint-owner: assignment
+      x-edgemint-contract-version: 5.0.0
+      description: Called automatically by the Worker Agent only when local preflight detects a canonical environmental or
+        compatibility block. User-selected rejection and free-text reasons are forbidden.
+components:
+  securitySchemes:
+    DeviceBearer:
+      type: http
+      scheme: bearer
+  parameters:
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+  schemas:
+    Problem:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - title
+      - status
+      - code
+      - traceId
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{2,80}$
+        detail:
+          type: string
+        requestId:
+          type: string
+        traceId:
+          type: string
+          minLength: 1
+        retryable:
+          type: boolean
+          default: false
+        errors:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - path
+            - message
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+              code:
+                type: string
+        instance:
+          type: string
+          format: uri-reference
+    Challenge:
+      type: object
+      required:
+      - challengeId
+      - nonce
+      - expiresAt
+      properties:
+        challengeId:
+          type: string
+        nonce:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    DeviceRegistration:
+      type: object
+      additionalProperties: false
+      required:
+      - installationId
+      - platform
+      - appVersion
+      - capabilities
+      - attestation
+      properties:
+        installationId:
+          type: string
+        platform:
+          type: string
+          enum:
+          - android
+          - ios
+          - linux_edge
+        appVersion:
+          type: string
+        capabilities:
+          type: object
+        attestation:
+          type: object
+        publicKey:
+          type: string
+    WorkerSession:
+      type: object
+      required:
+      - workerId
+      - deviceId
+      - accessToken
+      - expiresAt
+      properties:
+        workerId:
+          type: string
+        deviceId:
+          type: string
+        accessToken:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        heartbeatIntervalSeconds:
+          type: integer
+    Heartbeat:
+      type: object
+      required:
+      - sequence
+      - observedAt
+      - batteryBps
+      - charging
+      - thermalState
+      - freeRamBytes
+      - freeStorageBytes
+      - network
+      - currentLeases
+      - installedModels
+      properties:
+        sequence:
+          type: integer
+          minimum: 1
+        observedAt:
+          type: string
+          format: date-time
+        batteryBps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        charging:
+          type: boolean
+        thermalState:
+          type: string
+          enum:
+          - nominal
+          - fair
+          - serious
+          - critical
+        freeRamBytes:
+          type: integer
+          minimum: 0
+        freeStorageBytes:
+          type: integer
+          minimum: 0
+        network:
+          type: string
+          enum:
+          - offline
+          - cellular
+          - wifi
+          - ethernet
+        currentLeases:
+          type: array
+          items:
+            type: string
+        installedModels:
+          type: array
+          items:
+            type: object
+            required:
+            - modelVersionId
+            - artifactSha256
+            properties:
+              modelVersionId:
+                type: string
+              artifactSha256:
+                type: string
+    Assignment:
+      type: object
+      required:
+      - assignmentId
+      - attemptId
+      - revisionId
+      - leaseToken
+      - fenceToken
+      - leaseExpiresAt
+      - taskType
+      - modelVersionId
+      - inputManifestUrl
+      - outputUploadUrl
+      - assignmentMode
+      - executionStartsAutomatically
+      - startDeadlineAt
+      properties:
+        assignmentId:
+          type: string
+        attemptId:
+          type: string
+        revisionId:
+          type: string
+        leaseToken:
+          type: string
+        fenceToken:
+          $ref: '#/components/schemas/Int64String'
+        leaseExpiresAt:
+          type: string
+          format: date-time
+        taskType:
+          type: string
+        modelVersionId:
+          type: string
+        inputManifestUrl:
+          type: string
+          format: uri
+        outputUploadUrl:
+          type: string
+          format: uri
+        executionLimits:
+          type: object
+        assignmentMode:
+          type: string
+          const: auto
+        executionStartsAutomatically:
+          type: boolean
+          const: true
+        startDeadlineAt:
+          type: string
+          format: date-time
+    Progress:
+      type: object
+      required:
+      - leaseToken
+      - fenceToken
+      - sequence
+      - stage
+      - progressBps
+      properties:
+        leaseToken:
+          type: string
+        fenceToken:
+          type: integer
+        sequence:
+          type: integer
+        stage:
+          type: string
+        progressBps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        metrics:
+          type: object
+    Checkpoint:
+      type: object
+      required:
+      - leaseToken
+      - fenceToken
+      - sequence
+      - modelVersionId
+      - inputSha256
+      - checkpointSha256
+      - encryptedBlobRef
+      properties:
+        leaseToken:
+          type: string
+        fenceToken:
+          type: integer
+        sequence:
+          type: integer
+        modelVersionId:
+          type: string
+        inputSha256:
+          type: string
+        checkpointSha256:
+          type: string
+        encryptedBlobRef:
+          type: string
+    Completion:
+      type: object
+      required:
+      - leaseToken
+      - fenceToken
+      - resultSha256
+      - outputArtifactId
+      - metrics
+      - signature
+      properties:
+        leaseToken:
+          type: string
+        fenceToken:
+          type: integer
+        resultSha256:
+          type: string
+        outputArtifactId:
+          type: string
+        metrics:
+          type: object
+        signature:
+          type: string
+    PublicId:
+      type: string
+      pattern: ^[a-z][a-z0-9_]{1,31}_[0-9A-HJKMNP-TV-Z]{26}$
+      example: task_01JZ7M4J6QXW7YSF1DQ9Q32N5Z
+    Int64String:
+      type: string
+      pattern: ^-?(0|[1-9][0-9]*)$
+      example: '2500000'
+    PageInfo:
+      type: object
+      additionalProperties: false
+      required:
+      - limit
+      - hasMore
+      properties:
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 200
+        nextCursor:
+          type:
+          - string
+          - 'null'
+        hasMore:
+          type: boolean
+    CommandReceipt:
+      type: object
+      additionalProperties: false
+      required:
+      - operationId
+      - accepted
+      - status
+      - occurredAt
+      properties:
+        operationId:
+          type: string
+          minLength: 1
+        accepted:
+          type: boolean
+        resourceId:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          minLength: 1
+    CreateDeviceChallengeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        challengeId:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - challengeId
+      - nonce
+      - expiresAt
+    RegisterWorkerDeviceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        workerId:
+          type: string
+          minLength: 1
+        deviceId:
+          type: string
+          minLength: 1
+        accessToken:
+          type: string
+          minLength: 1
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - workerId
+      - deviceId
+      - accessToken
+      - expiresAt
+    RefreshWorkerSessionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        workerId:
+          type: string
+          minLength: 1
+        deviceId:
+          type: string
+          minLength: 1
+        accessToken:
+          type: string
+          minLength: 1
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - workerId
+      - deviceId
+      - accessToken
+      - expiresAt
+    SubmitBenchmarkRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - suiteVersion
+      - measuredAt
+      - results
+      - signature
+      properties:
+        suiteVersion:
+          type: string
+        measuredAt:
+          type: string
+          format: date-time
+        results:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - metric
+            - value
+            - unit
+            properties:
+              metric:
+                type: string
+              value:
+                type: number
+              unit:
+                type: string
+        signature:
+          type: string
+          contentEncoding: base64
+    SubmitBenchmarkResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    SendHeartbeatResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    GetNextAssignmentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        assignmentId:
+          type: string
+          minLength: 1
+        attemptId:
+          type: string
+          minLength: 1
+        revisionId:
+          type: string
+          minLength: 1
+        leaseToken:
+          type: string
+          minLength: 1
+        fenceToken:
+          type: integer
+        leaseExpiresAt:
+          type: string
+          format: date-time
+        taskType:
+          type: string
+          minLength: 1
+        modelVersionId:
+          type: string
+          minLength: 1
+        inputManifestUrl:
+          type: string
+          minLength: 1
+        outputUploadUrl:
+          type: string
+          minLength: 1
+        assignmentMode:
+          type: string
+          const: auto
+        executionStartsAutomatically:
+          type: boolean
+          const: true
+        startDeadlineAt:
+          type: string
+          format: date-time
+      required:
+      - assignmentId
+      - attemptId
+      - revisionId
+      - leaseToken
+      - fenceToken
+      - leaseExpiresAt
+      - taskType
+      - modelVersionId
+      - inputManifestUrl
+      - outputUploadUrl
+      - assignmentMode
+      - executionStartsAutomatically
+      - startDeadlineAt
+    RenewAssignmentResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    ProgressAssignmentResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    CheckpointAssignmentResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    CompleteAssignmentResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    FailAssignmentResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    AbandonAssignmentResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    Resource:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    GetResumeDecisionResponse:
+      $ref: '#/components/schemas/Resource'
+    Model:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    GetModelManifestResponse:
+      $ref: '#/components/schemas/Model'
+    ReportModelInstallResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    Worker:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          enum:
+          - registered
+          - attesting
+          - benchmarking
+          - ready
+          - reserved
+          - executing
+          - cooldown
+          - degraded
+          - quarantined
+          - suspended
+          - retired
+        tier:
+          type: string
+          enum:
+          - T1
+          - T2
+          - T3
+          - T4
+        trustScoreBps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        lastHeartbeatAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+    GetWorkerRewardSummaryResponse:
+      $ref: '#/components/schemas/Worker'
+    Reward:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/PublicId'
+        status:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+      - id
+      - status
+      - version
+    CreateRewardClaimResponse:
+      $ref: '#/components/schemas/Reward'
+    GetWorkerPreferencesResponse:
+      $ref: '#/components/schemas/WorkerPreferences'
+    ReplaceWorkerPreferencesRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - expectedVersion
+      - availability
+      - networkPolicy
+      - chargingPolicy
+      - minimumBatteryPercent
+      - schedule
+      properties:
+        availability:
+          type: string
+          enum:
+          - available
+          - unavailable
+        networkPolicy:
+          type: string
+          enum:
+          - wifi_only
+          - unmetered_only
+          - wifi_or_ethernet
+          - any_online
+        chargingPolicy:
+          type: string
+          enum:
+          - required
+          - preferred
+          - not_required
+        minimumBatteryPercent:
+          type: integer
+          minimum: 25
+          maximum: 100
+        schedule:
+          type: object
+          additionalProperties: false
+          required:
+          - mode
+          - timezone
+          properties:
+            mode:
+              type: string
+              enum:
+              - always
+              - charging_window
+              - custom
+            timezone:
+              type: string
+              minLength: 1
+            windows:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                - days
+                - startLocal
+                - endLocal
+                properties:
+                  days:
+                    type: array
+                    minItems: 1
+                    uniqueItems: true
+                    items:
+                      type: string
+                      enum:
+                      - MO
+                      - TU
+                      - WE
+                      - TH
+                      - FR
+                      - SA
+                      - SU
+                  startLocal:
+                    type: string
+                    pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                  endLocal:
+                    type: string
+                    pattern: ^([01]\d|2[0-3]):[0-5]\d$
+        expectedVersion:
+          type: integer
+          minimum: 1
+    ReplaceWorkerPreferencesResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    CreateAssignmentResultUploadIntentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        challengeId:
+          type: string
+          minLength: 1
+        nonce:
+          type: string
+          minLength: 1
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+      - challengeId
+      - nonce
+      - expiresAt
+    ReportAssignmentStartedResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    ReportAssignmentUnavailableResponse:
+      $ref: '#/components/schemas/CommandReceipt'
+    WorkerPreferences:
+      type: object
+      additionalProperties: false
+      required:
+      - version
+      - availability
+      - networkPolicy
+      - chargingPolicy
+      - minimumBatteryPercent
+      - schedule
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        availability:
+          type: string
+          enum:
+          - available
+          - unavailable
+        networkPolicy:
+          type: string
+          enum:
+          - wifi_only
+          - unmetered_only
+          - wifi_or_ethernet
+          - any_online
+        chargingPolicy:
+          type: string
+          enum:
+          - required
+          - preferred
+          - not_required
+        minimumBatteryPercent:
+          type: integer
+          minimum: 25
+          maximum: 100
+        schedule:
+          type: object
+          additionalProperties: false
+          required:
+          - mode
+          - timezone
+          properties:
+            mode:
+              type: string
+              enum:
+              - always
+              - charging_window
+              - custom
+            timezone:
+              type: string
+              minLength: 1
+            windows:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                - days
+                - startLocal
+                - endLocal
+                properties:
+                  days:
+                    type: array
+                    minItems: 1
+                    uniqueItems: true
+                    items:
+                      type: string
+                      enum:
+                      - MO
+                      - TU
+                      - WE
+                      - TH
+                      - FR
+                      - SA
+                      - SU
+                  startLocal:
+                    type: string
+                    pattern: ^([01]\d|2[0-3]):[0-5]\d$
+                  endLocal:
+                    type: string
+                    pattern: ^([01]\d|2[0-3]):[0-5]\d$
+security:
+- DeviceBearer: []

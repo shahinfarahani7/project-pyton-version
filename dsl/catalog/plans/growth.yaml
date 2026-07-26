@@ -1,0 +1,19 @@
+apiVersion: edgemint.io/v1
+kind: SLAPlan
+metadata:
+  name: growth
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - sre
+spec:
+  availabilityBps: 9900
+  latencyClass: standard
+  p95AssignmentSeconds: 90
+  support:
+    channel: ticket
+    responseHours: 24
+  serviceCredits:
+    enabled: false
+    monthlyCapBps: 2000

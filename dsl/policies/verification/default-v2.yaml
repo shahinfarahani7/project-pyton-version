@@ -1,0 +1,196 @@
+apiVersion: edgemint.io/v1
+kind: VerificationPolicy
+metadata:
+  name: default-verification-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - ml
+  - quality
+  - finance
+spec:
+  profiles:
+    document.ocr:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    document.extract:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    image.classify:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    image.detect:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    vision.analyze:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    audio.transcribe:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    text.translate:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    text.generate:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    text.embedding:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+    document.verify:
+      requiredSteps:
+      - schema
+      - artifact_checksum
+      - worker_signature
+      - business_rules
+      confidence:
+        minimumMilli: 820
+        automaticAcceptMilli: 960
+      consensus:
+        requiredFor:
+        - consensus
+        - enterprise
+        minimumWorkers: 3
+        similarityMetric: task_specific
+        minimumSimilarityMilli: 910
+      failureOutcome: retry_then_escalate
+  outcomes:
+  - accepted
+  - accepted_with_warning
+  - retry
+  - escalate
+  - rejected
+  maximumAutomaticRetries: 2
+  humanReviewQueue: restricted_access
+  billingEffects:
+    platformFailure: release_full
+    customerInputFailure: charge_validation_if_configured
+    workerInvalidResult: no_reward
+    validWorkerPlatformFailure: pay_worker
+  evidenceRetentionDays: 365

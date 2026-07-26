@@ -1,0 +1,26 @@
+apiVersion: edgemint.io/v1
+kind: ConsentPolicy
+metadata:
+  name: worker-consent-v2
+  version: 2.1.0
+  status: active
+  owners:
+  - legal
+  - mobile
+spec:
+  requiredConsents:
+  - terms
+  - privacy
+  - resource_use
+  - reward_disclosure
+  resourceControls:
+  - availability
+  - network
+  - charging
+  - battery
+  - schedule
+  renewOnMajorVersion: true
+  activeLeaseBehavior: continue_or_safe_stop_checkpoint_and_reassign_per_policy
+  evidenceRetentionDays: 2555
+  withdrawalStopsNewAssignmentsImmediately: true
+  perTaskConfirmationAllowed: false

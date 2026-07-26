@@ -1,0 +1,38 @@
+{
+  "api": "edgemint-public-api",
+  "operationId": "updateWorkspace",
+  "request": {
+    "method": "PATCH",
+    "path": "/workspaces/{workspaceId}",
+    "pathParameters": {
+      "workspaceId": "wsp_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_updateWorkspace_0001",
+      "Idempotency-Key": "idem_updateWorkspace_0001",
+      "Authorization": "Bearer customer_access_token_redacted",
+      "Content-Type": "application/json",
+      "If-Match": "\"1\""
+    },
+    "body": {
+      "expectedVersion": 1
+    }
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "id": "id_01J00000000000000000000000",
+      "organizationId": "org_01J00000000000000000000000",
+      "name": "Example Name",
+      "environment": "example",
+      "version": 1
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "customer.workspaces:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

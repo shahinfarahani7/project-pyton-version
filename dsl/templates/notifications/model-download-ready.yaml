@@ -1,0 +1,25 @@
+apiVersion: edgemint.io/v1
+kind: NotificationTemplate
+metadata:
+  name: model-download-ready
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - security
+spec:
+  channels:
+  - email
+  - in_app
+  localeFallback: en
+  subjectKey: notification.model-download-ready.subject
+  bodyKey: notification.model-download-ready.body
+  requiredVariables:
+  - recipientName
+  - eventTime
+  - supportReference
+  forbiddenVariables:
+  - rawApiKey
+  - rawPayload
+  - fullWalletAddress
+  classification: internal

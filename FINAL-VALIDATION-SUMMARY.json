@@ -1,0 +1,76 @@
+{
+  "packageVersion": "5.0.0",
+  "validationDate": "2026-07-26",
+  "canonicalStack": {
+    "backend": "Python 3.13.14 / FastAPI 0.140.0",
+    "persistence": "SQLAlchemy 2.0.51 / psycopg 3.3.4",
+    "database": "PostgreSQL 18.4",
+    "productionDatabaseService": "Amazon RDS for PostgreSQL Multi-AZ",
+    "realtimeTransport": "Secure WebSocket"
+  },
+  "repositoryValidation": {
+    "status": "PASS_WITH_ENVIRONMENT_WARNINGS",
+    "pythonCompile": "PASS",
+    "backendTests": {
+      "status": "PASS",
+      "passed": 27,
+      "failed": 0
+    },
+    "dslDocuments": 608,
+    "openApiOperations": 141,
+    "operationContracts": 141,
+    "eventContracts": 186,
+    "semanticVectorLines": 595000,
+    "postgresqlMigrations": 9,
+    "domainTables": 74,
+    "rlsPolicies": 36,
+    "helmServices": 21,
+    "terraformFiles": 12,
+    "workPackages": 27,
+    "executionUnits": 141,
+    "unresolvedDesignBlockers": 0,
+    "activeDotNetArtifacts": 0,
+    "activeSqlServerRuntimeDependencies": 0,
+    "finalAuditRemediations": [
+      "Aligned .python-version, pyproject compatibility metadata, bootstrap enforcement, and canonical Python 3.13.14 runtime pin.",
+      "Removed credentialed database defaults and made missing EDGEMINT_DATABASE_URL fail closed.",
+      "Disabled raw UUID WebSocket bearer tokens unless an explicit local development flag is enabled.",
+      "Rejected unimplemented WebSocket resume requests instead of silently opening a fresh connection.",
+      "Required active workspace membership before a workspace-scoped WebSocket connection may be created.",
+      "Strengthened ledger posting to require at least two distinct accounts and two non-zero posted entries.",
+      "Made PostgreSQL migration application and checksum recording commit atomically.",
+      "Removed stale C# toolchain paths from WP-010 and added Python lock, CI, action, image, and workflow ownership.",
+      "Made migration checksum recording robust when SQL files contain trailing blank lines or comments after the final COMMIT statement.",
+      "Confirmed the production gate fails closed with exit code 2 when required release evidence is absent."
+    ],
+    "productionGateNegativeTest": {
+      "status": "PASS",
+      "scenario": "empty allowed evidence directory",
+      "expectedExitCode": 2,
+      "observedExitCode": 2,
+      "observedBlocker": "MISSING_RELEASE_EVIDENCE"
+    },
+    "fullValidateAll": "PASS"
+  },
+  "observedAuditEnvironment": {
+    "python": "3.13.5",
+    "pytest": "9.0.2",
+    "node": "22.16.0",
+    "npm": "10.9.2",
+    "livePostgreSQLAvailable": false,
+    "psqlAvailable": false,
+    "dockerAvailable": false,
+    "terraformAvailable": false,
+    "helmAvailable": false,
+    "pythonHcl2Available": false
+  },
+  "warnings": [
+    "The pinned Python 3.13.14 runtime was not available; WP-010 must reproduce it.",
+    "PostgreSQL migrations were not applied to a live PostgreSQL 18.4 instance.",
+    "Terraform received structural and semantic source validation; full python-hcl2 parsing was unavailable.",
+    "Container builds, Helm deployment, AWS plan/apply, load, security, backup/restore, DR and production evidence were not executed in this audit environment.",
+    "Most domain services remain implementation scaffolds and must be completed through the dependency-ordered Work Packages."
+  ],
+  "productionCertification": "NOT_CERTIFIED",
+  "nextAction": "Begin with WP-000 and follow cursor/CURSOR-EXECUTION-ORDER.md; never bypass independent verification or external evidence gates."
+}

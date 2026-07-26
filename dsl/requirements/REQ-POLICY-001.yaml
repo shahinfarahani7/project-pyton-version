@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: Requirement
+metadata:
+  name: req-policy-001
+  version: 2.0.0
+  status: active
+  description: Active policies must be immutable, versioned and hashed
+  owners:
+  - architecture
+spec:
+  statement: Active policies must be immutable, versioned and hashed; control variant 1.
+  priority: must
+  acceptance:
+  - automated positive test
+  - automated negative test
+  - audit evidence
+  owner: platform
+  releaseGate: G1

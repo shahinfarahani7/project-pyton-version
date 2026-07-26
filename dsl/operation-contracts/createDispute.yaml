@@ -1,0 +1,56 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-createdispute
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for createDispute.
+spec:
+  operationId: createDispute
+  api: public
+  method: POST
+  path: /disputes
+  summary: Create task billing or quality dispute
+  classification: business_use_case
+  permissions:
+  - customer.disputes:write
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - disputes
+    domainEvents:
+    - task.disputed
+    auditRequired: true
+  responseStatuses:
+  - '201'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-021-open-result-dispute@2.0.0
+  errorCodes:
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-public-api.yaml::POST /disputes
+    request: OpenAPI requestBody/parameters for createDispute
+    response: OpenAPI responses for createDispute
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

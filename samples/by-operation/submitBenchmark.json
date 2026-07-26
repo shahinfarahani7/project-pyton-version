@@ -1,0 +1,45 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "submitBenchmark",
+  "request": {
+    "method": "POST",
+    "path": "/workers/{workerId}/benchmark",
+    "pathParameters": {
+      "workerId": "wrk_01J00000000000000000000000"
+    },
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_submitBenchmark_0001",
+      "Idempotency-Key": "idem_submitBenchmark_0001",
+      "Authorization": "Bearer worker_access_token_redacted",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "suiteVersion": "example",
+      "measuredAt": "2026-07-21T10:00:00Z",
+      "results": [
+        {
+          "metric": "example",
+          "value": 1.0,
+          "unit": "example"
+        }
+      ],
+      "signature": "example"
+    }
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "operationId": "opn_01J00000000000000000000000",
+      "accepted": true,
+      "status": "active",
+      "occurredAt": "2026-07-21T10:00:00Z"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.registration:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

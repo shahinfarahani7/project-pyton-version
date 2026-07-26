@@ -1,0 +1,31 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-051-success
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-051
+  useCaseRef: UseCase/uc-026-download-model@2.0.0
+  mode: success
+  given:
+  - Use case UC-026 policy dependencies are active and their hashes are pinned for the request.
+  - Actor Worker App is authenticated and has permissions worker.models:read.
+  - Referenced tenant/worker resources, versions and input digests match the declared preconditions.
+  when:
+  - Invoke getModelManifest with a schema-valid request.
+  then:
+  - The operation commits with concurrency strategy consistent_authorized_snapshot.
+  - No domain or financial entity is written.
+  - No domain event is emitted.
+  - The response, audit evidence, trace identifiers and financial effects match the UseCase implementation contract.
+  fixtures:
+    actor: Worker App
+    operationIds:
+    - getModelManifest
+    requirements:
+    - REQ-MODEL-001
+  expectedEvents: []
+  expectedErrorCode: null

@@ -1,0 +1,24 @@
+apiVersion: edgemint.io/v1
+kind: EntitlementPolicy
+metadata:
+  name: growth-entitlements-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - product
+  - billing
+spec:
+  plan: growth
+  limits:
+    concurrentLeases: 100
+    monthlyIncludedCreditMicros: 100000000000
+    logRetentionDays: 90
+    apiRequestsPerMinute: 1000
+  features:
+    rbac: true
+    sso: false
+    dedicatedPool: false
+    customKeys: false
+    humanReview: false
+  priceMultiplierBps: 8500
+  hardLimitBehavior: reject_with_upgrade_required

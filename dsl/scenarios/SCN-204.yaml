@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-204-worker-lifecycle-attesting-to-benchmarking
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-204
+  stateMachineRef: StateMachine/worker-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is attesting
+  - expected version matches
+  when:
+  - event requests attesting -> benchmarking
+  then:
+  - state becomes benchmarking
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: attesting
+    to: benchmarking
+  expectedEvents:
+  - worker-lifecycle.attesting_to_benchmarking
+  expectedErrorCode: null

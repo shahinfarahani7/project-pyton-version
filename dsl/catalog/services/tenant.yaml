@@ -1,0 +1,18 @@
+apiVersion: edgemint.io/v1
+kind: ServiceDefinition
+metadata:
+  name: tenant
+  version: 2.0.0
+  status: active
+  owners:
+  - platform
+spec:
+  service: tenant
+  ownerTeam: platform
+  dataOwnership:
+  - tenant
+  synchronousDependencies: []
+  asynchronousEventsProduced: []
+  sloRef: SLOPolicy/platform-slo-v2@2.0.0
+  deploymentClass: stateless
+  piiAccess: metadata_only

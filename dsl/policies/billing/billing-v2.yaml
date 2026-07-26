@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: BillingPolicy
+metadata:
+  name: billing-v2
+  version: 2.0.0
+  status: active
+  owners:
+  - finance
+  - billing
+spec:
+  currency: EUR
+  moneyUnit: micro
+  reservation:
+    requiredBeforeQueue: true
+    expiresWithQuote: true
+    renewalRequiresRequote: true
+  finalization:
+    trigger: verification_terminal
+    invariant: reservedMicros = chargedMicros + releasedMicros
+    idempotencyScope: revision+verificationDecision
+  tax:
+    adapterRequired: true
+    unknownTaxAction: block_invoice_finalization
+  invoice:
+    aggregateMicrosThenRoundToCurrencyMinor: true
+    roundingMode: half_up
+  failureMatrixRef: docs/01-business/advanced/billing-failure-matrix.md

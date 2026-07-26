@@ -1,0 +1,23 @@
+{
+  "specversion": "1.0",
+  "id": "event_2f91ecb451188c6ae1e200c960",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.model-download-lifecycle.verifying_to_installed.v1",
+  "subject": "modeldownload_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_2f91ecb451188c6ae1e200c960",
+  "causationId": "cmd_2f91ecb451188c6ae1e200c960",
+  "partitionKey": "modeldownload_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "modeldownloadId": "modeldownload_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "fromStatus": "verifying",
+    "toStatus": "installed",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}

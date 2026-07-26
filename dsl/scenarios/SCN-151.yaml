@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-151-attempt-lifecycle-matching-to-expired
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-151
+  stateMachineRef: StateMachine/attempt-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is matching
+  - expected version matches
+  when:
+  - event requests matching -> expired
+  then:
+  - state becomes expired
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: matching
+    to: expired
+  expectedEvents:
+  - attempt-lifecycle.matching_to_expired
+  expectedErrorCode: null

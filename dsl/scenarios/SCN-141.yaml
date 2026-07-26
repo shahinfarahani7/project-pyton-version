@@ -1,0 +1,27 @@
+apiVersion: edgemint.io/v1
+kind: Scenario
+metadata:
+  name: scn-141-attempt-lifecycle-leased-to-running
+  version: 2.0.0
+  status: active
+  owners:
+  - qa
+spec:
+  id: SCN-141
+  stateMachineRef: StateMachine/attempt-lifecycle@2.0.0
+  mode: transition
+  given:
+  - current state is leased
+  - expected version matches
+  when:
+  - event requests leased -> running
+  then:
+  - state becomes running
+  - version increments once
+  - audit event is emitted
+  fixtures:
+    from: leased
+    to: running
+  expectedEvents:
+  - attempt-lifecycle.leased_to_running
+  expectedErrorCode: null

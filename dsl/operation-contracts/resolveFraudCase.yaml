@@ -1,0 +1,58 @@
+apiVersion: edgemint.io/v1
+kind: OperationContract
+metadata:
+  name: operation-resolvefraudcase
+  version: 2.1.0
+  status: active
+  owners:
+  - platform
+  description: Normative implementation contract for resolveFraudCase.
+spec:
+  operationId: resolveFraudCase
+  api: operations
+  method: POST
+  path: /fraud-cases/{id}:resolve
+  summary: Resolve fraud case with appeal decision
+  classification: business_use_case
+  permissions:
+  - ops.fraud:resolve
+  idempotency:
+    required: true
+    scope: operationId + principalId + tenantOrWorkerScope + Idempotency-Key + canonicalRequestSha256
+  tenantBoundary: organization/workspace for customer API; attested worker/device for worker API; MFA operator or mTLS service
+    identity for operations API
+  transaction:
+    mode: command
+    isolation: read_committed_with_targeted_row_locks
+    writes:
+    - fraud_cases
+    domainEvents:
+    - fraud.case.resolved
+    auditRequired: true
+  responseStatuses:
+  - '202'
+  - '400'
+  - '401'
+  - '403'
+  - '404'
+  - '409'
+  - '412'
+  - '422'
+  - '429'
+  - '500'
+  - '503'
+  useCaseRefs:
+  - UseCase/uc-043-review-worker-appeal@2.0.0
+  errorCodes:
+  - APPEAL_EVIDENCE_INCOMPLETE
+  - AUTH_INVALID_CREDENTIAL
+  - AUTH_SCOPE_REQUIRED
+  - FRAUD_CASE_NOT_RESOLVABLE
+  - IDEMPOTENCY_CONFLICT
+  - INPUT_SCHEMA_INVALID
+  - TENANT_RESOURCE_NOT_FOUND
+  contractSources:
+    openapi: contracts/openapi/edgemint-operations-api.yaml::POST /fraud-cases/{id}:resolve
+    request: OpenAPI requestBody/parameters for resolveFraudCase
+    response: OpenAPI responses for resolveFraudCase
+    errors: dsl/catalog/errors/error-catalog-v2.yaml

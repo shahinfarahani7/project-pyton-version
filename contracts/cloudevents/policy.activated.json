@@ -1,0 +1,22 @@
+{
+  "specversion": "1.0",
+  "id": "event_c80b55dc44891e30258859b92b",
+  "source": "urn:edgemint:service:example",
+  "type": "io.edgemint.policy.activated.v1",
+  "subject": "policy_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "time": "2026-07-21T08:00:00.000Z",
+  "datacontenttype": "application/json",
+  "tenantId": null,
+  "correlationId": "corr_c80b55dc44891e30258859b92b",
+  "causationId": "cmd_c80b55dc44891e30258859b92b",
+  "partitionKey": "policy_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+  "schemaVersion": 1,
+  "data": {
+    "policyId": "policy_01JZ7M4J6QXW7YSF1DQ9Q32N5Z",
+    "aggregateVersion": 1,
+    "occurredAt": "2026-07-21T08:00:00.000Z",
+    "action": "activated",
+    "reasonCode": null,
+    "actorType": "service"
+  }
+}
