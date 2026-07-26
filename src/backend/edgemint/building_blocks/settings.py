@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     service_name: str = "unknown"
     contract_version: str = "5.0.0"
     jwt_issuer: str | None = None
+    jwt_signing_secret: str | None = None
     jwt_audience: str = "edgemint"
     allow_insecure_development_tokens: bool = False
     websocket_heartbeat_seconds: int = 20
