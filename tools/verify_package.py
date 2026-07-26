@@ -11,6 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CHECKSUMS = ROOT / "CHECKSUMS.sha256"
 MANIFEST = ROOT / "PACKAGE-MANIFEST.json"
+EXCLUDED_PATH_PREFIXES = (".git/", "__pycache__/", ".pytest_cache/")
+
+
+def is_distributable(relative: str) -> bool:
+    if relative == ".env":
+        return False
+    return not any(relative.startswith(prefix) for prefix in EXCLUDED_PATH_PREFIXES)
 
 
 def sha256_file(path: Path) -> str:
@@ -52,7 +59,11 @@ def main() -> int:
         except ValueError: errors.append(f"checksum path escapes package:{relative}"); continue
         if not target.is_file() or target.is_symlink(): errors.append(f"missing or symlink checksum target:{relative}"); continue
         if sha256_file(target)!=digest: errors.append(f"checksum mismatch:{relative}")
-    actual={p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*") if p.is_file() and p!=CHECKSUMS}
+    actual={
+        p.relative_to(ROOT).as_posix()
+        for p in ROOT.rglob("*")
+        if p.is_file() and p != CHECKSUMS and is_distributable(p.relative_to(ROOT).as_posix())
+    }
     if set(listed)!=actual:
         for relative in sorted(actual-set(listed)): errors.append(f"unlisted package file:{relative}")
         for relative in sorted(set(listed)-actual): errors.append(f"checksum entry has no file:{relative}")

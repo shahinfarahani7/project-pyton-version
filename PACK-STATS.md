@@ -2,8 +2,8 @@
 
 - Version: `5.0.0`
 - Language: English only
-- Non-integrity content files: `3041`
-- Text lines: `711837`
+- Non-integrity content files: `1509`
+- Text lines: `711023`
 - Semantic vector lines: `595000`
 - OpenAPI operations and operation samples: `141`
 - Typed CloudEvent contracts and examples: `186`
@@ -21,13 +21,12 @@
 - `.dart`: 2
 - `.example`: 1
 - `.html`: 2
-- `.json`: 422
+- `.json`: 426
 - `.jsonl`: 9
 - `.lock`: 2
 - `.md`: 220
 - `.proto`: 10
 - `.py`: 122
-- `.sample`: 14
 - `.sh`: 4
 - `.sql`: 9
 - `.tag`: 1
@@ -38,4 +37,4 @@
 - `.txt`: 9
 - `.yaml`: 630
 - `.yml`: 2
-- `<none>`: 1555
+- `<none>`: 33

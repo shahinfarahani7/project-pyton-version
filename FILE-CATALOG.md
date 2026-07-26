@@ -7,10 +7,9 @@ The catalog excludes only self-referential integrity files while checksums cover
 | Area | Files |
 |---|---:|
 | `.cursorrules` | 1 |
-| `.env` | 1 |
 | `.env.example` | 1 |
-| `.git` | 1536 |
 | `.github` | 3 |
+| `.gitignore` | 1 |
 | `.npmrc` | 1 |
 | `.nvmrc` | 1 |
 | `.python-version` | 1 |
@@ -35,7 +34,7 @@ The catalog excludes only self-referential integrity files while checksums cover
 | `deploy` | 25 |
 | `docs` | 188 |
 | `dsl` | 647 |
-| `evidence` | 7 |
+| `evidence` | 11 |
 | `generated` | 23 |
 | `package-lock.json` | 1 |
 | `package.json` | 1 |

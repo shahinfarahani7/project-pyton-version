@@ -1,12 +1,11 @@
 {
   "version": "1.0.0",
-  "updatedAt": null,
+  "updatedAt": "2026-07-26T10:30:00+03:30",
   "active": [],
-  "completed": [],
-  "blocked": [],
-  "nextEligible": [
-    "WP-000"
-  ],
+  "completed": ["WP-000", "WP-010", "WP-020"],
+  "blocked": ["WP-030"],
+  "nextEligible": ["WP-030", "WP-040"],
   "packVersion": "5.0.0",
-  "workPackageCount": 27
+  "workPackageCount": 27,
+  "notes": "WP-030 partial: Docker Desktop required for live PostgreSQL validation. WP-040 blocked until WP-030 completes."
 }

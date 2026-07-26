@@ -1,0 +1,30 @@
+{
+  "workPackageId": "WP-020",
+  "status": "completed",
+  "completedAt": "2026-07-26T10:25:00+03:30",
+  "commitSha": "7d5440299e52ca2fc284170bd1d84b82b65f4ccc",
+  "verificationCommands": [
+    {
+      "command": "python tools/generate_contracts.py",
+      "exitCode": 0
+    },
+    {
+      "command": "python tools/check_generated_drift.py",
+      "exitCode": 0
+    },
+    {
+      "command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests",
+      "exitCode": 0,
+      "passed": 27
+    }
+  ],
+  "generatedOutputs": [
+    "generated/protobuf",
+    "generated/python",
+    "generated/dart",
+    "generated/typescript",
+    "tools/check_generated_drift.sh",
+    "tools/generate_contracts.py"
+  ],
+  "notes": "Protobuf generation uses grpcio-tools fallback when buf remote plugins are unavailable. Web portal npm verify pending Node 24."
+}

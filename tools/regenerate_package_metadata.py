@@ -13,6 +13,15 @@ CHECKSUMS = ROOT / "CHECKSUMS.sha256"
 MANIFEST = ROOT / "PACKAGE-MANIFEST.json"
 EXCLUDED_FROM_MANIFEST = {"CHECKSUMS.sha256", "PACKAGE-MANIFEST.json"}
 EXCLUDED_FROM_CHECKSUMS = {"CHECKSUMS.sha256"}
+EXCLUDED_PATH_PREFIXES = (".git/", "__pycache__/", ".pytest_cache/")
+
+
+def is_distributable(relative: str) -> bool:
+    if relative in EXCLUDED_FROM_CHECKSUMS:
+        return False
+    if relative == ".env":
+        return False
+    return not any(relative.startswith(prefix) for prefix in EXCLUDED_PATH_PREFIXES)
 
 
 def sha256_file(path: Path) -> str:
@@ -33,7 +42,13 @@ def line_count(path: Path) -> int | None:
 
 def package_files(excluded: set[str]) -> list[Path]:
     return sorted(
-        (path for path in ROOT.rglob("*") if path.is_file() and path.relative_to(ROOT).as_posix() not in excluded),
+        (
+            path
+            for path in ROOT.rglob("*")
+            if path.is_file()
+            and is_distributable(path.relative_to(ROOT).as_posix())
+            and path.relative_to(ROOT).as_posix() not in excluded
+        ),
         key=lambda path: path.relative_to(ROOT).as_posix(),
     )
 
