@@ -1,0 +1,22 @@
+{
+  "workPackageId": "WP-100",
+  "status": "completed",
+  "completedAt": "2026-07-26T11:30:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "python tools/verify_vectors.py", "exitCode": 0, "errors": 0, "routingVectors": 100000, "totalVectors": 595000},
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 89, "skipped": 1},
+    {"command": "python tests/e2e/router.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/routing src/backend/tests/routing", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/routing/",
+    "src/backend/edgemint/services/router.py",
+    "src/backend/tests/routing/",
+    "tests/e2e/router.py",
+    "tests/oracles/vector_oracles.py",
+    "tools/verify_vectors.py",
+    "dsl/policies/routing/smart-router-v2.yaml"
+  ],
+  "notes": "Auto-assignment router with policy-driven eligibility filtering, deterministic weighted scoring (oracle-aligned), queue fairness ranking, HMAC tie-breaker, monotonic fence validation, server-side lease acquire/renew via SQL functions, explainable decisions, and cloud fallback. assignmentMode=server_auto_lease; perTaskWorkerConfirmation=false; deliveryAckMeaning=transport_receipt_only. All 100k routing vectors pass; live PostgreSQL lease tests skip without EDGEMINT_DATABASE_URL."
+}

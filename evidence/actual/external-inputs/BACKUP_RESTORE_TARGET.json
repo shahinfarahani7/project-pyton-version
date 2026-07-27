@@ -1,0 +1,14 @@
+{
+  "name": "BACKUP_RESTORE_TARGET",
+  "value": {
+    "engine": "postgresql-16",
+    "clusterId": "edgemint-staging-dr-restore",
+    "region": "us-west-2",
+    "isolationVpc": "vpc-staging-dr-restore",
+    "restoreMethod": "pitr",
+    "restorePoint": "2026-07-25T01:57:00Z"
+  },
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-25T02:05:00Z",
+  "verifiedBy": "sre-oncall-fixture"
+}

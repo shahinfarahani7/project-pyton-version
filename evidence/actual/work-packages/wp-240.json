@@ -1,0 +1,33 @@
+{
+  "workPackageId": "WP-240",
+  "status": "completed",
+  "completedAt": "2026-07-27T09:00:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "python tools/validate_legal_finance_evidence.py evidence/actual", "exitCode": 0, "countriesApproved": 10, "taskTypesApproved": 10, "approvalsSigned": 4},
+    {"command": "python tools/validate_release_inputs.py", "exitCode": 0, "releaseInputs": 41}
+  ],
+  "implementedOutputs": [
+    "tools/validate_legal_finance_evidence.py",
+    "docs/09-legal/customer-terms.md",
+    "docs/09-legal/worker-terms.md",
+    "docs/09-legal/privacy-notice.md",
+    "docs/09-legal/dpa-subprocessors.md",
+    "docs/09-legal/ga1-approval-register.md",
+    "docs/09-legal/model-notices/",
+    "evidence/actual/legal-finance/",
+    "production/RELEASE-INPUTS.yaml",
+    "dsl/catalog/models/paddleocr-mobile.yaml",
+    "dsl/catalog/models/gemma-3n-e2b-int4.yaml",
+    "dsl/catalog/models/whisper-base-int8.yaml",
+    "dsl/policies/pricing/public-eur-2026q3-v2.yaml",
+    "dsl/policies/rewards/worker-reward-v2.yaml"
+  ],
+  "externalInputs": [
+    "RELEASE_APPROVAL_MANIFEST",
+    "LEGAL_PRIVACY_APPROVAL",
+    "FINANCE_TAX_PAYOUT_APPROVAL",
+    "MODEL_LICENSE_APPROVAL"
+  ],
+  "notes": "GA1 legal/finance bundle maps 10 payout countries, 10 task types, 4 data classes, 3 GA1 models, and 5 payment flows to signed approvals. Product surface audit confirms no guaranteed earnings, hidden computation, token value, or unsupported geography claims. bash tools/validate_all.sh not executed on Windows host."
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "customer",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/syft",
+  "digest": "sha256:889214f4f4f748d984579de10efcf9c1c1b22766cc7078f66974e6782dce473b",
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "type": "container",
+      "name": "edgemint/customer"
+    }
+  ]
+}

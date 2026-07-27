@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "journey": "paid-ocr",
+  "customerChargeCompleted": true,
+  "chargeAmountMicros": 2500,
+  "currency": "EUR",
+  "taskType": "document.ocr",
+  "taskVerified": true,
+  "ledgerPosted": true,
+  "providerReconciliationPassed": true,
+  "completedAt": "2026-07-27T07:45:00Z"
+}

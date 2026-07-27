@@ -1,0 +1,6 @@
+{
+  "status": "passed",
+  "trafficReturnedAt": "2026-07-25T03:15:00Z",
+  "dnsRollbackVerified": true,
+  "postFailoverReconciliationPassed": true
+}

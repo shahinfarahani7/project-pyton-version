@@ -1,0 +1,13 @@
+{
+  "name": "DR_DRILL_WINDOW",
+  "value": {
+    "start": "2026-07-25T02:00:00Z",
+    "checkpoint": "2026-07-25T02:42:00Z",
+    "end": "2026-07-25T03:15:00Z",
+    "timezone": "UTC",
+    "quarter": "2026-Q3"
+  },
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-25T03:20:00Z",
+  "verifiedBy": "sre-oncall-fixture"
+}

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "workPackageId": "WP-240",
+  "completedAt": "2026-07-27T09:00:00+03:30",
+  "ga1ScopeVersion": "5.0.0",
+  "approvalsCurrent": true,
+  "externalInputs": [
+    "RELEASE_APPROVAL_MANIFEST",
+    "LEGAL_PRIVACY_APPROVAL",
+    "FINANCE_TAX_PAYOUT_APPROVAL",
+    "MODEL_LICENSE_APPROVAL"
+  ]
+}

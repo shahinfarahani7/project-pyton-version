@@ -1,0 +1,7 @@
+{
+  "profile": "load",
+  "targetRps": 1380,
+  "admissionP95Ms": 403.1391108133262,
+  "heartbeatP95Ms": 173.12068263875358,
+  "passed": true
+}

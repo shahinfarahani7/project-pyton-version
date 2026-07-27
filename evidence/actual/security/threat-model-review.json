@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "reviewType": "threat-model-review",
+  "reviewedAt": "2026-07-12T14:00:00Z",
+  "reviewer": "security-architecture@edgemint.example",
+  "documentRef": "docs/07-security/threat-model.md",
+  "controlsMapped": 50,
+  "gapsIdentified": 0,
+  "notes": "STRIDE review across tenant isolation, worker attestation, payout replay, and operator elevation completed with no open gaps."
+}

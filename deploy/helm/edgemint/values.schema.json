@@ -179,7 +179,8 @@
         "webhook",
         "model-registry",
         "notification",
-        "operations"
+        "operations",
+        "event-relay"
       ],
       "properties": {
         "api-gateway": {
@@ -981,6 +982,48 @@
           }
         },
         "operations": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "replicas",
+            "image",
+            "resources",
+            "autoscaling"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "replicas": {
+              "type": "integer",
+              "minimum": 3
+            },
+            "image": {
+              "type": "object",
+              "required": [
+                "repository",
+                "digest"
+              ],
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-f0-9]{64}$"
+                }
+              }
+            },
+            "resources": {
+              "type": "object"
+            },
+            "autoscaling": {
+              "type": "object"
+            }
+          }
+        },
+        "event-relay": {
           "type": "object",
           "required": [
             "enabled",

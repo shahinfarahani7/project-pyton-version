@@ -4,7 +4,7 @@ import secrets
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import Header, HTTPException, Request, Response
+from fastapi import Header, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
 from edgemint.building_blocks.app import create_service_app
@@ -139,3 +139,97 @@ async def issue_delegated_token(request: Request) -> DelegatedTokenResponse:
 async def auth_health() -> dict[str, str]:
     bff = "enabled" if settings.environment in {"development", "test"} else "oidc-required"
     return {"status": "ready", "bff": bff}
+
+
+@app.websocket("/events/v1")
+async def browser_events_proxy(websocket: WebSocket) -> None:
+    """Public browser WebSocket edge. Validates BFF session and rejects direct credential frames."""
+    origin = websocket.headers.get("origin")
+    if settings.environment not in {"development", "test"} and not origin:
+        await websocket.close(code=1008, reason="ORIGIN_REQUIRED")
+        return
+
+    session_token = websocket.cookies.get(BrowserSessionStore.SESSION_COOKIE)
+    if not session_token and settings.environment in {"development", "test"}:
+        authorization = websocket.headers.get("authorization", "")
+        if authorization.startswith("Bearer "):
+            await websocket.accept(subprotocol="edgemint.events.v1")
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "requestId": public_id("req"),
+                    "code": "DELEGATED_PROXY_NOT_CONFIGURED",
+                    "message": "Configure relay upstream for development bearer proxying",
+                    "retryable": False,
+                }
+            )
+            await websocket.close(code=1013, reason="RELAY_UPSTREAM_NOT_CONFIGURED")
+            return
+
+    if not session_token:
+        await websocket.close(code=1008, reason="SESSION_REQUIRED")
+        return
+
+    async with transaction() as connection:
+        record = await session_store.load_by_token(connection, session_token=session_token)
+        if record is None or not record.is_active():
+            await websocket.close(code=1008, reason="SESSION_REVOKED")
+            return
+        auth = AuthorizationContext(
+            principal=PrincipalContext(
+                principal_id=record.principal_id,
+                subject=str(record.principal_id),
+                kind=PrincipalKind.USER,
+                permissions=frozenset({"customer.events:read"}),
+            ),
+            workspace_id=record.workspace_id,
+            authorization_generation=record.authorization_generation,
+            session_id=record.session_id,
+        )
+        delegated = token_service.issue(auth=auth, audience="edgemint-event-relay")
+
+    offered = websocket.headers.get("sec-websocket-protocol", "")
+    if "edgemint.events.v1" not in {item.strip() for item in offered.split(",")}:
+        await websocket.close(code=1002, reason="SUBPROTOCOL_REQUIRED")
+        return
+
+    await websocket.accept(subprotocol="edgemint.events.v1")
+    try:
+        while True:
+            frame = await websocket.receive_json()
+            if frame.get("type") == "hello" and "authorization" in frame:
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "requestId": frame.get("requestId", public_id("req")),
+                        "code": "CREDENTIALS_IN_FRAME_FORBIDDEN",
+                        "message": "Credentials must not appear in WebSocket frames",
+                        "retryable": False,
+                    }
+                )
+                continue
+            if frame.get("type") == "hello":
+                frame["_delegatedTokenIssued"] = True
+                frame["_tokenAudience"] = "edgemint-event-relay"
+                await websocket.send_json(
+                    {
+                        "type": "welcome",
+                        "requestId": frame.get("requestId", public_id("req")),
+                        "connectionId": "bff-proxy",
+                        "resumeToken": delegated[:16],
+                        "heartbeatSeconds": settings.websocket_heartbeat_seconds,
+                        "maxInFlight": settings.websocket_max_in_flight,
+                    }
+                )
+                continue
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "requestId": frame.get("requestId", public_id("req")),
+                    "code": "BFF_PROXY_FRAME_BUFFERED",
+                    "message": "Full relay proxy requires upstream websocket wiring",
+                    "retryable": True,
+                }
+            )
+    except WebSocketDisconnect:
+        return

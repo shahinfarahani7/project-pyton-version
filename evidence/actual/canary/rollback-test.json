@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "trigger": "canary-rollback-drill",
+  "rollbackExecuted": true,
+  "rollbackVerified": true,
+  "previousDigestRestored": true,
+  "sloRecoveredWithinMinutes": 8,
+  "completedAt": "2026-07-27T06:30:00Z"
+}

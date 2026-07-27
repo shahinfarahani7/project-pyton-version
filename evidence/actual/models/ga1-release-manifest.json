@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "GA1_MODEL_RELEASE_MANIFEST",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T00:13:03Z",
+  "producer": "ml/release",
+  "models": [
+    "paddleocr-mobile",
+    "gemma-3n-e2b-int4",
+    "whisper-base-int8"
+  ],
+  "licenseApprovalRef": "evidence/actual/legal-finance/model-licenses.json"
+}

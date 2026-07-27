@@ -3,12 +3,10 @@ kind: RewardPolicy
 metadata:
   name: worker-reward-v2
   version: 2.0.0
-  status: evaluation
+  status: active
   owners:
   - finance
   - worker-economy
-  labels:
-    productionActivation: requires-finance-approval
 spec:
   unit: EUR_REWARD_MICROS
   calculationVersion: reward-v2

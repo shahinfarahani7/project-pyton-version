@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "worker-gateway",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/syft",
+  "digest": "sha256:cca7c9fd1e4bdaba971865a70d6a2e82b417faf1a54bcff0dfd2f675705736d0",
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "type": "container",
+      "name": "edgemint/worker-gateway"
+    }
+  ]
+}

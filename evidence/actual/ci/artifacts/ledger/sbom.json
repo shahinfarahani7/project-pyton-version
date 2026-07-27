@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "ledger",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/syft",
+  "digest": "sha256:efa6bbf057d84a8149720b554a8924c6560a15332fa167423f616c2803ff8dc3",
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "type": "container",
+      "name": "edgemint/ledger"
+    }
+  ]
+}

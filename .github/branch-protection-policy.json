@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "protectedBranches": [
+    {
+      "pattern": "main",
+      "requiredStatusChecks": [
+        "contracts",
+        "backend",
+        "web",
+        "worker",
+        "ci-policy",
+        "integration",
+        "supply-chain"
+      ],
+      "requireCodeOwnerReviews": true,
+      "requiredApprovingReviewCount": 2,
+      "restrictSelfApproval": true,
+      "dismissStaleReviews": true,
+      "requireSignedCommits": true,
+      "allowForcePushes": false,
+      "allowDeletions": false
+    }
+  ],
+  "productionPromotion": {
+    "requiredWorkflows": [
+      "production-release-gate",
+      "gitops-promote"
+    ],
+    "requiredEnvironment": "production",
+    "forbiddenSelfApproval": true,
+    "requireDigestPinnedArtifacts": true,
+    "requireSignedEvidenceManifest": true
+  },
+  "rollbackPolicy": {
+    "usesPreviousSignedDigest": true,
+    "requiresCompatibleSchema": true,
+    "manifestPath": "deploy/gitops/rollback/previous-release.json"
+  }
+}

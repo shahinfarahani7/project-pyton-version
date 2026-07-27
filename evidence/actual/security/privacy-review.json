@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "reviewType": "privacy-review",
+  "reviewedAt": "2026-07-17T08:00:00Z",
+  "privacyTool": "tests/security/privacy_deletion.py",
+  "dsarWorkflowVerified": true,
+  "retentionDeletionVerified": true,
+  "financialAuditPreservationVerified": true,
+  "piiMinimizationControls": "passed",
+  "notes": "Privacy deletion oracle preserves ledger and payout audit records while removing customer payloads."
+}

@@ -1,0 +1,17 @@
+{
+  "status": "approved",
+  "insurance": {
+    "cyberPolicyId": "CYB-2026-EDGE-001",
+    "carrier": "Example Cyber Mutual",
+    "coverageLimitEur": 5000000,
+    "expiresAt": "2027-06-30T23:59:59Z",
+    "approvedBy": "finance-ops@edgemint.example"
+  },
+  "incidentObligations": {
+    "customerNotificationHours": 72,
+    "regulatorNotificationWhereRequired": true,
+    "dpoInvolvementRequired": true,
+    "statusPageUpdateRequired": true,
+    "documentPath": "docs/07-security/PRODUCTION-SECURITY-BASELINE.md"
+  }
+}

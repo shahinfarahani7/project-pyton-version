@@ -1,0 +1,24 @@
+{
+  "workPackageId": "WP-130",
+  "status": "completed",
+  "completedAt": "2026-07-26T11:55:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 109, "skipped": 1},
+    {"command": "python tests/e2e/paid_task_reconciliation.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/billing src/backend/edgemint/ledger src/backend/edgemint/rewards src/backend/tests/billing src/backend/edgemint/services/billing.py src/backend/edgemint/services/ledger.py src/backend/edgemint/services/reward.py", "exitCode": 0},
+    {"command": "python tools/verify_vectors.py", "exitCode": 0, "lines": 595000, "errors": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/billing/",
+    "src/backend/edgemint/ledger/",
+    "src/backend/edgemint/rewards/",
+    "src/backend/edgemint/services/billing.py",
+    "src/backend/edgemint/services/ledger.py",
+    "src/backend/edgemint/services/reward.py",
+    "src/backend/tests/billing/",
+    "tests/e2e/paid_task_reconciliation.py",
+    "tests/oracles/vector_oracles.py"
+  ],
+  "notes": "Usage metering with reservation capture/release, paid-task finalization producing invoice lines and balanced double-entry ledger postings, worker reward accrual with hold/reversal/expiry, daily reconciliation with captured=active+charged+released conservation, and financial close reporting. Production reward and ledger engines delegate from vector oracles; 595k vectors verified with zero errors."
+}

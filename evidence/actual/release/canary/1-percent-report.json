@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "1-percent",
+  "status": "passed",
+  "verified": true,
+  "generatedAt": "2026-07-27T03:08:39Z",
+  "producer": "deploy/canary",
+  "rollbackReady": true,
+  "automaticRollbackTriggered": false
+}

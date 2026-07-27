@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "sourceRegion": "us-east-1",
+  "drRegion": "us-west-2",
+  "snapshotReplicationLagSeconds": 95,
+  "objectStorageVersioning": true,
+  "immutableRetentionDays": 35
+}

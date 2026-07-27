@@ -1,0 +1,134 @@
+{
+  "findings": [
+    {
+      "id": "SEC-F-001",
+      "owner": "platform-security@edgemint.example",
+      "severity": "medium",
+      "status": "remediated",
+      "evidence": "RS-2026-EDGE-0426 section 4.2: workspace header confusion on deprecated route",
+      "remediation": "Removed deprecated route; enforced workspace claim binding on all tenant routes",
+      "retest": {
+        "testedAt": "2026-07-23T10:00:00Z",
+        "tester": "RedShield Assurance LLC",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-002",
+      "owner": "api-platform@edgemint.example",
+      "severity": "medium",
+      "status": "remediated",
+      "evidence": "RS-2026-EDGE-0426 section 5.1: verbose validation error on batch upload",
+      "remediation": "Normalized client-facing errors; detailed diagnostics restricted to internal trace IDs",
+      "retest": {
+        "testedAt": "2026-07-23T11:30:00Z",
+        "tester": "RedShield Assurance LLC",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-003",
+      "owner": "cloud-ops@edgemint.example",
+      "severity": "high",
+      "status": "risk_accepted",
+      "evidence": "RS-2026-EDGE-0426 section 7.4: staging break-glass session without hardware MFA in DR mirror",
+      "remediation": "Hardware MFA rollout scheduled for Q4 2026 in staging DR account",
+      "retest": {
+        "testedAt": "2026-07-24T14:00:00Z",
+        "tester": "RedShield Assurance LLC",
+        "passed": false,
+        "notes": "Compensating controls verified; full remediation deferred with approved exception"
+      },
+      "riskAcceptance": {
+        "approved": true,
+        "exceptionId": "SEC-EX-2026-004",
+        "approvedBy": "ciso@edgemint.example",
+        "approvedAt": "2026-07-20T09:00:00Z",
+        "expiresAt": "2026-12-31T23:59:59Z",
+        "compensatingControls": [
+          "dual-approval break-glass",
+          "15-minute session TTL",
+          "immutable audit export to SIEM"
+        ]
+      }
+    },
+    {
+      "id": "SEC-F-004",
+      "owner": "mobile-platform@edgemint.example",
+      "severity": "medium",
+      "status": "remediated",
+      "evidence": "Mobile RE test M-12: debuggable build flag present in internal QA artifact",
+      "remediation": "Release pipeline now rejects debuggable worker builds; QA channel separated",
+      "retest": {
+        "testedAt": "2026-07-23T09:00:00Z",
+        "tester": "RedShield Assurance LLC",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-005",
+      "owner": "worker-trust@edgemint.example",
+      "severity": "low",
+      "status": "remediated",
+      "evidence": "Worker API W-03: clock skew tolerance wider than documented in runbook",
+      "remediation": "Aligned lease validation window with documented 30s skew policy",
+      "retest": {
+        "testedAt": "2026-07-22T16:00:00Z",
+        "tester": "RedShield Assurance LLC",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-006",
+      "owner": "supply-chain@edgemint.example",
+      "severity": "low",
+      "status": "remediated",
+      "evidence": "CI scan SC-07: one medium CVE in dev-only dependency with no runtime path",
+      "remediation": "Pinned upgraded dependency; documented dev-only scope in SBOM exception note",
+      "retest": {
+        "testedAt": "2026-07-22T17:00:00Z",
+        "tester": "platform-ci-fixture",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-007",
+      "owner": "privacy@edgemint.example",
+      "severity": "low",
+      "status": "remediated",
+      "evidence": "Privacy review P-02: DSAR export missing machine-readable schema version field",
+      "remediation": "Added schemaVersion to DSAR export payload",
+      "retest": {
+        "testedAt": "2026-07-23T08:00:00Z",
+        "tester": "privacy-oracle",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-008",
+      "owner": "crypto@edgemint.example",
+      "severity": "low",
+      "status": "remediated",
+      "evidence": "Crypto review C-01: legacy HMAC helper referenced in deprecated internal tool",
+      "remediation": "Removed deprecated helper; enforced Ed25519 signing path in CI policy",
+      "retest": {
+        "testedAt": "2026-07-22T18:00:00Z",
+        "tester": "security-architecture@edgemint.example",
+        "passed": true
+      }
+    },
+    {
+      "id": "SEC-F-009",
+      "owner": "api-platform@edgemint.example",
+      "severity": "low",
+      "status": "remediated",
+      "evidence": "Auth matrix A-19: missing explicit deny test for revoked API key on one webhook route",
+      "remediation": "Added negative contract test for revoked key on webhook ingestion route",
+      "retest": {
+        "testedAt": "2026-07-23T12:00:00Z",
+        "tester": "tools/test_openapi_authorization_coverage.py",
+        "passed": true
+      }
+    }
+  ]
+}

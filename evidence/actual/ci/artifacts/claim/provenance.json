@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "claim",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/slsa-generator",
+  "digest": "sha256:79417ca5035c1b1df8bbde0dd7c5e02692f750a2355a6fe25c4425c2ab179bbd",
+  "slsaVersion": "1.0",
+  "buildType": "https://github.com/slsa-framework/slsa-github-generator@v2",
+  "runner": "github-actions"
+}

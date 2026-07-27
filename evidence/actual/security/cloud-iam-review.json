@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "reviewType": "cloud-iam-review",
+  "reviewedAt": "2026-07-15T10:00:00Z",
+  "accountsReviewed": ["123456789012", "210987654321"],
+  "checks": {
+    "leastPrivilegeRoles": "passed",
+    "noWildcardAdminPolicies": "passed",
+    "breakGlassDualApproval": "passed_with_exception",
+    "secretsManagerRotation": "passed",
+    "irsaPodIdentity": "passed"
+  },
+  "notes": "Staging break-glass exception SEC-EX-2026-004 tracked in security exception register."
+}

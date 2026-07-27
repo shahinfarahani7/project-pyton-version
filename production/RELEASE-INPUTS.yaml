@@ -159,6 +159,18 @@ spec:
     secret: false
   approvals:
   - name: RELEASE_APPROVAL_MANIFEST
-    format: ^evidence/actual/release-evidence\.json$
+    format: ^evidence/actual/legal-finance/signed-approvals\.json$
     owner: Release Manager
+    secret: false
+  - name: LEGAL_PRIVACY_APPROVAL
+    format: ^evidence/actual/legal-finance/privacy-dpa\.json$
+    owner: Legal
+    secret: false
+  - name: FINANCE_TAX_PAYOUT_APPROVAL
+    format: ^evidence/actual/legal-finance/payout-tax-kyc\.json$
+    owner: Finance
+    secret: false
+  - name: MODEL_LICENSE_APPROVAL
+    format: ^evidence/actual/legal-finance/model-licenses\.json$
+    owner: Legal
     secret: false

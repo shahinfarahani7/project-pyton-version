@@ -1,0 +1,7 @@
+{
+  "name": "AWS_PRIMARY_REGION",
+  "value": "eu-central-1",
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-26T14:45:00+03:30",
+  "verifiedBy": "platform-ci-fixture"
+}

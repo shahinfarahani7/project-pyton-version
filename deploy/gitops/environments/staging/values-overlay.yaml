@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edgemint-staging-overlay
+data:
+  values.yaml: |
+    global:
+      environment: staging
+    services: {}

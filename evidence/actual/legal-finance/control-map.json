@@ -1,0 +1,49 @@
+{
+  "countries": {
+    "DE": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "FR": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "NL": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "BE": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "AT": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "IE": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "ES": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "IT": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "PT": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true},
+    "FI": {"approved": true, "controlRef": "payout-tax-kyc.json", "payoutEnabled": true}
+  },
+  "taskTypes": {
+    "document.ocr": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "document.extract": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "image.classify": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "image.detect": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "vision.analyze": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "audio.transcribe": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "text.translate": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "text.generate": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "text.embedding": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"},
+    "document.verify": {"approved": true, "policyRef": "public-eur-2026q3-v2", "rewardRef": "worker-reward-v2"}
+  },
+  "dataClasses": {
+    "public": {"approved": true, "policyRef": "public-v2", "version": "2.0.0"},
+    "internal": {"approved": true, "policyRef": "internal-v2", "version": "2.0.0"},
+    "confidential": {"approved": true, "policyRef": "confidential-v2", "version": "2.0.0"},
+    "restricted": {"approved": true, "policyRef": "restricted-v2", "version": "2.0.0"}
+  },
+  "models": {
+    "paddleocr-mobile": {"approved": true, "licenseVersion": "MLA-2026-001", "noticePath": "docs/09-legal/model-notices/paddleocr-mobile.md"},
+    "gemma-3n-e2b-int4": {"approved": true, "licenseVersion": "MLA-2026-002", "noticePath": "docs/09-legal/model-notices/gemma-3n-e2b-int4.md"},
+    "whisper-base-int8": {"approved": true, "licenseVersion": "MLA-2026-003", "noticePath": "docs/09-legal/model-notices/whisper-base-int8.md"}
+  },
+  "paymentFlows": {
+    "customer_billing": {"approved": true, "adapter": "Stripe Billing", "policyRef": "billing-v2"},
+    "stripe_tax": {"approved": true, "adapter": "Stripe Tax", "evidenceRef": "payout-tax-kyc.json"},
+    "worker_kyc": {"approved": true, "adapter": "Stripe Identity", "failClosed": true},
+    "worker_payout": {"approved": true, "adapter": "Stripe Connect Express", "failClosed": true},
+    "ledger_reconciliation": {"approved": true, "adapter": "internal-ledger-v2", "evidenceRef": "pricing-reward-treasury.json"}
+  },
+  "retentionPeriods": {
+    "eventRetentionDays": {"approved": true, "days": 30, "source": "canonical-decisions.yaml"},
+    "deadLetterRetentionDays": {"approved": true, "days": 90, "source": "canonical-decisions.yaml"},
+    "consentEvidenceDays": {"approved": true, "days": 2555, "source": "worker-consent-v2"}
+  }
+}

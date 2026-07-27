@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "billing",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/cosign-kms",
+  "digest": "sha256:24cda0aacb40accf0a73e6b50d7e6ad443310894c2b36ff65dc64eac11a27038",
+  "signatureKind": "cosign",
+  "kmsKeyArn": "arn:aws:kms:eu-central-1:123456789012:key/ci-fixture"
+}

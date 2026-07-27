@@ -1,0 +1,7 @@
+{
+  "name": "FINANCE_TAX_PAYOUT_APPROVAL",
+  "value": "evidence/actual/legal-finance/payout-tax-kyc.json",
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-20T15:00:00Z",
+  "verifiedBy": "finance-fixture"
+}

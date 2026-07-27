@@ -1,0 +1,20 @@
+{
+  "workPackageId": "WP-080",
+  "status": "completed",
+  "completedAt": "2026-07-26T14:30:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 71, "skipped": 1},
+    {"command": "python tests/e2e/worker_enrollment.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/workers src/backend/tests/workers tests/e2e/worker_enrollment.py", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/workers/",
+    "src/backend/edgemint/services/worker_registry.py",
+    "src/backend/tests/workers/",
+    "tests/e2e/worker_enrollment.py",
+    "src/apps/worker/integration_test/enrollment_test.dart",
+    "database/sql/010_worker_device_trust.sql"
+  ],
+  "notes": "Worker enrollment with device challenges, attestation verification, session tokens, benchmark tiering, sequenced heartbeats, preferences with optimistic concurrency, and paid-work readiness gates. Flutter integration test is a contract stub; live PostgreSQL and flutter test skipped without environment tooling."
+}

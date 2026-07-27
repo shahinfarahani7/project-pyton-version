@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "reviewType": "supply-chain-verification",
+  "reviewedAt": "2026-07-16T09:00:00Z",
+  "ciPolicyRef": ".github/branch-protection-policy.json",
+  "artifactEvidenceDir": "evidence/actual/ci",
+  "servicesVerified": 21,
+  "sbomPresent": true,
+  "signaturesVerified": true,
+  "provenanceVerified": true,
+  "criticalVulnerabilities": 0,
+  "highVulnerabilitiesUnapproved": 0
+}

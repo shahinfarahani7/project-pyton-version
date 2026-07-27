@@ -1,0 +1,26 @@
+# Example inputs bound to production/RELEASE-INPUTS.yaml. Do not commit real values.
+aws_account_id                   = "123456789012"
+environment                      = "staging"
+primary_region                   = "eu-central-1"
+dr_region                        = "eu-west-1"
+hosted_zone_id                   = "Z1234567890ABC"
+domain_name                      = "api.staging.edgemint.example"
+terraform_state_bucket           = "edgemint-terraform-state-staging"
+terraform_lock_table             = "edgemint-terraform-locks"
+admin_cidrs                      = ["203.0.113.10/32"]
+alert_email                      = "platform-alerts@edgemint.example"
+platform_admin_role_arn          = "arn:aws:iam::123456789012:role/edgemint-platform-admin"
+eks_cluster_version              = "1.31"
+eks_addon_versions = {
+  "vpc-cni"    = "v1.19.0-eksbuild.1"
+  "coredns"    = "v1.11.4-eksbuild.2"
+  "kube-proxy" = "v1.31.0-eksbuild.2"
+}
+workload_secret_arns = [
+  "arn:aws:secretsmanager:eu-central-1:123456789012:secret:edgemint/staging/database-abc123",
+  "arn:aws:secretsmanager:eu-central-1:123456789012:secret:edgemint/staging/stripe-def456",
+]
+operations_oidc_provider_name       = "OperationsIdP"
+operations_oidc_client_id           = "fixture-client-id"
+operations_oidc_client_secret_arn   = "arn:aws:secretsmanager:eu-central-1:123456789012:secret:edgemint/staging/operations-oidc-ghi789"
+operations_oidc_issuer              = "https://idp.edgemint.example"

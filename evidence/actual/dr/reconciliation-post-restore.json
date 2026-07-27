@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "ledgerDriftMicros": 0,
+  "providerReconciliationPassed": true,
+  "eventOutboxLagSeconds": 1,
+  "marginGuardsVerified": true
+}

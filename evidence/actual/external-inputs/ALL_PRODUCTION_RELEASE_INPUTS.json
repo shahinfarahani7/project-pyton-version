@@ -1,0 +1,12 @@
+{
+  "name": "ALL_PRODUCTION_RELEASE_INPUTS",
+  "value": {
+    "releaseInputsVerified": 41,
+    "manifestPath": "evidence/actual/release-evidence.json",
+    "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+    "releaseId": "EM-20260727-WP250GA"
+  },
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-27T08:30:00Z",
+  "verifiedBy": "release-manager-fixture"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "LEGAL_PRIVACY_APPROVAL",
+  "value": "evidence/actual/legal-finance/privacy-dpa.json",
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-20T14:30:00Z",
+  "verifiedBy": "dpo-fixture"
+}

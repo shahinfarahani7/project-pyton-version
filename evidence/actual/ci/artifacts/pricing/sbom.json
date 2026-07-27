@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "pricing",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/syft",
+  "digest": "sha256:aa113164ef9a63740a17949d444a7c8ea132cb0d78ac5f3a1038b11f642a5036",
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "type": "container",
+      "name": "edgemint/pricing"
+    }
+  ]
+}

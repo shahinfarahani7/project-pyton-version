@@ -35,8 +35,9 @@ spec:
     wifiRecommended: true
     atomicInstall: true
   license:
-    status: review-required
-    noticePath: null
+    status: approved
+    noticePath: docs/09-legal/model-notices/paddleocr-mobile.md
+    approvalId: MLA-2026-001
   release:
     state: evaluation
     productionEligible: false

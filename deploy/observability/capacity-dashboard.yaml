@@ -1,0 +1,29 @@
+groups:
+- name: edgemint-capacity
+  rules:
+  - record: edgemint:api_admission_p95_ms
+    expr: histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{job="api-gateway"}[5m])) by (le))
+  - record: edgemint:worker_heartbeat_p95_ms
+    expr: histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{job="worker-gateway"}[5m])) by (le))
+  - record: edgemint:contribution_margin_bps
+    expr: (sum(edgemint_quote_charge_micros) - sum(edgemint_quote_cost_micros)) * 10000 / clamp_min(sum(edgemint_quote_charge_micros), 1)
+  - alert: CapacityAdmissionSloBreach
+    expr: edgemint:api_admission_p95_ms > 0.5
+    for: 10m
+    labels: { severity: ticket }
+    annotations: { summary: "Task admission p95 exceeded 500ms" }
+  - alert: CapacityHeartbeatSloBreach
+    expr: edgemint:worker_heartbeat_p95_ms > 0.25
+    for: 10m
+    labels: { severity: ticket }
+    annotations: { summary: "Worker heartbeat p95 exceeded 250ms" }
+  - alert: ContributionMarginBelowFloor
+    expr: edgemint:contribution_margin_bps < 1500
+    for: 15m
+    labels: { severity: page }
+    annotations: { summary: "Stressed contribution margin below 15%" }
+  - alert: EventRelayBackpressureSaturated
+    expr: edgemint_event_relay_inflight >= 256
+    for: 5m
+    labels: { severity: ticket }
+    annotations: { summary: "Event relay in-flight backpressure saturated" }

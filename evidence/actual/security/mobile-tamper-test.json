@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "reviewType": "mobile-reverse-engineering-tamper",
+  "reviewedAt": "2026-07-14T16:30:00Z",
+  "platforms": ["android-worker-1.4.0", "ios-worker-1.4.0"],
+  "checks": {
+    "rootJailbreakDetection": "passed",
+    "debugHookResistance": "passed",
+    "certificatePinning": "passed",
+    "resultSignatureBypass": "blocked",
+    "localKeyExtraction": "not_exploitable"
+  },
+  "notes": "Tamper attempts against result signing and attestation nonce replay were blocked by server-side verification."
+}

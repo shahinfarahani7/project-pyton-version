@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "repository-state",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T05:13:39Z",
+  "producer": "release/assembler",
+  "headCommitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "workingTreeClean": true,
+  "submodulesClean": true,
+  "packageManifestSha256": "30769c6bf9a35253c193b81766527491a784fa552095fe71bfccbd0e598fc948",
+  "checksumsSha256": "30e3ea182aca5e056e1a6d74893bfc5f42f29fa600183693fc30b180f1e7f57e"
+}

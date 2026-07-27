@@ -1,0 +1,10 @@
+{
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "previousReleaseId": "EM-20260725-WP190CI",
+  "previousCommitSha": "0000000000000000000000000000000000000000",
+  "previousDigest": "sha256:30431fcdd7b3bbb5fa9e685c89a5134fd035503ffd9956355cbff7c6360ee1f7",
+  "schemaVersion": "18.4",
+  "rollbackReason": "fixture-baseline",
+  "generatedAt": "2026-07-27T04:50:00Z"
+}

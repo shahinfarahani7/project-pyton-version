@@ -1,8 +1,48 @@
-import React from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
+import { SessionProvider } from './auth/session';
+import { AppShell } from './components/AppShell';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { ApiKeysPage } from './pages/ApiKeysPage';
+import { BillingPage } from './pages/BillingPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { DisputesPage } from './pages/DisputesPage';
+import { FilesPage } from './pages/FilesPage';
+import { LoginPage } from './pages/LoginPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { TasksPage } from './pages/TasksPage';
+import { TeamPage } from './pages/TeamPage';
+import { WebhooksPage } from './pages/WebhooksPage';
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/files" element={<FilesPage />} />
+          <Route path="/webhooks" element={<WebhooksPage />} />
+          <Route path="/api-keys" element={<ApiKeysPage />} />
+          <Route path="/billing" element={<BillingPage />} />
+          <Route path="/disputes" element={<DisputesPage />} />
+          <Route path="/team" element={<TeamPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+
 export function App() {
-  return <main>
-    <header><strong>EdgeMint</strong><nav>Dashboard · Tasks · Billing · Settings</nav></header>
-    <section className="hero"><h1>EdgeMint Customer Portal</h1><p>Authenticated production shell. Generated API clients, workspace authorization, audit logging, optimistic concurrency, telemetry, and error boundaries are added by the assigned Cursor work packages.</p></section>
-    <section className="grid"><article><h2>System status</h2><p>Production traffic is permitted only after dependency readiness and release evidence pass.</p></article><article><h2>Security</h2><p>MFA, least privilege, tamper-evident audit, and strict workspace isolation are mandatory.</p></article></section>
-  </main>;
+  return (
+    <ErrorBoundary>
+      <SessionProvider>
+        <AppRoutes />
+      </SessionProvider>
+    </ErrorBoundary>
+  );
 }

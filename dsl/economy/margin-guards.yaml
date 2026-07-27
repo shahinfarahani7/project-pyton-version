@@ -1,0 +1,17 @@
+apiVersion: edgemint.io/v1
+kind: MarginGuardPolicy
+metadata:
+  name: contribution-margin-floor
+  version: 1.0.0
+  status: active
+  owners:
+  - finance
+  - product
+spec:
+  minimumContributionMarginBps: 1500
+  stressedScenario:
+    includeInfrastructureBps: 800
+    admissionFailsClosed: true
+  telemetry:
+    metric: edgemint_contribution_margin_bps
+    alertBelowBps: 1500

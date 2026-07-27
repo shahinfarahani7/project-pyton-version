@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "workers": 250,
+  "peakInFlight": 155,
+  "inFlightLimit": 256,
+  "queueDepthFinal": 0,
+  "backpressureEvents": 122656,
+  "hotKeyHits": 348,
+  "hotKey": "partition-hot-1",
+  "reconciliationDriftMicros": 0,
+  "thermalBreaches": 0,
+  "heartbeatP95Ms": 173.12068263875358,
+  "admissionP95Ms": 403.1391108133262,
+  "stressedContributionMarginBps": 9164,
+  "forecastPeakRps": 1200,
+  "headroomBps": 1500,
+  "tierCapacitySample": {
+    "T1": 1,
+    "T2": 1,
+    "T3": 1,
+    "T4": 2
+  },
+  "queueRankingStable": true,
+  "generatedAt": "2026-07-27T04:51:35.219367+00:00"
+}

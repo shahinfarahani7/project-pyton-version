@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "workPackageId": "WP-220",
+  "completedAt": "2026-07-27T08:45:00+03:30",
+  "reviewWindow": {
+    "start": "2026-07-10T00:00:00Z",
+    "end": "2026-07-25T23:59:59Z"
+  },
+  "independentAssessor": "RedShield Assurance LLC",
+  "findingSummary": {
+    "criticalOpen": 0,
+    "highOpen": 0,
+    "highRiskAccepted": 1,
+    "mediumRemediated": 3,
+    "lowRemediated": 5
+  },
+  "coverageComplete": true,
+  "externalInputs": [
+    "INDEPENDENT_PENETRATION_TEST_REPORT",
+    "SECURITY_EXCEPTION_REGISTER"
+  ]
+}

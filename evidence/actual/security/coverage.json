@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "areas": {
+    "workspaceIsolation": {
+      "independentCoverage": true,
+      "reviewRef": "api-authorization-matrix.json",
+      "evidence": "Cross-tenant negative tests and RLS contract verification"
+    },
+    "moneyMovement": {
+      "independentCoverage": true,
+      "reviewRef": "penetration-test-report.json",
+      "evidence": "Payout replay, idempotency, and ledger reconciliation attack paths tested"
+    },
+    "workerTrust": {
+      "independentCoverage": true,
+      "reviewRef": "mobile-tamper-test.json",
+      "evidence": "Attestation bypass, result tampering, and golden-trap evasion attempts blocked"
+    },
+    "artifactSigning": {
+      "independentCoverage": true,
+      "reviewRef": "supply-chain-verification.json",
+      "evidence": "SBOM, cosign signatures, and SLSA provenance verified for all release services"
+    },
+    "operationsBreakGlass": {
+      "independentCoverage": true,
+      "reviewRef": "cloud-iam-review.json",
+      "evidence": "Break-glass elevation tested with dual approval; exception tracked in register"
+    }
+  }
+}

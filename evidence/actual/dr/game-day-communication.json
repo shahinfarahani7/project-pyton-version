@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "participants": [
+    "sre-oncall",
+    "platform",
+    "security",
+    "finance-ops"
+  ],
+  "communicationChannels": [
+    "pager",
+    "status-page",
+    "incident-bridge"
+  ],
+  "customerNoticeRequired": false,
+  "executedWithoutAuthorAssistance": true
+}

@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "environment": "staging",
+  "accountId": "210987654321",
+  "restoreTarget": {
+    "engine": "postgresql-16",
+    "clusterId": "edgemint-staging-dr-restore",
+    "region": "us-west-2",
+    "isolationVpc": "vpc-staging-dr-restore",
+    "restoreMethod": "pitr",
+    "restorePoint": "2026-07-25T01:57:00Z"
+  },
+  "dataVolumeGb": 842,
+  "encryptedBackup": true,
+  "pitrEnabled": true,
+  "restoreStartedAt": "2026-07-25T02:00:00Z",
+  "restoreCompletedAt": "2026-07-25T02:42:00Z",
+  "integrityVerified": true,
+  "rlsPoliciesVerified": true,
+  "ledgerCheckpointVerified": true,
+  "eventCheckpointVerified": true
+}

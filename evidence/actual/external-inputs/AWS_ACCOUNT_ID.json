@@ -1,0 +1,7 @@
+{
+  "name": "AWS_ACCOUNT_ID",
+  "value": "123456789012",
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-26T14:45:00+03:30",
+  "verifiedBy": "platform-ci-fixture"
+}

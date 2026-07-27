@@ -1,0 +1,24 @@
+{
+  "workPackageId": "WP-230",
+  "status": "completed",
+  "completedAt": "2026-07-27T08:50:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "python tools/run_dr_drill.py --environment staging --write-evidence evidence/actual/dr", "exitCode": 0, "measuredRpoSeconds": 180, "measuredRtoSeconds": 2400},
+    {"command": "python tools/validate_dr_evidence.py evidence/actual/dr", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "tools/run_dr_drill.py",
+    "tools/validate_dr_evidence.py",
+    "evidence/actual/dr/",
+    "evidence/actual/external-inputs/STAGING_AWS_ACCOUNT_ID.json",
+    "evidence/actual/external-inputs/DR_DRILL_WINDOW.json",
+    "evidence/actual/external-inputs/BACKUP_RESTORE_TARGET.json"
+  ],
+  "externalInputs": [
+    "STAGING_AWS_ACCOUNT_ID",
+    "DR_DRILL_WINDOW",
+    "BACKUP_RESTORE_TARGET"
+  ],
+  "notes": "Encrypted backup/PITR restore drill with cross-region copy, dependency reconfiguration, DNS failover, post-restore reconciliation, game-day communication, and return-to-primary. Measured RPO 180s (<=300s) and RTO 2400s (<=3600s). bash tools/validate_all.sh not executed on Windows host."
+}

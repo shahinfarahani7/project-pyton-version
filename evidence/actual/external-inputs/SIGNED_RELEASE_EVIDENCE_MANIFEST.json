@@ -1,0 +1,14 @@
+{
+  "name": "SIGNED_RELEASE_EVIDENCE_MANIFEST",
+  "value": {
+    "manifestPath": "evidence/actual/release-evidence.json",
+    "signaturePath": "evidence/actual/release-evidence.sig",
+    "trustedKeyPath": "evidence/actual/trusted-release-key.pem",
+    "trustedKeySha256": "05013aacd3461581339e074d56f6e4855cdfcca30ad24e75ba945c1b1a21b684",
+    "releaseId": "EM-20260727-WP250GA",
+    "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6"
+  },
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-27T08:30:00Z",
+  "verifiedBy": "release-manager-fixture"
+}

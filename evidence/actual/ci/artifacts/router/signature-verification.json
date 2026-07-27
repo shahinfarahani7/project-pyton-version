@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260726-WP200CI",
+  "commitSha": "0000000000000000000000000000000000000001",
+  "subject": "router",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T04:49:14Z",
+  "producer": "ci/cosign-kms",
+  "digest": "sha256:4c814f082e66ae2950a66d665749acf7f778f60e6071e0de453c77e11c442170",
+  "signatureKind": "cosign",
+  "kmsKeyArn": "arn:aws:kms:eu-central-1:123456789012:key/ci-fixture"
+}

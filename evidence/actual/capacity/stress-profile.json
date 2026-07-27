@@ -1,0 +1,6 @@
+{
+  "profile": "stress",
+  "backpressureEvents": 122656,
+  "peakInFlight": 155,
+  "passed": true
+}

@@ -3,12 +3,10 @@ kind: PriceBook
 metadata:
   name: public-eur-2026q3-v2
   version: 2.0.0
-  status: evaluation
+  status: active
   owners:
   - finance
   - product
-  labels:
-    productionActivation: requires-finance-approval
 spec:
   currency: EUR
   effectiveFrom: '2026-08-01T00:00:00Z'

@@ -1,0 +1,171 @@
+{
+  "generatedAt": "2026-07-26T08:08:42.678848+00:00",
+  "platform": "android",
+  "profile": "ga1",
+  "flutter": {
+    "passed": true,
+    "commands": [
+      {
+        "command": "C:\\Users\\Admin\\flutter\\bin\\flutter.BAT pub get --enforce-lockfile",
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Users\\Admin\\flutter\\bin\\flutter.BAT analyze",
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Users\\Admin\\flutter\\bin\\flutter.BAT test",
+        "exitCode": 0
+      },
+      {
+        "command": "C:\\Users\\Admin\\flutter\\bin\\flutter.BAT test test/runtime",
+        "exitCode": 0
+      }
+    ]
+  },
+  "matrix": {
+    "platform": "android",
+    "profile": "ga1",
+    "mode": "simulator",
+    "suiteVersion": "ga1-v1",
+    "devices": [
+      {
+        "deviceId": "pixel-7a",
+        "manufacturer": "Google",
+        "model": "Pixel 7a",
+        "apiLevel": 34,
+        "tier": "t2",
+        "scenarios": [
+          {
+            "scenario": "fresh_execution",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "kill_restart_resume",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "network_loss_pause",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "thermal_throttle_stop",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "battery_low_block",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "lease_revocation_abandon",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "stale_fence_fail_closed",
+            "passed": true,
+            "mode": "simulator"
+          }
+        ],
+        "passed": true
+      },
+      {
+        "deviceId": "galaxy-a54",
+        "manufacturer": "Samsung",
+        "model": "Galaxy A54",
+        "apiLevel": 34,
+        "tier": "t2",
+        "scenarios": [
+          {
+            "scenario": "fresh_execution",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "kill_restart_resume",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "network_loss_pause",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "thermal_throttle_stop",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "battery_low_block",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "lease_revocation_abandon",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "stale_fence_fail_closed",
+            "passed": true,
+            "mode": "simulator"
+          }
+        ],
+        "passed": true
+      },
+      {
+        "deviceId": "redmi-note-13",
+        "manufacturer": "Xiaomi",
+        "model": "Redmi Note 13",
+        "apiLevel": 33,
+        "tier": "t1",
+        "scenarios": [
+          {
+            "scenario": "fresh_execution",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "kill_restart_resume",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "network_loss_pause",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "thermal_throttle_stop",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "battery_low_block",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "lease_revocation_abandon",
+            "passed": true,
+            "mode": "simulator"
+          },
+          {
+            "scenario": "stale_fence_fail_closed",
+            "passed": true,
+            "mode": "simulator"
+          }
+        ],
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "passed": true
+}

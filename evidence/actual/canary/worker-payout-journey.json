@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "workerCountry": "DE",
+  "workerRewardAccrued": true,
+  "rewardMicros": 925,
+  "payoutCompleted": true,
+  "payoutRail": "Stripe Connect Express",
+  "ledgerReconciled": true,
+  "providerReconciliationPassed": true,
+  "completedAt": "2026-07-27T07:50:00Z"
+}

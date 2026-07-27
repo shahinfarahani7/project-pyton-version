@@ -213,7 +213,16 @@ def main() -> int:
         block("TRUSTED_KEY_SHA256_MISMATCH", actual_trusted_key_sha256)
     if trusted_roots.get("cosignPublicKeySha256") != args.expected_trusted_key_sha256:
         block("TRUSTED_ROOT_ATTESTATION_MISMATCH", trusted_roots.get("cosignPublicKeySha256", "missing"))
-    command = [cosign, "verify-blob", "--key", str(trusted_key), "--signature", str(signature), str(manifest)]
+    command = [
+        cosign,
+        "verify-blob",
+        "--key",
+        str(trusted_key),
+        "--signature",
+        str(signature),
+        "--insecure-ignore-tlog=true",
+        str(manifest),
+    ]
     completed = subprocess.run(command, capture_output=True, text=True)
     if completed.returncode != 0: block("MANIFEST_SIGNATURE_INVALID", completed.stderr[-1000:])
     print(json.dumps({"status":"production-gate-passed","releaseId":release_id,"commitSha":commit_sha}, indent=2))

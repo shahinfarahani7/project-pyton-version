@@ -1,0 +1,19 @@
+{
+  "status": "approved",
+  "approvedBy": "cfo@edgemint.example",
+  "approvedAt": "2026-07-20T15:00:00Z",
+  "currency": "EUR",
+  "payoutRail": "Stripe Connect Express",
+  "supportedPayoutCountries": ["DE", "FR", "NL", "BE", "AT", "IE", "ES", "IT", "PT", "FI"],
+  "sanctionsBlockedCountries": ["KP", "IR", "SY", "CU"],
+  "unsupportedCountryBehavior": "worker earning disabled; no manual bypass",
+  "kycProvider": "Stripe Identity",
+  "taxProvider": "Stripe Tax",
+  "taxEvidenceRequired": true,
+  "minimumPayoutMicros": 100000000,
+  "treasuryControls": {
+    "ledgerCurrency": "EUR",
+    "tokenSettlementEnabled": false,
+    "reconciliationRequired": true
+  }
+}

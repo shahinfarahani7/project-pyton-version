@@ -1,0 +1,8 @@
+name: integration-ephemeral
+on:
+  pull_request:
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  integration:
+    uses: ./.github/workflows/integration.yml

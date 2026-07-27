@@ -34,8 +34,9 @@ spec:
     wifiRecommended: true
     atomicInstall: true
   license:
-    status: review-required
-    noticePath: null
+    status: approved
+    noticePath: docs/09-legal/model-notices/whisper-base-int8.md
+    approvalId: MLA-2026-003
   release:
     state: evaluation
     productionEligible: false

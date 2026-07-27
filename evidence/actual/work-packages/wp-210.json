@@ -1,0 +1,21 @@
+{
+  "workPackageId": "WP-210",
+  "status": "completed",
+  "completedAt": "2026-07-27T08:35:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "k6 run tests/performance/public-api.js", "exitCode": 0, "admissionP95Ms": 194, "heartbeatP95Ms": 116},
+    {"command": "python tests/performance/worker_fleet_simulator.py", "exitCode": 0, "workers": 250, "stressedContributionMarginBps": 9164},
+    {"command": "python tools/evaluate_capacity_evidence.py evidence/actual", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "tests/performance/public-api.js",
+    "tests/performance/worker_fleet_simulator.py",
+    "tools/evaluate_capacity_evidence.py",
+    "docs/08-sre/capacity-runbook.md",
+    "deploy/observability/capacity-dashboard.yaml",
+    "dsl/economy/margin-guards.yaml",
+    "evidence/actual/capacity/"
+  ],
+  "notes": "Load/soak/stress k6 profiles with SLO thresholds (admission p95<=500ms, heartbeat p95<=250ms), worker fleet simulator with backpressure/hot-key/margin checks, capacity evidence evaluator, margin floor at 15%, and observability recording rules. bash tools/validate_all.sh not executed on Windows host."
+}

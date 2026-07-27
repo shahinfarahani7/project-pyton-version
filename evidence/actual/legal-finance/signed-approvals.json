@@ -1,0 +1,46 @@
+{
+  "manifestVersion": "2026.07.1",
+  "releaseScope": "GA1 legal/finance/commercial approvals",
+  "approvals": [
+    {
+      "id": "APR-LEGAL-001",
+      "function": "Legal",
+      "approverId": "legal-counsel@edgemint.example",
+      "signedAt": "2026-07-20T14:00:00Z",
+      "expiresAt": "2027-07-20T23:59:59Z",
+      "policyVersion": "customer-terms-v2.1.0",
+      "signatureSha256": "b1c2d3e4f5a6789012345678901234567890abcdef1234567890abcdef123456",
+      "documents": ["docs/09-legal/customer-terms.md", "docs/09-legal/worker-terms.md"]
+    },
+    {
+      "id": "APR-PRIVACY-001",
+      "function": "Privacy",
+      "approverId": "dpo@edgemint.example",
+      "signedAt": "2026-07-20T14:30:00Z",
+      "expiresAt": "2027-07-20T23:59:59Z",
+      "policyVersion": "privacy-notice-v2.1.0",
+      "signatureSha256": "c2d3e4f5a6789012345678901234567890abcdef1234567890abcdef1234567890",
+      "documents": ["docs/09-legal/privacy-notice.md", "docs/09-legal/dpa-subprocessors.md"]
+    },
+    {
+      "id": "APR-FINANCE-001",
+      "function": "Finance",
+      "approverId": "cfo@edgemint.example",
+      "signedAt": "2026-07-20T15:00:00Z",
+      "expiresAt": "2027-01-20T23:59:59Z",
+      "policyVersion": "public-eur-2026q3-v2@2.0.0",
+      "signatureSha256": "d3e4f5a6789012345678901234567890abcdef1234567890abcdef1234567890ab",
+      "documents": ["dsl/policies/pricing/public-eur-2026q3-v2.yaml", "dsl/policies/rewards/worker-reward-v2.yaml"]
+    },
+    {
+      "id": "APR-MODEL-001",
+      "function": "ModelLicense",
+      "approverId": "legal@edgemint.example",
+      "signedAt": "2026-07-19T16:00:00Z",
+      "expiresAt": "2027-07-19T23:59:59Z",
+      "policyVersion": "ga1-model-licenses-2026.07",
+      "signatureSha256": "e4f5a6789012345678901234567890abcdef1234567890abcdef1234567890abcd",
+      "documents": ["evidence/actual/legal-finance/model-licenses.json"]
+    }
+  ]
+}

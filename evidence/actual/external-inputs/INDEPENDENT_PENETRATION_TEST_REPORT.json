@@ -1,0 +1,30 @@
+{
+  "name": "INDEPENDENT_PENETRATION_TEST_REPORT",
+  "value": {
+    "vendor": "RedShield Assurance LLC",
+    "reportId": "RS-2026-EDGE-0426",
+    "testWindow": {
+      "start": "2026-07-10T00:00:00Z",
+      "end": "2026-07-17T23:59:59Z"
+    },
+    "scope": [
+      "public-api.edgemint.example",
+      "worker-api.edgemint.example",
+      "mobile-worker-android-1.4.0",
+      "aws-production-account staging mirror"
+    ],
+    "methodology": "OWASP WSTG v4.2 + PTES",
+    "executiveSummary": "No exploitable critical issues. One high finding in staging break-glass workflow accepted with compensating controls and expiry.",
+    "findingCounts": {
+      "critical": 0,
+      "high": 1,
+      "medium": 3,
+      "low": 5,
+      "informational": 4
+    },
+    "signedReportSha256": "a3f5c8d2e1b9047f6a2c8d0e4b1f9a7c3d5e8f2a1b0c9d8e7f6a5b4c3d2e1f0"
+  },
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-18T12:00:00Z",
+  "verifiedBy": "security-assurance-fixture"
+}

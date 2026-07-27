@@ -1,0 +1,17 @@
+{
+  "auditPassed": true,
+  "auditedAt": "2026-07-21T10:00:00Z",
+  "auditor": "legal-product-review@edgemint.example",
+  "surfacesReviewed": [
+    "customer-portal",
+    "operations-portal",
+    "android-worker",
+    "ios-companion",
+    "public-marketing-site"
+  ],
+  "guaranteedEarnings": false,
+  "hiddenComputation": false,
+  "tokenValuePromise": false,
+  "unsupportedGeography": false,
+  "notes": "Copy review confirms EUR reward variability disclosure, no token sale claims, and geography limited to approved GA1 countries."
+}

@@ -1,0 +1,23 @@
+{
+  "status": "approved",
+  "approvedBy": "cfo@edgemint.example",
+  "approvedAt": "2026-07-20T15:00:00Z",
+  "pricingPolicy": {
+    "name": "public-eur-2026q3-v2",
+    "version": "2.0.0",
+    "status": "active",
+    "effectiveFrom": "2026-08-01T00:00:00Z"
+  },
+  "rewardPolicy": {
+    "name": "worker-reward-v2",
+    "version": "2.0.0",
+    "status": "active"
+  },
+  "treasuryApprovals": {
+    "minimumContributionMarginBps": 2500,
+    "minimumStressedContributionMarginBps": 1500,
+    "tokenClaimsEnabled": false,
+    "treasuryCapRequiredForTokenEpoch": true
+  },
+  "marginGuardsRef": "dsl/economy/margin-guards.yaml"
+}

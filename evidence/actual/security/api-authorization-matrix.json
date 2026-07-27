@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "reviewType": "api-authorization-matrix",
+  "reviewedAt": "2026-07-13T11:00:00Z",
+  "openapiRef": "contracts/public-api.openapi.yaml",
+  "coverageTool": "tools/test_openapi_authorization_coverage.py",
+  "endpointsReviewed": 142,
+  "endpointsWithExplicitAuth": 142,
+  "negativeTestsRun": 38,
+  "crossTenantDenials": 38,
+  "notes": "Authorization contract tests and OpenAPI coverage gate passed with zero uncovered routes."
+}

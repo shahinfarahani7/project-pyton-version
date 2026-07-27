@@ -1,0 +1,21 @@
+{
+  "status": "approved",
+  "customerTerms": {
+    "version": "customer-terms-v2.1.0",
+    "effectiveDate": "2026-07-20",
+    "documentPath": "docs/09-legal/customer-terms.md",
+    "approvedBy": "legal-counsel@edgemint.example"
+  },
+  "workerTerms": {
+    "version": "worker-terms-v2.1.0",
+    "effectiveDate": "2026-07-20",
+    "documentPath": "docs/09-legal/worker-terms.md",
+    "approvedBy": "legal-counsel@edgemint.example",
+    "consentPolicyRef": "worker-consent-v2@2.1.0"
+  },
+  "laborDisclosure": {
+    "independentContractorFraming": true,
+    "noGuaranteedEarnings": true,
+    "perTaskAcceptRejectDisabled": true
+  }
+}

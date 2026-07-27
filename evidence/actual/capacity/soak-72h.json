@@ -1,0 +1,10 @@
+{
+  "profile": "soak-72h-accelerated",
+  "durationSeconds": 30,
+  "representingHours": 72,
+  "queueUnbounded": false,
+  "memoryLeakDetected": false,
+  "reconciliationDriftMicros": 0,
+  "thermalBreaches": 0,
+  "passed": true
+}

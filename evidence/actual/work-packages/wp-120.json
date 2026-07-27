@@ -1,0 +1,21 @@
+{
+  "workPackageId": "WP-120",
+  "status": "completed",
+  "completedAt": "2026-07-26T12:15:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 103, "skipped": 1},
+    {"command": "python tests/e2e/result_verification.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/results src/backend/edgemint/verification src/backend/tests/verification", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/results/",
+    "src/backend/edgemint/verification/",
+    "src/backend/edgemint/services/result.py",
+    "src/backend/edgemint/services/verification.py",
+    "src/backend/tests/verification/",
+    "tests/e2e/result_verification.py",
+    "dsl/policies/verification/default-v2.yaml"
+  ],
+  "notes": "Result intake with lease/signature/input/model binding, exactly-one output, schema and size validation, duplicate detection, encrypted storage refs, deterministic automatic verifier, golden-task traps, consensus with distinct worker/device identity enforcement, human-review queue, immutable decision evidence, and dispute-ready lineage. Live PostgreSQL persistence tests skip without EDGEMINT_DATABASE_URL."
+}

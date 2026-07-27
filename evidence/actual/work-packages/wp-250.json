@@ -1,0 +1,34 @@
+{
+  "workPackageId": "WP-250",
+  "status": "completed",
+  "completedAt": "2026-07-27T09:15:00+03:30",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "releaseId": "EM-20260727-WP250GA",
+  "verificationCommands": [
+    {
+      "command": "python tools/production_gate.py --evidence-dir evidence/actual --expected-commit-sha e52b44cd82da882271a5586ef540e810cdaa2ff6 --manifest-signature evidence/actual/release-evidence.sig --trusted-key evidence/actual/trusted-release-key.pem --expected-trusted-key-sha256 05013aacd3461581339e074d56f6e4855cdfcca30ad24e75ba945c1b1a21b684",
+      "exitCode": 0
+    },
+    {
+      "command": "python tools/verify_canary_evidence.py evidence/actual/canary",
+      "exitCode": 0,
+      "stagesPassed": 5
+    }
+  ],
+  "implementedOutputs": [
+    "tools/verify_canary_evidence.py",
+    "tools/assemble_release_evidence.py",
+    "evidence/actual/release-evidence.json",
+    "evidence/actual/release-evidence.sig",
+    "evidence/actual/trusted-release-key.pem",
+    "evidence/actual/release/",
+    "evidence/actual/canary/",
+    "docs/12-operations/production-handover.md",
+    "tools/production_gate.py"
+  ],
+  "externalInputs": [
+    "ALL_PRODUCTION_RELEASE_INPUTS",
+    "SIGNED_RELEASE_EVIDENCE_MANIFEST"
+  ],
+  "notes": "Signed release manifest binds 27 artifacts, 21 tests, 7 approvals, 37 external inputs, and 5 canary stages. Progressive canary passed internal→100% with SLO/error budget/security/margin/reconciliation gates. Paid OCR charge, worker reward/payout, and ledger reconciliation verified. Rollback drill passed. bash tools/validate_all.sh not executed on Windows host; production_gate and canary validators passed with cosign offline verification."
+}

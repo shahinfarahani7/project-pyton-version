@@ -1,0 +1,21 @@
+{
+  "workPackageId": "WP-170",
+  "status": "completed",
+  "completedAt": "2026-07-26T13:55:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 138, "skipped": 1},
+    {"command": "python tests/integration/stripe_reconciliation.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/payments src/backend/edgemint/claims src/backend/tests/payments src/backend/edgemint/services/billing.py src/backend/edgemint/services/claim.py", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/payments/",
+    "src/backend/edgemint/claims/",
+    "src/backend/edgemint/services/billing.py",
+    "src/backend/edgemint/services/claim.py",
+    "src/backend/tests/payments/",
+    "tests/integration/stripe_reconciliation.py",
+    "production/RELEASE-INPUTS.yaml"
+  ],
+  "notes": "Stripe Billing/Tax/Identity/Connect sandbox adapters behind ports with ARN-based secret resolution (no live keys in source), webhook HMAC verification and event-id idempotency, customer credit funding with tax evidence, worker onboarding with country/sanctions/KYC fail-closed gates, payout batches with eligibility checks, failed payout recovery, and provider-vs-internal ledger reconciliation. Claim service submits batches only for eligible workers. bash tools/validate_all.sh not executed on Windows host."
+}

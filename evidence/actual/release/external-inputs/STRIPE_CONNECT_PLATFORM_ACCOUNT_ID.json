@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "STRIPE_CONNECT_PLATFORM_ACCOUNT_ID",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T00:13:39Z",
+  "producer": "release-inputs/fixture",
+  "value": "acct_GA1Platform001"
+}

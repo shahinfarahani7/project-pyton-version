@@ -1,0 +1,19 @@
+{
+  "workPackageId": "WP-070",
+  "status": "completed",
+  "completedAt": "2026-07-26T13:00:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 62, "skipped": 1},
+    {"command": "python tests/e2e/task_admission.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/tasks src/backend/tests/tasks tests/e2e/task_admission.py", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/tasks/",
+    "src/backend/edgemint/services/task_intake.py",
+    "src/backend/tests/tasks/",
+    "tests/e2e/task_admission.py",
+    "database/sql/009_quote_public_ids.sql"
+  ],
+  "notes": "Task admission with immutable revisions, quote binding, atomic credit reservation, cancellation, idempotency, outbox/audit events, and DSL-aligned lifecycle validation. Live PostgreSQL integration tests skip without EDGEMINT_DATABASE_URL."
+}

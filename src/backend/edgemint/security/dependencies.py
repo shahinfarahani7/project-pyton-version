@@ -8,6 +8,7 @@ from uuid import UUID
 import yaml
 from fastapi import Depends, Header, Request
 
+from edgemint.building_blocks.settings import get_settings
 from edgemint.security.context import AuthorizationContext, PrincipalContext, PrincipalKind
 from edgemint.security.permissions import PermissionPolicy
 from edgemint.security.problems import raise_auth_error
@@ -32,8 +33,9 @@ OPERATION_POLICIES = load_operation_policies()
 
 
 class AuthorizationDependency:
-    def __init__(self, operation_id: str) -> None:
+    def __init__(self, operation_id: str, *, audience: str | None = None) -> None:
         self.operation_id = operation_id
+        self.audience = audience
         self.policy = OPERATION_POLICIES.get(operation_id)
         if self.policy is None:
             raise KeyError(f"missing authorization policy for operation: {operation_id}")
@@ -49,7 +51,8 @@ class AuthorizationDependency:
         token = str(authorization).removeprefix("Bearer ").strip()
         policy = self.policy
         assert policy is not None
-        claims = DelegatedTokenService().verify(token)
+        verify_audience = self.audience or get_settings().jwt_audience
+        claims = DelegatedTokenService().verify(token, audience=verify_audience)
         if workspace_id_header and UUID(workspace_id_header) != claims.workspace_id:
             raise_auth_error("AUTH_WORKSPACE_MISMATCH", status=403)
         auth = DelegatedTokenService().to_authorization_context(claims)

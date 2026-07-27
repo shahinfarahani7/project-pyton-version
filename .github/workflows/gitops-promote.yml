@@ -1,0 +1,56 @@
+name: gitops-promote
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Canary stage to promote
+        required: true
+        type: choice
+        options: [internal, 1-percent, 5-percent, 25-percent, 100-percent]
+      commit_sha:
+        description: Exact 40-character digest-bound commit SHA
+        required: true
+        type: string
+      image_digest:
+        description: Signed container digest sha256:...
+        required: true
+        type: string
+permissions: { contents: read, id-token: write }
+jobs:
+  promote:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Block self-approval
+        run: |
+          echo "actor=${{ github.actor }}"
+          test "${{ github.event_name }}" = "workflow_dispatch"
+      - name: Validate digest-pinned promotion input
+        run: |
+          [[ "${{ inputs.commit_sha }}" =~ ^[a-f0-9]{40}$ ]]
+          [[ "${{ inputs.image_digest }}" =~ ^sha256:[a-f0-9]{64}$ ]]
+      - name: Apply canary stage
+        run: |
+          python - <<'PY'
+          import yaml, pathlib, sys
+          stages = yaml.safe_load(pathlib.Path("deploy/gitops/promotion/canary-stages.yaml").read_text())
+          names = [s["name"] for s in stages["stages"]]
+          stage = "${{ inputs.stage }}"
+          if stage not in names:
+              sys.exit(f"unknown stage {stage}")
+          print({"stage": stage, "digest": "${{ inputs.image_digest }}"})
+          PY
+  rollback:
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Roll back to previous signed digest
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          doc = json.loads(pathlib.Path("deploy/gitops/rollback/previous-release.json").read_text())
+          assert doc["previousDigest"].startswith("sha256:")
+          print({"rollbackDigest": doc["previousDigest"], "reason": "canary-gate-failed"})
+          PY

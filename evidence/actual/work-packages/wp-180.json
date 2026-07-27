@@ -1,0 +1,23 @@
+{
+  "workPackageId": "WP-180",
+  "status": "completed",
+  "completedAt": "2026-07-26T14:35:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 146, "skipped": 1},
+    {"command": "python tools/scan_secrets.py && ruff + validate_dependency_locks + test_openapi_authorization_coverage (security_scan.sh equivalent on Windows)", "exitCode": 0, "critical": 0, "high": 0},
+    {"command": "python tests/security/privacy_deletion.py", "exitCode": 0},
+    {"command": "python tools/verify_vectors.py", "exitCode": 0, "vectors": 595000, "errors": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/fraud/",
+    "src/backend/edgemint/services/fraud.py",
+    "src/backend/tests/fraud/test_fraud_service.py",
+    "tools/security_scan.sh",
+    "tools/scan_secrets.py",
+    "tests/security/privacy_deletion.py",
+    "tests/oracles/vector_oracles.py",
+    "tools/verify_vectors.py"
+  ],
+  "notes": "Fraud scoring engine aligned with fraud-score-v2.yaml and 60k vectors; device graph collusion detection, velocity anomaly rules, golden-trap signal, versioned case workflow with holds/quarantine/appeals/reversible actions and audit trail; privacy minimization, DSAR intake, and retention deletion preserving financial/audit records; incident playbooks; secret scanning and dependency/auth coverage in security_scan.sh. bash tools/validate_all.sh and bash tools/security_scan.sh not executed on Windows host; security checks run via equivalent Python commands."
+}

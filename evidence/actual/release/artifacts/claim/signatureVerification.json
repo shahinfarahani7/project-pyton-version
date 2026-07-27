@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "claim",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-26T23:13:39Z",
+  "producer": "ci/cosign-kms",
+  "digest": "sha256:79417ca5035c1b1df8bbde0dd7c5e02692f750a2355a6fe25c4425c2ab179bbd",
+  "critical": 0,
+  "high": 0
+}

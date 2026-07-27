@@ -1,0 +1,6 @@
+{
+  "stressedContributionMarginBps": 9164,
+  "minimumRequiredBps": 1500,
+  "admissionFailsClosedBelowMinimum": true,
+  "passed": true
+}

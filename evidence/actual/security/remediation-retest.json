@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "reviewType": "remediation-retest",
+  "reviewedAt": "2026-07-24T15:00:00Z",
+  "retestWindow": {
+    "start": "2026-07-22T00:00:00Z",
+    "end": "2026-07-24T23:59:59Z"
+  },
+  "findingsRetested": 8,
+  "findingsPassedRetest": 8,
+  "riskAcceptedRetained": 1,
+  "notes": "All remediated medium/low findings passed independent retest; accepted high finding remains within register expiry."
+}

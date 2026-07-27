@@ -29,9 +29,8 @@ def test_raw_uuid_bearer_is_rejected_by_default(monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setattr(event_relay, "settings", Settings(_env_file=None))
     websocket = SimpleNamespace(headers={"authorization": f"Bearer {UUID(int=1)}"})
     with pytest.raises(HTTPException) as exc:
-        event_relay._principal_from_headers(websocket)
-    assert exc.value.status_code == 503
-    assert exc.value.detail == "DELEGATED_TOKEN_VERIFIER_NOT_CONFIGURED"
+        event_relay._auth_context_from_headers(websocket)
+    assert exc.value.status_code == 401
 
 
 def test_raw_uuid_bearer_requires_explicit_development_flag(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -46,4 +45,5 @@ def test_raw_uuid_bearer_requires_explicit_development_flag(monkeypatch: pytest.
         ),
     )
     websocket = SimpleNamespace(headers={"authorization": f"Bearer {expected}"})
-    assert event_relay._principal_from_headers(websocket) == expected
+    principal_id, _workspace = event_relay._auth_context_from_headers(websocket)
+    assert principal_id == expected

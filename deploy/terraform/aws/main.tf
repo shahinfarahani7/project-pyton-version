@@ -29,19 +29,20 @@ resource "aws_ce_anomaly_monitor" "service" {
 }
 
 resource "aws_ce_anomaly_subscription" "alerts" {
-  name      = "${local.name}-cost-anomaly"
-  frequency = "DAILY"
+  name             = "${local.name}-cost-anomaly"
+  frequency        = "DAILY"
   monitor_arn_list = [aws_ce_anomaly_monitor.service.arn]
+
   threshold_expression {
-    and {
-      dimension { key = "ANOMALY_TOTAL_IMPACT_ABSOLUTE"
- match_options = ["GREATER_THAN_OR_EQUAL"]
- values = ["100"] }
-      dimension { key = "ANOMALY_TOTAL_IMPACT_PERCENTAGE"
- match_options = ["GREATER_THAN_OR_EQUAL"]
- values = ["20"] }
+    dimension {
+      key           = "ANOMALY_TOTAL_IMPACT_ABSOLUTE"
+      match_options = ["GREATER_THAN_OR_EQUAL"]
+      values        = ["100"]
     }
   }
-  subscriber { type = "EMAIL"
- address = var.alert_email }
+
+  subscriber {
+    type    = "EMAIL"
+    address = var.alert_email
+  }
 }

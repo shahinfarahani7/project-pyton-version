@@ -1,0 +1,7 @@
+{
+  "name": "RELEASE_APPROVAL_MANIFEST",
+  "value": "evidence/actual/legal-finance/signed-approvals.json",
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-20T15:30:00Z",
+  "verifiedBy": "release-manager-fixture"
+}

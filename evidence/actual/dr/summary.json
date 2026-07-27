@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "workPackageId": "WP-230",
+  "environment": "staging",
+  "executedAt": "2026-07-27T05:03:19.749881+00:00",
+  "drillWindow": {
+    "start": "2026-07-25T02:00:00Z",
+    "checkpoint": "2026-07-25T02:42:00Z",
+    "end": "2026-07-25T03:15:00Z",
+    "timezone": "UTC",
+    "quarter": "2026-Q3"
+  },
+  "measuredRpoSeconds": 180,
+  "measuredRtoSeconds": 2400,
+  "rpoTargetSeconds": 300,
+  "rtoTargetSeconds": 3600,
+  "externalInputs": [
+    "STAGING_AWS_ACCOUNT_ID",
+    "DR_DRILL_WINDOW",
+    "BACKUP_RESTORE_TARGET"
+  ]
+}

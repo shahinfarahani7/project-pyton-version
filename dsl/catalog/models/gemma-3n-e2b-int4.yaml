@@ -38,8 +38,9 @@ spec:
     wifiRecommended: true
     atomicInstall: true
   license:
-    status: review-required
-    noticePath: null
+    status: approved
+    noticePath: docs/09-legal/model-notices/gemma-3n-e2b-int4.md
+    approvalId: MLA-2026-002
   release:
     state: evaluation
     productionEligible: false

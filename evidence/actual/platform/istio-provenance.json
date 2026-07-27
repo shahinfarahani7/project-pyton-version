@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "ISTIO_CHART_PROVENANCE_EVIDENCE",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T00:13:03Z",
+  "producer": "platform/supply-chain",
+  "istioVersion": "1.24.2",
+  "chartProvenanceVerified": true
+}

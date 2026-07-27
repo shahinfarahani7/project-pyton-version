@@ -1,0 +1,27 @@
+{
+  "status": "approved",
+  "privacyNotice": {
+    "version": "privacy-notice-v2.1.0",
+    "documentPath": "docs/09-legal/privacy-notice.md",
+    "approvedBy": "dpo@edgemint.example",
+    "approvedAt": "2026-07-20T14:30:00Z"
+  },
+  "dpa": {
+    "version": "dpa-v2.1.0",
+    "documentPath": "docs/09-legal/dpa-subprocessors.md",
+    "subprocessorCount": 4,
+    "changeNotificationDays": 30
+  },
+  "dataResidency": {
+    "primaryRegion": "eu-central-1",
+    "drRegion": "eu-west-1",
+    "workspacePolicyBound": true,
+    "crossBorderTransferMechanism": "DPA SCCs where applicable"
+  },
+  "retentionSchedule": {
+    "eventRetentionDays": 30,
+    "deadLetterRetentionDays": 90,
+    "consentEvidenceDays": 2555,
+    "dataClassPolicies": ["public-v2", "internal-v2", "confidential-v2", "restricted-v2"]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "status": "approved",
+  "approvedBy": "legal@edgemint.example",
+  "approvedAt": "2026-07-19T16:00:00Z",
+  "registerVersion": "ga1-model-licenses-2026.07",
+  "models": [
+    {
+      "name": "paddleocr-mobile",
+      "version": "2.0.0",
+      "license": "Apache-2.0",
+      "approvalId": "MLA-2026-001",
+      "noticePath": "docs/09-legal/model-notices/paddleocr-mobile.md",
+      "storeDisclosureRequired": true
+    },
+    {
+      "name": "gemma-3n-e2b-int4",
+      "version": "2.0.0",
+      "license": "Gemma Terms of Use",
+      "approvalId": "MLA-2026-002",
+      "noticePath": "docs/09-legal/model-notices/gemma-3n-e2b-int4.md",
+      "storeDisclosureRequired": true
+    },
+    {
+      "name": "whisper-base-int8",
+      "version": "2.0.0",
+      "license": "MIT",
+      "approvalId": "MLA-2026-003",
+      "noticePath": "docs/09-legal/model-notices/whisper-base-int8.md",
+      "storeDisclosureRequired": true
+    }
+  ]
+}

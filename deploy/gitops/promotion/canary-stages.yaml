@@ -1,0 +1,31 @@
+promotionStrategy: progressive-canary
+stages:
+  - name: internal
+    trafficPercent: 0
+    soakMinutes: 15
+    autoPromote: true
+  - name: 1-percent
+    trafficPercent: 1
+    soakMinutes: 30
+    autoPromote: false
+    requiredMetrics:
+      - errorRateBelow: 0.01
+      - p95LatencyMsBelow: 500
+  - name: 5-percent
+    trafficPercent: 5
+    soakMinutes: 45
+    autoPromote: false
+  - name: 25-percent
+    trafficPercent: 25
+    soakMinutes: 60
+    autoPromote: false
+  - name: 100-percent
+    trafficPercent: 100
+    soakMinutes: 0
+    autoPromote: false
+rollback:
+  triggerOn:
+    - sloBurnRateCritical
+    - canaryErrorRateBreach
+    - migrationCompatibilityFailure
+  action: revert-to-previous-signed-digest

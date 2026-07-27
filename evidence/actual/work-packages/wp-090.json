@@ -1,0 +1,22 @@
+{
+  "workPackageId": "WP-090",
+  "status": "completed",
+  "completedAt": "2026-07-26T15:00:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 80, "skipped": 1},
+    {"command": "python tests/e2e/model_registry.py", "exitCode": 0},
+    {"command": "python tools/validate_model_release_evidence.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/models src/backend/tests/models", "exitCode": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/models/",
+    "src/backend/edgemint/services/model_registry.py",
+    "src/backend/tests/models/",
+    "tests/e2e/model_registry.py",
+    "tools/validate_model_release_evidence.py",
+    "src/apps/worker/integration_test/model_delivery_test.dart",
+    "database/sql/011_model_release_evidence.sql"
+  ],
+  "notes": "Model registry with digest-pinned signed manifests, promotion gate (digest/signature/license/benchmark/rollback), worker manifest/install endpoints, staged rollout/revoke/rollback, chunk replay protection, and device compatibility envelopes. Flutter integration test is a contract stub; live PostgreSQL tests skip without EDGEMINT_DATABASE_URL."
+}

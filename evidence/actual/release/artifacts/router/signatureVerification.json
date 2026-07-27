@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "router",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-26T23:13:39Z",
+  "producer": "ci/cosign-kms",
+  "digest": "sha256:4c814f082e66ae2950a66d665749acf7f778f60e6071e0de453c77e11c442170",
+  "critical": 0,
+  "high": 0
+}

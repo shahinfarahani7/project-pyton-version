@@ -1,0 +1,68 @@
+{
+  "status": "passed",
+  "releaseId": "EM-20260727-WP250GA",
+  "completedAt": "2026-07-27T08:30:00Z",
+  "stages": {
+    "internal": {
+      "status": "passed",
+      "trafficPercent": 0,
+      "soakMinutes": 15,
+      "rollbackReady": true,
+      "automaticRollbackTriggered": false,
+      "sloMet": true,
+      "errorBudgetMet": true,
+      "securityGateMet": true,
+      "marginMet": true,
+      "reconciliationMet": true
+    },
+    "1-percent": {
+      "status": "passed",
+      "trafficPercent": 1,
+      "soakMinutes": 30,
+      "rollbackReady": true,
+      "automaticRollbackTriggered": false,
+      "sloMet": true,
+      "errorBudgetMet": true,
+      "securityGateMet": true,
+      "marginMet": true,
+      "reconciliationMet": true
+    },
+    "5-percent": {
+      "status": "passed",
+      "trafficPercent": 5,
+      "soakMinutes": 45,
+      "rollbackReady": true,
+      "automaticRollbackTriggered": false,
+      "sloMet": true,
+      "errorBudgetMet": true,
+      "securityGateMet": true,
+      "marginMet": true,
+      "reconciliationMet": true
+    },
+    "25-percent": {
+      "status": "passed",
+      "trafficPercent": 25,
+      "soakMinutes": 60,
+      "rollbackReady": true,
+      "automaticRollbackTriggered": false,
+      "sloMet": true,
+      "errorBudgetMet": true,
+      "securityGateMet": true,
+      "marginMet": true,
+      "reconciliationMet": true
+    },
+    "100-percent": {
+      "status": "passed",
+      "trafficPercent": 100,
+      "soakMinutes": 0,
+      "rollbackReady": true,
+      "automaticRollbackTriggered": false,
+      "sloMet": true,
+      "errorBudgetMet": true,
+      "securityGateMet": true,
+      "marginMet": true,
+      "reconciliationMet": true
+    }
+  },
+  "handoverComplete": true
+}

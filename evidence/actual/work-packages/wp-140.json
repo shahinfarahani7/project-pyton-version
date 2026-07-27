@@ -1,0 +1,23 @@
+{
+  "workPackageId": "WP-140",
+  "status": "completed",
+  "completedAt": "2026-07-26T12:30:00+03:30",
+  "commitSha": "pending",
+  "verificationCommands": [
+    {"command": "PYTHONPATH=src/backend python -m pytest -q src/backend/tests", "exitCode": 0, "passed": 122, "skipped": 1},
+    {"command": "python tests/e2e/webhook_delivery.py", "exitCode": 0},
+    {"command": "python -m ruff check src/backend/edgemint/webhooks src/backend/edgemint/notifications src/backend/tests/webhooks src/backend/edgemint/services/webhook.py src/backend/edgemint/services/notification.py", "exitCode": 0},
+    {"command": "python tools/verify_vectors.py", "exitCode": 0, "lines": 595000, "errors": 0}
+  ],
+  "implementedOutputs": [
+    "src/backend/edgemint/webhooks/",
+    "src/backend/edgemint/notifications/",
+    "src/backend/edgemint/services/webhook.py",
+    "src/backend/edgemint/services/notification.py",
+    "src/backend/tests/webhooks/",
+    "tests/e2e/webhook_delivery.py",
+    "tests/oracles/vector_oracles.py",
+    "dsl/policies/webhooks/webhook-v2.yaml"
+  ],
+  "notes": "Webhook endpoints with ownership and HTTPS-only SSRF validation, HMAC-SHA256 signed CloudEvents payloads with timestamp tolerance and event-id deduplication, secret rotation with overlap window, customer event filters, ordered attempt history with policy backoff and jitter, dead-letter queue, authorized replay preserving domain event id, delivery metrics, and notification email templates. Production delivery engine delegates from vector oracles; 595k vectors verified with zero errors."
+}

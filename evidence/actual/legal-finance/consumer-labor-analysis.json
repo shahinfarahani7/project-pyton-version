@@ -1,0 +1,12 @@
+{
+  "status": "approved",
+  "reviewedAt": "2026-07-18T11:00:00Z",
+  "reviewer": "external-labor-counsel@example.com",
+  "jurisdictionsReviewed": ["DE", "FR", "NL", "BE", "AT", "IE", "ES", "IT", "PT", "FI"],
+  "classification": "independent_task_execution",
+  "employmentRelationshipCreated": false,
+  "minimumWageGuaranteePromised": false,
+  "scheduleControl": "worker_controlled_availability_only",
+  "findings": [],
+  "notes": "Platform copy and reward mechanics reviewed; no guaranteed earnings or employment promises in GA1 surfaces."
+}

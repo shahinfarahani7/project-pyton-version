@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "EKS_ADDON_VERSION_MANIFEST",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-27T00:13:03Z",
+  "producer": "release-inputs/fixture",
+  "value": {
+    "clusterVersion": "1.31",
+    "addons": {
+      "vpc-cni": "v1.19.0-eksbuild.1",
+      "coredns": "v1.11.4-eksbuild.2",
+      "kube-proxy": "v1.31.0-eksbuild.2"
+    },
+    "source": "deploy/terraform/aws/terraform.tfvars.example",
+    "verifiedAt": "2026-07-26T14:45:00+03:30"
+  }
+}

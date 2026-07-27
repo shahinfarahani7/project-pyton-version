@@ -1,8 +1,49 @@
-import React from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
+import { SessionProvider } from './auth/session';
+import { AppShell } from './components/AppShell';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { ApprovalsPage } from './pages/ApprovalsPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { EmergencyPage } from './pages/EmergencyPage';
+import { LoginPage } from './pages/LoginPage';
+import {
+  DisputesPage,
+  FraudPage,
+  IncidentsPage,
+  ModelsPage,
+  ReconciliationPage,
+  TasksPage,
+  WorkersPage,
+} from './pages/ViewsPages';
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/workers" element={<WorkersPage />} />
+          <Route path="/models" element={<ModelsPage />} />
+          <Route path="/fraud" element={<FraudPage />} />
+          <Route path="/disputes" element={<DisputesPage />} />
+          <Route path="/reconciliation" element={<ReconciliationPage />} />
+          <Route path="/incidents" element={<IncidentsPage />} />
+          <Route path="/approvals" element={<ApprovalsPage />} />
+          <Route path="/emergency" element={<EmergencyPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+
 export function App() {
-  return <main>
-    <header><strong>EdgeMint</strong><nav>Overview · Tasks · Workers · Finance · Security</nav></header>
-    <section className="hero"><h1>EdgeMint Operations Portal</h1><p>Authenticated production shell. Generated API clients, workspace authorization, audit logging, optimistic concurrency, telemetry, and error boundaries are added by the assigned Cursor work packages.</p></section>
-    <section className="grid"><article><h2>System status</h2><p>Production traffic is permitted only after dependency readiness and release evidence pass.</p></article><article><h2>Security</h2><p>MFA, least privilege, tamper-evident audit, and strict workspace isolation are mandatory.</p></article></section>
-  </main>;
+  return (
+    <SessionProvider>
+      <AppRoutes />
+    </SessionProvider>
+  );
 }

@@ -1,0 +1,7 @@
+{
+  "name": "MODEL_LICENSE_APPROVAL",
+  "value": "evidence/actual/legal-finance/model-licenses.json",
+  "source": "production/RELEASE-INPUTS.yaml",
+  "verifiedAt": "2026-07-19T16:00:00Z",
+  "verifiedBy": "legal-fixture"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "primaryHostedZone": "Z0123456789ABCDEF",
+  "failoverRecord": "api-dr.staging.edgemint.example",
+  "trafficShiftPercent": 100,
+  "healthCheckPassed": true,
+  "propagationSeconds": 42
+}

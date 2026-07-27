@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "releaseId": "EM-20260727-WP250GA",
+  "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+  "subject": "notification",
+  "status": "verified",
+  "verified": true,
+  "generatedAt": "2026-07-26T23:13:39Z",
+  "producer": "ci/syft",
+  "digest": "sha256:6a50e46e2b69a58fc61c27d3c0f1b04e76ef3465cbabc39a6ccdfdfe9b9c6c9b",
+  "critical": 0,
+  "high": 0
+}

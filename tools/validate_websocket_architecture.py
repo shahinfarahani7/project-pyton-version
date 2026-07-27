@@ -32,6 +32,9 @@ tf='\n'.join(p.read_text() for p in (ROOT/'deploy/terraform/aws').glob('*.tf'))
 for token in ['engine="postgres"','engine_version=var.postgresql_engine_version','multi_az=true','port=5432','iam_database_authentication_enabled=true']:
  if token.replace(' ','') not in tf.replace(' ',''):errors.append('RDS PostgreSQL control missing:'+token)
 relay=(ROOT/'src/backend/edgemint/services/event_relay.py').read_text()
+eventing=(ROOT/'src/backend/edgemint/building_blocks/eventing/relay.py').read_text()
+inbox=(ROOT/'src/backend/edgemint/building_blocks/eventing/transactional_inbox.py').read_text()
+relay_bundle=relay+eventing+inbox
 for token in ['@app.websocket("/events/v1"','BROWSER_CLIENT_MUST_USE_BFF','claim_websocket_deliveries','acknowledge_delivery','edgemint.events.v1']:
- if token not in relay:errors.append('Python event relay control missing:'+token)
+ if token not in relay_bundle:errors.append('Python event relay control missing:'+token)
 print(json.dumps({'status':'passed' if not errors else 'failed','transport':'wss','database':'PostgreSQL 18','eventCount':len(asyncapi.get('channels',{})),'errors':errors},indent=2));sys.exit(1 if errors else 0)
