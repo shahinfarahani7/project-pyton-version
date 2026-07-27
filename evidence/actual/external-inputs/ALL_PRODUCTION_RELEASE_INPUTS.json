@@ -3,7 +3,7 @@
   "value": {
     "releaseInputsVerified": 41,
     "manifestPath": "evidence/actual/release-evidence.json",
-    "commitSha": "e52b44cd82da882271a5586ef540e810cdaa2ff6",
+    "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
     "releaseId": "EM-20260727-WP250GA"
   },
   "source": "production/RELEASE-INPUTS.yaml",

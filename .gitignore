@@ -5,3 +5,12 @@ __pycache__/
 .pytest_cache/
 node_modules/
 .terraform/
+
+# Release signing keys (never commit private material)
+evidence/actual/cosign.key
+evidence/actual/cosign.pub
+evidence/actual/release-signing.key
+
+# Frontend build output
+src/apps/customer-portal/dist/
+src/apps/operations-portal/dist/

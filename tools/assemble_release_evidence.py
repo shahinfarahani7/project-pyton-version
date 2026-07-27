@@ -300,7 +300,7 @@ def main() -> int:
             source_path = ROOT / value
             if source_path.is_file():
                 payload = json.loads(source_path.read_text(encoding="utf-8"))
-                if payload.get("releaseId") != release_id:
+                if payload.get("releaseId") != release_id or payload.get("commitSha") != commit_sha:
                     payload = attestation(
                         release_id=release_id,
                         commit_sha=commit_sha,
