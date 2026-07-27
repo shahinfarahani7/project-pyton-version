@@ -32,7 +32,7 @@ spec:
       replay and dead-letter tables
     objectStorage: Amazon S3
     mobile: Flutter 3.44 stable
-    web: Node.js 24 LTS plus React and TypeScript
+    web: Node.js 24 LTS plus Vue 3 and JavaScript
     containerOrchestrator: Amazon EKS
     infrastructureAsCode: Terraform plus Helm
   cloud:
