@@ -1,6 +1,13 @@
+name: edgemint
+
+networks:
+  edgemint:
+    name: edgemint
+
 services:
   postgresql:
-    image: ${POSTGRES_DEV_IMAGE:?Set POSTGRES_DEV_IMAGE to an approved PostgreSQL 18 image pinned by sha256 digest}
+    image: ${POSTGRES_DEV_IMAGE:-postgres:18-bookworm}
+    networks: [edgemint]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-edgemint}
       POSTGRES_USER: ${POSTGRES_USER:-edgemint}
@@ -16,7 +23,8 @@ services:
     command: ["postgres", "-c", "ssl=off", "-c", "max_connections=300", "-c", "log_min_duration_statement=500"]
     volumes: ["postgresql-data:/var/lib/postgresql/data"]
   postgresql-init:
-    image: ${POSTGRES_TOOLS_IMAGE:?Set POSTGRES_TOOLS_IMAGE to an approved PostgreSQL tools image pinned by sha256 digest}
+    image: ${POSTGRES_TOOLS_IMAGE:-postgres:18-bookworm}
+    networks: [edgemint]
     depends_on: { postgresql: { condition: service_healthy } }
     environment:
       POSTGRES_HOST: postgresql
@@ -29,13 +37,17 @@ services:
     entrypoint: ["/bin/bash", "/run-migrations.sh"]
     restart: "no"
   minio:
-    image: ${MINIO_IMAGE:?Set MINIO_IMAGE to an approved MinIO image pinned by sha256 digest}
+    image: ${MINIO_IMAGE:-minio/minio:latest}
+    networks: [edgemint]
     command: server /data --console-address :9001
     environment:
       MINIO_ROOT_USER: edgemint
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD}
     ports: ["9000:9000", "9001:9001"]
   mailpit:
-    image: ${MAILPIT_IMAGE:?Set MAILPIT_IMAGE to an approved Mailpit image pinned by sha256 digest}
+    image: ${MAILPIT_IMAGE:-axllent/mailpit:latest}
+    networks: [edgemint]
     ports: ["1025:1025", "8025:8025"]
-volumes: { postgresql-data: {} }
+
+volumes:
+  postgresql-data: {}

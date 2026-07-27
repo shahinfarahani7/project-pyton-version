@@ -1,0 +1,35 @@
+# Optional web portals — use with compose.yaml + compose.backend.yaml
+
+services:
+  customer-portal:
+    build:
+      context: .
+      dockerfile: src/apps/customer-portal/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_CUSTOMER_API_BASE_URL:-http://localhost:8080}
+    ports:
+      - "3000:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks: [edgemint]
+    restart: unless-stopped
+
+  operations-portal:
+    build:
+      context: .
+      dockerfile: src/apps/operations-portal/Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_OPERATIONS_API_BASE_URL:-http://localhost:8083}
+    ports:
+      - "3001:80"
+    depends_on:
+      operations:
+        condition: service_healthy
+    networks: [edgemint]
+    restart: unless-stopped
+
+networks:
+  edgemint:
+    name: edgemint
+    external: true

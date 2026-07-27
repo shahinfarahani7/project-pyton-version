@@ -2,8 +2,8 @@
 
 - Version: `5.0.0`
 - Language: English only
-- Non-integrity content files: `1509`
-- Text lines: `711023`
+- Non-integrity content files: `3860`
+- Text lines: `759758`
 - Semantic vector lines: `595000`
 - OpenAPI operations and operation samples: `141`
 - Typed CloudEvent contracts and examples: `186`
@@ -17,24 +17,85 @@
 
 ## File types
 
+- `.bat`: 1
+- `.bin`: 6
+- `.cc`: 7
+- `.check_cache`: 1
+- `.cmake`: 8
+- `.conf`: 2
+- `.cpp`: 5
 - `.css`: 2
-- `.dart`: 2
-- `.example`: 1
+- `.d`: 28
+- `.dart`: 24
+- `.dat`: 2
+- `.depend`: 3
+- `.dill`: 7
+- `.dll`: 2
+- `.docker`: 1
+- `.env`: 1
+- `.example`: 3
+- `.exe`: 5
+- `.exp`: 1
+- `.filters`: 10
+- `.frag`: 6
+- `.h`: 41
+- `.hcl`: 1
 - `.html`: 2
-- `.json`: 426
+- `.ico`: 1
+- `.ilk`: 1
+- `.iml`: 2
+- `.jar`: 1
+- `.java`: 1
+- `.js`: 18
+- `.json`: 2079
 - `.jsonl`: 9
-- `.lock`: 2
-- `.md`: 220
+- `.key`: 2
+- `.kt`: 3
+- `.kts`: 3
+- `.lastbuildstate`: 9
+- `.lib`: 3
+- `.list`: 1
+- `.lock`: 3
+- `.m`: 1
+- `.manifest`: 1
+- `.md`: 234
+- `.obj`: 13
+- `.otf`: 3
+- `.pbxproj`: 1
+- `.pdb`: 5
+- `.pem`: 1
+- `.plist`: 4
+- `.png`: 23
+- `.properties`: 3
 - `.proto`: 10
-- `.py`: 122
-- `.sh`: 4
-- `.sql`: 9
-- `.tag`: 1
+- `.ps1`: 2
+- `.pub`: 1
+- `.py`: 282
+- `.rc`: 1
+- `.recipe`: 9
+- `.res`: 1
+- `.rule`: 6
+- `.sh`: 7
+- `.sig`: 1
+- `.sln`: 2
+- `.sql`: 12
+- `.stamp`: 41
+- `.storyboard`: 2
+- `.swift`: 5
+- `.tag`: 5
 - `.tf`: 12
+- `.tlog`: 54
 - `.toml`: 1
-- `.ts`: 6
-- `.tsx`: 6
-- `.txt`: 9
-- `.yaml`: 630
-- `.yml`: 2
-- `<none>`: 33
+- `.ts`: 5
+- `.txt`: 19
+- `.vcxproj`: 12
+- `.vue`: 29
+- `.xcconfig`: 3
+- `.xcscheme`: 1
+- `.xcsettings`: 2
+- `.xcworkspacedata`: 2
+- `.xml`: 12
+- `.yaml`: 639
+- `.yml`: 7
+- `.z`: 3
+- `<none>`: 78
