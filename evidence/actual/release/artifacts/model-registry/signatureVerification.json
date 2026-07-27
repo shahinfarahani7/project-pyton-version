@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
   "subject": "model-registry",
   "status": "verified",
   "verified": true,
-  "generatedAt": "2026-07-26T23:18:16Z",
+  "generatedAt": "2026-07-26T23:18:49Z",
   "producer": "ci/cosign-kms",
   "digest": "sha256:7972a40f9ccad124ac45c6481478dcb62462186ee6f2dca7034ed8c69a6db9ef",
   "critical": 0,

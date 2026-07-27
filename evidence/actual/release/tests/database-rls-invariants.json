@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
   "subject": "database-rls-invariants",
   "status": "passed",
   "verified": true,
-  "generatedAt": "2026-07-27T01:47:16Z",
+  "generatedAt": "2026-07-27T01:47:49Z",
   "producer": "ci/tests",
   "result": "passed"
 }

@@ -2,468 +2,468 @@
   "schemaVersion": "5.0",
   "releaseId": "EM-20260727-WP250GA",
   "environment": "production",
-  "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
-  "generatedAt": "2026-07-27T05:18:16Z",
-  "expiresAt": "2026-07-28T04:18:16Z",
+  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
+  "generatedAt": "2026-07-27T05:18:49Z",
+  "expiresAt": "2026-07-28T04:18:49Z",
   "trustedRoots": {
     "path": "evidence/actual/release/trusted-roots.json",
-    "sha256": "cebabaf3f9a57b13659346ccb258fe7bc290cd5c8d3b80c512b4472fa966c111",
+    "sha256": "12b51659d57cc138ff3b2f95acade2c4c5f3b001f5ff6dba251bc8265c7ce9b4",
     "mediaType": "application/json",
-    "generatedAt": "2026-07-27T00:18:16Z",
+    "generatedAt": "2026-07-27T00:18:49Z",
     "releaseId": "EM-20260727-WP250GA",
-    "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+    "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
   },
   "repositoryState": {
     "path": "evidence/actual/release/repository-state.json",
-    "sha256": "e420de9b54f769c65df1edf111675709ca404940384189558047db8890dc35a9",
+    "sha256": "ded942b2d15eec6f6eb39cff34d2999a8f8658c3cc599458bca4f955becf3721",
     "mediaType": "application/json",
-    "generatedAt": "2026-07-27T05:18:16Z",
+    "generatedAt": "2026-07-27T05:18:49Z",
     "releaseId": "EM-20260727-WP250GA",
-    "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+    "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
   },
   "externalInputs": [
     {
       "name": "APPLE_APP_ATTEST_KEY_SECRET_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/APPLE_APP_ATTEST_KEY_SECRET_ARN.json",
-        "sha256": "b761ddcc16d91a5d8f14de1223c25b767461cded7244e1cc347a5eb9c2974c4c",
+        "sha256": "7fbd05d4c0918c5116fafaf55ea514ce1d7e06e0e422eb11febc8937abd001ff",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "AWS_ACCOUNT_ID",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/AWS_ACCOUNT_ID.json",
-        "sha256": "ed5a6677be5a69c5afd75c3082d2db93bd8bb7a7e47c1bd5a58c6f2ffb1aa0dd",
+        "sha256": "b58e22b5b4d93cd0d7ce2a8e4e399e00dccb02e046ef0cd5d31180234497a423",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "AWS_DR_REGION",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/AWS_DR_REGION.json",
-        "sha256": "8819ac6db0142ac0f0f149bccaf010ad8238b7038642524aa950b39ad4a08c2b",
+        "sha256": "512c212dcd83003bcc2ed26759fbae02c767cb9ecca4a6545be16b28b4fb40df",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "AWS_PRIMARY_REGION",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/AWS_PRIMARY_REGION.json",
-        "sha256": "84854844130fa4f26ce9f60215cf1aa352ee657f13d820c81798cfd8a5111d39",
+        "sha256": "7507447b014ae8fdfededec6b71875b4a13a21f87c2f9af570b93357bc5d5ec2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "COGNITO_CUSTOMER_POOL_ID",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/COGNITO_CUSTOMER_POOL_ID.json",
-        "sha256": "6b18ef1141d7cd2c90df4ef9ceed346e5054bdbbeeb896cca5ea3ebb7605f1f6",
+        "sha256": "49637681408c54533ecc12428facb3ea8c6e524d0f5cdc97d8bd82f178310c4f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "COGNITO_OPERATIONS_POOL_ID",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/COGNITO_OPERATIONS_POOL_ID.json",
-        "sha256": "ab865c33b7aafb0cad9e9d7ec6778011155d7f012d5384bfa779deebe2156de5",
+        "sha256": "585bc417c0a7e1cbadb5a20fcb353063424e79502d7804044b26a83b5c4d04ef",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "COSIGN_KMS_KEY_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/COSIGN_KMS_KEY_ARN.json",
-        "sha256": "c8574a411ff717459f310ceffa4245d65e0593aba54f0a000030a2a7515e9ec3",
+        "sha256": "48723f0ed8369acecb9bec97fabf52757516f12ff8fce77e432855799d185633",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "COSIGN_TRUSTED_PUBLIC_KEY_SHA256",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/COSIGN_TRUSTED_PUBLIC_KEY_SHA256.json",
-        "sha256": "503a54efac0b876b8358d302ac1a313e408d029e46850663da9c241636d80386",
+        "sha256": "6480f4c0429f3d132bdb276c97c3c91466eaec9a86c5b802b780933816467b69",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "DATABASE_GENERATION",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/DATABASE_GENERATION.json",
-        "sha256": "5942bdb084e6fa8d6b33766beee701241a0b88b2b725e066b9fa0f322a29cb71",
+        "sha256": "97420a94bd9fff1299b5b37727f0137b37fe1da47e49d9c090d2f1b4ab0af3bc",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "EKS_ADDON_VERSION_MANIFEST",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/platform/eks-addon-versions.json",
-        "sha256": "8496494021de4333e8d82cd5de2a4c18547b4abe6fa4414e8f8063db305a0390",
+        "sha256": "228d6df00426f204850c780c112e2d64e4b432371da330e67e71cde3154ca2b2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "EKS_CLUSTER_VERSION",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/EKS_CLUSTER_VERSION.json",
-        "sha256": "9c72a3e0d26530aafcc3bf3130af8b40fb647bed04e212a9949c332930d5220c",
+        "sha256": "74f7576303251ff837f015b6b44c44f5526cfa051c6abb695f7f4166609b4ef3",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "GA1_MODEL_RELEASE_MANIFEST",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/models/ga1-release-manifest.json",
-        "sha256": "6bbac138ae2414dcd4c2347d2f6512f86ab3847910843203f6d341b83c26159f",
+        "sha256": "8fb11685b9aae0726f3a273b20d5041cfd73bdec384162a6537860b927b5b898",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "ISTIO_CHART_PROVENANCE_EVIDENCE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/platform/istio-provenance.json",
-        "sha256": "3ece64e6ed96a4f492dc9487b1f1469d0d9c838cd837b8856927ac8840b0101a",
+        "sha256": "c21584aed839e20a1a0dff1d5cc1fb34b73de99ac9994f3877f613a8213b99b7",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "ISTIO_VERSION",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/ISTIO_VERSION.json",
-        "sha256": "22f88f5d425aace9ee493cc21cc4c902bfebb548df144465eddfe1837c82fe04",
+        "sha256": "51b60c0af2087c20a6bd00bf07c4f272ddda1b5aaf1ec2928bfa19e4567eb241",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "MAILPIT_IMAGE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/MAILPIT_IMAGE.json",
-        "sha256": "71db595fbf8a7b917edbb7a0776b4d3bf204c4cddc039051341a1f7f0f3448fb",
+        "sha256": "2cf93792d91b588e058f4b7cd0c857b9d129ec80058f5c99b2a485df4aacb420",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "MINIO_IMAGE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/MINIO_IMAGE.json",
-        "sha256": "dcf1c678ec3d3e682015de5c8047dc5b67cecd4d68d9008d3e634a40229a38e7",
+        "sha256": "0f77ba981ad3a2dfe8cf3a3f79366c6022842c1f16810b7178543e666c65059d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "MODEL_SIGNING_KMS_KEY_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/MODEL_SIGNING_KMS_KEY_ARN.json",
-        "sha256": "4ee2731b4c34682f529885236393b2da378fe128217690e4df0c33a7b622fc52",
+        "sha256": "556cd0fd2cce6d621241b0bb624a3f66d38101d5af06cd1b69e35616e9329217",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/OPERATIONS_OIDC_CLIENT_ID_SECRET_ARN.json",
-        "sha256": "f092fa0bf0cb2af320a45586bb8979c6e845d836607c948b5fc8a591e7d5f18e",
+        "sha256": "dc97ebdfc463b11d61094d198c66465602f9a540b3465ccc421d4b58f599483f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "OPERATIONS_OIDC_CLIENT_SECRET_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/OPERATIONS_OIDC_CLIENT_SECRET_ARN.json",
-        "sha256": "09ff76c2cac58274b272f5854a44144f4cd67c74d75f36aaf5e1ee7a70d15cf2",
+        "sha256": "f998ce3cedf66550049befb4cb8273bc4245fe4b10805e878ba90e276801c8f9",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "OPERATIONS_OIDC_ISSUER",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/OPERATIONS_OIDC_ISSUER.json",
-        "sha256": "d9d8df118090150f8177e13390d35b2e6327ef622311ba1931411057c6377e91",
+        "sha256": "5d1bae9d2275747be9591b864e766fce2dfa81a381e9e3d49f3fb4804481528b",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "OPERATIONS_OIDC_PROVIDER_NAME",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/OPERATIONS_OIDC_PROVIDER_NAME.json",
-        "sha256": "3a99e9c6a02f16b7e6e0b1e13f2e3cf7cc8d0df3ae6542bd6bbedfda9f53bc88",
+        "sha256": "cc1c4cb6f02ab768ec1bc5727285940caaef820fd3c6531f446b1338df31fcd9",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "OPERATOR_IDP_FIDO2_POLICY_EVIDENCE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/identity/operator-fido2-policy.json",
-        "sha256": "422e83cc2df7f166c4d7d85cb7b66a880571822d7673ce83549be4f53533cec3",
+        "sha256": "1b6b654cfacec63059f417f7b6a56a28802b9b11c5d99b465fc0932b2b7e082a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "PLATFORM_ADMIN_ROLE_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/PLATFORM_ADMIN_ROLE_ARN.json",
-        "sha256": "50d4076bc5e9ea4014f8576d0ea03f048f4a98aed865696ac2a0f7382be34c4d",
+        "sha256": "4fcde8382d3f723f697ba19b3c9b08b7091533901ca35fb1377e1ae1cf98618e",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/PLAY_INTEGRITY_SERVICE_ACCOUNT_SECRET_ARN.json",
-        "sha256": "89b6623c8178781cfc3ae7f5cf5fddc5b08f9cdbb22bcd90d9259b76187f8824",
+        "sha256": "cb5bdc39dd563b805d66bd459b4058caf098437355bbf51a22e0844898175481",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "POSTGRES_DEV_IMAGE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/POSTGRES_DEV_IMAGE.json",
-        "sha256": "eb9bfb95f74957aa277044dfe67b73c73bb42b3e5940129e97ce28a0539a928d",
+        "sha256": "954fdffd412d5c49677b9253ebd8e8df8c3705760af882cf4fa4e7c0ec054f16",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "POSTGRES_ENGINE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/POSTGRES_ENGINE.json",
-        "sha256": "5be4fee4e8e936381b617f6ef99e49f23e01763da8da38194391228a60ad2e77",
+        "sha256": "67f6b8426148e8de1d5a3e5f718d5ce3fffda927b1b30e86f75888a3adb4df31",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "POSTGRES_ENGINE_VERSION",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/POSTGRES_ENGINE_VERSION.json",
-        "sha256": "7325da3e15bc6285f13271ba6ae8bdb91e02d2e300930e91cf18227ea3c6b974",
+        "sha256": "1923315ef669ccbf37f68a882080e5591a3cf853909af864300a51e92b40dec5",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "POSTGRES_PARAMETER_GROUP_FAMILY",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/POSTGRES_PARAMETER_GROUP_FAMILY.json",
-        "sha256": "0f45d9e3787ca896a05ef1fe82f2c896f1268147ca5bc5bebfaefe02a0a91cec",
+        "sha256": "e521a755bdcc981c669c402d9615729316d86f35b1e3077cef04902aa9b62cbe",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "POSTGRES_TOOLS_IMAGE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/POSTGRES_TOOLS_IMAGE.json",
-        "sha256": "b4294c540744aedffa612dcb0e6a2f90e33c8a219860f0ed92c6d8e2207071ce",
+        "sha256": "4c09f37557ef8e3ceefb1ec678d95e3e01839a3db73e380002aed543a2b8c80f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "PRODUCTION_DOMAIN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/PRODUCTION_DOMAIN.json",
-        "sha256": "9739bf960e534e72a0061a736382f714e1ff0da273f3fe1f793c07c27b7ed0fa",
+        "sha256": "4bed2317630d5cdbbde7f4dea250c3dc899b0296d75934780001d34241e8e0f6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "PYTHON_RUNTIME_IMAGE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/PYTHON_RUNTIME_IMAGE.json",
-        "sha256": "95c16f7f034f855cf6fa7617217e0d606d3170f279fbb915b7d8ccd45225b592",
+        "sha256": "681ca46997740488571b38a538747678e49ac320cc13587c1cc23140af868f0e",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "ROUTE53_ZONE_ID",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/ROUTE53_ZONE_ID.json",
-        "sha256": "e453c3263fd6034ee47c120fded3c82aba6988d71922df05f787bf35cac2bfa8",
+        "sha256": "b6410523709518f903ede06e5337af6502750ada1d46596fde434528d5d110c9",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "STRIPE_CONNECT_PLATFORM_ACCOUNT_ID",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/STRIPE_CONNECT_PLATFORM_ACCOUNT_ID.json",
-        "sha256": "8547fbab73f60a37a98d65b3ff24db8a46162203e69baf075950ffadcd606bac",
+        "sha256": "0422434327e918f6a9e2f985cc14b4f56611f724e4f6c2cb5be55ac70d9ab8d2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "STRIPE_SECRET_KEY_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/STRIPE_SECRET_KEY_ARN.json",
-        "sha256": "aebf1b0f53f87c56d86644c29da369f89f0786e525961e7093ff7e38237633dd",
+        "sha256": "20ace0a0701b73b19cd4899cf070a44b9b5af192dd2000ea4bd5572d4cde1cb9",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "STRIPE_WEBHOOK_SECRET_ARN",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/STRIPE_WEBHOOK_SECRET_ARN.json",
-        "sha256": "803d22042b8de919af4da7d6f3556d02f92d8d8f530684034e4eb2087008411f",
+        "sha256": "99a2962424d5232dbda62bc572d21714047308977236857f3d752815045c25cb",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "TERRAFORM_LOCK_TABLE",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/TERRAFORM_LOCK_TABLE.json",
-        "sha256": "aefa8cd5d3a2a47fa425dbd980dc2a83709f6eab94ce25107a79a3106f544464",
+        "sha256": "c1a6fc8c64b48599f5b85846399bb900b84c15082f98b0e4d385416105df5996",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "TERRAFORM_STATE_BUCKET",
-      "verifiedAt": "2026-07-27T00:18:16Z",
+      "verifiedAt": "2026-07-27T00:18:49Z",
       "evidence": {
         "path": "evidence/actual/release/external-inputs/TERRAFORM_STATE_BUCKET.json",
-        "sha256": "cbf8fd170aaf7d4db96a5e5697bbe53ac4852348bbab9aef51c7fb8a0fa4b91a",
+        "sha256": "d7254ad9c7ddb93b36edcde0e37c1f1ce0cc3d1debdea08ccc26c747613ebaed",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T00:18:16Z",
+        "generatedAt": "2026-07-27T00:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     }
   ],
@@ -471,1000 +471,1000 @@
     {
       "name": "api-gateway",
       "digest": "sha256:30431fcdd7b3bbb5fa9e685c89a5134fd035503ffd9956355cbff7c6360ee1f7",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/api-gateway/sbom.json",
-        "sha256": "ee1402e59116d62ff21f1db1d109e3d639e1acee922cdb73a155e32ac6820003",
+        "sha256": "c473c8157e16de65bc50022233e86d68722fefef0a7e7186e58f0b512135144a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/api-gateway/signatureVerification.json",
-        "sha256": "ecdc80dfe429b265916edd7a41de7a4b5d0d39f87aa5b8737bb52fa807cde77e",
+        "sha256": "c32b14fa506355672c2feafe8ee7709d6cefc782647f79c6e487b3b5459129a6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/api-gateway/provenance.json",
-        "sha256": "2db3c6bc9520366a6a7fed0e65b60dcf88dbeaa459f97d1c4b857da5f524f5d8",
+        "sha256": "9e479f804cdf4e1553dcf22183177e3a525ad80b47865c478bc747ca29d90a0f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/api-gateway/vulnerabilityReport.json",
-        "sha256": "f7279f16fb35cf60bc82c5eb18276a6f9e49c3e8443c2b7fee08ef459423d23f",
+        "sha256": "d5a26ce461517e6360ae4c1f26b25da298805ed0122f91a998fd5b0c02beb495",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "event-relay",
       "digest": "sha256:ea8d36121f6725fea3bf93220ea66c41cc3b8181759c00960d982231ca3deb39",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/event-relay/sbom.json",
-        "sha256": "052588f08af7c592e23cc1a218cc4a595b881c924c9baf20a5cdb2cb985a4a1d",
+        "sha256": "dd8c520f22b8e386f800ec3004dd74f5ca9cc3cee94b8290007d947c826e829e",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/event-relay/signatureVerification.json",
-        "sha256": "ac4cf7a5dab4c7cab5351389555bfbd0e41e4563c438a3114c48fb8b840069aa",
+        "sha256": "6987f151ae8b9f7494de5e27d961bbbd09d43cb75d9b8fe6f000bca453a560d8",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/event-relay/provenance.json",
-        "sha256": "3d31761fa81eade7cf43efab0c323174c687eb4ca95d8bf3b6817887f991abfe",
+        "sha256": "6be310bfb695d38c68237f8524787fbcaa48a668834c200118cb845fe68110b9",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/event-relay/vulnerabilityReport.json",
-        "sha256": "ee3bf90f3f1035ace04b5253854ade0830fba9cbb4f9daf3612b9b38f7c29b78",
+        "sha256": "85470f93f24c380c8f69e1e7360755f55d45110591d701894157022239aa3c09",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "identity",
       "digest": "sha256:b9112bd0951a9730e0b1ee8984a2a2c9c748c687e41962f691ea8c209c751729",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/identity/sbom.json",
-        "sha256": "ad28da3363d767ebbf3fe8ad0638fe0534b8fa80b24d21f41dfbf1af1c1c67fe",
+        "sha256": "9ca965efd44bd40772952f773bbacf44f6eef4304cc28a0683b6665fdac3920d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/identity/signatureVerification.json",
-        "sha256": "2c835ef8f388fa8e71fb65944bb5b269ccea2be1f9e147c28354d20b512f199a",
+        "sha256": "adc0128de99a4e0a3500a6ab953a08a597cec571addb142135ca8272c514f89f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/identity/provenance.json",
-        "sha256": "9ed6b1a9ce5f37b6b16e1d973be9e2f3b3a6351510819f034da8f52a9b9273ec",
+        "sha256": "40195c3e3b7320456f9278439e79ad6661f1f45788f554a5c75d0fa67aa79f06",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/identity/vulnerabilityReport.json",
-        "sha256": "94f8732db89e48180ceedcfe678ef3ee9a603b273226e39f9783011c0b49ba09",
+        "sha256": "971e2a7eb9c330f0cbff400471411090c3ae3df062167ae258b2f25447a53f23",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "customer",
       "digest": "sha256:889214f4f4f748d984579de10efcf9c1c1b22766cc7078f66974e6782dce473b",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/customer/sbom.json",
-        "sha256": "e0604deb266d4a9e3c98afbfdabc5965c301ad97e335b6294371841e8d9a321e",
+        "sha256": "f3d307c3666d687bbd13549655816016a6ee7db127e0b7ddb2a6cebbbd4a45f3",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/customer/signatureVerification.json",
-        "sha256": "8c21bf779f6450ac8ba898a2df8d6545c71aea892d27f54bc4a8573ba6a6a781",
+        "sha256": "9b419982f1b8736b79f0b689df9fd36c3ab7fe2cb1fd2b8f377bc1ed2fa9843a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/customer/provenance.json",
-        "sha256": "67fcc850eb0863dff376a7fe0e059d189641a06ca10171b762479f2388bcc2d9",
+        "sha256": "3af74619ca2a62f82a3c034cb170fdbb82e1cd9c490617ee4098f4d3017695f6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/customer/vulnerabilityReport.json",
-        "sha256": "03031ce4f046cc6903a6f6df20f55407fb46ddecca6b95d55ae7f3c5c46a3765",
+        "sha256": "dc047aa38253d66c443ae38d51d50f383f286f3607809bc11226b4439e6e985d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "file",
       "digest": "sha256:4dfa55b4dd508f8bf600340337ef0433c09739d1168579c4e1f345c73a86856b",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/file/sbom.json",
-        "sha256": "f359ebad676efb76f582cd67f16192a20e4c11e616587aaf28fe65d449f0ba53",
+        "sha256": "4c182b2a32e89a6152a246e50933e645b406b6d0952329376ccb1c521f549165",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/file/signatureVerification.json",
-        "sha256": "b983f54d94e8d0b6acbec945ffa42c754ccfcde5e603e12ad098eab8e8fdbd8a",
+        "sha256": "0af973857ff0fcdb5681d6d3a1c35c8ab530d21132f930c55998d957800739c4",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/file/provenance.json",
-        "sha256": "71b0243bbe7e10f13d39d3fed78c936a20f97c4e499cbac63ffa7fed29d9fd54",
+        "sha256": "d2ebbf5ed48b32afcaea3f7d458e0c241c15af5660d3510e5d9de13f14d7527f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/file/vulnerabilityReport.json",
-        "sha256": "a6c3c1cfe735cc5820d9d4acf26a16813628941ed7deef69cf89cd0f5d217c01",
+        "sha256": "e5eaf9560c4575c94851652acdf36e2301ce687cabc6a8f21f2e775af2890452",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "task-intake",
       "digest": "sha256:05953a76550a279f63707917ad8fa768b883553125aeddde05e4c2b622b6ea78",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/task-intake/sbom.json",
-        "sha256": "51b4f6df761b687286b7877fd37995ac855b67985c29e5a30d09df1067efc078",
+        "sha256": "2943150176095985c8c52aa174bd7b8f45135cc50e7a336ad3afa6e884098ad7",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/task-intake/signatureVerification.json",
-        "sha256": "a810fb99b5e32a14492f81b5ab587f3e6a16ab2800d99610de2264789d6477da",
+        "sha256": "a646d4b316c50e6f5d5d9279d2c4b42842f7cea2c1b9e0329c003d2f60f27e4e",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/task-intake/provenance.json",
-        "sha256": "8c00a377f7d1785c1cc09d498ed159a7cd0e59480f949fd4c0473f89d1ecadb3",
+        "sha256": "86c9ba8805b803763aaf04ae0a96a1c68c06355c90b5cd6a537b91a9adb25c85",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/task-intake/vulnerabilityReport.json",
-        "sha256": "f8ec3fe46f228a92be8c4446945297de0ad4bfe440cf8d122f589ad80a13af52",
+        "sha256": "cb512ef6e19c10e5cc11bbe743d242f39ec6310dc7ff132d149c012391af7447",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "pricing",
       "digest": "sha256:aa113164ef9a63740a17949d444a7c8ea132cb0d78ac5f3a1038b11f642a5036",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/pricing/sbom.json",
-        "sha256": "144dd05c6c08aad9a3a7a8b78dd228a56e212032645a4473c9364fe2ee91f8e7",
+        "sha256": "33711a32c5cb0ad8c67b1773d6062f5cac609d7a634f50745e153f4f15ee0908",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/pricing/signatureVerification.json",
-        "sha256": "e601fc6c63a9621a43db7d2695eef964f1ffccd04c9cd58e8952d1220c3f2a77",
+        "sha256": "b02ae330b88ad2787ec1f0a871fcb1cd9a5b7a28f795b70fbee6d1c648901fc2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/pricing/provenance.json",
-        "sha256": "f5cd8b97170fbe088cf5f90c33786b6e3dc7bf8ffd9ec946788f53419f455bcb",
+        "sha256": "19fcd2173e58f6a714cb13a467045b77787e6b67eff04dddc0fb9cabf354bbe6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/pricing/vulnerabilityReport.json",
-        "sha256": "ea96ffab798648277d13fd2a13c13fd149e0dd16fc707df30fb756e37b6a8349",
+        "sha256": "8c97d493cd0af2c79a699a9bb97bde6811bfc1d9b4b628612483e76245770ac7",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "router",
       "digest": "sha256:4c814f082e66ae2950a66d665749acf7f778f60e6071e0de453c77e11c442170",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/router/sbom.json",
-        "sha256": "f5d08eafbd789eecc2efa833d375ff7ff158c771db9ac8e2063988ad71532e58",
+        "sha256": "2172710a763ed876c0305735ee817e5a090f3b735f8d90fde522f9930926bd95",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/router/signatureVerification.json",
-        "sha256": "48ad73199ffd521d200be331c0d8fdbca67f8e636d77950c64c445eea028bbda",
+        "sha256": "5232e6c619afdac3e26c0e4097e6662e39732fd370ae6afc1999ca8e9c950a6f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/router/provenance.json",
-        "sha256": "4dc763123c8fb5121d8e46c7fc12b61e427f1699d5ce45f43d6307f6daf5eca6",
+        "sha256": "ec6f3a759892ba2292fbabf2b3ce69e0a485689403b79ddd61b8c392e2555982",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/router/vulnerabilityReport.json",
-        "sha256": "acd6d7e052b37793f089ac644d280dc7f3859facf8ea09a9bcb043e3c37bfb0b",
+        "sha256": "af4dc72267c90a9d1cec918fdc4b759a82ab51651cbd984f42fd3d6ace9ca530",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "worker-gateway",
       "digest": "sha256:cca7c9fd1e4bdaba971865a70d6a2e82b417faf1a54bcff0dfd2f675705736d0",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/worker-gateway/sbom.json",
-        "sha256": "11b1b09354ba412159c8194f4d275008e9c9b6d9c7e1f495e024bd0af92df864",
+        "sha256": "37dfc24b71bb77a6596dded70cce8c7342edc3fdb3fd80a185410bdd4adf9bea",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/worker-gateway/signatureVerification.json",
-        "sha256": "0b048eed61774a97239a3ef7f515f50d16473ba2d80e303922b7cf67942088c3",
+        "sha256": "4fae98451986da20fa4cc01a001b000bf408fe9ce2c5b7b53bdb601c8f34b1c4",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/worker-gateway/provenance.json",
-        "sha256": "e6bcacbb0057515021d235827900ca23e39bca822c89e1a234715117ba9a4a87",
+        "sha256": "a19229d47f8af76e9b0bd70fe418cbf23cea5761fe2a06c0882d4938e12c2b39",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/worker-gateway/vulnerabilityReport.json",
-        "sha256": "12a4e9077584d385a729ca8a446ae87c5f19cc47017c61a5b7c4bba87a79c6d8",
+        "sha256": "cc01bb8589dd3469c3787701177aa99f543a5e9b544d6ad28593df0e29100582",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "worker-registry",
       "digest": "sha256:a58952ad6c61b1df493fd0b850d185a6660015f6b929dba832d19deb8a0319e3",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/worker-registry/sbom.json",
-        "sha256": "125a4582c33931e19e5acea8eb6893be2cde4786d0e58676e17b19a6deb26012",
+        "sha256": "73b02439e18b266ce688f0637d8c3e1f73c718ea20937fd11d1f5f4fb6d4dd15",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/worker-registry/signatureVerification.json",
-        "sha256": "c8b7ebc5e285f4e39919ec8057ed5d1c51a5c4abc80ccde205bc47eec1d98225",
+        "sha256": "54c2c7920e0fae08a9b41347714ed5a7c2ec7d2f80a3ab3770ea7ff327ffea03",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/worker-registry/provenance.json",
-        "sha256": "ae712523d5e082e3dbbf1048f1c46da17bec3554e0ca1701ca4c5c31c2868da0",
+        "sha256": "1050e7cf34558adec4f3fe11dab30f57e8b0666a6e96836f71e4d71591c05cce",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/worker-registry/vulnerabilityReport.json",
-        "sha256": "5f42777425306ae6b9ae16fe8d674fe7a21d356c630ec083a221bf59088613d2",
+        "sha256": "3b63d8ea557d524cdfca67d9c752fa333afdbe40c93cbf8a02a96f01ca861ce7",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "result",
       "digest": "sha256:4d6aa2c0c8e5daaf2a3f19991fc3501a7272451e4aaaefd9d0f16cd49bac4f75",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/result/sbom.json",
-        "sha256": "07cb3224a6936e09a39381179038afa1163b55f6b46d144f0ebf9f3f48d44561",
+        "sha256": "1b89fe0edecbb823f2fe9f78bd1702e3e2d6e58425eaffe8a4a9b889fd623cd8",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/result/signatureVerification.json",
-        "sha256": "414584e3cd65039bf798a54b8c350c968028a32b9ab8c5332938809ea9aa3d73",
+        "sha256": "d4c845604d59f17feb89aefd6a6db319f558f0c711648573b1a6513c024f8d79",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/result/provenance.json",
-        "sha256": "1926cba31efb292c648a58d6fda16fd4d555d9aa5a3dda7c6ccb139064cc006f",
+        "sha256": "c5f0f37e609dbfac62f8beb926e57778d7c63d92b84f07da18b21695c3373901",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/result/vulnerabilityReport.json",
-        "sha256": "2eaf6673c13dc45c360663ea6552214988ade3358340bc84c0cac0bbca356bf6",
+        "sha256": "0392b1c7d24c7c33710a77dc68e185ce7caa3fa6c092d53a8cfdede3981ab93f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "verification",
       "digest": "sha256:794c20dcadd3f7bcbb6c0ba2b23a6017f27d702399c03a121a9574f9708b7eb9",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/verification/sbom.json",
-        "sha256": "8b5acf4cebb3d4e44c4e03bb4c85a64c53080f67d7fa2baae4379d2398df294b",
+        "sha256": "95575c7b8c762b2d24575d5e412e4bdf6060d2dfec41f221f52b5fb18aac55d6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/verification/signatureVerification.json",
-        "sha256": "d65f6a6d852b424012d3ad2d69df7d51ddc905f3ea69505e44cefbc5d95d42b5",
+        "sha256": "60526af4777b0e49ebc2b6d1e19598605bea97da1488d96cd4af1b77303563c0",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/verification/provenance.json",
-        "sha256": "2f08287cbd7b278e0c6f6b7e59bd5fca8b2582bb4b7e9c6f85e87d2f6ff692c9",
+        "sha256": "9d1abd56db9ec6ec2aa7d1a4a17fe2889e6f48064c7407497dd7aab69613f5fc",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/verification/vulnerabilityReport.json",
-        "sha256": "f32297224386cf58b9c682a67b8763afcb60370835df7590663a39ed5567e380",
+        "sha256": "90c2b6af0b24611842876f742f79899de2ebbe75481c52bc3aacf3ef3dc4769e",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "billing",
       "digest": "sha256:24cda0aacb40accf0a73e6b50d7e6ad443310894c2b36ff65dc64eac11a27038",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/billing/sbom.json",
-        "sha256": "864c17e4e9eca693c7adcc40904c4e305f8471019f9040bf9c260e46868563bd",
+        "sha256": "72d33862054f21be06aa89b3298cb563b0cdaba67c4b83214e3aba67443c702b",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/billing/signatureVerification.json",
-        "sha256": "594f740e07e9469faf652ef5df5caa61cf93e7a938f255b08f607544c5e85970",
+        "sha256": "39b176ab31728aac9805fda77bf5e0cc9b2f0873a5369b5ed9b80b2d8b54ab66",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/billing/provenance.json",
-        "sha256": "8cd768a4e231279706966ed7df1937d3cc62c3d44243aef3efbcc5f04621e75c",
+        "sha256": "b9205cc37726500f0d9ef4e7037e19cb1ee2a5d2f2471863e14e7aedff18bbec",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/billing/vulnerabilityReport.json",
-        "sha256": "35ff9d8e47365dc04d8b5d357c0ea5216dbfa594178904ab8e55f31ae12863e5",
+        "sha256": "077777e7efd177838e7fbb994a4f608dc30d4c33ba730e1d54283d0f7233ce0b",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "ledger",
       "digest": "sha256:efa6bbf057d84a8149720b554a8924c6560a15332fa167423f616c2803ff8dc3",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/ledger/sbom.json",
-        "sha256": "000ef0037f892c62dc87150b1fbf768630d67e35ceb46d1dcfe3e6a75ceddd88",
+        "sha256": "427d09477c77a631e41e08e4c42852f13110a68af687d02f413f0e23886f81c0",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/ledger/signatureVerification.json",
-        "sha256": "66f068c94499e0d309ecfe82029299815751456fe4cfbf96321f8600d8a65530",
+        "sha256": "a9a2b4a1d0f24077f1475411abdcee950af597b449d93865bd908811081b3dee",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/ledger/provenance.json",
-        "sha256": "23e6256a8f73f29e6c20e7f755c009410565374c09c08284f04f1432002e2583",
+        "sha256": "8df8c5099b5dc1dc4783cddbc87e2561dc71dc033cd0226ce7bb6159d911a328",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/ledger/vulnerabilityReport.json",
-        "sha256": "dcc9cdafe66e596c29526402eb7f0a6b04eaf953461a8a70f5ea19ffcca7538d",
+        "sha256": "0f989f10dae5b79f84a9eb60458258d148b066b95e3ac0d14dc3eeef70a66677",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "reward",
       "digest": "sha256:0e2ef675f0912d19c37e5537c2329443dd2313f8544113afdf49be9f5aef9b79",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/reward/sbom.json",
-        "sha256": "f2244ec849fd26efe2d78ef8d61b83f3f7ad8d070b783bfa7be626bcb15e7702",
+        "sha256": "d908b12659bd9c7f9b2812ca74a174f8a559a8bf144f14774d0cae84c4f33d94",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/reward/signatureVerification.json",
-        "sha256": "db547c1be87d53766eac1fe08452586789f1c02e649dfa76ba865f03004c1986",
+        "sha256": "57f6f1abac5ea1a1c29c3a2ab54ea17daf3c8afa47339e56f9e56b7c465df054",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/reward/provenance.json",
-        "sha256": "964b1c48f9000d1eefd7f8c9e7e7fb57a89eb5b61cf1e612dc4c6824034d53cc",
+        "sha256": "5d4466400a8eed486da902aeb41a91fa38fef141fe988dbc6e90518a407d93f1",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/reward/vulnerabilityReport.json",
-        "sha256": "c355b570e172f0be2f4ea26dfd33f772f3101235ca8019530b07b16d5ac45020",
+        "sha256": "01e0d32a810eb5eb8791ab60d2faa4848d26a0c787ecc3921f90c676c5d2d498",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "claim",
       "digest": "sha256:79417ca5035c1b1df8bbde0dd7c5e02692f750a2355a6fe25c4425c2ab179bbd",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/claim/sbom.json",
-        "sha256": "713c37ccb22ad114ee102e84a1d905f4cd1c0040451f3eaf78275e5ff22f048f",
+        "sha256": "cd8d2e62d9d013f30acc815164c00b482c7e469d4f0bf6fc0e177f3d620e9c5a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/claim/signatureVerification.json",
-        "sha256": "b57f7ef84edbe640fbff4355496d0d00489bf670a5c950a98ef87b23554c6ccf",
+        "sha256": "1e0f3ee71c621255e3fe2665b3a92828056dd1ce61ad1c804dce1f1d2a643244",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/claim/provenance.json",
-        "sha256": "5b60aab78fa19831a6011ee9e3b1379ce18fca866af3bccd91099bb4dc2a6527",
+        "sha256": "bf71d13fc8bcb46f638b071c8d5c11aec465705aa0bde82d4185c20373c6e301",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/claim/vulnerabilityReport.json",
-        "sha256": "e0cd8bcb772d6547bee460a31fb0ba7bc13c5df2108882bc0a80c7975b2f99d5",
+        "sha256": "fdd2140f5812f9b60c141847afcaca3df8384fb7daa0395099a1e73b140d8b2d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "fraud",
       "digest": "sha256:7428f83e547ced2b68e7b40caf9bc73294dcf5cf9c6c81b098e81f05ee145fd3",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/fraud/sbom.json",
-        "sha256": "933279d3fb992f4e3e1e2b6d3dbf433d53599a819ab3bac3276a750c82bae6b2",
+        "sha256": "e944a577eb02c5e025f561ba5627d0c23ee2eeececbf26570ded0cd57bcc43ad",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/fraud/signatureVerification.json",
-        "sha256": "92332b9dc52990dd4105e2929b8f3f39479c46fc0fa7d24f06d05fdd1190a315",
+        "sha256": "9cf5e0690abaacd0006565c22e3518e32989af7da68963c4909fd534e42db668",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/fraud/provenance.json",
-        "sha256": "673bd404eaab931f239a7f1068e8922d98a97f56d5a82ed5eefadf149887834b",
+        "sha256": "a4413aac81a7e657940d5d52da09cc71a05ab5926f67c2f1e206372cef553f9d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/fraud/vulnerabilityReport.json",
-        "sha256": "02df46a92fe4a7889169b2618da0b3f724061fda8d4c80d84497183f78b6b775",
+        "sha256": "433319932996fcdd196a7ca374ecdbb56e635f3791fc5840054efe4f3ea71f23",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "webhook",
       "digest": "sha256:567ab86a7e652570afd55bacdc7774e7c5dae81a93ff020698cd5b6056e9b6f8",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/webhook/sbom.json",
-        "sha256": "42740a8b75f0e5a058d6e6b976e6c49dc3d81433cff029a2a5aed72c1c1363f8",
+        "sha256": "b8300bdd9478eea6f69a4feb3d2d36817aac60bf394e0aa1122ede6427e0704b",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/webhook/signatureVerification.json",
-        "sha256": "6910c68869d6a209540743ab8135debc795e8111086455fae1f5eede8eb83df0",
+        "sha256": "b83f981aad5a6f33994ccd1039aa73d6f26d2711dd24e76063f00e6e99eb8243",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/webhook/provenance.json",
-        "sha256": "49ce6041f9c6cb628c4fc4e7f259f32d94b411f0da1ee5ef4f06f52f526baa0d",
+        "sha256": "6c94be235d69cc41be124ee0406e26691f06163013e110de684c883c0e5ff242",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/webhook/vulnerabilityReport.json",
-        "sha256": "c92190e82d49ea261e130f6898f716177842ed5d2599ad7fc30d8a8d06763a29",
+        "sha256": "9bb7f0c2cdbac14d6a6e8cbc7f5e9a8027d1911c3b287f2d0c509a7f6b6e2e18",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "model-registry",
       "digest": "sha256:7972a40f9ccad124ac45c6481478dcb62462186ee6f2dca7034ed8c69a6db9ef",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/model-registry/sbom.json",
-        "sha256": "41767515ce23be22fcbb6658a4ca5f934cd268950177145b03be1f12af34423f",
+        "sha256": "a4b5ec45d2d59489d4c849fa794d26de7f829ce609ef2da30eaa15854ce9181d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/model-registry/signatureVerification.json",
-        "sha256": "9a7ee76d47db5023e621b6ed56ee947e964f9e85c516c9576fb641bed1e1c006",
+        "sha256": "c96d580914b9e251204d040147f0b206240b8d67a1b5bffe757d9f7969236872",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/model-registry/provenance.json",
-        "sha256": "b897e86d122c5f522b49fd2d8ea891fb973a60a64c8286712de75c2af1a09d3d",
+        "sha256": "ce783a012d3f42089cf818c25ae731c74931f1b28a59d9279d59665ef2751d4c",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/model-registry/vulnerabilityReport.json",
-        "sha256": "b121ca441ceb9a8a69db9cb7e063519c99363fa6ab48d85a6fe0f9ec6d82ddef",
+        "sha256": "91fab93c38643f64f8bea152b42f525241d496932308148263ea639c5ce5d37d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "notification",
       "digest": "sha256:6a50e46e2b69a58fc61c27d3c0f1b04e76ef3465cbabc39a6ccdfdfe9b9c6c9b",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/notification/sbom.json",
-        "sha256": "0f6a6db7bc602ff2ca2fc0a266927e6a451d63503d5bb1cf9042681adbee08a0",
+        "sha256": "331cbcbcf7c8959d172384e0a097ef5296ac834e502d08f5053233665d3fbcb5",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/notification/signatureVerification.json",
-        "sha256": "3d3272cf5b9567645fbc1f7cacda9acf5d5cf8698e3be689fd8eae843115e0a7",
+        "sha256": "f4084fc6be4d07a0f745780990bd4888099ff0249565f9f5e37327a21a7200b8",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/notification/provenance.json",
-        "sha256": "fd6316f5d7299a258e66b00805b3f58fcefd78ff4ed91748b6e80b863c6bb47b",
+        "sha256": "e9f84d02897e60bd60b62d8434b9bc181ec4e512bcc6ed1b04b5b5e5fca28069",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/notification/vulnerabilityReport.json",
-        "sha256": "8e785f246cc4a58d631406f1e26afa1b1cc3bb5eca5b15a64e7155ccaa91809c",
+        "sha256": "a6cd456be737977103f4e0551e14c0f7a71c6f75f414058484d27f5947fdfbe1",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "operations",
       "digest": "sha256:f8df41b31e519d4db54a03dc2a9c109402405b88068ba5bdaa0909d4a45b52d4",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/operations/sbom.json",
-        "sha256": "87afd9e5b0fba99dd72ececc085844e4fc10aaec9732b74bdb1b936915e6081b",
+        "sha256": "dcff1c16891d2e916f4788de6167a99fe21c0ba6be06a9a946e9026e5d9d772e",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/operations/signatureVerification.json",
-        "sha256": "b8ee2b279905a1d8d4b646605b571ce561298bb374276bd053a9342f0416ee17",
+        "sha256": "3d81abb83001bcec9f594e3f8884a480207b9a0c4b2ef62307680ecdc141c41c",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/operations/provenance.json",
-        "sha256": "b5cfe42a36981da999b2043ce33584a7413391cf56d546a51649a375281c8150",
+        "sha256": "1a212c54516dc8fbf9139be2fa456f15af21a58655981f350a821c8f1fd5bfcc",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/operations/vulnerabilityReport.json",
-        "sha256": "3c299d25e9cb05d254c2ca4400c0457fced048f2166e8e80666c3bdff8b8f0de",
+        "sha256": "07acb28ce3f699b11a98010ae229f1afe5c90dddef523c7d950f584f4ee56c8d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "customer-portal",
       "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/customer-portal/sbom.json",
-        "sha256": "552184d95efbd8777d0f9737b7305e61a589233806601f23f3e7edeb78b31403",
+        "sha256": "7bc4ee35c0d3141d572e3c4abde064dbb615112a5455ae8909ed39b5742645bc",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/customer-portal/signatureVerification.json",
-        "sha256": "3b2f15420edd515db06cf966b96a09de3c744ddc8e303e624bcc48f9b53e2540",
+        "sha256": "a21c1da7fa62ec09f68393b189e8ab17dab60cad8fafb2b6fbd511b0278bb1c8",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/customer-portal/provenance.json",
-        "sha256": "9be3e8cbf54661b4a1de64abfdfd5a44dcc90402a345a14f878cd2de1a7e95b2",
+        "sha256": "c5c66937b695c5370927cb7f2a23cf5d01c5598a1574720a21ebf724c8a9f506",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/customer-portal/vulnerabilityReport.json",
-        "sha256": "b2fb5fe79d454905df84ce1d59fc1ecf216ac0492feeadb556b0bb1b0c527fe6",
+        "sha256": "7bfdd33fe774039a0007eb1dbadca5733c8964251d0f970fb3c6ff2ec918d365",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "operations-portal",
       "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/operations-portal/sbom.json",
-        "sha256": "0ca97acf50fd9d87f146edfc0ce0e06758cb51e79b086980be7c99c0ed06ffab",
+        "sha256": "595333b1b3b3a05adb158c41b1aa0605157edb3414c880a09489dab1a1811104",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/operations-portal/signatureVerification.json",
-        "sha256": "5a51d74195778d5787e96c2070d30b7b2857db556a5048f659ea1453894bc951",
+        "sha256": "3f39f6145b1c50b8ff226f31a477d93894dc56a36d53f8856b78e91291b74675",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/operations-portal/provenance.json",
-        "sha256": "cc93a4f70480fb3c57b3cc9750e303b9dc92efec26fc4c5e78d353e0112e9d2c",
+        "sha256": "7f5e431a17a677b02f547341e93d70612da3653c80eb6f7d2ffe6ec06cc988fd",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/operations-portal/vulnerabilityReport.json",
-        "sha256": "79e707831985eccb33179b49c0ff98340ed117f1fa8433127250a62c8e039961",
+        "sha256": "6022df7b4f74205ccb1f642f7d1a969bfe3b09dc0f7be28d672823f72a4a6b27",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "android-worker",
       "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/android-worker/sbom.json",
-        "sha256": "8402425c4adce22256010dd26eb037695b4344fc074a11836bd4f77ae211e0e2",
+        "sha256": "16493faac0b5e31c0b68b29a12caa57218c134aef1d444c68494046e14963dd0",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/android-worker/signatureVerification.json",
-        "sha256": "18e61e1767fb59185fc84d8eada19a7c261be2fa1f1e4c20e3684e081b7314f5",
+        "sha256": "a5c0a23d09fd113a16c961e408ca90e9015bb98b38cd895c85306ed48502bd03",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/android-worker/provenance.json",
-        "sha256": "90bcd5bbe4aa1c22b8a1847f95d40edccef4d39d7068fde3740827557d4bcef4",
+        "sha256": "fbfbfc56cb01db04b4026fd42cb9016072b8d848599643d0f5d85bfc044aefa6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/android-worker/vulnerabilityReport.json",
-        "sha256": "01f8876fc484a099e0786358693b6c6f77668ab4062e5ec54dd82c4cc394ed8b",
+        "sha256": "9d1f4a7c8d95c5e0c066c0fe606c4430f525ca5dfd7da5e10f0f6a237022bcf3",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "model-paddleocr-mobile",
       "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/model-paddleocr-mobile/sbom.json",
-        "sha256": "8614da39b31007403da7e6c0b6fd22068e8f59914257e510adf94b29883c06a5",
+        "sha256": "ac1d77df4a8e20ece54060b99307f337e341c4e75bd2d47d18384fd6317d5a7d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/model-paddleocr-mobile/signatureVerification.json",
-        "sha256": "68a74969f83d9fb8a3cc2747158c44aea1c506dcbc1832ddc79a579e3aa99a95",
+        "sha256": "7b6a8b8fb986851b098139ea734a4bc88fac58805dafe15e7231cf9d0902c1b0",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/model-paddleocr-mobile/provenance.json",
-        "sha256": "89d139369d7c1addd923c475ff6fcac6fdcea32ea94d26d02f93c4d5053063eb",
+        "sha256": "66a2c91e64255becacb95a9ebab95ef3c1f8f51ded822a1815e0e6e09810dec6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/model-paddleocr-mobile/vulnerabilityReport.json",
-        "sha256": "1abb7f6dbd90305867115d0f3130c71ec3e6b0effc492975cec3ec9f1b91bb9f",
+        "sha256": "f993c558bd3209096a2d120298d8bb72968bea5276b6ba783bfd1214cf1b6f0d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "model-gemma-3n-e2b-int4",
       "digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/model-gemma-3n-e2b-int4/sbom.json",
-        "sha256": "7f352150c9c29e3e9a26953548ad5565f609526198f2c54f47f47b7ffcdae59e",
+        "sha256": "3c2c8fd55931aff216256b7e9ca55da62df87383102d2292d5ec673b120f37ac",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/model-gemma-3n-e2b-int4/signatureVerification.json",
-        "sha256": "03b86c3547f54b42106c82b4551b13cd87ba7cc7385008b406dab3c84988fe43",
+        "sha256": "e86af64dd3645038ac68d9e332f4a86afd76145ca9cc8abb594dd36b931f2f6c",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/model-gemma-3n-e2b-int4/provenance.json",
-        "sha256": "5db65edecddb291ea10aefa93ba893823872e23068fd6a7664d7742db0ee5915",
+        "sha256": "5a203d4e90f5e8b56b416268dd54cee6d6749611f68f23c7b961ae68d45a8752",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/model-gemma-3n-e2b-int4/vulnerabilityReport.json",
-        "sha256": "6461758700e297f26780de18952793d6df23a731880e22f5546dd418793c8dcc",
+        "sha256": "e4f6be4eea43c917dcdbd847b6fd1be3fb7ff06aaeaff967ac3c4998abc083c6",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "model-whisper-base-int8",
       "digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
-      "producedAt": "2026-07-26T23:18:16Z",
+      "producedAt": "2026-07-26T23:18:49Z",
       "sbom": {
         "path": "evidence/actual/release/artifacts/model-whisper-base-int8/sbom.json",
-        "sha256": "e4a2a182e50d35ecfd22023bb5bdb9b18348fdd4f01632fb1a1c6fa3af28342e",
+        "sha256": "9958e976b6fa73571c4e7cdf28665e2beb88fc1caf85fa4e04d10483f9ac902a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "signatureVerification": {
         "path": "evidence/actual/release/artifacts/model-whisper-base-int8/signatureVerification.json",
-        "sha256": "735e1c8ad9a0b14882e7e0da12b804e41ee60b0b678bf6a1c31ed0716ebef92d",
+        "sha256": "6a54dd06512c851f25f12795b0da9c5ebf3563243aee112f9874d943a3fa644b",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "provenance": {
         "path": "evidence/actual/release/artifacts/model-whisper-base-int8/provenance.json",
-        "sha256": "b1d913e48ca43bc8301d2ece07ed4addda6f3bf57b01c922faf6965a97e94c8c",
+        "sha256": "92a9a5cb0840dd00af0d4d8809afa21d1bd11686ecb41fb63660d58ee7bf5c87",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "vulnerabilityReport": {
         "path": "evidence/actual/release/artifacts/model-whisper-base-int8/vulnerabilityReport.json",
-        "sha256": "ff5ca67f944ef1cf858c26d633a8a8a5c7b8e44294406bf00520971095c1e8aa",
+        "sha256": "df359a969e159b4c677930ed318f0bcad2e159856bf1d5be28b8b89c2238391c",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-26T23:18:16Z",
+        "generatedAt": "2026-07-26T23:18:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     }
   ],
@@ -1472,295 +1472,295 @@
     {
       "name": "unit",
       "status": "passed",
-      "startedAt": "2026-07-27T01:18:16Z",
-      "completedAt": "2026-07-27T01:22:16Z",
+      "startedAt": "2026-07-27T01:18:49Z",
+      "completedAt": "2026-07-27T01:22:49Z",
       "report": {
         "path": "evidence/actual/release/tests/unit.json",
-        "sha256": "33d9283b3aed4f0c9df3c92ded62ca05a1f85f8dedaf6fa9965d9e6f8c8f7b7f",
+        "sha256": "3d8935c9c4b968c9adb68e1e232d9f43577452539c7ef0fa67463da3b564f7b7",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:22:16Z",
+        "generatedAt": "2026-07-27T01:22:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "property",
       "status": "passed",
-      "startedAt": "2026-07-27T01:23:16Z",
-      "completedAt": "2026-07-27T01:27:16Z",
+      "startedAt": "2026-07-27T01:23:49Z",
+      "completedAt": "2026-07-27T01:27:49Z",
       "report": {
         "path": "evidence/actual/release/tests/property.json",
-        "sha256": "a68af491b68c956245053c256b061ae5861bfc13d92f2c0ea1f6f6765d170272",
+        "sha256": "4f17931223ed60b92409f6ec753bb53b315dca39d923ea71a33f443093ec1ee1",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:27:16Z",
+        "generatedAt": "2026-07-27T01:27:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "integration",
       "status": "passed",
-      "startedAt": "2026-07-27T01:28:16Z",
-      "completedAt": "2026-07-27T01:32:16Z",
+      "startedAt": "2026-07-27T01:28:49Z",
+      "completedAt": "2026-07-27T01:32:49Z",
       "report": {
         "path": "evidence/actual/release/tests/integration.json",
-        "sha256": "a71a273b0d1aaab61ed9a739e531dde565e867f8f916e42f62fa5a294814cabe",
+        "sha256": "ae8f9593289f24809603540fb565d12136e25c230710f615256e7a0f8d88c8c2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:32:16Z",
+        "generatedAt": "2026-07-27T01:32:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "contract",
       "status": "passed",
-      "startedAt": "2026-07-27T01:33:16Z",
-      "completedAt": "2026-07-27T01:37:16Z",
+      "startedAt": "2026-07-27T01:33:49Z",
+      "completedAt": "2026-07-27T01:37:49Z",
       "report": {
         "path": "evidence/actual/release/tests/contract.json",
-        "sha256": "ec3cf556642a5249be0c71a05157c77832558b3dedd3d421ddb7b7fd879caf7b",
+        "sha256": "808822cd68fe1ce9408aee5f35c7cdffb4055edc6c6aa546aff3e440904371ee",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:37:16Z",
+        "generatedAt": "2026-07-27T01:37:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "e2e-paid-task",
       "status": "passed",
-      "startedAt": "2026-07-27T01:38:16Z",
-      "completedAt": "2026-07-27T01:42:16Z",
+      "startedAt": "2026-07-27T01:38:49Z",
+      "completedAt": "2026-07-27T01:42:49Z",
       "report": {
         "path": "evidence/actual/release/tests/e2e-paid-task.json",
-        "sha256": "ff06d3be70b7ae9da04fe777f5ad8dc6f2c81bc8036340a5f46bef224ebdad46",
+        "sha256": "2e6f1d15110c0df27f50bd39198284dc7fd7b33e7f2f95b9d6dc1a9e03fea1ac",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:42:16Z",
+        "generatedAt": "2026-07-27T01:42:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "database-rls-invariants",
       "status": "passed",
-      "startedAt": "2026-07-27T01:43:16Z",
-      "completedAt": "2026-07-27T01:47:16Z",
+      "startedAt": "2026-07-27T01:43:49Z",
+      "completedAt": "2026-07-27T01:47:49Z",
       "report": {
         "path": "evidence/actual/release/tests/database-rls-invariants.json",
-        "sha256": "2ee022a0763ac9ebe836e472d40bb6de8e7eac2948ec0ae2d4a4337d701fd96e",
+        "sha256": "0fe9348edab2c53fdea24b561c9479f8c85054b9ebc0569f30629a2f42ef99b3",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:47:16Z",
+        "generatedAt": "2026-07-27T01:47:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "migration-upgrade",
       "status": "passed",
-      "startedAt": "2026-07-27T01:48:16Z",
-      "completedAt": "2026-07-27T01:52:16Z",
+      "startedAt": "2026-07-27T01:48:49Z",
+      "completedAt": "2026-07-27T01:52:49Z",
       "report": {
         "path": "evidence/actual/release/tests/migration-upgrade.json",
-        "sha256": "bb072e2ff9a5374cfa1d60659f205711f7b6022e995300be3e557ae1b96e74e2",
+        "sha256": "1da1ad3b332349aaaf145f0ff0dee22b560bd773c552d2bf16abbb3170f09e20",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:52:16Z",
+        "generatedAt": "2026-07-27T01:52:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "websocket-delivery-replay",
       "status": "passed",
-      "startedAt": "2026-07-27T01:53:16Z",
-      "completedAt": "2026-07-27T01:57:16Z",
+      "startedAt": "2026-07-27T01:53:49Z",
+      "completedAt": "2026-07-27T01:57:49Z",
       "report": {
         "path": "evidence/actual/release/tests/websocket-delivery-replay.json",
-        "sha256": "b292ea65f8f9237c601139c8d2ed5f51b53e5ff1b46058b2604eb2110d391130",
+        "sha256": "0bfcb2070b38c9ec9fb23f642ce1fa60f6a7409a17864f76e0f5f602e9390787",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T01:57:16Z",
+        "generatedAt": "2026-07-27T01:57:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "load",
       "status": "passed",
-      "startedAt": "2026-07-27T01:58:16Z",
-      "completedAt": "2026-07-27T02:02:16Z",
+      "startedAt": "2026-07-27T01:58:49Z",
+      "completedAt": "2026-07-27T02:02:49Z",
       "report": {
         "path": "evidence/actual/release/tests/load.json",
-        "sha256": "4806904d74ef61a44295ebaaf9bcc6a7e84a74a975b906fa9d95a36fbac41607",
+        "sha256": "191f4ea2ca20d383d8fabb20a562604d0bee5070f309044431a462f1b07d0319",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:02:16Z",
+        "generatedAt": "2026-07-27T02:02:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "soak",
       "status": "passed",
-      "startedAt": "2026-07-27T02:03:16Z",
-      "completedAt": "2026-07-27T02:07:16Z",
+      "startedAt": "2026-07-27T02:03:49Z",
+      "completedAt": "2026-07-27T02:07:49Z",
       "report": {
         "path": "evidence/actual/release/tests/soak.json",
-        "sha256": "e71a9b8938fd6d93831d554712ba1344365bacd82f8bd22047d3bcccf32a727c",
+        "sha256": "bf8f5278e17c3a01180b11aa768694db8871bcede8f6b298ba9672a40ddb9267",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:07:16Z",
+        "generatedAt": "2026-07-27T02:07:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "chaos",
       "status": "passed",
-      "startedAt": "2026-07-27T02:08:16Z",
-      "completedAt": "2026-07-27T02:12:16Z",
+      "startedAt": "2026-07-27T02:08:49Z",
+      "completedAt": "2026-07-27T02:12:49Z",
       "report": {
         "path": "evidence/actual/release/tests/chaos.json",
-        "sha256": "2bd9876db7fcb83051bd2682e60c11433634018fe07c89187e462867039df466",
+        "sha256": "8a79893b2a868e60687b26eb57ec4ce7d0a6d67e0afa8ac9450c75390a20b885",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:12:16Z",
+        "generatedAt": "2026-07-27T02:12:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "security-sast",
       "status": "passed",
-      "startedAt": "2026-07-27T02:13:16Z",
-      "completedAt": "2026-07-27T02:17:16Z",
+      "startedAt": "2026-07-27T02:13:49Z",
+      "completedAt": "2026-07-27T02:17:49Z",
       "report": {
         "path": "evidence/actual/release/tests/security-sast.json",
-        "sha256": "f0961aa818c7e7072adbed0e03263ba911606d129bc4c03e0de388624cccc011",
+        "sha256": "b8adf673283a533ebd9c07ec971ab114e754c60f11875417fac1b042609d0177",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:17:16Z",
+        "generatedAt": "2026-07-27T02:17:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "security-dast",
       "status": "passed",
-      "startedAt": "2026-07-27T02:18:16Z",
-      "completedAt": "2026-07-27T02:22:16Z",
+      "startedAt": "2026-07-27T02:18:49Z",
+      "completedAt": "2026-07-27T02:22:49Z",
       "report": {
         "path": "evidence/actual/release/tests/security-dast.json",
-        "sha256": "698e447f4082d940139dc23477cb0e183ac2f7b4d5e08873f3828f2f80fbb931",
+        "sha256": "bbc45aa517c6ee4595d95d8e74a59e463dfbd4e5f67f68d5ff6cea023fa4f39b",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:22:16Z",
+        "generatedAt": "2026-07-27T02:22:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "penetration-test",
       "status": "passed",
-      "startedAt": "2026-07-27T02:23:16Z",
-      "completedAt": "2026-07-27T02:27:16Z",
+      "startedAt": "2026-07-27T02:23:49Z",
+      "completedAt": "2026-07-27T02:27:49Z",
       "report": {
         "path": "evidence/actual/release/tests/penetration-test.json",
-        "sha256": "16a9f825102899e536457bb91069e19263402bbdef6efce53fc20eadc94e406f",
+        "sha256": "c92e773cc33e1a2052bea5ee75665e89ad38c3eaf2cc79cb7967c236cb1f2f04",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:27:16Z",
+        "generatedAt": "2026-07-27T02:27:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "mobile-device-matrix",
       "status": "passed",
-      "startedAt": "2026-07-27T02:28:16Z",
-      "completedAt": "2026-07-27T02:32:16Z",
+      "startedAt": "2026-07-27T02:28:49Z",
+      "completedAt": "2026-07-27T02:32:49Z",
       "report": {
         "path": "evidence/actual/release/tests/mobile-device-matrix.json",
-        "sha256": "18c07625118a045d6cda7e01a758562aedc225f20631dae10d5ece784193f26c",
+        "sha256": "d1086fe6b1e0d2ab6d3528e6779fa134d7dc282ce2ce33e5e1944b9bd0f331b2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:32:16Z",
+        "generatedAt": "2026-07-27T02:32:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "model-quality-resource",
       "status": "passed",
-      "startedAt": "2026-07-27T02:33:16Z",
-      "completedAt": "2026-07-27T02:37:16Z",
+      "startedAt": "2026-07-27T02:33:49Z",
+      "completedAt": "2026-07-27T02:37:49Z",
       "report": {
         "path": "evidence/actual/release/tests/model-quality-resource.json",
-        "sha256": "e67de5b1f9b9720074eba4e25b87881db7b1149a5bfb29a69d6792794779e255",
+        "sha256": "b193ea3634871742c0b8592fefdb0bcee0eb72da854634c98bd6f0dfa574f425",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:37:16Z",
+        "generatedAt": "2026-07-27T02:37:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "backup-restore",
       "status": "passed",
-      "startedAt": "2026-07-27T02:38:16Z",
-      "completedAt": "2026-07-27T02:42:16Z",
+      "startedAt": "2026-07-27T02:38:49Z",
+      "completedAt": "2026-07-27T02:42:49Z",
       "report": {
         "path": "evidence/actual/release/tests/backup-restore.json",
-        "sha256": "3aa3a838e30451fe3d811179cbac36ea33737ff51987a91598e9b3ce3f35964d",
+        "sha256": "c9ae64852a0bc7985a94019e771173af0c177027a89d87cd7721d39b7f971462",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:42:16Z",
+        "generatedAt": "2026-07-27T02:42:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "disaster-recovery",
       "status": "passed",
-      "startedAt": "2026-07-27T02:43:16Z",
-      "completedAt": "2026-07-27T02:47:16Z",
+      "startedAt": "2026-07-27T02:43:49Z",
+      "completedAt": "2026-07-27T02:47:49Z",
       "report": {
         "path": "evidence/actual/release/tests/disaster-recovery.json",
-        "sha256": "b2a74086e98c260e561fb1349577e616b10996b05c39fa02bd09284ac3fe8ddc",
+        "sha256": "0545494b2e1a9287708f5b3fcbc3cc00c639f1c52b585951cb9a25361227248d",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:47:16Z",
+        "generatedAt": "2026-07-27T02:47:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "financial-reconciliation",
       "status": "passed",
-      "startedAt": "2026-07-27T02:48:16Z",
-      "completedAt": "2026-07-27T02:52:16Z",
+      "startedAt": "2026-07-27T02:48:49Z",
+      "completedAt": "2026-07-27T02:52:49Z",
       "report": {
         "path": "evidence/actual/release/tests/financial-reconciliation.json",
-        "sha256": "1281622cd75f34f104074fa4e6ef7589b3171dee7292abd66e56dad8de954d42",
+        "sha256": "25b6b7319646ecac9c73ffec1c730ebc68ee8affe3e4fe1887a42a2f462f42af",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:52:16Z",
+        "generatedAt": "2026-07-27T02:52:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "privacy-deletion",
       "status": "passed",
-      "startedAt": "2026-07-27T02:53:16Z",
-      "completedAt": "2026-07-27T02:57:16Z",
+      "startedAt": "2026-07-27T02:53:49Z",
+      "completedAt": "2026-07-27T02:57:49Z",
       "report": {
         "path": "evidence/actual/release/tests/privacy-deletion.json",
-        "sha256": "9115e61a463fbe52f480f51ea65038938fd597782e24ba848bab82baac3225a9",
+        "sha256": "68fdab0a16a6a37019db2fa25a221b89dfd890f923d7edffcaca420a26494690",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:57:16Z",
+        "generatedAt": "2026-07-27T02:57:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "name": "canary-rollback",
       "status": "passed",
-      "startedAt": "2026-07-27T02:58:16Z",
-      "completedAt": "2026-07-27T03:02:16Z",
+      "startedAt": "2026-07-27T02:58:49Z",
+      "completedAt": "2026-07-27T03:02:49Z",
       "report": {
         "path": "evidence/actual/release/tests/canary-rollback.json",
-        "sha256": "bcede49935c9bef02205e662be7131d0cf8f31669a52b1b0466e50cedcf9fca9",
+        "sha256": "d903dd912d1591b7fa07ac0a3659ec693ce08459d63f614af4aa2ce903995d14",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T03:02:16Z",
+        "generatedAt": "2026-07-27T03:02:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     }
   ],
@@ -1769,112 +1769,112 @@
       "function": "Product",
       "approverId": "product@edgemint.example",
       "signingKeyId": "PRODUCT-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/Product.json",
-        "sha256": "2b5646d9148fd4cadac9d46cd3893ef37ab7718b6ddfe2612e49b9da810062eb",
+        "sha256": "3d8eedfa65444f6575b4d671b525d1fef67e9874d19553b9b98a10d55c28e5f3",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "function": "Engineering",
       "approverId": "engineering@edgemint.example",
       "signingKeyId": "ENGINEERING-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/Engineering.json",
-        "sha256": "3cd36c0feade06ff6e582b6c982fb5a5641db5b887d131afd83878f283309f8d",
+        "sha256": "dba9c40060805114e2694d464c72596c6a13bc4f45fc2ce524ec5504712e7d8f",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "function": "Security",
       "approverId": "security@edgemint.example",
       "signingKeyId": "SECURITY-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/Security.json",
-        "sha256": "49d2b1374b8f54de876f8528c1e58e4a0c979753e9cfaa0b67c8b5e6183948b9",
+        "sha256": "fb01250be93a917a85b2972ccc184ebb32d311c7199039fb4054c48b2ddfc7d5",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "function": "SRE",
       "approverId": "sre@edgemint.example",
       "signingKeyId": "SRE-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/SRE.json",
-        "sha256": "2a46af76548954848a3a72d667b261745ecb8b9c8411fa84c084c6a9f89a8fa4",
+        "sha256": "2ef044a4c0dfd6c5830c995b64316fef3d8dc30c128735683ba79b0f65933a86",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "function": "Finance",
       "approverId": "finance@edgemint.example",
       "signingKeyId": "FINANCE-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/Finance.json",
-        "sha256": "239671d7e9b187a7e5e90bb28a3c622352f2c6aa0098bcdc2a3c7e57e87de47d",
+        "sha256": "66555da99db697dd196e66dd2e139dab9eb6e6ed14e593adcf464acd23e373de",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "function": "Legal",
       "approverId": "legal@edgemint.example",
       "signingKeyId": "LEGAL-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/Legal.json",
-        "sha256": "c36010c8fe0808b9b774e7c57917fdba42713a20001f50095af98f2616496382",
+        "sha256": "fb762f40b418bbc88db27e01b75cdba0dac8e2fef29981fe688a193b69af2441",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     },
     {
       "function": "Operations",
       "approverId": "operations@edgemint.example",
       "signingKeyId": "OPERATIONS-RELEASE-KEY",
-      "approvedAt": "2026-07-27T04:58:16Z",
+      "approvedAt": "2026-07-27T04:58:49Z",
       "releaseId": "EM-20260727-WP250GA",
-      "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+      "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
       "signatureVerification": {
         "path": "evidence/actual/release/approvals/Operations.json",
-        "sha256": "09e5c88fc8ec125a8feaf9fe38218ab142b1396f6271883c5a5fac471396184f",
+        "sha256": "945262f96b1ea61ce269be64bc284d91dabbf6ae14c5497e444a800fd669c1db",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:58:16Z",
+        "generatedAt": "2026-07-27T04:58:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       }
     }
   ],
@@ -1882,115 +1882,115 @@
     {
       "stage": "internal",
       "status": "passed",
-      "startedAt": "2026-07-27T02:18:16Z",
-      "completedAt": "2026-07-27T02:43:16Z",
+      "startedAt": "2026-07-27T02:18:49Z",
+      "completedAt": "2026-07-27T02:43:49Z",
       "report": {
         "path": "evidence/actual/release/canary/internal-report.json",
-        "sha256": "18fa46c4e3ff1983aec105ba18a90b78992c2db6db4cc0003774281a7ab80309",
+        "sha256": "186fb0f009e714d0177e68d9d31c6418ecca06ec670d051635f56b17021c6d46",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:43:16Z",
+        "generatedAt": "2026-07-27T02:43:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "metrics": {
         "path": "evidence/actual/release/canary/internal-metrics.json",
-        "sha256": "5757ac49ae6a7e0f09ca46669b1e6b1a82e09a97660da101a8c4d2756cadee37",
+        "sha256": "45e2bcb2285b64ae74ae35c7d67e62d665f08f1f0f345f813a37b202ece1d03c",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T02:43:16Z",
+        "generatedAt": "2026-07-27T02:43:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "rollbackReady": true
     },
     {
       "stage": "1-percent",
       "status": "passed",
-      "startedAt": "2026-07-27T02:48:16Z",
-      "completedAt": "2026-07-27T03:13:16Z",
+      "startedAt": "2026-07-27T02:48:49Z",
+      "completedAt": "2026-07-27T03:13:49Z",
       "report": {
         "path": "evidence/actual/release/canary/1-percent-report.json",
-        "sha256": "fb0ca3ba8e9cf53ab89375d67565880886c3c328e672d1ca1c626df5c255d3ab",
+        "sha256": "1f2c417723b266969400a537ca30ca668f5d99e2ddd50ba01634cc78c9ea5ad3",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T03:13:16Z",
+        "generatedAt": "2026-07-27T03:13:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "metrics": {
         "path": "evidence/actual/release/canary/1-percent-metrics.json",
-        "sha256": "722ae598ebb25f751c3387e2aa79ace3fd4af8d7f3c240ce9c219ae72c7b2b94",
+        "sha256": "381ce454626e57b1d6a8c8d3383bc9a43296ca2d5608e1f9aac4231157f2ede8",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T03:13:16Z",
+        "generatedAt": "2026-07-27T03:13:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "rollbackReady": true
     },
     {
       "stage": "5-percent",
       "status": "passed",
-      "startedAt": "2026-07-27T03:18:16Z",
-      "completedAt": "2026-07-27T03:43:16Z",
+      "startedAt": "2026-07-27T03:18:49Z",
+      "completedAt": "2026-07-27T03:43:49Z",
       "report": {
         "path": "evidence/actual/release/canary/5-percent-report.json",
-        "sha256": "d7cf97d4fef8d8e389e2c87314b613faa7b3cd491f4da5286ac6454fa8e114dc",
+        "sha256": "893974ab8f85b4b4b5b37e8483abe502bd29c48d0840ce7bd6eff1fb936d6bf2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T03:43:16Z",
+        "generatedAt": "2026-07-27T03:43:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "metrics": {
         "path": "evidence/actual/release/canary/5-percent-metrics.json",
-        "sha256": "b5364b07f9d9bf341e94095cb0446560bd980ad644d92479fa01dac5ea307d3d",
+        "sha256": "3c84fc740f32e7d37e5faaba98c7e0f3d496311d2eaa53829ba5c2da272f0e1c",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T03:43:16Z",
+        "generatedAt": "2026-07-27T03:43:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "rollbackReady": true
     },
     {
       "stage": "25-percent",
       "status": "passed",
-      "startedAt": "2026-07-27T03:48:16Z",
-      "completedAt": "2026-07-27T04:13:16Z",
+      "startedAt": "2026-07-27T03:48:49Z",
+      "completedAt": "2026-07-27T04:13:49Z",
       "report": {
         "path": "evidence/actual/release/canary/25-percent-report.json",
-        "sha256": "0e9587c29358888c2bb1b148ef0ed07d4537da402e4ae449d592d6a253edab43",
+        "sha256": "ab1d2ce3c89d4446c434af382a934f7d4071732c78229d1ac5017658ef173da2",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:13:16Z",
+        "generatedAt": "2026-07-27T04:13:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "metrics": {
         "path": "evidence/actual/release/canary/25-percent-metrics.json",
-        "sha256": "d323a82545138fe32bce5af74d4c4a51361107f402bb208b9540dc884ca26933",
+        "sha256": "a4e35e99fc1902a4d2f6c053be19bf07ef209b6c42e5800900dcf524d6c03f8a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:13:16Z",
+        "generatedAt": "2026-07-27T04:13:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "rollbackReady": true
     },
     {
       "stage": "100-percent",
       "status": "passed",
-      "startedAt": "2026-07-27T04:18:16Z",
-      "completedAt": "2026-07-27T04:43:16Z",
+      "startedAt": "2026-07-27T04:18:49Z",
+      "completedAt": "2026-07-27T04:43:49Z",
       "report": {
         "path": "evidence/actual/release/canary/100-percent-report.json",
-        "sha256": "752c518e5621160ce5af1be0e6221cf138f5c3bbcbbedc3c4765713057986e39",
+        "sha256": "dce1492006ee98b35cdd3c4d09d6ca48198936de0cd191c62148fc1f9711950a",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:43:16Z",
+        "generatedAt": "2026-07-27T04:43:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "metrics": {
         "path": "evidence/actual/release/canary/100-percent-metrics.json",
-        "sha256": "b7d2670c25d15b75a72ff2d45204e9c281400a20f106d5c043ce3354a7c29709",
+        "sha256": "05b7bb7555e1c269c78d102bb3ab362a44a6f3ddbfeb2b8f8d611fc0fd4c8fd0",
         "mediaType": "application/json",
-        "generatedAt": "2026-07-27T04:43:16Z",
+        "generatedAt": "2026-07-27T04:43:49Z",
         "releaseId": "EM-20260727-WP250GA",
-        "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336"
+        "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
       },
       "rollbackReady": true
     }

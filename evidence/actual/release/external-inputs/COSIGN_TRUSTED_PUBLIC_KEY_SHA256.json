@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
   "subject": "COSIGN_TRUSTED_PUBLIC_KEY_SHA256",
   "status": "verified",
   "verified": true,
-  "generatedAt": "2026-07-27T00:18:16Z",
+  "generatedAt": "2026-07-27T00:18:49Z",
   "producer": "release-inputs/fixture",
   "value": "05013aacd3461581339e074d56f6e4855cdfcca30ad24e75ba945c1b1a21b684"
 }

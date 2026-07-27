@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
   "subject": "router",
   "status": "verified",
   "verified": true,
-  "generatedAt": "2026-07-26T23:18:16Z",
+  "generatedAt": "2026-07-26T23:18:49Z",
   "producer": "ci/syft",
   "digest": "sha256:4c814f082e66ae2950a66d665749acf7f778f60e6071e0de453c77e11c442170",
   "critical": 0,

@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "e5795823b976a62250e8bce9fdea2af0208ee336",
+  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
   "subject": "ledger",
   "status": "verified",
   "verified": true,
-  "generatedAt": "2026-07-26T23:18:16Z",
+  "generatedAt": "2026-07-26T23:18:49Z",
   "producer": "ci/syft",
   "digest": "sha256:efa6bbf057d84a8149720b554a8924c6560a15332fa167423f616c2803ff8dc3",
   "critical": 0,
