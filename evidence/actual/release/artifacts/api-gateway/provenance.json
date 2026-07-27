@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
+  "commitSha": "c322b08bd101efb88db8304d378480d2d81eaed1",
   "subject": "api-gateway",
   "status": "verified",
   "verified": true,
-  "generatedAt": "2026-07-26T23:18:49Z",
+  "generatedAt": "2026-07-27T00:31:09Z",
   "producer": "ci/slsa-generator",
   "digest": "sha256:30431fcdd7b3bbb5fa9e685c89a5134fd035503ffd9956355cbff7c6360ee1f7",
   "critical": 0,

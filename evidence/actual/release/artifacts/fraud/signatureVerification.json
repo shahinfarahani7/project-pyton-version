@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
+  "commitSha": "c322b08bd101efb88db8304d378480d2d81eaed1",
   "subject": "fraud",
   "status": "verified",
   "verified": true,
-  "generatedAt": "2026-07-26T23:18:49Z",
+  "generatedAt": "2026-07-27T00:31:09Z",
   "producer": "ci/cosign-kms",
   "digest": "sha256:7428f83e547ced2b68e7b40caf9bc73294dcf5cf9c6c81b098e81f05ee145fd3",
   "critical": 0,

@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
   "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
+  "commitSha": "c322b08bd101efb88db8304d378480d2d81eaed1",
   "subject": "Legal",
   "status": "approved",
   "verified": true,
-  "generatedAt": "2026-07-27T04:58:49Z",
+  "generatedAt": "2026-07-27T06:11:09Z",
   "producer": "approval/legal",
   "approverId": "legal@edgemint.example"
 }

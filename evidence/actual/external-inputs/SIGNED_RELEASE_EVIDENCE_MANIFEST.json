@@ -6,9 +6,9 @@
     "trustedKeyPath": "evidence/actual/trusted-release-key.pem",
     "trustedKeySha256": "05013aacd3461581339e074d56f6e4855cdfcca30ad24e75ba945c1b1a21b684",
     "releaseId": "EM-20260727-WP250GA",
-    "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851"
+    "commitSha": "c322b08bd101efb88db8304d378480d2d81eaed1"
   },
   "source": "production/RELEASE-INPUTS.yaml",
-  "verifiedAt": "2026-07-27T08:30:00Z",
+  "verifiedAt": "2026-07-27T06:31:00Z",
   "verifiedBy": "release-manager-fixture"
 }

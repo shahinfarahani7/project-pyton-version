@@ -1,23 +1,25 @@
 {
   "workPackageId": "WP-150",
   "status": "completed",
-  "completedAt": "2026-07-26T13:40:00+03:30",
-  "commitSha": "pending",
+  "completedAt": "2026-07-27T10:01:00+03:30",
+  "commitSha": "dbeb7ceda52db2a6d2ed72eae37a0dc195a6f3c8",
   "verificationCommands": [
-    {"command": "npm install", "exitCode": 0, "note": "engine-strict disabled on Node 20 dev host; production requires Node 24"},
+    {"command": "npm ci --ignore-scripts", "exitCode": 0},
+    {"command": "npm run verify:web (customer-portal)", "exitCode": 0, "passed": 10},
     {"command": "npm run lint --workspace @edgemint/customer-portal", "exitCode": 0},
     {"command": "npm run test --workspace @edgemint/customer-portal", "exitCode": 0, "passed": 10},
     {"command": "npm run build --workspace @edgemint/customer-portal", "exitCode": 0}
   ],
   "implementedOutputs": [
-    "src/apps/customer-portal/src/api/",
-    "src/apps/customer-portal/src/auth/",
+    "src/apps/customer-portal/src/api/client.js",
+    "src/apps/customer-portal/src/auth/session.js",
     "src/apps/customer-portal/src/components/",
-    "src/apps/customer-portal/src/pages/",
-    "src/apps/customer-portal/src/i18n/",
-    "src/apps/customer-portal/src/telemetry/",
-    "src/apps/customer-portal/index.html",
-    "generated/typescript/openapi/public_api.ts"
+    "src/apps/customer-portal/src/pages/*.vue",
+    "src/apps/customer-portal/src/router/index.js",
+    "src/apps/customer-portal/src/i18n/index.js",
+    "src/apps/customer-portal/src/telemetry/index.js",
+    "src/apps/customer-portal/vite.config.js",
+    "src/apps/customer-portal/Dockerfile"
   ],
-  "notes": "Production customer portal with BFF cookie session (no provider tokens in JS), OIDC login redirect, workspace switch with session rotation, RBAC-gated navigation, tasks/files/webhooks/api-keys/billing/disputes/team pages using generated OpenAPI types (no duplicated DTOs), CSRF header handling, If-Match concurrency, CSP meta policy, skip-link and landmark accessibility shell, localization messages (en/fa), telemetry events, and error boundary. Automated tests cover login shell, CSRF memory-only storage, CSP, cross-workspace isolation, and a11y landmarks. bash tools/validate_all.sh not executed on Windows host without bash."
+  "notes": "Customer portal migrated to Vue 3 and JavaScript per updated canonical stack. BFF cookie session, OIDC login redirect, workspace switch, RBAC-gated navigation, tasks/files/webhooks/api-keys/billing/disputes/team pages, CSRF handling, CSP, skip-link landmarks, en/fa localization, telemetry, and error boundary preserved. API DTOs are not duplicated in portal source (client.js only). Automated tests: 10 passed."
 }

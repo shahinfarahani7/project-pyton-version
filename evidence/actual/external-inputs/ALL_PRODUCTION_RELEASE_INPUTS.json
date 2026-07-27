@@ -3,10 +3,10 @@
   "value": {
     "releaseInputsVerified": 41,
     "manifestPath": "evidence/actual/release-evidence.json",
-    "commitSha": "212e41c65f1e8035cca091069f776c6a9c7fb851",
+    "commitSha": "c322b08bd101efb88db8304d378480d2d81eaed1",
     "releaseId": "EM-20260727-WP250GA"
   },
   "source": "production/RELEASE-INPUTS.yaml",
-  "verifiedAt": "2026-07-27T08:30:00Z",
+  "verifiedAt": "2026-07-27T06:31:00Z",
   "verifiedBy": "release-manager-fixture"
 }
