@@ -5,6 +5,7 @@ WORKDIR /app
 COPY src/backend/requirements-backend.lock /app/src/backend/requirements-backend.lock
 RUN python -m pip install --no-cache-dir -r /app/src/backend/requirements-backend.lock
 COPY src/backend /app/src/backend
+COPY dsl /app/dsl
 USER 65532:65532
 EXPOSE 8080
 CMD ["python", "-m", "uvicorn", "edgemint.services.customer:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers", "--no-server-header"]

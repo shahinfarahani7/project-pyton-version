@@ -76,24 +76,40 @@ class OperationsService:
             return
         self.catalog["tasks"] = [
             {"id": "tsk_ops_1", "taskType": "document.ocr", "status": "running", "version": 3},
+            {"id": "tsk_ops_2", "taskType": "text.summarize", "status": "queued", "version": 1},
+            {"id": "tsk_ops_3", "taskType": "image.classify", "status": "failed", "version": 4},
+            {"id": "tsk_ops_4", "taskType": "document.ocr", "status": "succeeded", "version": 2},
         ]
         self.catalog["workers"] = [
             {"id": "wrk_ops_1", "status": "active", "tier": "T2", "trustScoreBps": 9200, "version": 2},
+            {"id": "wrk_ops_2", "status": "active", "tier": "T3", "trustScoreBps": 8800, "version": 1},
+            {"id": "wrk_ops_3", "status": "quarantined", "tier": "T1", "trustScoreBps": 4100, "version": 5},
+            {"id": "wrk_ops_4", "status": "draining", "tier": "T2", "trustScoreBps": 7600, "version": 3},
         ]
         self.catalog["models"] = [
             {"id": "mdl_ops_1", "status": "approved", "version": 5},
+            {"id": "mdl_ops_2", "status": "pending_review", "version": 1},
+            {"id": "mdl_ops_3", "status": "revoked", "version": 2},
         ]
         self.catalog["fraudCases"] = [
             {"id": "frd_ops_1", "status": "open", "version": 1},
+            {"id": "frd_ops_2", "status": "investigating", "version": 2},
+            {"id": "frd_ops_3", "status": "closed", "version": 1},
         ]
         self.catalog["disputes"] = [
             {"id": "dsp_ops_1", "status": "open", "version": 1},
+            {"id": "dsp_ops_2", "status": "resolved", "version": 2},
+            {"id": "dsp_ops_3", "status": "escalated", "version": 1},
         ]
         self.catalog["reconciliations"] = [
             {"id": "rec_ops_1", "status": "balanced", "version": 1},
+            {"id": "rec_ops_2", "status": "variance_detected", "version": 3},
+            {"id": "rec_ops_3", "status": "in_progress", "version": 1},
         ]
         self.catalog["incidents"] = [
             {"id": "inc_ops_1", "status": "investigating", "version": 1},
+            {"id": "inc_ops_2", "status": "mitigated", "version": 2},
+            {"id": "inc_ops_3", "status": "open", "version": 1},
         ]
         for items in self.catalog.values():
             for item in items:

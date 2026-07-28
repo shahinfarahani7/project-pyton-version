@@ -1,6 +1,6 @@
 import { reactive } from 'vue';
 
-import { authApi, setCsrfToken } from '../api/client';
+import { authApi, portalApi, setCsrfToken } from '../api/client';
 
 const initialState = {
   authenticated: false,
@@ -17,42 +17,28 @@ export const session = reactive({
     window.location.assign('/auth/oidc/login');
   },
   async loginDev(workspaceId) {
+    const permissions = [
+      'customer.tasks:read',
+      'customer.tasks:write',
+      'customer.webhooks:read',
+      'customer.webhooks:write',
+      'customer.apikeys:read',
+      'customer.billing:read',
+      'customer.team:read',
+    ];
     const created = await authApi.login({
       principalId: '00000000-0000-0000-0000-00000000000a',
       workspaceId,
-      permissions: [
-        'customer.tasks:read',
-        'customer.tasks:write',
-        'customer.webhooks:read',
-        'customer.webhooks:write',
-        'customer.apikeys:read',
-        'customer.billing:read',
-        'customer.team:read',
-      ],
+      permissions,
     });
+    const workspacesResponse = await portalApi.workspaces();
     Object.assign(session, {
       authenticated: true,
       sessionPublicId: created.sessionPublicId,
       workspaceId: created.workspaceId,
       authorizationGeneration: created.authorizationGeneration,
-      workspaces: [
-        {
-          id: workspaceId,
-          name: 'Primary workspace',
-          environment: 'production',
-          status: 'active',
-          version: 1,
-        },
-      ],
-      permissions: [
-        'customer.tasks:read',
-        'customer.tasks:write',
-        'customer.webhooks:read',
-        'customer.webhooks:write',
-        'customer.apikeys:read',
-        'customer.billing:read',
-        'customer.team:read',
-      ],
+      workspaces: workspacesResponse.items ?? [],
+      permissions,
     });
   },
   async logout() {

@@ -13,9 +13,10 @@ function onWorkspaceChange(event) {
 </script>
 
 <template>
-  <label v-if="session.workspaces.length > 0" class="workspace-switcher">
+  <label v-if="session.workspaces.length > 0" class="workspace-switcher md-field">
     <span class="visually-hidden">{{ t('workspace.switch') }}</span>
     <select
+      class="md-select"
       :aria-label="t('workspace.switch')"
       :value="session.workspaceId ?? ''"
       @change="onWorkspaceChange"

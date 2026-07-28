@@ -6,7 +6,7 @@ COPY src/apps/operations-portal/package.json ./src/apps/operations-portal/
 RUN npm ci
 COPY generated/typescript ./generated/typescript
 COPY src/apps/operations-portal ./src/apps/operations-portal
-ARG VITE_API_BASE_URL=http://localhost:8083
+ARG VITE_API_BASE_URL=
 ARG VITE_TELEMETRY_ENABLED=false
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV VITE_TELEMETRY_ENABLED=${VITE_TELEMETRY_ENABLED}

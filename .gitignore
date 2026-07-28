@@ -15,3 +15,6 @@ evidence/actual/release-signing.key
 # Frontend build output
 src/apps/customer-portal/dist/
 src/apps/operations-portal/dist/
+
+# Mobile worker APK output (build locally; exceeds GitHub file size limit)
+dist/android-worker/*.apk

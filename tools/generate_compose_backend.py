@@ -49,6 +49,7 @@ def service_block(name: str) -> str:
         "      args:",
         "        PYTHON_RUNTIME_IMAGE: ${PYTHON_RUNTIME_IMAGE:-python:3.13.14-slim-bookworm}",
         "    environment:",
+        "      <<: *backend-environment",
         f"      EDGEMINT_SERVICE_NAME: {name}",
     ]
     if name in EXPOSED_PORTS:
@@ -75,8 +76,10 @@ x-backend-service: &backend-service
   environment:
     <<: *backend-environment
   depends_on:
-    postgresql-init:
+    postgresql-seed:
       condition: service_completed_successfully
+  volumes:
+    - ./dsl:/app/dsl:ro
   healthcheck:
     test:
       - CMD

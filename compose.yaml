@@ -21,7 +21,7 @@ services:
       retries: 30
       start_period: 15s
     command: ["postgres", "-c", "ssl=off", "-c", "max_connections=300", "-c", "log_min_duration_statement=500"]
-    volumes: ["postgresql-data:/var/lib/postgresql/data"]
+    volumes: ["postgresql-data:/var/lib/postgresql"]
   postgresql-init:
     image: ${POSTGRES_TOOLS_IMAGE:-postgres:18-bookworm}
     networks: [edgemint]
@@ -35,6 +35,28 @@ services:
       - ./database/sql:/migrations:ro
       - ./tools/run_postgresql_migrations.sh:/run-migrations.sh:ro
     entrypoint: ["/bin/bash", "/run-migrations.sh"]
+    restart: "no"
+  postgresql-seed:
+    image: ${POSTGRES_TOOLS_IMAGE:-postgres:18-bookworm}
+    networks: [edgemint]
+    depends_on:
+      postgresql-init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_HOST: postgresql
+      POSTGRES_USER: ${POSTGRES_USER:-edgemint}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-edgemint}
+    volumes:
+      - ./database/seed:/seed:ro
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -eu
+        export PGPASSWORD="$$POSTGRES_PASSWORD"
+        psql -X -v ON_ERROR_STOP=1 -h "$$POSTGRES_HOST" -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -f /seed/dev_mock_data.sql
+        echo DEV_SEED_APPLIED
     restart: "no"
   minio:
     image: ${MINIO_IMAGE:-minio/minio:latest}

@@ -11,7 +11,7 @@ class WorkerConfig {
   static WorkerConfig fromEnvironment() {
     const raw = String.fromEnvironment(
       'EDGEMINT_WORKER_BASE_URL',
-      defaultValue: 'http://127.0.0.1:8080',
+      defaultValue: 'http://172.20.34.71:8081',
     );
     return WorkerConfig(baseUrl: Uri.parse(raw));
   }

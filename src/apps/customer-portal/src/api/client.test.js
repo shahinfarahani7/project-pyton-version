@@ -40,7 +40,7 @@ describe('api client security', () => {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'X-EdgeMint-CSRF-Token': 'csrf-header-value',
+            'X-CSRF-Token': 'csrf-header-value',
           },
         }),
       ),

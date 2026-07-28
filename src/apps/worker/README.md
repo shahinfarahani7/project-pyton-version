@@ -48,7 +48,13 @@ Override the worker registry base URL at build/run time:
 flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=https://worker.edgemint.example/v1
 ```
 
-Default: `http://127.0.0.1:8080`
+Default: `http://172.20.34.71:8081` (worker-gateway on the LAN backend host).
+
+Gemma **gemma-3n-e2b-int4** uses the LiteRT-LM format from [google-ai-edge/LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM). The model file is downloaded at runtime from Hugging Face (accept the Gemma license there). Optional build flags:
+
+```powershell
+flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081 --dart-define=HUGGINGFACE_TOKEN=hf_...
+```
 
 ## Verification
 

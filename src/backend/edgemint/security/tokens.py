@@ -5,7 +5,7 @@ import json
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Mapping
 from uuid import UUID
 
 import jwt
@@ -127,7 +127,27 @@ class BrowserSessionRecord:
 
 class BrowserSessionStore:
     SESSION_COOKIE = "__Host-edgemint-session"
+    DEV_SESSION_COOKIE = "edgemint-session"
     CSRF_HEADER = "X-CSRF-Token"
+
+    @staticmethod
+    def cookie_name(*, environment: str) -> str:
+        if environment in {"development", "test"}:
+            return BrowserSessionStore.DEV_SESSION_COOKIE
+        return BrowserSessionStore.SESSION_COOKIE
+
+    @staticmethod
+    def cookie_secure(*, environment: str) -> bool:
+        return environment not in {"development", "test"}
+
+    @staticmethod
+    def read_session_cookie(cookies: Mapping[str, str], *, environment: str) -> str | None:
+        token = cookies.get(BrowserSessionStore.SESSION_COOKIE)
+        if token:
+            return token
+        if environment in {"development", "test"}:
+            return cookies.get(BrowserSessionStore.DEV_SESSION_COOKIE)
+        return None
 
     async def create_session(
         self,

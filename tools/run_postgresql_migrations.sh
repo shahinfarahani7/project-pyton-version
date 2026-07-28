@@ -19,11 +19,12 @@ for migration in /migrations/*.sql; do
   version="$(basename "$migration")"
   checksum="$(sha256sum "$migration" | awk '{print $1}')"
 
+  escaped_version="${version//\'/\'\'}"
   has_ledger="$("${psql_base[@]}" -Atc "SELECT CASE WHEN to_regclass('public.schema_migrations') IS NULL THEN '0' ELSE '1' END")"
   existing=""
   if [[ "$has_ledger" == "1" ]]; then
-    existing="$("${psql_base[@]}" -v migration_version="$version" -Atc \
-      "SELECT checksum_sha256 FROM public.schema_migrations WHERE version = :'migration_version'")"
+    existing="$("${psql_base[@]}" -Atc \
+      "SELECT checksum_sha256 FROM public.schema_migrations WHERE version = '${escaped_version}'")"
   fi
 
   if [[ -n "$existing" ]]; then
@@ -46,31 +47,32 @@ for migration in /migrations/*.sql; do
     # Remove the final COMMIT statement while preserving any trailing comments or
     # blank lines. The checksum ledger INSERT below becomes part of the same
     # transaction as the migration body.
-    python - "$migration" <<'PY_MIGRATION'
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
-statement_index = None
-for index in range(len(lines) - 1, -1, -1):
-    stripped = lines[index].strip()
-    if not stripped or stripped.startswith("--"):
-        continue
-    statement_index = index
-    break
-
-if statement_index is None or lines[statement_index].strip().upper() != "COMMIT;":
-    raise SystemExit(f"MIGRATION_MUST_END_WITH_COMMIT:{path.name}")
-
-sys.stdout.write("".join(lines[:statement_index] + lines[statement_index + 1 :]))
-PY_MIGRATION
-    cat <<'SQL'
+    awk -v file="$migration" '
+      { lines[NR] = $0 }
+      END {
+        idx = NR
+        while (idx > 0) {
+          stripped = lines[idx]
+          sub(/^[[:space:]]+/, "", stripped)
+          sub(/[[:space:]]+$/, "", stripped)
+          if (stripped != "" && substr(stripped, 1, 2) != "--") {
+            break
+          }
+          idx--
+        }
+        if (idx == 0 || toupper(lines[idx]) != "COMMIT;") {
+          printf "MIGRATION_MUST_END_WITH_COMMIT:%s\n", file > "/dev/stderr"
+          exit 1
+        }
+        for (i = 1; i < idx; i++) {
+          print lines[i]
+        }
+      }
+    ' "$migration"
+    cat <<SQL
 INSERT INTO public.schema_migrations(version, checksum_sha256)
-VALUES (:'migration_version', :'migration_checksum');
+VALUES ('${escaped_version}', '${checksum}');
 COMMIT;
 SQL
-  } | "${psql_base[@]}" \
-      -v migration_version="$version" \
-      -v migration_checksum="$checksum"
+  } | "${psql_base[@]}"
 done

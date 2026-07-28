@@ -1,4 +1,4 @@
-const CSRF_HEADER = 'X-EdgeMint-CSRF-Token';
+const CSRF_HEADER = 'X-CSRF-Token';
 
 export class ApiClientError extends Error {
   constructor(problem) {
@@ -71,6 +71,8 @@ export const portalApi = {
   currentPrincipal: () => fetchJson('/v1/me'),
   workspaces: () => fetchJson('/v1/workspaces'),
   tasks: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks`),
+  createTask: (workspaceId, body) =>
+    fetchJson(`/v1/workspaces/${workspaceId}/tasks`, { method: 'POST', body }),
   task: (workspaceId, taskId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks/${taskId}`),
   webhooks: () => fetchJson('/v1/webhook-endpoints'),
   apiKeys: () => fetchJson('/v1/api-keys'),

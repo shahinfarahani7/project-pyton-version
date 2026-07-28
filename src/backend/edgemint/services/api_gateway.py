@@ -20,6 +20,11 @@ settings = get_settings()
 session_store = BrowserSessionStore()
 token_service = DelegatedTokenService(settings)
 
+if settings.environment in {"development", "test"}:
+    from edgemint.dev.portal_api import router as dev_portal_router
+
+    app.include_router(dev_portal_router, tags=["customer-portal-dev"])
+
 
 class SessionCreateRequest(BaseModel):
     principalId: UUID
@@ -66,10 +71,10 @@ async def create_browser_session(payload: SessionCreateRequest, response: Respon
             details={"authorizationGeneration": record.authorization_generation},
         )
     response.set_cookie(
-        key=BrowserSessionStore.SESSION_COOKIE,
+        key=BrowserSessionStore.cookie_name(environment=settings.environment),
         value=session_token,
         httponly=True,
-        secure=settings.environment != "development",
+        secure=BrowserSessionStore.cookie_secure(environment=settings.environment),
         samesite="strict",
         path="/",
         max_age=int(timedelta(hours=12).total_seconds()),
@@ -89,7 +94,9 @@ async def logout_session(
     response: Response,
     csrf_token: str | None = Header(default=None, alias=BrowserSessionStore.CSRF_HEADER),
 ) -> dict[str, str]:
-    session_token = request.cookies.get(BrowserSessionStore.SESSION_COOKIE)
+    session_token = BrowserSessionStore.read_session_cookie(
+        request.cookies, environment=settings.environment
+    )
     if not session_token:
         raise_auth_error("AUTH_INVALID_CREDENTIAL")
     async with transaction() as connection:
@@ -106,13 +113,18 @@ async def logout_session(
             resource_id=record.public_id,
             details={"reason": "logout"},
         )
-    response.delete_cookie(BrowserSessionStore.SESSION_COOKIE, path="/")
+    response.delete_cookie(
+        BrowserSessionStore.cookie_name(environment=settings.environment),
+        path="/",
+    )
     return {"status": "revoked"}
 
 
 @app.post("/auth/delegated-token", response_model=DelegatedTokenResponse, tags=["auth"])
 async def issue_delegated_token(request: Request) -> DelegatedTokenResponse:
-    session_token = request.cookies.get(BrowserSessionStore.SESSION_COOKIE)
+    session_token = BrowserSessionStore.read_session_cookie(
+        request.cookies, environment=settings.environment
+    )
     if not session_token:
         raise_auth_error("AUTH_INVALID_CREDENTIAL")
     async with transaction() as connection:
@@ -149,7 +161,9 @@ async def browser_events_proxy(websocket: WebSocket) -> None:
         await websocket.close(code=1008, reason="ORIGIN_REQUIRED")
         return
 
-    session_token = websocket.cookies.get(BrowserSessionStore.SESSION_COOKIE)
+    session_token = BrowserSessionStore.read_session_cookie(
+        websocket.cookies, environment=settings.environment
+    )
     if not session_token and settings.environment in {"development", "test"}:
         authorization = websocket.headers.get("authorization", "")
         if authorization.startswith("Bearer "):

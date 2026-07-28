@@ -1,0 +1,51 @@
+// Adds Maven mirrors before Google Maven for blocked networks.
+gradle.settingsEvaluated { settings ->
+    settings.pluginManagement {
+        repositories {
+            maven { url 'https://maven.myket.ir' }
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+
+    settings.dependencyResolutionManagement {
+        repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+        repositories {
+            maven { url 'https://maven.myket.ir' }
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            google()
+            mavenCentral()
+        }
+    }
+}
+
+// package:jni 1.0.1 skips kotlin-android on AGP 9+ but still uses the kotlin {} block.
+gradle.beforeProject { project ->
+    if (project.name == 'jni') {
+        project.pluginManager.apply('org.jetbrains.kotlin.android')
+    }
+    if (project.name in ['jni', 'jni_flutter']) {
+        project.afterEvaluate {
+            project.android.compileSdk = 36
+        }
+    }
+}
+
+allprojects {
+    buildscript {
+        repositories {
+            maven { url 'https://maven.myket.ir' }
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            google()
+            mavenCentral()
+        }
+    }
+    repositories {
+        maven { url 'https://maven.myket.ir' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        google()
+        mavenCentral()
+    }
+}

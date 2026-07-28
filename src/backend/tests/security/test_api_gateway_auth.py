@@ -55,7 +55,7 @@ def test_create_session_and_issue_delegated_token(gateway_client: TestClient) ->
     assert create.status_code == 200, create.text
     body = create.json()
     assert body["workspaceId"] == str(workspace_id)
-    assert create.cookies.get("__Host-edgemint-session")
+    assert create.cookies.get("edgemint-session")
 
     token_response = gateway_client.post("/auth/delegated-token")
     assert token_response.status_code == 200, token_response.text

@@ -48,7 +48,7 @@ function mockAuthenticatedFetch(workspaceId) {
           }),
           {
             status: 200,
-            headers: { 'Content-Type': 'application/json', 'X-EdgeMint-CSRF-Token': 'csrf-a11y' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': 'csrf-a11y' },
           },
         );
       }
@@ -65,19 +65,25 @@ function createTestRouter(initialRoute = '/login') {
     history: createMemoryHistory(initialRoute),
     routes: [
       {
+        path: '/login',
+        name: 'login',
+        component: LoginPage,
+        meta: { guest: true },
+      },
+      {
         path: '/',
         component: AppShell,
+        meta: { requiresAuth: true },
         children: [
-          { path: 'login', component: LoginPage },
-          { path: '', component: DashboardPage, meta: { requiresAuth: true } },
-          { path: 'tasks', component: TasksPage, meta: { requiresAuth: true } },
-          { path: 'files', component: FilesPage, meta: { requiresAuth: true } },
-          { path: 'webhooks', component: WebhooksPage, meta: { requiresAuth: true } },
-          { path: 'api-keys', component: ApiKeysPage, meta: { requiresAuth: true } },
-          { path: 'billing', component: BillingPage, meta: { requiresAuth: true } },
-          { path: 'disputes', component: DisputesPage, meta: { requiresAuth: true } },
-          { path: 'team', component: TeamPage, meta: { requiresAuth: true } },
-          { path: 'settings', component: SettingsPage, meta: { requiresAuth: true } },
+          { path: '', name: 'dashboard', component: DashboardPage },
+          { path: 'tasks', name: 'tasks', component: TasksPage },
+          { path: 'files', name: 'files', component: FilesPage },
+          { path: 'webhooks', name: 'webhooks', component: WebhooksPage },
+          { path: 'api-keys', name: 'api-keys', component: ApiKeysPage },
+          { path: 'billing', name: 'billing', component: BillingPage },
+          { path: 'disputes', name: 'disputes', component: DisputesPage },
+          { path: 'team', name: 'team', component: TeamPage },
+          { path: 'settings', name: 'settings', component: SettingsPage },
         ],
       },
     ],
@@ -89,10 +95,10 @@ async function renderApp(initialRoute = '/login') {
   router.beforeEach((to) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
     if (requiresAuth && !session.authenticated) {
-      return { path: '/login' };
+      return { name: 'login' };
     }
-    if (to.path === '/login' && session.authenticated) {
-      return { path: '/' };
+    if (to.meta.guest && session.authenticated) {
+      return { name: 'dashboard' };
     }
     return true;
   });
@@ -116,7 +122,7 @@ describe('accessibility shell', () => {
   it('exposes skip link, landmarks, and labelled navigation', async () => {
     mockAuthenticatedFetch('00000000-0000-0000-0000-00000000000b');
     const { wrapper } = await renderApp('/login');
-    await wrapper.get('[class*="secondary-button"]').trigger('click');
+    await wrapper.get('[data-testid="dev-sign-in"]').trigger('click');
     await vi.waitFor(() => {
       expect(session.authenticated).toBe(true);
     });
@@ -139,7 +145,7 @@ describe('cross-workspace isolation', () => {
     const workspaceB = '00000000-0000-0000-0000-00000000000c';
     mockAuthenticatedFetch(workspaceA);
     const { wrapper, router } = await renderApp('/login');
-    await wrapper.get('[class*="secondary-button"]').trigger('click');
+    await wrapper.get('[data-testid="dev-sign-in"]').trigger('click');
     await vi.waitFor(() => {
       expect(session.authenticated).toBe(true);
     });

@@ -30,6 +30,11 @@ if ($Portals) {
     $compose += "-f", "compose.portals.yaml"
 }
 if ($ComposeArgs.Count -eq 0) {
-    $ComposeArgs = @("up", "-d", "--build")
+    $ComposeArgs = @('up', '-d', '--build')
 }
-& @compose @ComposeArgs
+$allArgs = $compose + $ComposeArgs
+Write-Host ('Running: docker ' + ($allArgs -join ' '))
+& docker @allArgs
+if ($LASTEXITCODE -ne 0) {
+    exit $LASTEXITCODE
+}

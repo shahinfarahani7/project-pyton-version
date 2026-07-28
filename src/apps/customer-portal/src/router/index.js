@@ -17,21 +17,30 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: LoginPage,
+      meta: { guest: true },
+    },
+    {
       path: '/',
       component: AppShell,
+      meta: { requiresAuth: true },
       children: [
-        { path: 'login', name: 'login', component: LoginPage },
-        { path: '', name: 'dashboard', component: DashboardPage, meta: { requiresAuth: true } },
-        { path: 'tasks', name: 'tasks', component: TasksPage, meta: { requiresAuth: true } },
-        { path: 'files', name: 'files', component: FilesPage, meta: { requiresAuth: true } },
-        { path: 'webhooks', name: 'webhooks', component: WebhooksPage, meta: { requiresAuth: true } },
-        { path: 'api-keys', name: 'api-keys', component: ApiKeysPage, meta: { requiresAuth: true } },
-        { path: 'billing', name: 'billing', component: BillingPage, meta: { requiresAuth: true } },
-        { path: 'disputes', name: 'disputes', component: DisputesPage, meta: { requiresAuth: true } },
-        { path: 'team', name: 'team', component: TeamPage, meta: { requiresAuth: true } },
-        { path: 'settings', name: 'settings', component: SettingsPage, meta: { requiresAuth: true } },
-        { path: ':pathMatch(.*)*', redirect: '/' },
+        { path: '', name: 'dashboard', component: DashboardPage },
+        { path: 'tasks', name: 'tasks', component: TasksPage },
+        { path: 'files', name: 'files', component: FilesPage },
+        { path: 'webhooks', name: 'webhooks', component: WebhooksPage },
+        { path: 'api-keys', name: 'api-keys', component: ApiKeysPage },
+        { path: 'billing', name: 'billing', component: BillingPage },
+        { path: 'disputes', name: 'disputes', component: DisputesPage },
+        { path: 'team', name: 'team', component: TeamPage },
+        { path: 'settings', name: 'settings', component: SettingsPage },
       ],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: () => (session.authenticated ? { name: 'dashboard' } : { name: 'login' }),
     },
   ],
 });
@@ -39,10 +48,10 @@ const router = createRouter({
 router.beforeEach((to) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   if (requiresAuth && !session.authenticated) {
-    return { path: '/login' };
+    return { name: 'login', query: { redirect: to.fullPath } };
   }
-  if (to.path === '/login' && session.authenticated) {
-    return { path: '/' };
+  if (to.meta.guest && session.authenticated) {
+    return { name: 'dashboard' };
   }
   return true;
 });

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const EdgeMintWorkerApp());
+import 'ui/gemma_download_dialog.dart';
+import 'worker_app_controller.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const EdgeMintWorkerApp());
+}
 
 class EdgeMintWorkerApp extends StatelessWidget {
   const EdgeMintWorkerApp({super.key});
@@ -30,7 +36,50 @@ class WorkerHomePage extends StatefulWidget {
 }
 
 class _WorkerHomePageState extends State<WorkerHomePage> {
-  bool available = true;
+  late final WorkerAppController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WorkerAppController();
+    _controller.addListener(_onControllerChanged);
+    _controller.bootstrap();
+  }
+
+  void _onControllerChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _startGemmaDownload() async {
+    if (!_controller.canStartGemmaDownload || _controller.isGemmaReady) {
+      return;
+    }
+
+    String? token;
+    if (_controller.requiresHuggingFaceToken) {
+      token = await showGemmaDownloadDialog(context, tokenRequired: true);
+      if (!mounted || token == null || token.isEmpty) {
+        return;
+      }
+    }
+
+    await _controller.downloadGemmaModel(huggingFaceToken: token);
+    if (!mounted || _controller.modelPhase != ModelInstallPhase.failed) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(_controller.modelError ?? 'Gemma download failed')),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onControllerChanged);
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +88,11 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
       appBar: AppBar(
         title: const Text('EdgeMint'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none)),
+          IconButton(
+            onPressed: _controller.bootstrap,
+            icon: const Icon(Icons.sync),
+            tooltip: 'Refresh',
+          ),
           IconButton(onPressed: () {}, icon: const Icon(Icons.settings_outlined)),
         ],
       ),
@@ -69,29 +122,76 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
-                    const Text('Your device is protected and ready for verified work.'),
+                    Text(_controller.backendMessage),
                     const SizedBox(height: 16),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Worker availability'),
-                      value: available,
-                      onChanged: (value) => setState(() => available = value),
+                      value: _controller.available,
+                      onChanged: (value) => setState(() => _controller.available = value),
+                    ),
+                    if (_controller.isGemmaDownloading) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(value: _controller.modelProgress),
+                      const SizedBox(height: 8),
+                      Text(
+                        _controller.gemmaDownloadLabel,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ] else if (!_controller.isGemmaReady) ...[
+                      const SizedBox(height: 8),
+                      FilledButton.icon(
+                        onPressed: _controller.canStartGemmaDownload ? _startGemmaDownload : null,
+                        icon: const Icon(Icons.download_for_offline),
+                        label: Text(_controller.gemmaDownloadLabel),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                        ),
+                      ),
+                      if (_controller.modelPhase == ModelInstallPhase.failed &&
+                          _controller.modelError != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _controller.modelError!,
+                          style: TextStyle(color: colorScheme.error),
+                        ),
+                      ],
+                    ] else ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(_controller.gemmaDownloadLabel)),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: _controller.isGemmaDownloading || !_controller.isGemmaReady
+                          ? null
+                          : _controller.pollAndRunTask,
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('Run task with Gemma'),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            _readinessCard(context),
+            _readinessCard(context, _controller),
             const SizedBox(height: 12),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.document_scanner_outlined),
-                title: const Text('OCR Document'),
-                subtitle: const Text('Estimated: 4 min • €0.018'),
-                trailing: FilledButton(onPressed: () {}, child: const Text('View mission')),
+            _modelCard(context, _controller, onDownload: _startGemmaDownload),
+            if (_controller.executionStatus.detail != null) ...[
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.smart_toy_outlined),
+                  title: const Text('Last inference'),
+                  subtitle: Text(_controller.executionStatus.detail!),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -113,13 +213,7 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            const ListTile(
-              leading: Icon(Icons.rocket_launch_outlined),
-              title: Text('2 new missions available'),
-              trailing: Icon(Icons.chevron_right),
-            ),
-            const Center(child: Text('Last sync 1 min ago')),
+            Center(child: Text('Last sync ${_controller.lastSync}')),
           ],
         ),
       ),
@@ -127,7 +221,47 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
   }
 }
 
-Widget _readinessCard(BuildContext context) {
+Widget _modelCard(
+  BuildContext context,
+  WorkerAppController controller, {
+  required Future<void> Function() onDownload,
+}) {
+  final progressLabel = switch (controller.modelPhase) {
+    ModelInstallPhase.idle => 'Not installed',
+    ModelInstallPhase.downloading => 'Downloading ${(controller.modelProgress * 100).toStringAsFixed(0)}%',
+    ModelInstallPhase.ready => 'Ready (gemma-3n-e2b-int4)',
+    ModelInstallPhase.failed => controller.modelError ?? 'Install failed',
+  };
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Gemma 3n model', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text(progressLabel),
+          if (controller.modelPhase == ModelInstallPhase.downloading)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: LinearProgressIndicator(value: controller.modelProgress),
+            ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.tonalIcon(
+              onPressed: controller.canStartGemmaDownload && !controller.isGemmaReady ? onDownload : null,
+              icon: Icon(controller.isGemmaReady ? Icons.check_circle : Icons.cloud_download),
+              label: Text(controller.gemmaDownloadLabel),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _readinessCard(BuildContext context, WorkerAppController controller) {
   return Card(
     child: Padding(
       padding: const EdgeInsets.all(16),
@@ -137,9 +271,13 @@ Widget _readinessCard(BuildContext context) {
           Text('Device readiness', style: Theme.of(context).textTheme.titleMedium),
           const _Status('Battery', '78%', Icons.battery_full),
           const _Status('Temperature', 'Normal', Icons.thermostat),
-          const _Status('Network', 'Wi-Fi', Icons.wifi),
+          _Status('Backend', controller.backendOnline ? 'Online' : 'Offline', Icons.cloud),
           const _Status('Storage', '12 GB free', Icons.storage),
-          const _Status('Models', 'Ready', Icons.view_in_ar),
+          _Status(
+            'Models',
+            controller.modelPhase == ModelInstallPhase.ready ? 'Ready' : 'Pending',
+            Icons.view_in_ar,
+          ),
         ],
       ),
     ),
@@ -155,6 +293,7 @@ class _Status extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ok = value == 'Offline' || value == 'Pending' ? false : true;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(icon),
@@ -164,7 +303,7 @@ class _Status extends StatelessWidget {
         children: [
           Text(value),
           const SizedBox(width: 8),
-          const Icon(Icons.check_circle, color: Colors.green),
+          Icon(ok ? Icons.check_circle : Icons.error_outline, color: ok ? Colors.green : Colors.orange),
         ],
       ),
     );

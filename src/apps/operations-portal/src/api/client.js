@@ -1,4 +1,4 @@
-const CSRF_HEADER = 'X-EdgeMint-CSRF-Token';
+const CSRF_HEADER = 'X-CSRF-Token';
 let csrfToken = null;
 
 export class ApiClientError extends Error {
