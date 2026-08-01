@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import Header, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
@@ -156,3 +156,70 @@ async def replace_worker_preferences(
     response = JSONResponse(body.model_dump(mode="json"), status_code=200)
     response.headers["X-Request-Id"] = request_trace_id(request)
     return response
+
+
+def _dev_worker_assignments_enabled() -> bool:
+    from edgemint.building_blocks.settings import get_settings
+
+    return get_settings().environment in {"development", "test"}
+
+
+if _dev_worker_assignments_enabled():
+    from edgemint.dev import worker_assignments as dev_worker_assignments
+
+    @app.get("/assignments:next", tags=["dev-assignments"])
+    async def dev_next_assignment(token: WorkerBearerToken) -> JSONResponse:
+        _ = token
+        assignment = dev_worker_assignments.pop_next_assignment()
+        if assignment is None:
+            return Response(status_code=204)
+        return JSONResponse(assignment, status_code=200)
+
+    @app.post("/assignments/{assignment_id}:started", tags=["dev-assignments"])
+    async def dev_assignment_started(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (assignment_id, token, idempotency_key)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentStarted"),
+            status_code=200,
+        )
+
+    @app.post("/assignments/{assignment_id}:progress", tags=["dev-assignments"])
+    async def dev_assignment_progress(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (assignment_id, token, idempotency_key)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentProgress"),
+            status_code=200,
+        )
+
+    @app.post("/assignments/{assignment_id}:complete", tags=["dev-assignments"])
+    async def dev_assignment_complete(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (token, idempotency_key)
+        dev_worker_assignments.mark_completed(assignment_id)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentComplete"),
+            status_code=200,
+        )
+
+    @app.post("/assignments/{assignment_id}:abandon", tags=["dev-assignments"])
+    async def dev_assignment_abandon(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (assignment_id, token, idempotency_key)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentAbandon"),
+            status_code=200,
+        )

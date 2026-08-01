@@ -50,10 +50,12 @@ flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=https://worker.edgemint.examp
 
 Default: `http://172.20.34.71:8081` (worker-gateway on the LAN backend host).
 
-Gemma **gemma-3n-e2b-int4** uses the LiteRT-LM format from [google-ai-edge/LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM). The model file is downloaded at runtime from Hugging Face (accept the Gemma license there). Optional build flags:
+**Qwen3-0.6B** uses the LiteRT-LM format from [litert-community/Qwen3-0.6B](https://huggingface.co/litert-community/Qwen3-0.6B). By default the app downloads via the **worker-gateway model proxy** (`GET /models/mdv_qwen3_0_6b/artifact`); no Hugging Face token is required on the phone or backend for this model.
+
+Optional build flags (direct Hugging Face download instead of backend proxy):
 
 ```powershell
-flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081 --dart-define=HUGGINGFACE_TOKEN=hf_...
+flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081 --dart-define=WORKER_USE_BACKEND_ARTIFACT=false
 ```
 
 ## Verification

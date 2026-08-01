@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -11,9 +12,36 @@ DEV_WORKSPACE_STAGING = UUID("00000000-0000-0000-0000-00000000000c")
 
 DEV_WORKSPACE_IDS = frozenset({DEV_WORKSPACE_PRIMARY, DEV_WORKSPACE_STAGING})
 
+WORKER_MODEL_VERSION_ID = "mdv_qwen3_0_6b"
+
 PAGE = {"limit": 25, "hasMore": False}
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
+
+
+def _now_iso() -> str:
+    return datetime.now(tz=UTC).isoformat()
+
+
+def _task_row(
+    *,
+    task_id: str,
+    task_type: str,
+    lifecycle_status: str,
+    execution_status: str,
+    version: int,
+    created_at: str,
+    updated_at: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "id": task_id,
+        "taskType": task_type,
+        "lifecycleStatus": lifecycle_status,
+        "executionStatus": execution_status,
+        "version": version,
+        "createdAt": created_at,
+        "updatedAt": updated_at or created_at,
+    }
 
 
 def is_dev_principal(principal_id: UUID) -> bool:
@@ -51,37 +79,43 @@ def dev_workspaces() -> list[dict[str, Any]]:
 def _seeded_tasks(workspace_id: UUID) -> list[dict[str, Any]]:
     if workspace_id == DEV_WORKSPACE_PRIMARY:
         return [
-            {
-                "id": "tsk_dev_ocr_running",
-                "taskType": "document.ocr",
-                "lifecycleStatus": "running",
-                "executionStatus": "in_progress",
-                "version": 2,
-            },
-            {
-                "id": "tsk_dev_nlp_done",
-                "taskType": "text.summarize",
-                "lifecycleStatus": "succeeded",
-                "executionStatus": "completed",
-                "version": 1,
-            },
-            {
-                "id": "tsk_dev_vision_queued",
-                "taskType": "image.classify",
-                "lifecycleStatus": "queued",
-                "executionStatus": "pending",
-                "version": 1,
-            },
+            _task_row(
+                task_id="tsk_dev_ocr_running",
+                task_type="document.ocr",
+                lifecycle_status="running",
+                execution_status="in_progress",
+                version=2,
+                created_at="2026-07-27T08:15:00+00:00",
+                updated_at="2026-07-28T09:40:00+00:00",
+            ),
+            _task_row(
+                task_id="tsk_dev_nlp_done",
+                task_type="text.summarize",
+                lifecycle_status="succeeded",
+                execution_status="completed",
+                version=1,
+                created_at="2026-07-25T14:30:00+00:00",
+                updated_at="2026-07-26T11:05:00+00:00",
+            ),
+            _task_row(
+                task_id="tsk_dev_vision_queued",
+                task_type="image.classify",
+                lifecycle_status="queued",
+                execution_status="pending",
+                version=1,
+                created_at="2026-07-28T16:00:00+00:00",
+            ),
         ]
     if workspace_id == DEV_WORKSPACE_STAGING:
         return [
-            {
-                "id": "tsk_dev_staging_draft",
-                "taskType": "document.ocr",
-                "lifecycleStatus": "draft",
-                "executionStatus": "not_started",
-                "version": 1,
-            },
+            _task_row(
+                task_id="tsk_dev_staging_draft",
+                task_type="document.ocr",
+                lifecycle_status="draft",
+                execution_status="not_started",
+                version=1,
+                created_at="2026-07-24T07:20:00+00:00",
+            ),
         ]
     return []
 
@@ -102,14 +136,18 @@ def dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
 
 
 def create_dev_task(workspace_id: UUID, *, task_type: str) -> dict[str, Any]:
-    task = {
-        "id": f"tsk_dev_{secrets.token_hex(4)}",
-        "taskType": task_type,
-        "lifecycleStatus": "draft",
-        "executionStatus": "not_started",
-        "version": 1,
-    }
+    from edgemint.dev.worker_assignments import enqueue_dev_assignment
+
+    task = _task_row(
+        task_id=f"tsk_dev_{secrets.token_hex(4)}",
+        task_type=task_type,
+        lifecycle_status="queued",
+        execution_status="pending",
+        version=1,
+        created_at=_now_iso(),
+    )
     _created_tasks.setdefault(workspace_id, []).append(task)
+    enqueue_dev_assignment(task_id=task["id"], task_type=task_type)
     return task
 
 

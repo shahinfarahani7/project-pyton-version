@@ -20,6 +20,16 @@ export function formatBytes(bytes) {
   return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
+export function formatDateTime(value) {
+  if (value == null || value === '') return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
+}
+
 export function statusTone(status) {
   const normalized = String(status ?? '').toLowerCase();
   if (['active', 'ready', 'succeeded', 'completed', 'paid', 'resolved', 'scanned'].includes(normalized)) {

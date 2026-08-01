@@ -68,6 +68,7 @@ x-backend-environment: &backend-environment
   EDGEMINT_ALLOW_INSECURE_DEVELOPMENT_TOKENS: ${EDGEMINT_ALLOW_INSECURE_DEVELOPMENT_TOKENS:-true}
   EDGEMINT_JWT_SIGNING_SECRET: ${EDGEMINT_JWT_SIGNING_SECRET:-local-docker-jwt-secret-change-me}
   EDGEMINT_JWT_ISSUER: ${EDGEMINT_JWT_ISSUER:-edgemint-local}
+  EDGEMINT_HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN:-}
 
 x-backend-service: &backend-service
   init: true

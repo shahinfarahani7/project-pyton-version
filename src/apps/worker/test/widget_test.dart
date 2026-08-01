@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const EdgeMintWorkerApp());
     expect(find.text('Ready for missions'), findsOneWidget);
     expect(find.text('Device readiness'), findsOneWidget);
-    expect(find.text('Download Gemma model'), findsWidgets);
+    expect(find.text('Download Qwen3 0.6B'), findsWidgets);
     await tester.scrollUntilVisible(
       find.text('Earnings summary'),
       200,

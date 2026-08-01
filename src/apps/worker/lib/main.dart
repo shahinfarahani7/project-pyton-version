@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'runtime/execution_status.dart';
 import 'ui/gemma_download_dialog.dart';
 import 'worker_app_controller.dart';
 
@@ -52,25 +53,34 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
     }
   }
 
+  Future<void> _runTaskWithGemma() async {
+    await _controller.pollAndRunTask();
+    if (!mounted) {
+      return;
+    }
+    if (_controller.executionStatus.phase == ExecutionPhase.failed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_controller.executionStatus.detail ?? 'Task run failed')),
+      );
+    }
+  }
+
   Future<void> _startGemmaDownload() async {
     if (!_controller.canStartGemmaDownload || _controller.isGemmaReady) {
       return;
     }
 
-    String? token;
-    if (_controller.requiresHuggingFaceToken) {
-      token = await showGemmaDownloadDialog(context, tokenRequired: true);
-      if (!mounted || token == null || token.isEmpty) {
-        return;
-      }
+    final confirmed = await showGemmaDownloadDialog(context);
+    if (!mounted || confirmed != true) {
+      return;
     }
 
-    await _controller.downloadGemmaModel(huggingFaceToken: token);
+    await _controller.downloadGemmaModel();
     if (!mounted || _controller.modelPhase != ModelInstallPhase.failed) {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_controller.modelError ?? 'Gemma download failed')),
+      SnackBar(content: Text(_controller.modelError ?? 'Model download failed')),
     );
   }
 
@@ -170,10 +180,14 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
                     FilledButton.icon(
                       onPressed: _controller.isGemmaDownloading || !_controller.isGemmaReady
                           ? null
-                          : _controller.pollAndRunTask,
+                          : _runTaskWithGemma,
                       icon: const Icon(Icons.play_arrow),
-                      label: const Text('Run task with Gemma'),
+                      label: const Text('Run task with model'),
                     ),
+                    if (_controller.taskRunLogs.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _taskRunLogPanel(context, _controller),
+                    ],
                   ],
                 ),
               ),
@@ -221,6 +235,40 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
   }
 }
 
+Widget _taskRunLogPanel(BuildContext context, WorkerAppController controller) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('Task run log', style: Theme.of(context).textTheme.labelLarge),
+            const Spacer(),
+            TextButton(
+              onPressed: controller.clearTaskRunLogs,
+              child: const Text('Clear'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SelectableText(
+          controller.taskRunLogs.join('\n'),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontFamily: 'monospace',
+                height: 1.35,
+              ),
+        ),
+      ],
+    ),
+  );
+}
+
 Widget _modelCard(
   BuildContext context,
   WorkerAppController controller, {
@@ -229,7 +277,7 @@ Widget _modelCard(
   final progressLabel = switch (controller.modelPhase) {
     ModelInstallPhase.idle => 'Not installed',
     ModelInstallPhase.downloading => 'Downloading ${(controller.modelProgress * 100).toStringAsFixed(0)}%',
-    ModelInstallPhase.ready => 'Ready (gemma-3n-e2b-int4)',
+    ModelInstallPhase.ready => 'Ready (qwen3-0.6b)',
     ModelInstallPhase.failed => controller.modelError ?? 'Install failed',
   };
   return Card(
@@ -238,7 +286,7 @@ Widget _modelCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Gemma 3n model', style: Theme.of(context).textTheme.titleMedium),
+          Text('Qwen3 0.6B model', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(progressLabel),
           if (controller.modelPhase == ModelInstallPhase.downloading)

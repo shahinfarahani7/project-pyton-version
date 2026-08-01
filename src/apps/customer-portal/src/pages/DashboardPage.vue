@@ -7,7 +7,7 @@ import PageHeader from '../components/ui/PageHeader.vue';
 import StatCard from '../components/ui/StatCard.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
-import { formatMicroEur, formatNumber } from '../utils/format';
+import { formatMicroEur, formatNumber, formatDateTime } from '../utils/format';
 
 const session = useSession();
 const loading = ref(true);
@@ -105,6 +105,7 @@ onMounted(() => {
               <th scope="col">{{ t('tasks.colType') }}</th>
               <th scope="col">{{ t('tasks.colLifecycle') }}</th>
               <th scope="col">{{ t('tasks.colExecution') }}</th>
+              <th scope="col">{{ t('tasks.colCreated') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -113,6 +114,7 @@ onMounted(() => {
               <td>{{ task.taskType }}</td>
               <td><StatusChip :status="task.lifecycleStatus" /></td>
               <td><StatusChip :status="task.executionStatus" /></td>
+              <td>{{ formatDateTime(task.createdAt) }}</td>
             </tr>
           </tbody>
         </table>

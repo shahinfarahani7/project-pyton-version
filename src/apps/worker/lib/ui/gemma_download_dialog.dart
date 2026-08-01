@@ -1,56 +1,22 @@
 import 'package:flutter/material.dart';
 
-/// Collects an optional Hugging Face token before starting a gated model download.
-Future<String?> showGemmaDownloadDialog(
-  BuildContext context, {
-  required bool tokenRequired,
-}) {
-  final controller = TextEditingController();
-  return showDialog<String>(
+/// Confirms a large model download before starting (no Hugging Face token required).
+Future<bool?> showGemmaDownloadDialog(BuildContext context) {
+  return showDialog<bool>(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Download Gemma 3n'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'The full gemma-3n-e2b-int4 model (~1–2 GB) will be downloaded from Hugging Face and installed on this device.',
-            ),
-            if (tokenRequired) ...[
-              const SizedBox(height: 16),
-              const Text(
-                'Accept the Gemma license on huggingface.co, then paste a Read token below.',
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Hugging Face token',
-                  hintText: 'hf_…',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                autocorrect: false,
-                enableSuggestions: false,
-              ),
-            ],
-          ],
+        title: const Text('Download Qwen3 0.6B'),
+        content: const Text(
+          'The Qwen3-0.6B model (~586 MB) will be downloaded from your EdgeMint worker backend and installed on this device. No Hugging Face token is required.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
-              final token = controller.text.trim();
-              if (tokenRequired && token.isEmpty) {
-                return;
-              }
-              Navigator.of(context).pop(tokenRequired ? token : null);
-            },
+            onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Download now'),
           ),
         ],

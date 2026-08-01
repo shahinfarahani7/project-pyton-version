@@ -92,7 +92,10 @@ def test_dev_portal_creates_task(gateway_client: TestClient) -> None:
     assert created.status_code == 201, created.text
     body = created.json()
     assert body["taskType"] == "document.ocr"
-    assert body["lifecycleStatus"] == "draft"
+    assert body["lifecycleStatus"] == "queued"
+    assert body["executionStatus"] == "pending"
+    assert body["createdAt"]
+    assert body["updatedAt"]
 
     after = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks")
     assert after.status_code == 200

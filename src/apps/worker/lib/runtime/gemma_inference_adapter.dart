@@ -3,11 +3,11 @@ import 'dart:typed_data';
 
 import 'package:flutter_gemma/flutter_gemma.dart';
 
-import '../models/gemma_model_catalog.dart';
+import '../models/worker_model_catalog.dart';
 import 'inference_adapter.dart';
 import 'runtime_exceptions.dart';
 
-/// Runs task prompts through the on-device Gemma 3n LiteRT-LM model.
+/// Runs task prompts through the on-device Qwen3 LiteRT-LM model.
 class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   InferenceModel? _model;
   bool _loaded = false;
@@ -20,13 +20,13 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     if (artifact.backend != InferenceBackend.liteRt) {
       throw ModelIntegrityException('Expected LiteRT model artifact');
     }
-    if (artifact.digestSha256 != GemmaModelCatalog.installedDigestMarker &&
-        artifact.modelVersionId != GemmaModelCatalog.modelVersionId) {
-      throw ModelIntegrityException('Unexpected model version for Gemma runtime');
+    if (artifact.digestSha256 != WorkerModelCatalog.installedDigestMarker &&
+        artifact.modelVersionId != WorkerModelCatalog.modelVersionId) {
+      throw ModelIntegrityException('Unexpected model version for worker runtime');
     }
     final active = await FlutterGemma.getActiveModel(
-      maxTokens: 2048,
-      preferredBackend: PreferredBackend.gpu,
+      maxTokens: 4096,
+      preferredBackend: PreferredBackend.cpu,
     );
     _model = active;
     _loaded = true;
@@ -39,7 +39,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     Future<void> Function(int progressMilli)? onProgress,
   }) async {
     if (!_loaded || _model == null) {
-      throw StateError('Gemma model not loaded');
+      throw StateError('On-device model not loaded');
     }
     await onProgress?.call(resumedState == null ? 100 : 500);
     final prompt = utf8.decode(inputBytes);
@@ -64,7 +64,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       progressMilli: 1000,
       metrics: {
         'backend': backend.name,
-        'modelProfile': GemmaModelCatalog.profileId,
+        'modelProfile': WorkerModelCatalog.profileId,
         'inputBytes': inputBytes.length,
         'outputChars': text.length,
       },

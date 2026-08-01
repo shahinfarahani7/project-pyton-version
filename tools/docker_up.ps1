@@ -33,8 +33,8 @@ if ($ComposeArgs.Count -eq 0) {
     $ComposeArgs = @('up', '-d', '--build')
 }
 $allArgs = $compose + $ComposeArgs
-Write-Host ('Running: docker ' + ($allArgs -join ' '))
-& docker @allArgs
+Write-Host ('Running: ' + ($allArgs -join ' '))
+& $allArgs[0] $allArgs[1..($allArgs.Length - 1)]
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

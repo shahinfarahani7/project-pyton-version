@@ -9,6 +9,7 @@ import EmptyState from '../components/ui/EmptyState.vue';
 import PageHeader from '../components/ui/PageHeader.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
+import { formatDateTime } from '../utils/format';
 import { trackEvent } from '../telemetry';
 
 const session = useSession();
@@ -95,6 +96,7 @@ async function submitCreateTask(taskType) {
             <th scope="col">{{ t('tasks.colType') }}</th>
             <th scope="col">{{ t('tasks.colLifecycle') }}</th>
             <th scope="col">{{ t('tasks.colExecution') }}</th>
+            <th scope="col">{{ t('tasks.colCreated') }}</th>
             <th scope="col">{{ t('tasks.colVersion') }}</th>
           </tr>
         </thead>
@@ -104,6 +106,7 @@ async function submitCreateTask(taskType) {
             <td>{{ task.taskType }}</td>
             <td><StatusChip :status="task.lifecycleStatus" /></td>
             <td><StatusChip :status="task.executionStatus" /></td>
+            <td>{{ formatDateTime(task.createdAt) }}</td>
             <td>{{ task.version }}</td>
           </tr>
         </tbody>

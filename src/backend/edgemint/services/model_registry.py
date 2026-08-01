@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import Depends, Header, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
@@ -172,3 +172,17 @@ async def rollback_model_rollout(
     response = JSONResponse(body.model_dump(mode="json"), status_code=202)
     response.headers["X-Request-Id"] = request_trace_id(request)
     return response
+
+
+def _dev_model_artifact_proxy_enabled() -> bool:
+    from edgemint.building_blocks.settings import get_settings
+
+    return get_settings().environment in {"development", "test"}
+
+
+if _dev_model_artifact_proxy_enabled():
+    from edgemint.dev import model_artifact_proxy
+
+    @app.get("/models/{model_version_id}/artifact", tags=["dev-models"])
+    async def download_model_artifact(model_version_id: str) -> StreamingResponse:
+        return await model_artifact_proxy.stream_model_artifact(model_version_id)
