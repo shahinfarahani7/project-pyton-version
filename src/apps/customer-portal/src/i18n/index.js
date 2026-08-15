@@ -35,18 +35,32 @@ const messages = {
     'tasks.subtitle': 'Monitor lifecycle and execution status for submitted workloads.',
     'tasks.create': 'New task',
     'tasks.createTitle': 'Create task',
-    'tasks.createSubtitle': 'Submit a queued task to the active workspace (development API).',
+    'tasks.createSubtitle': 'Upload your document, image, or text — the worker runs it on-device and returns the result here.',
     'tasks.createError': 'Could not create task. Try again.',
     'tasks.cancel': 'Cancel',
     'tasks.typeOcr': 'Document OCR',
     'tasks.typeSummarize': 'Text summarize',
     'tasks.typeClassify': 'Image classify',
+    'tasks.typeRemoveBackground': 'Remove background',
+    'tasks.inputTextLabel': 'Text (paste or type)',
+    'tasks.inputTextPlaceholder': 'Paste invoice text, article, or notes for the worker…',
+    'tasks.inputFileLabel': 'File upload',
+    'tasks.inputFileHint': 'Optional for OCR/classify; required if no text is pasted. Max 2 MB in dev.',
+    'tasks.inputFileSelected': 'Selected: {name}',
+    'tasks.inputFileClear': 'Remove',
+    'tasks.inputTextRequired': 'Paste text or upload a file for summarization.',
+    'tasks.inputFileOrTextRequired': 'Upload a file or paste text for this task.',
+    'tasks.inputImageRequired': 'Image classify requires an image file.',
     'tasks.emptyTitle': 'No tasks yet',
     'tasks.emptyBody': 'Submit a task through the API or create one when intake is enabled.',
     'tasks.colId': 'Task ID',
     'tasks.colType': 'Type',
     'tasks.colLifecycle': 'Lifecycle',
     'tasks.colExecution': 'Execution',
+    'tasks.colInput': 'Input',
+    'tasks.colResult': 'Result',
+    'tasks.resultImageAlt': 'Task result image',
+    'tasks.downloadResult': 'Download result',
     'tasks.colCreated': 'Created',
     'tasks.colVersion': 'Version',
     'billing.subtitle': 'Usage, credit balance, and invoice history for the active workspace.',
@@ -136,18 +150,32 @@ const messages = {
     'tasks.subtitle': 'پایش وضعیت lifecycle و اجرا.',
     'tasks.create': 'وظیفه جدید',
     'tasks.createTitle': 'ایجاد وظیفه',
-    'tasks.createSubtitle': 'ارسال وظیفه queued به workspace فعال (API توسعه).',
+    'tasks.createSubtitle': 'سند، تصویر یا متن خود را آپلود کنید — worker روی دستگاه اجرا می‌کند و نتیجه اینجا نمایش داده می‌شود.',
     'tasks.createError': 'ایجاد وظیفه ناموفق بود.',
     'tasks.cancel': 'انصراف',
     'tasks.typeOcr': 'OCR سند',
     'tasks.typeSummarize': 'خلاصه‌سازی متن',
     'tasks.typeClassify': 'طبقه‌بندی تصویر',
+    'tasks.typeRemoveBackground': 'حذف پس‌زمینه',
+    'tasks.inputTextLabel': 'متن (چسباندن یا تایپ)',
+    'tasks.inputTextPlaceholder': 'متن فاکتura، مقاله یا یادداشت را برای worker بچسبانید…',
+    'tasks.inputFileLabel': 'آپلود فایل',
+    'tasks.inputFileHint': 'برای OCR/طبقه‌بندی اختیاری؛ اگر متن ندارید فایل لازم است. حداکثر ۲ مگابایت.',
+    'tasks.inputFileSelected': 'انتخاب‌شده: {name}',
+    'tasks.inputFileClear': 'حذف',
+    'tasks.inputTextRequired': 'برای خلاصه‌سازی متن یا فایل وارد کنید.',
+    'tasks.inputFileOrTextRequired': 'فایل آپلود کنید یا متن بچسبانید.',
+    'tasks.inputImageRequired': 'طبقه‌بندی تصویر به فایل تصویری نیاز دارد.',
     'tasks.emptyTitle': 'وظیفه‌ای نیست',
     'tasks.emptyBody': 'از API وظیفه ارسال کنید.',
-    'tasks.colId': 'شناسه',
+    'tasks.colId': 'شناسه تسک',
     'tasks.colType': 'نوع',
     'tasks.colLifecycle': 'Lifecycle',
     'tasks.colExecution': 'اجرا',
+    'tasks.colInput': 'ورودی',
+    'tasks.colResult': 'نتیجه',
+    'tasks.resultImageAlt': 'تصویر نتیجه تسک',
+    'tasks.downloadResult': 'دانلود نتیجه',
     'tasks.colCreated': 'تاریخ ایجاد',
     'tasks.colVersion': 'نسخه',
     'billing.subtitle': 'مصرف، موجودی و فاکتورها.',
@@ -208,6 +236,20 @@ export function resolveLocale() {
   return configured === 'fa' ? 'fa' : 'en';
 }
 
-export function t(key, locale = resolveLocale()) {
-  return messages[locale][key] ?? messages.en[key] ?? key;
+export function t(key, paramsOrLocale, explicitLocale) {
+  let locale = resolveLocale();
+  let params = null;
+  if (paramsOrLocale === 'en' || paramsOrLocale === 'fa') {
+    locale = paramsOrLocale;
+    params = explicitLocale ?? null;
+  } else if (paramsOrLocale && typeof paramsOrLocale === 'object') {
+    params = paramsOrLocale;
+  }
+  let text = messages[locale]?.[key] ?? messages.en[key] ?? key;
+  if (params) {
+    for (const [name, value] of Object.entries(params)) {
+      text = text.replaceAll(`{${name}}`, String(value));
+    }
+  }
+  return text;
 }

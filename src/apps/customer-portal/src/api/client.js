@@ -54,7 +54,49 @@ export async function fetchJson(path, options = {}) {
     return undefined;
   }
 
-  const payload = await response.json();
+  const raw = await response.text();
+  let payload;
+  try {
+    payload = raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new ApiClientError({
+      title: 'Request failed',
+      detail: raw || `HTTP ${response.status}`,
+      status: response.status,
+    });
+  }
+  if (!response.ok) {
+    throw new ApiClientError(payload);
+  }
+  return payload;
+}
+
+export async function fetchForm(path, formData) {
+  const headers = { Accept: 'application/json' };
+  if (csrfToken) {
+    headers[CSRF_HEADER] = csrfToken;
+  }
+  const response = await fetch(`${apiBaseUrl()}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers,
+    body: formData,
+  });
+  const csrfFromResponse = response.headers.get(CSRF_HEADER);
+  if (csrfFromResponse) {
+    csrfToken = csrfFromResponse;
+  }
+  const raw = await response.text();
+  let payload;
+  try {
+    payload = raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new ApiClientError({
+      title: 'Request failed',
+      detail: raw || `HTTP ${response.status}`,
+      status: response.status,
+    });
+  }
   if (!response.ok) {
     throw new ApiClientError(payload);
   }
@@ -71,8 +113,21 @@ export const portalApi = {
   currentPrincipal: () => fetchJson('/v1/me'),
   workspaces: () => fetchJson('/v1/workspaces'),
   tasks: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks`),
-  createTask: (workspaceId, body) =>
-    fetchJson(`/v1/workspaces/${workspaceId}/tasks`, { method: 'POST', body }),
+  createTask: (workspaceId, payload) => {
+    const { taskType, inputText, inputFile } = payload;
+    if (inputFile || inputText) {
+      const formData = new FormData();
+      formData.append('taskType', taskType);
+      if (inputText) {
+        formData.append('inputText', inputText);
+      }
+      if (inputFile) {
+        formData.append('inputFile', inputFile);
+      }
+      return fetchForm(`/v1/workspaces/${workspaceId}/tasks/upload`, formData);
+    }
+    return fetchJson(`/v1/workspaces/${workspaceId}/tasks`, { method: 'POST', body: { taskType } });
+  },
   task: (workspaceId, taskId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks/${taskId}`),
   webhooks: () => fetchJson('/v1/webhook-endpoints'),
   apiKeys: () => fetchJson('/v1/api-keys'),

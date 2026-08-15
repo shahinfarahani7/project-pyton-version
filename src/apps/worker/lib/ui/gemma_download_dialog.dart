@@ -8,7 +8,8 @@ Future<bool?> showGemmaDownloadDialog(BuildContext context) {
       return AlertDialog(
         title: const Text('Download Qwen3 0.6B'),
         content: const Text(
-          'The Qwen3-0.6B model (~586 MB) will be downloaded from your EdgeMint worker backend and installed on this device. No Hugging Face token is required.',
+          'The Qwen3-0.6B model (~586 MB) can be downloaded from your EdgeMint backend, '
+          'or sideloaded from PC with tools/push_qwen_model_to_emulator.ps1 (no in-app download).',
         ),
         actions: [
           TextButton(

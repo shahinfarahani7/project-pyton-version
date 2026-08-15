@@ -81,6 +81,10 @@ class WorkerApiClient {
   final WorkerConfig _config;
   final http.Client _http;
 
+  void reconfigure(WorkerConfig config) {
+    _config.baseUrl = config.baseUrl;
+  }
+
   Future<DeviceChallenge> createDeviceChallenge({
     required String installationId,
     required String idempotencyKey,

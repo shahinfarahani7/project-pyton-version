@@ -11,6 +11,7 @@ class WorkerAssignment {
     required this.inputManifestUrl,
     required this.outputUploadUrl,
     required this.startDeadlineAt,
+    this.taskId,
   });
 
   factory WorkerAssignment.fromJson(Map<String, dynamic> json) => WorkerAssignment(
@@ -25,6 +26,7 @@ class WorkerAssignment {
         inputManifestUrl: json['inputManifestUrl'] as String,
         outputUploadUrl: json['outputUploadUrl'] as String,
         startDeadlineAt: DateTime.parse(json['startDeadlineAt'] as String),
+        taskId: json['taskId'] as String?,
       );
 
   final String assignmentId;
@@ -38,6 +40,7 @@ class WorkerAssignment {
   final String inputManifestUrl;
   final String outputUploadUrl;
   final DateTime startDeadlineAt;
+  final String? taskId;
 
   bool get executionStartsAutomatically => true;
   String get assignmentMode => 'auto';

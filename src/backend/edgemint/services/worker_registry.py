@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+
+import httpx
 from fastapi import Header, Request
 from fastapi.responses import JSONResponse, Response
 
@@ -166,11 +169,43 @@ def _dev_worker_assignments_enabled() -> bool:
 
 if _dev_worker_assignments_enabled():
     from edgemint.dev import worker_assignments as dev_worker_assignments
+    from pydantic import BaseModel
+
+    _API_GATEWAY = os.environ.get("EDGEMINT_API_GATEWAY_URL", "http://api-gateway:8080").rstrip("/")
+
+    async def _sync_portal_tasks_to_worker_queue() -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                await client.post(f"{_API_GATEWAY}/internal/dev/sync-worker-queue")
+        except httpx.HTTPError:
+            pass
+
+    class DevEnqueueAssignmentRequest(BaseModel):
+        taskId: str
+        taskType: str
+
+    @app.post("/internal/dev/assignments", tags=["dev-assignments"], status_code=201)
+    async def dev_enqueue_assignment(payload: DevEnqueueAssignmentRequest) -> JSONResponse:
+        body = dev_worker_assignments.enqueue_dev_assignment(
+            task_id=payload.taskId,
+            task_type=payload.taskType,
+        )
+        return JSONResponse(body, status_code=201)
+
+    @app.get("/internal/dev/assignments", tags=["dev-assignments"])
+    async def dev_list_assignments() -> JSONResponse:
+        return JSONResponse(
+            {"items": dev_worker_assignments.list_pending_assignments()},
+            status_code=200,
+        )
 
     @app.get("/assignments:next", tags=["dev-assignments"])
     async def dev_next_assignment(token: WorkerBearerToken) -> JSONResponse:
         _ = token
         assignment = dev_worker_assignments.pop_next_assignment()
+        if assignment is None:
+            await _sync_portal_tasks_to_worker_queue()
+            assignment = dev_worker_assignments.pop_next_assignment()
         if assignment is None:
             return Response(status_code=204)
         return JSONResponse(assignment, status_code=200)
@@ -196,6 +231,18 @@ if _dev_worker_assignments_enabled():
         _ = (assignment_id, token, idempotency_key)
         return JSONResponse(
             dev_worker_assignments.command_receipt("devAssignmentProgress"),
+            status_code=200,
+        )
+
+    @app.post("/assignments/{assignment_id}:checkpoint", tags=["dev-assignments"])
+    async def dev_assignment_checkpoint(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (assignment_id, token, idempotency_key)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentCheckpoint"),
             status_code=200,
         )
 

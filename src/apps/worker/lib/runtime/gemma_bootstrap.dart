@@ -11,7 +11,7 @@ abstract final class GemmaBootstrap {
       return;
     }
     WidgetsFlutterBinding.ensureInitialized();
-    FlutterGemma.initialize(
+    await FlutterGemma.initialize(
       inferenceEngines: const [LiteRtLmEngine()],
       maxDownloadRetries: 10,
     );

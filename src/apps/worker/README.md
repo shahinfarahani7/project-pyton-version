@@ -50,7 +50,41 @@ flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=https://worker.edgemint.examp
 
 Default: `http://172.20.34.71:8081` (worker-gateway on the LAN backend host).
 
-**Qwen3-0.6B** uses the LiteRT-LM format from [litert-community/Qwen3-0.6B](https://huggingface.co/litert-community/Qwen3-0.6B). By default the app downloads via the **worker-gateway model proxy** (`GET /models/mdv_qwen3_0_6b/artifact`); no Hugging Face token is required on the phone or backend for this model.
+**Qwen3-0.6B** uses the LiteRT-LM format from [litert-community/Qwen3-0.6B](https://huggingface.co/litert-community/Qwen3-0.6B). By default the app downloads via the **worker-gateway model proxy** (`GET /models/mdv_qwen3_0_6b/files/Qwen3-0.6B.litertlm`); no Hugging Face token is required on the phone or backend for this model.
+
+### Sideload model (no in-app download)
+
+Download once on the PC and push to the emulator — the app imports on next launch:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\push_qwen_model_to_emulator.ps1
+```
+
+Target path on device: `/sdcard/Edgemint/models/Qwen3-0.6B.litertlm` (also checks `Download/`). After import, the model stays in app storage and **does not re-download** on restart.
+
+## PaddleOCR (PP-OCRv5 Arabic/Persian, ONNX)
+
+Image pipeline tasks (`document.ocr`, `document.extract`, `image.classify`, `text.summarize` on images) run **PaddleOCR via ONNX Runtime** on Android (`io.edgemint/ocr_runtime`). Structured JSON stages use **Qwen3-0.6B LiteRT** (`QwenTaskProcessor`); images are never sent to the LLM.
+
+| Capability | Backend `taskType` | Pipeline |
+|------------|-------------------|----------|
+| OCR only | `document.ocr` | OCR → JSON |
+| Structured extract | `document.extract` | OCR → Qwen JSON |
+| Document classify | `image.classify` | OCR → Qwen JSON |
+| Document summarize | `text.summarize` (image input) | OCR → Qwen JSON |
+| Text classify | `text.classify` | Qwen only |
+
+Model artifacts (not in Git): `ppocrv5_mobile_det.onnx`, `ppocrv5_mobile_rec_arabic.onnx`, `ppocrv5_arabic_dict.txt`. Pin SHA-256 in `lib/inference/ocr/ocr_models.dart` after export.
+
+Sideload to device:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\push_paddleocr_models_to_device.ps1
+```
+
+Target path: `/sdcard/Edgemint/models/paddleocr/`. On x86 emulators without ONNX models, the worker uses `FakeOcrEngine` for dev E2E while Qwen stays on dev-mock.
+
+Example task manifest: `fixtures/tasks/ocr_extract_text.v1.json`.
 
 Optional build flags (direct Hugging Face download instead of backend proxy):
 

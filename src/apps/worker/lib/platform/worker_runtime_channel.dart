@@ -32,10 +32,12 @@ class WorkerRuntimeChannel {
     if (raw == null) {
       return _defaultSnapshot();
     }
-    return DeviceSnapshot(
+    return _normalizeSnapshot(
       available: raw['available'] as bool? ?? true,
       batteryPercent: raw['batteryPercent'] as int? ?? 100,
       isCharging: raw['isCharging'] as bool? ?? false,
+      isEmulator: raw['isEmulator'] as bool? ?? false,
+      isX86Android: raw['isX86Android'] as bool? ?? false,
       thermalState: _thermal(raw['thermalState'] as String?),
       network: _network(raw['network'] as String?),
       freeStorageMb: raw['freeStorageMb'] as int? ?? 4096,
@@ -45,9 +47,50 @@ class WorkerRuntimeChannel {
     );
   }
 
+  DeviceSnapshot _normalizeSnapshot({
+    required bool available,
+    required int batteryPercent,
+    required bool isCharging,
+    required bool isEmulator,
+    required bool isX86Android,
+    required ThermalState thermalState,
+    required NetworkKind network,
+    required int freeStorageMb,
+    required bool withinSchedule,
+    required List<String> consentsGranted,
+  }) {
+    var emulator = isEmulator;
+    var percent = batteryPercent;
+    var charging = isCharging;
+    if (emulator || percent <= 0) {
+      emulator = true;
+      percent = 100;
+      charging = true;
+    }
+    return DeviceSnapshot(
+      available: available,
+      batteryPercent: percent,
+      isCharging: charging,
+      isEmulator: emulator,
+      isX86Android: isX86Android,
+      thermalState: thermalState,
+      network: network,
+      freeStorageMb: freeStorageMb,
+      withinSchedule: withinSchedule,
+      consentsGranted: consentsGranted,
+    );
+  }
+
   Future<String> signingMaterial() async {
     final value = await _channel.invokeMethod<String>('signingMaterial');
     return value ?? 'test-signing-material';
+  }
+
+  Future<String?> importSideloadedModel({required String fileName}) async {
+    final raw = await _channel.invokeMethod<Map<Object?, Object?>>('importSideloadedModel', {
+      'fileName': fileName,
+    });
+    return raw?['path'] as String?;
   }
 
   Future<Uint8List> encryptLocal(Uint8List plaintext) async {
@@ -107,6 +150,9 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
 
   @override
   Future<String> signingMaterial() async => material;
+
+  @override
+  Future<String?> importSideloadedModel({required String fileName}) async => null;
 
   @override
   Future<void> startForegroundService({required String assignmentId, required String taskType}) async {}

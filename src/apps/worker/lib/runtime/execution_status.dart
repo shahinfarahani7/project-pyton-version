@@ -15,6 +15,7 @@ class ExecutionStatus {
   const ExecutionStatus({
     required this.phase,
     this.assignmentId,
+    this.taskId,
     this.taskType,
     this.progressMilli = 0,
     this.detail,
@@ -23,6 +24,7 @@ class ExecutionStatus {
 
   final ExecutionPhase phase;
   final String? assignmentId;
+  final String? taskId;
   final String? taskType;
   final int progressMilli;
   final String? detail;
@@ -31,6 +33,7 @@ class ExecutionStatus {
   ExecutionStatus copyWith({
     ExecutionPhase? phase,
     String? assignmentId,
+    String? taskId,
     String? taskType,
     int? progressMilli,
     String? detail,
@@ -39,6 +42,7 @@ class ExecutionStatus {
     return ExecutionStatus(
       phase: phase ?? this.phase,
       assignmentId: assignmentId ?? this.assignmentId,
+      taskId: taskId ?? this.taskId,
       taskType: taskType ?? this.taskType,
       progressMilli: progressMilli ?? this.progressMilli,
       detail: detail ?? this.detail,

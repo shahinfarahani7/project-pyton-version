@@ -35,15 +35,15 @@ function closeCreateDialog() {
   createError.value = '';
 }
 
-async function submitCreateTask(taskType) {
+async function submitCreateTask(payload) {
   if (!session.workspaceId || !session.hasPermission('customer.tasks:write')) {
     return;
   }
   creating.value = true;
   createError.value = '';
-  trackEvent('portal.tasks.create', { taskType });
+  trackEvent('portal.tasks.create', { taskType: payload.taskType, hasFile: Boolean(payload.inputFile) });
   try {
-    await portalApi.createTask(session.workspaceId, { taskType });
+    await portalApi.createTask(session.workspaceId, payload);
     await refresh();
     closeCreateDialog();
   } catch (err) {
@@ -96,6 +96,8 @@ async function submitCreateTask(taskType) {
             <th scope="col">{{ t('tasks.colType') }}</th>
             <th scope="col">{{ t('tasks.colLifecycle') }}</th>
             <th scope="col">{{ t('tasks.colExecution') }}</th>
+            <th scope="col">{{ t('tasks.colInput') }}</th>
+            <th scope="col">{{ t('tasks.colResult') }}</th>
             <th scope="col">{{ t('tasks.colCreated') }}</th>
             <th scope="col">{{ t('tasks.colVersion') }}</th>
           </tr>
@@ -106,6 +108,18 @@ async function submitCreateTask(taskType) {
             <td>{{ task.taskType }}</td>
             <td><StatusChip :status="task.lifecycleStatus" /></td>
             <td><StatusChip :status="task.executionStatus" /></td>
+            <td>{{ task.inputLabel ?? '—' }}</td>
+            <td>
+              <a
+                v-if="task.resultArtifactUrl"
+                class="md-btn md-btn-text md-btn-compact task-result-download"
+                :href="task.resultArtifactUrl"
+                :download="task.inputLabel ? `result-${task.inputLabel}` : `result-${task.id}`"
+              >
+                {{ t('tasks.downloadResult') }}
+              </a>
+              <span v-else>{{ task.resultPreview ?? '—' }}</span>
+            </td>
             <td>{{ formatDateTime(task.createdAt) }}</td>
             <td>{{ task.version }}</td>
           </tr>

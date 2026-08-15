@@ -1,5 +1,7 @@
 // Canonical artifact metadata for the on-device worker LLM (LiteRT-LM).
 
+import 'package:flutter_gemma/flutter_gemma.dart';
+
 abstract final class WorkerModelCatalog {
   static const profileId = 'qwen3-0.6b';
 
@@ -39,7 +41,11 @@ abstract final class WorkerModelCatalog {
       final basePath = workerBaseUrl.path.endsWith('/')
           ? workerBaseUrl.path.substring(0, workerBaseUrl.path.length - 1)
           : workerBaseUrl.path;
-      return workerBaseUrl.replace(path: '$basePath/models/$modelVersionId/artifact').toString();
+      // Path must end with the real filename — flutter_gemma names local files
+      // from the URL basename (not Content-Disposition).
+      return workerBaseUrl
+          .replace(path: '$basePath/models/$modelVersionId/files/$fileName')
+          .toString();
     }
     return huggingFaceDownloadUrl;
   }
@@ -47,5 +53,13 @@ abstract final class WorkerModelCatalog {
   static String? bundledAssetFromEnvironment() {
     const asset = String.fromEnvironment('WORKER_MODEL_ASSET');
     return asset.isEmpty ? null : asset;
+  }
+
+  /// Qwen3-0.6B ships as `.litertlm` — must NOT use default `.task` (MediaPipe).
+  static InferenceInstallationBuilder installBuilder() {
+    return FlutterGemma.installModel(
+      modelType: ModelType.qwen3,
+      fileType: ModelFileType.litertlm,
+    );
   }
 }

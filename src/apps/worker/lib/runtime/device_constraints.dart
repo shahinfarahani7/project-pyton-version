@@ -44,7 +44,8 @@ class DeviceConstraints {
         return ConstraintDecision.block(ConstraintViolation.missingConsent, 'Missing consent: $consent');
       }
     }
-    if (snapshot.batteryPercent < ExecutionPolicy.minimumBatteryPercent) {
+    if (!snapshot.isEmulator &&
+        snapshot.batteryPercent < ExecutionPolicy.minimumBatteryPercent) {
       return const ConstraintDecision.block(ConstraintViolation.batteryLow);
     }
     if (snapshot.freeStorageMb < ExecutionPolicy.minimumStorageMb) {
@@ -62,7 +63,7 @@ class DeviceConstraints {
     if (!snapshot.withinSchedule) {
       return const ConstraintDecision.block(ConstraintViolation.scheduleBlocked);
     }
-    if (heavyTask && requireChargingForHeavyTasks && !snapshot.isCharging) {
+    if (heavyTask && requireChargingForHeavyTasks && !snapshot.isCharging && !snapshot.isEmulator) {
       return const ConstraintDecision.block(ConstraintViolation.batteryLow, 'Charging required for heavy tasks');
     }
     return const ConstraintDecision.pass();

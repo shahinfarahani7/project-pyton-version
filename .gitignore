@@ -18,3 +18,17 @@ src/apps/operations-portal/dist/
 
 # Mobile worker APK output (build locally; exceeds GitHub file size limit)
 dist/android-worker/*.apk
+
+# Local ML artifacts (sideload via tools/push_* scripts; too large for GitHub)
+dist/models/
+
+# IDE and local dev scratch
+.idea/
+.tmp_e2e/
+.tmp_*.txt
+.tmp_*.json
+tmp-cookies.txt
+tmp_cookies.txt
+
+# Android Gradle build reports
+src/apps/worker/android/build/

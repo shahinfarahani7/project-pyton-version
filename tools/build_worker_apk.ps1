@@ -5,7 +5,9 @@ param(
     [string]$OutputDir = 'dist/android-worker',
     [string]$WorkerBaseUrl = 'http://172.20.34.71:8081',
     [string]$HuggingFaceToken = '',
-    [string]$GemmaModelDownloadUrl = ''
+    [string]$GemmaModelDownloadUrl = '',
+    [switch]$ForceRealInference,
+    [string]$TargetPlatform = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -223,6 +225,12 @@ try {
     }
     if ($GemmaModelDownloadUrl) {
         $dartDefines += "--dart-define=GEMMA_MODEL_DOWNLOAD_URL=$GemmaModelDownloadUrl"
+    }
+    if ($ForceRealInference) {
+        $dartDefines += '--dart-define=WORKER_FORCE_REAL_INFERENCE=true'
+    }
+    if ($TargetPlatform) {
+        $dartDefines += "--target-platform=$TargetPlatform"
     }
     Remove-Item -Recurse -Force 'build' -ErrorAction SilentlyContinue
     if ($Mode -eq 'debug') {

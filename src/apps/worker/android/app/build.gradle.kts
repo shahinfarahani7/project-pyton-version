@@ -40,3 +40,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.19.2")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "taskId": "tsk_example_ocr",
+  "type": "ocr.extract_text.v1",
+  "idempotencyKey": "tsk_example_ocr-1",
+  "input": {
+    "imageUri": "content://example/receipt.png"
+  },
+  "options": {
+    "languages": ["fa", "en"],
+    "minOcrConfidence": 0.55,
+    "ocrOnly": true
+  }
+}

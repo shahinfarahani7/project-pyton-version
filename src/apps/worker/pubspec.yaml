@@ -11,6 +11,7 @@ dependencies:
   crypto: ^3.0.6
   flutter_gemma: ^1.4.0
   flutter_gemma_litertlm: ^1.2.0
+  background_downloader: ^9.5.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

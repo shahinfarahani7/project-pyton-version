@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:http/http.dart' as http;
@@ -12,11 +14,22 @@ import 'debug/worker_task_log.dart';
 import 'models/worker_model_catalog.dart';
 import 'platform/worker_runtime_channel.dart';
 import 'runtime/assignment_coordinator.dart';
+import 'runtime/dev_mock_inference_adapter.dart';
 import 'runtime/encrypted_store.dart';
+import 'runtime/device_snapshot.dart';
 import 'runtime/execution_status.dart';
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/gemma_inference_adapter.dart';
+import 'runtime/worker_model_installer.dart';
 import 'runtime/inference_adapter.dart';
+import 'runtime/switchable_inference_adapter.dart';
+import 'inference/llm/qwen_task_processor.dart';
+import 'inference/ocr/fake_ocr_engine.dart';
+import 'inference/ocr/ocr_engine.dart';
+import 'inference/ocr/paddle_ocr_engine.dart';
+import 'inference/ocr/paddle_ocr_installer.dart';
+import 'tasks/task_execution_engine.dart';
+import 'tasks/task_type_mapper.dart';
 
 enum ModelInstallPhase { idle, downloading, ready, failed }
 
@@ -25,26 +38,43 @@ class WorkerAppController extends ChangeNotifier {
     WorkerConfig? config,
     http.Client? httpClient,
     WorkerRuntimeChannel? platform,
+    OcrEngine? ocrEngine,
+    QwenTaskProcessor? qwenProcessor,
+    TaskExecutionEngine? taskEngine,
   })  : _config = config ?? WorkerConfig.fromEnvironment(),
         _http = httpClient ?? http.Client(),
-        _platform = platform ?? WorkerRuntimeChannel() {
+        _platform = platform ?? WorkerRuntimeChannel(),
+        _ocrEngineRef = OcrEngineRef(ocrEngine ?? PaddleOcrEngine()) {
+    _inference = SwitchableInferenceAdapter(GemmaLiteRtInferenceAdapter());
+    _qwenProcessor = qwenProcessor ?? QwenTaskProcessor();
+    _taskEngine = taskEngine ??
+        TaskExecutionEngine(
+          ocrEngine: _ocrEngineRef,
+          qwenProcessor: _qwenProcessor,
+        );
     _api = WorkerApiClient(config: _config, httpClient: _http);
     _coordinator = AssignmentCoordinator(
       api: _api,
       store: InMemoryEncryptedStore(),
       platform: _platform,
-      inference: GemmaLiteRtInferenceAdapter(),
+      inference: _inference,
       inputLoader: _loadAssignmentInput,
+      taskEngine: _taskEngine,
       onStatus: _onExecutionStatus,
     );
   }
 
-  final WorkerConfig _config;
+  WorkerConfig _config;
   final http.Client _http;
   final WorkerRuntimeChannel _platform;
 
   late final WorkerApiClient _api;
+  late final SwitchableInferenceAdapter _inference;
+  final OcrEngineRef _ocrEngineRef;
+  late final QwenTaskProcessor _qwenProcessor;
+  late final TaskExecutionEngine _taskEngine;
   late final AssignmentCoordinator _coordinator;
+  DevMockInferenceAdapter? _devMockAdapter;
 
   bool available = true;
   bool backendOnline = false;
@@ -53,7 +83,17 @@ class WorkerAppController extends ChangeNotifier {
   double modelProgress = 0;
   String? modelError;
   ExecutionStatus executionStatus = const ExecutionStatus(phase: ExecutionPhase.idle);
+  String? lastPortalTaskId;
+  String? lastAssignmentId;
   String lastSync = 'never';
+  int batteryPercent = 100;
+  bool isCharging = false;
+  bool isEmulator = false;
+  bool isX86Android = false;
+  bool usesDevMockInference = false;
+  int freeStorageMb = 0;
+  bool ocrModelsReady = false;
+  String thermalLabel = 'Normal';
 
   List<String> get taskRunLogs => WorkerTaskLog.lines;
 
@@ -68,19 +108,103 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> bootstrap() async {
+    await _resolveBackendUrl();
     await _refreshBackendHealth();
+    await _refreshDeviceReadiness();
     try {
-      await GemmaBootstrap.ensureInitialized();
-      await _refreshModelState();
-    } catch (_) {
-      modelPhase = ModelInstallPhase.idle;
+      await ensureModelReady();
+    } catch (error) {
+      _logTask('Model check failed: $error');
+      if (!usesDevMockInference && modelPhase != ModelInstallPhase.downloading) {
+        modelPhase = ModelInstallPhase.idle;
+      }
     }
     notifyListeners();
   }
 
+  Future<void> _refreshDeviceReadiness() async {
+    try {
+      final snapshot = await _platform.readDeviceSnapshot();
+      batteryPercent = snapshot.batteryPercent;
+      isCharging = snapshot.isCharging;
+      isEmulator = snapshot.isEmulator;
+      isX86Android = snapshot.isX86Android;
+      freeStorageMb = snapshot.freeStorageMb;
+      thermalLabel = switch (snapshot.thermalState) {
+        ThermalState.normal => 'Normal',
+        ThermalState.warm => 'Warm',
+        ThermalState.throttled => 'Throttled',
+        ThermalState.critical => 'Critical',
+      };
+      if (isEmulator) {
+        _logTask('Emulator detected — battery treated as AC power for dev');
+      }
+      if (isX86Android) {
+        const forceReal = bool.fromEnvironment(
+          'WORKER_FORCE_REAL_INFERENCE',
+          defaultValue: false,
+        );
+        if (forceReal) {
+          _logTask(
+            'x86 emulator but WORKER_FORCE_REAL_INFERENCE=true — attempting real Qwen3 LiteRT '
+            '(requires arm64-v8a native libs; enable ARM mode in MEmu 9.2+ settings)',
+          );
+        } else {
+          _enableDevMockInference();
+          _ocrEngineRef.delegate = FakeOcrEngine();
+          ocrModelsReady = true;
+        }
+      } else {
+        ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(log: _logTask);
+      }
+    } catch (error) {
+      _logTask('Device readiness probe failed: $error');
+    }
+  }
+
+  String get batteryLabel {
+    if (isEmulator) {
+      return isCharging ? '$batteryPercent% (emulator AC)' : '$batteryPercent% (emulator)';
+    }
+    return isCharging ? '$batteryPercent% (charging)' : '$batteryPercent%';
+  }
+
+  String get storageLabel {
+    if (freeStorageMb >= 1024) {
+      return '${(freeStorageMb / 1024).toStringAsFixed(1)} GB free';
+    }
+    return '$freeStorageMb MB free';
+  }
+
   Future<void> refreshBackendHealth() async {
+    await _resolveBackendUrl();
     await _refreshBackendHealth();
     notifyListeners();
+  }
+
+  Future<void> _resolveBackendUrl() async {
+    for (final candidate in WorkerConfig.connectionCandidates()) {
+      try {
+        final probe = await _http
+            .get(
+              WorkerConfig(baseUrl: candidate).resolve('/health/live'),
+            )
+            .timeout(const Duration(seconds: 5));
+        if (probe.statusCode == 200) {
+          if (_config.baseUrl != candidate) {
+            _logTask('Backend reachable at $candidate (was ${_config.baseUrl})');
+            _config.baseUrl = candidate;
+            _api.reconfigure(_config);
+          }
+          return;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+    _logTask(
+      'No backend candidate responded — tried ${WorkerConfig.connectionCandidates().join(", ")}',
+    );
   }
 
   Future<void> _refreshBackendHealth() async {
@@ -95,29 +219,104 @@ class WorkerAppController extends ChangeNotifier {
               'Open port 8081 in Windows Firewall and ensure the phone is on the same LAN.';
     } catch (error) {
       backendOnline = false;
+      final hint = _config.baseUrl.host == '127.0.0.1'
+          ? 'Run on PC: powershell -File tools/start_worker_dev.ps1'
+          : 'Run tools/open_worker_gateway_firewall.ps1 as Administrator on the PC.';
       backendMessage =
-          'Unreachable (${_config.baseUrl.host}:${_config.baseUrl.port}): $error. '
-          'Run tools/open_worker_gateway_firewall.ps1 as Administrator on the PC.';
+          'Unreachable (${_config.baseUrl.host}:${_config.baseUrl.port}): $error. $hint';
     }
     lastSync = _formatNow();
   }
 
-  Future<void> _refreshModelState() async {
-    if (FlutterGemma.hasActiveModel()) {
-      modelPhase = ModelInstallPhase.ready;
-      modelProgress = 1;
-      modelError = null;
-      return;
+  Future<bool> ensureModelReady() async {
+    if (usesDevMockInference) {
+      _setModelReady();
+      return true;
+    }
+    try {
+      if (await WorkerModelInstaller.verifyActive(log: _logTask)) {
+        _setModelReady();
+        return true;
+      }
+      final ready = await WorkerModelInstaller.ensureReady(log: _logTask);
+      if (ready) {
+        _setModelReady();
+        return true;
+      }
+    } catch (error) {
+      _logTask('Model inventory check failed: $error');
+      return false;
     }
     if (modelPhase != ModelInstallPhase.downloading) {
-      modelPhase = ModelInstallPhase.idle;
+      modelPhase = ModelInstallPhase.failed;
+      modelError = 'Model files present but inference is not active. Tap Prepare Qwen3 again or sideload the model.';
     }
+    return false;
+  }
+
+  Future<bool> _verifyAndMarkModelReady() async {
+    if (await WorkerModelInstaller.verifyActive(log: _logTask)) {
+      _setModelReady();
+      return true;
+    }
+    if (await WorkerModelInstaller.ensureReady(log: _logTask)) {
+      _setModelReady();
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> _clearBrokenModelInstall() async {
+    await _clearStaleDownloadTasks(forceReinstall: true);
+    for (final modelId in ['artifact', WorkerModelCatalog.fileName]) {
+      try {
+        await FlutterGemma.uninstallModel(modelId);
+      } catch (_) {}
+    }
+    try {
+      await FlutterGemma.clearActiveInferenceIdentity();
+    } catch (_) {}
+  }
+
+  void _enableDevMockInference() {
+    usesDevMockInference = true;
+    _devMockAdapter = DevMockInferenceAdapter();
+    _inference.use(_devMockAdapter!);
+    _setModelReady();
+    _logTask(
+      'x86 emulator detected — Qwen3 .litertlm needs ARM64. '
+      'Using dev mock inference so portal tasks still run.',
+    );
+  }
+
+  void _setModelReady() {
+    modelPhase = ModelInstallPhase.ready;
+    modelProgress = 1;
+    modelError = null;
+  }
+
+  Future<void> _refreshModelState() async {
+    await ensureModelReady();
   }
 
   Future<void> downloadGemmaModel() async {
+    if (usesDevMockInference) {
+      _logTask('Dev mock already active on x86 emulator — no Qwen3 download needed');
+      _setModelReady();
+      notifyListeners();
+      return;
+    }
     if (modelPhase == ModelInstallPhase.downloading) {
       return;
     }
+
+    if (await _verifyAndMarkModelReady()) {
+      _logTask('Qwen3 model already active — skipping download');
+      lastSync = _formatNow();
+      notifyListeners();
+      return;
+    }
+
     modelPhase = ModelInstallPhase.downloading;
     modelProgress = 0;
     modelError = null;
@@ -125,40 +324,32 @@ class WorkerAppController extends ChangeNotifier {
 
     try {
       await GemmaBootstrap.ensureInitialized();
+      await _clearBrokenModelInstall();
       final bundledAsset = WorkerModelCatalog.bundledAssetFromEnvironment();
       var downloadUrl = WorkerModelCatalog.resolveDownloadUrl(_config.baseUrl);
-      _logTask('Model download URL: $downloadUrl');
       if (bundledAsset == null && WorkerModelCatalog.usesBackendArtifactProxy()) {
         if (backendOnline) {
-          downloadUrl = await _resolveDownloadUrlWithFallback(downloadUrl);
+          _logTask('Using backend model proxy: $downloadUrl');
         } else {
-          _logTask(
-            'Backend offline — skipping proxy probe, using direct Hugging Face download',
-          );
           downloadUrl = WorkerModelCatalog.huggingFaceDownloadUrl;
+          _logTask('Backend offline — using direct Hugging Face: $downloadUrl');
         }
+      } else {
+        _logTask('Model download URL: $downloadUrl');
       }
-      try {
-        await FlutterGemma.uninstallModel(WorkerModelCatalog.fileName);
-        _logTask('Cleared any previous partial model install');
-      } catch (_) {
-        // No prior install — safe to ignore.
-      }
-      final installer = FlutterGemma.installModel(modelType: ModelType.qwen3);
+      final installer = WorkerModelCatalog.installBuilder();
       if (bundledAsset != null) {
         await installer.fromAsset(bundledAsset).install();
       } else {
-        await installer
-            .fromNetwork(downloadUrl)
-            .withProgress((progress) {
-              modelProgress = progress / 100.0;
-              notifyListeners();
-            })
-            .install();
+        await _installFromNetworkWithFallback(installer, downloadUrl);
       }
-      modelPhase = ModelInstallPhase.ready;
-      modelProgress = 1;
-      modelError = null;
+      if (!await _verifyAndMarkModelReady()) {
+        throw StateError(
+          'Download finished but Qwen3 could not be activated. '
+          'Try sideload: tools/push_qwen_model_to_emulator.ps1',
+        );
+      }
+      _logTask('Qwen3 install verified — ready for inference');
     } catch (error, stackTrace) {
       WorkerTaskLog.error('Model download failed', error, stackTrace);
       modelPhase = ModelInstallPhase.failed;
@@ -169,34 +360,53 @@ class WorkerAppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String> _resolveDownloadUrlWithFallback(String proxyUrl) async {
+  Future<void> _installFromNetworkWithFallback(
+    InferenceInstallationBuilder installer,
+    String primaryUrl,
+  ) async {
     try {
-      await _validateModelDownloadUrl(proxyUrl);
-      return proxyUrl;
-    } catch (error) {
+      await _installFromNetwork(installer, primaryUrl);
+    } catch (primaryError) {
+      final fallbackUrl = WorkerModelCatalog.huggingFaceDownloadUrl;
+      if (primaryUrl == fallbackUrl) {
+        rethrow;
+      }
       _logTask(
-        'Backend proxy unavailable ($error) — using direct Hugging Face download',
+        'Primary download failed ($primaryError) — retrying via Hugging Face',
       );
-      return WorkerModelCatalog.huggingFaceDownloadUrl;
+      await _clearStaleDownloadTasks(forceReinstall: true);
+      await _installFromNetwork(installer, fallbackUrl);
     }
   }
 
-  Future<void> _validateModelDownloadUrl(String downloadUrl) async {
-    final uri = Uri.parse(downloadUrl);
-    _logTask('Probing download URL (Range bytes=0-0)…');
-    final request = http.Request('GET', uri)
-      ..headers['Range'] = 'bytes=0-0';
-    final response = await _http.send(request).timeout(const Duration(seconds: 20));
-    final status = response.statusCode;
-    if (status != 200 && status != 206) {
-      final body = await response.stream.bytesToString();
-      throw StateError(
-        'Model download unavailable (HTTP $status). '
-        '${body.length > 240 ? "${body.substring(0, 240)}…" : body}',
-      );
+  Future<void> _installFromNetwork(
+    InferenceInstallationBuilder installer,
+    String downloadUrl,
+  ) async {
+    _logTask('Starting network install: $downloadUrl');
+    await installer
+        .fromNetwork(downloadUrl, foreground: true)
+        .withProgress((progress) {
+          modelProgress = progress / 100.0;
+          notifyListeners();
+        })
+        .install();
+  }
+
+  Future<void> _clearStaleDownloadTasks({bool forceReinstall = false}) async {
+    if (forceReinstall) {
+      try {
+        await FlutterGemma.uninstallModel(WorkerModelCatalog.fileName);
+      } catch (_) {}
     }
-    await response.stream.drain<void>();
-    _logTask('Download URL probe OK (HTTP $status)');
+    try {
+      await FileDownloader().reset(group: 'smart_downloads');
+      if (forceReinstall) {
+        _logTask('Cleared partial model install before retry');
+      }
+    } catch (error) {
+      _logTask('Could not reset download tasks: $error');
+    }
   }
 
   bool get isGemmaReady => modelPhase == ModelInstallPhase.ready;
@@ -205,15 +415,38 @@ class WorkerAppController extends ChangeNotifier {
 
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
 
+  bool get canPollAssignments =>
+      backendOnline && !isGemmaDownloading && available;
+
   bool get requiresHuggingFaceToken => false;
 
   String get gemmaDownloadLabel => switch (modelPhase) {
-        ModelInstallPhase.idle => 'Download ${WorkerModelCatalog.displayName}',
+        ModelInstallPhase.idle => usesDevMockInference
+            ? 'Dev mock ready (x86 emulator)'
+            : 'Prepare ${WorkerModelCatalog.displayName}',
         ModelInstallPhase.downloading =>
           'Downloading ${WorkerModelCatalog.displayName}… ${(modelProgress * 100).toStringAsFixed(0)}%',
-        ModelInstallPhase.ready => '${WorkerModelCatalog.displayName} installed',
+        ModelInstallPhase.ready => usesDevMockInference
+            ? 'Dev mock ready (x86 — use ARM phone for real Qwen3)'
+            : '${WorkerModelCatalog.displayName} installed',
         ModelInstallPhase.failed => 'Retry model download',
       };
+
+  Future<bool> _assignmentNeedsLlm(WorkerAssignment assignment) async {
+    final v1 = TaskTypeMapper.toV1(assignment.taskType);
+    if (v1 == null) {
+      return true;
+    }
+    return TaskTypeMapper.requiresLlm(v1);
+  }
+
+  Future<bool> _assignmentNeedsOcr(WorkerAssignment assignment) async {
+    final v1 = TaskTypeMapper.toV1(assignment.taskType);
+    if (v1 == null) {
+      return false;
+    }
+    return TaskTypeMapper.requiresOcr(v1);
+  }
 
   Future<void> pollAndRunTask() async {
     _logTask('Run task tapped — starting pollAndRunTask');
@@ -224,6 +457,10 @@ class WorkerAppController extends ChangeNotifier {
 
     try {
       await _refreshBackendHealth();
+      await _refreshDeviceReadiness();
+      _logTask(
+        'Device: battery=$batteryLabel emulator=$isEmulator',
+      );
       _logTask(
         'Backend health: online=$backendOnline message="$backendMessage"',
       );
@@ -231,24 +468,65 @@ class WorkerAppController extends ChangeNotifier {
         _logTask('Aborting — backend offline');
         return;
       }
-      if (modelPhase != ModelInstallPhase.ready) {
-        modelError = 'Install the on-device model before running tasks.';
-        _logTask('Aborting — model not ready (phase=$modelPhase)');
+      if (!available) {
+        _logTask('Aborting — worker availability is off');
         return;
       }
+
+      await ensureModelReady();
+      _logTask(
+        'Model check after ensureModelReady: phase=$modelPhase ready=$isGemmaReady',
+      );
 
       _logTask('Polling worker-gateway for next assignment…');
       final assignment = await _coordinator.pollAssignment();
       if (assignment == null) {
-        _logTask('No assignment from backend — running local demo task');
-        await _runLocalDemoTask();
+        _logTask('No tasks in queue — create one in portal: Tasks → New Task');
+        executionStatus = const ExecutionStatus(
+          phase: ExecutionPhase.idle,
+          detail: 'No tasks in queue. Create a task in the customer portal first.',
+        );
+        lastSync = _formatNow();
+        notifyListeners();
         return;
       }
 
       _logTask(
-        'Assignment received: id=${assignment.assignmentId} type=${assignment.taskType}',
+        'Task ${assignment.taskId ?? assignment.assignmentId} (${assignment.taskType})',
       );
+
+      if (!isGemmaReady && await _assignmentNeedsLlm(assignment)) {
+        lastPortalTaskId = assignment.taskId;
+        lastAssignmentId = assignment.assignmentId;
+        executionStatus = ExecutionStatus(
+          phase: ExecutionPhase.preparing,
+          detail:
+              'Task ${assignment.taskId ?? assignment.assignmentId} received. '
+              'Install Qwen3 on Home to run ${assignment.taskType}.',
+          taskType: assignment.taskType,
+          assignmentId: assignment.assignmentId,
+          taskId: assignment.taskId,
+        );
+        _logTask('Model not ready — assignment held until Qwen3 is installed');
+        lastSync = _formatNow();
+        notifyListeners();
+        return;
+      }
+
+      if (await _assignmentNeedsOcr(assignment) && !ocrModelsReady) {
+        ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(log: _logTask);
+        if (!ocrModelsReady && !usesDevMockInference) {
+          _logTask(
+            'OCR models not on device — sideload with tools/push_paddleocr_models_to_device.ps1',
+          );
+        }
+      }
+
+      lastPortalTaskId = assignment.taskId;
+      lastAssignmentId = assignment.assignmentId;
+      _devMockAdapter?.setTaskTypeHint(assignment.taskType);
       await _coordinator.executeAssignment(assignment);
+      await _uploadAssignmentOutput(assignment);
       _logTask(
         'Assignment finished: phase=${executionStatus.phase} detail=${executionStatus.detail ?? "(none)"}',
       );
@@ -318,10 +596,41 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<AssignmentInputBundle> _loadAssignmentInput(WorkerAssignment assignment) async {
-    final inputBytes = Uint8List.fromList('Task ${assignment.taskType}: process assigned payload.'.codeUnits);
+    _logTask('Loading input manifest: ${assignment.inputManifestUrl}');
+    final response = await _http
+        .get(Uri.parse(assignment.inputManifestUrl))
+        .timeout(const Duration(seconds: 15));
+    if (response.statusCode != 200) {
+      throw StateError(
+        'Input manifest unavailable (HTTP ${response.statusCode}) for ${assignment.taskId}',
+      );
+    }
+    final manifest = jsonDecode(response.body) as Map<String, dynamic>;
+    final prompt = manifest['prompt'] as String? ??
+        'Process ${assignment.taskType} task ${assignment.taskId ?? assignment.assignmentId}';
+    final contentUrl = manifest['inputContentUrl'] as String?;
+    final Uint8List inputBytes;
+    final bool isImageInput;
+    if (contentUrl != null) {
+      final mediaResponse = await _http.get(Uri.parse(contentUrl)).timeout(const Duration(seconds: 30));
+      if (mediaResponse.statusCode != 200) {
+        throw StateError('Input content unavailable (HTTP ${mediaResponse.statusCode})');
+      }
+      inputBytes = mediaResponse.bodyBytes;
+      isImageInput = true;
+      _logTask('Input image loaded (${inputBytes.length} bytes) from $contentUrl');
+    } else {
+      inputBytes = Uint8List.fromList(utf8.encode(prompt));
+      isImageInput = false;
+      _logTask(
+        'Input ready: ${manifest['documentTitle'] ?? assignment.taskType} (${inputBytes.length} bytes)',
+      );
+    }
     return AssignmentInputBundle(
       inputBytes: inputBytes,
       inputDigest: sha256Hex(inputBytes),
+      manifest: manifest,
+      isImageInput: isImageInput,
       modelArtifact: ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,
         digestSha256: WorkerModelCatalog.installedDigestMarker,
@@ -330,6 +639,53 @@ class WorkerAppController extends ChangeNotifier {
         bytes: Uint8List.fromList([0]),
       ),
     );
+  }
+
+  Future<void> _uploadAssignmentOutput(WorkerAssignment assignment) async {
+    if (executionStatus.phase != ExecutionPhase.completed) {
+      return;
+    }
+    final resultText = executionStatus.detail;
+    if (resultText == null || resultText.isEmpty) {
+      return;
+    }
+    try {
+      _logTask('Uploading result to ${assignment.outputUploadUrl}');
+      final lastOutput = _inference.lastOutput;
+      final pipelineResult = _taskEngine.lastResult;
+      final metrics = <String, dynamic>{
+          'taskType': assignment.taskType,
+          'taskId': assignment.taskId,
+          'assignmentId': assignment.assignmentId,
+        };
+        if (pipelineResult != null) {
+          metrics['structuredResultJson'] = jsonEncode(pipelineResult.toJson());
+        }
+        final payload = <String, dynamic>{
+          'resultText': resultText,
+          'metrics': metrics,
+        };
+      if (lastOutput != null && lastOutput.metrics['outputKind'] == 'image') {
+        payload['resultFileBase64'] = base64Encode(lastOutput.resultBytes);
+        payload['resultFileName'] = 'result.png';
+        payload['resultMimeType'] = lastOutput.metrics['outputMimeType'] ?? 'image/png';
+        _logTask('Including image result (${lastOutput.resultBytes.length} bytes)');
+      }
+      final response = await _http
+          .post(
+            Uri.parse(assignment.outputUploadUrl),
+            headers: const {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        _logTask('Portal task ${assignment.taskId ?? "?"} marked completed');
+      } else {
+        _logTask('Output upload HTTP ${response.statusCode}');
+      }
+    } catch (error) {
+      _logTask('Output upload failed: $error');
+    }
   }
 
   void _onExecutionStatus(ExecutionStatus status) {

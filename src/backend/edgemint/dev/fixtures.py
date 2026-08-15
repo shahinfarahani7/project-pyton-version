@@ -32,8 +32,9 @@ def _task_row(
     version: int,
     created_at: str,
     updated_at: str | None = None,
+    assignment_id: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    row = {
         "id": task_id,
         "taskType": task_type,
         "lifecycleStatus": lifecycle_status,
@@ -42,6 +43,9 @@ def _task_row(
         "createdAt": created_at,
         "updatedAt": updated_at or created_at,
     }
+    if assignment_id is not None:
+        row["assignmentId"] = assignment_id
+    return row
 
 
 def is_dev_principal(principal_id: UUID) -> bool:
@@ -121,7 +125,67 @@ def _seeded_tasks(workspace_id: UUID) -> list[dict[str, Any]]:
 
 
 def _tasks_for_workspace(workspace_id: UUID) -> list[dict[str, Any]]:
-    return _seeded_tasks(workspace_id) + _created_tasks.get(workspace_id, [])
+    tasks = _seeded_tasks(workspace_id) + _created_tasks.get(workspace_id, [])
+    known_ids = {task["id"] for task in tasks}
+    for assignment in _reconcile_worker_pending_tasks():
+        task_id = assignment.get("taskId") or assignment.get("assignmentId")
+        if not task_id or task_id in known_ids:
+            continue
+        tasks.append(
+            _task_row(
+                task_id=task_id,
+                task_type=assignment["taskType"],
+                lifecycle_status="queued",
+                execution_status="pending",
+                version=1,
+                created_at=_now_iso(),
+                assignment_id=task_id,
+            )
+        )
+        known_ids.add(task_id)
+    _sync_pending_tasks_to_worker_queue(_created_tasks.get(workspace_id, []))
+    return tasks
+
+
+def _sync_pending_tasks_to_worker_queue(tasks: list[dict[str, Any]]) -> None:
+    from edgemint.dev.assignment_bridge import (
+        enqueue_assignment_for_worker,
+        fetch_pending_assignments_from_worker,
+    )
+
+    try:
+        pending_ids = {
+            assignment.get("taskId") or assignment.get("assignmentId")
+            for assignment in fetch_pending_assignments_from_worker()
+        }
+    except Exception:
+        return
+
+    for task in tasks:
+        if task.get("executionStatus") != "pending":
+            continue
+        if task.get("lifecycleStatus") not in {"queued", "running"}:
+            continue
+        task_id = task.get("id")
+        task_type = task.get("taskType")
+        if not task_id or not task_type or task_id in pending_ids:
+            continue
+        enqueue_assignment_for_worker(task_id=task_id, task_type=task_type)
+        pending_ids.add(task_id)
+
+
+def sync_all_pending_tasks_to_worker() -> None:
+    for workspace_id in DEV_WORKSPACE_IDS:
+        _sync_pending_tasks_to_worker_queue(_created_tasks.get(workspace_id, []))
+
+
+def _reconcile_worker_pending_tasks() -> list[dict[str, Any]]:
+    from edgemint.dev.assignment_bridge import fetch_pending_assignments_from_worker
+
+    try:
+        return fetch_pending_assignments_from_worker()
+    except Exception:
+        return []
 
 
 def dev_tasks(workspace_id: UUID) -> dict[str, Any]:
@@ -135,8 +199,16 @@ def dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
     return None
 
 
-def create_dev_task(workspace_id: UUID, *, task_type: str) -> dict[str, Any]:
-    from edgemint.dev.worker_assignments import enqueue_dev_assignment
+def create_dev_task(
+    workspace_id: UUID,
+    *,
+    task_type: str,
+    input_text: str | None = None,
+    file_name: str | None = None,
+    file_mime: str | None = None,
+    file_bytes: bytes | None = None,
+) -> dict[str, Any]:
+    from edgemint.dev.assignment_bridge import enqueue_assignment_for_worker
 
     task = _task_row(
         task_id=f"tsk_dev_{secrets.token_hex(4)}",
@@ -146,9 +218,68 @@ def create_dev_task(workspace_id: UUID, *, task_type: str) -> dict[str, Any]:
         version=1,
         created_at=_now_iso(),
     )
+    if input_text or file_bytes:
+        task["inputLabel"] = file_name or ("Pasted text" if input_text and not file_bytes else "Customer upload")
+        task["inputSource"] = {
+            "input_text": input_text,
+            "file_name": file_name,
+            "file_mime": file_mime,
+            "file_bytes": file_bytes,
+        }
     _created_tasks.setdefault(workspace_id, []).append(task)
-    enqueue_dev_assignment(task_id=task["id"], task_type=task_type)
+    enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
+    task["assignmentId"] = task["id"]
+    from edgemint.dev import worker_task_inputs
+
+    worker_task_inputs.register_task(
+        task_id=task["id"],
+        task_type=task_type,
+        input_text=input_text,
+        file_name=file_name,
+        file_mime=file_mime,
+        file_bytes=file_bytes,
+    )
+    task.pop("inputSource", None)
     return task
+
+
+def update_dev_task_execution(
+    task_id: str,
+    *,
+    lifecycle_status: str,
+    execution_status: str,
+    result_preview: str | None = None,
+    result_artifact_url: str | None = None,
+    result_mime_type: str | None = None,
+) -> bool:
+    updated = False
+    for tasks in _created_tasks.values():
+        for task in tasks:
+            if task["id"] == task_id:
+                task["lifecycleStatus"] = lifecycle_status
+                task["executionStatus"] = execution_status
+                task["updatedAt"] = _now_iso()
+                if result_preview is not None:
+                    task["resultPreview"] = result_preview[:500]
+                if result_artifact_url is not None:
+                    task["resultArtifactUrl"] = result_artifact_url
+                if result_mime_type is not None:
+                    task["resultMimeType"] = result_mime_type
+                updated = True
+    for tasks in (_seeded_tasks(DEV_WORKSPACE_PRIMARY), _seeded_tasks(DEV_WORKSPACE_STAGING)):
+        for task in tasks:
+            if task["id"] == task_id:
+                task["lifecycleStatus"] = lifecycle_status
+                task["executionStatus"] = execution_status
+                task["updatedAt"] = _now_iso()
+                if result_preview is not None:
+                    task["resultPreview"] = result_preview[:500]
+                if result_artifact_url is not None:
+                    task["resultArtifactUrl"] = result_artifact_url
+                if result_mime_type is not None:
+                    task["resultMimeType"] = result_mime_type
+                updated = True
+    return updated
 
 
 def dev_webhooks(workspace_id: UUID) -> dict[str, Any]:

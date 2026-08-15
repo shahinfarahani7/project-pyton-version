@@ -4,7 +4,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from edgemint.dev.fixtures import WORKER_MODEL_VERSION_ID
+_WORKER_MODEL_VERSION_ID = "mdv_qwen3_0_6b"
 
 _pending: list[dict[str, Any]] = []
 _completed: list[str] = []
@@ -15,7 +15,11 @@ def _now() -> datetime:
 
 
 def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
-    assignment_id = f"asg_dev_{secrets.token_hex(4)}"
+    for existing in _pending:
+        if existing.get("taskId") == task_id or existing.get("assignmentId") == task_id:
+            return existing
+    # Dev uses one ID everywhere so portal and worker logs match.
+    assignment_id = task_id
     assignment = {
         "assignmentId": assignment_id,
         "attemptId": f"att_{secrets.token_hex(4)}",
@@ -24,7 +28,7 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
         "fenceToken": 1,
         "leaseExpiresAt": (_now() + timedelta(minutes=30)).isoformat(),
         "taskType": task_type,
-        "modelVersionId": WORKER_MODEL_VERSION_ID,
+        "modelVersionId": _WORKER_MODEL_VERSION_ID,
         "inputManifestUrl": f"http://127.0.0.1:8080/v1/dev/worker/tasks/{task_id}/input",
         "outputUploadUrl": f"http://127.0.0.1:8080/v1/dev/worker/tasks/{task_id}/output",
         "startDeadlineAt": (_now() + timedelta(minutes=5)).isoformat(),
@@ -34,14 +38,7 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
     return assignment
 
 
-def seed_dev_assignments() -> None:
-    if _pending:
-        return
-    enqueue_dev_assignment(task_id="tsk_dev_vision_queued", task_type="image.classify")
-
-
 def pop_next_assignment() -> dict[str, Any] | None:
-    seed_dev_assignments()
     while _pending:
         assignment = _pending.pop(0)
         if assignment["assignmentId"] not in _completed:
@@ -60,3 +57,7 @@ def command_receipt(operation_id: str) -> dict[str, Any]:
 
 def mark_completed(assignment_id: str) -> None:
     _completed.append(assignment_id)
+
+
+def list_pending_assignments() -> list[dict[str, Any]]:
+    return [assignment for assignment in _pending if assignment["assignmentId"] not in _completed]

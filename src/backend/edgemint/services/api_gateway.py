@@ -22,8 +22,10 @@ token_service = DelegatedTokenService(settings)
 
 if settings.environment in {"development", "test"}:
     from edgemint.dev.portal_api import router as dev_portal_router
+    from edgemint.dev.dev_worker_api import router as dev_worker_router
 
     app.include_router(dev_portal_router, tags=["customer-portal-dev"])
+    app.include_router(dev_worker_router, tags=["worker-dev"])
 
 
 class SessionCreateRequest(BaseModel):

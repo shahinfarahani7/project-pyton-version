@@ -412,6 +412,10 @@ a {
   border-bottom: none;
 }
 
+.task-result-download {
+  white-space: nowrap;
+}
+
 /* Forms */
 .md-field {
   display: grid;
@@ -419,7 +423,8 @@ a {
 }
 
 .md-select,
-.md-input {
+.md-input,
+.md-textarea {
   width: 100%;
   border: 1px solid var(--md-outline);
   background: var(--md-surface-container-highest);
@@ -429,8 +434,20 @@ a {
   font: inherit;
 }
 
+.md-textarea {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+.md-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--md-on-surface-variant);
+}
+
 .md-select:focus,
-.md-input:focus {
+.md-input:focus,
+.md-textarea:focus {
   outline: 2px solid var(--md-primary);
   outline-offset: 1px;
 }

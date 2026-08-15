@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import Depends, Header, Request
+from fastapi import Depends, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from edgemint.building_blocks.app import create_service_app
@@ -185,4 +185,11 @@ if _dev_model_artifact_proxy_enabled():
 
     @app.get("/models/{model_version_id}/artifact", tags=["dev-models"])
     async def download_model_artifact(model_version_id: str) -> StreamingResponse:
+        return await model_artifact_proxy.stream_model_artifact(model_version_id)
+
+    @app.get("/models/{model_version_id}/files/{file_name}", tags=["dev-models"])
+    async def download_model_file(model_version_id: str, file_name: str) -> StreamingResponse:
+        spec = model_artifact_proxy._SUPPORTED_ARTIFACTS.get(model_version_id)
+        if spec is None or file_name != spec.file_name:
+            raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
         return await model_artifact_proxy.stream_model_artifact(model_version_id)

@@ -9,42 +9,62 @@ $ErrorActionPreference = 'Stop'
 $Root = Split-Path $PSScriptRoot -Parent
 Set-Location $Root
 
+function Invoke-External {
+    param([scriptblock]$Command)
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        # Native tools (docker) write progress to stderr; do not treat that as terminating.
+        & $Command 2>&1 | ForEach-Object { Write-Host $_ }
+        if ($LASTEXITCODE -ne 0) {
+            throw "command failed with exit code $LASTEXITCODE"
+        }
+    } finally {
+        $ErrorActionPreference = $prev
+    }
+}
+
 Write-Host '== EdgeMint local E2E stack =='
 
 # Infra + backend (reuse existing images; rebuild worker-registry when network allows)
-docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml up -d postgresql minio mailpit 2>&1 | Out-Host
+Invoke-External { docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml up -d postgresql minio mailpit }
 Start-Sleep -Seconds 3
-docker compose --env-file .env.docker -f compose.yaml up postgresql-init postgresql-seed 2>&1 | Out-Host
-docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml up -d 2>&1 | Out-Host
+Invoke-External { docker compose --env-file .env.docker -f compose.yaml up postgresql-init postgresql-seed }
+Invoke-External { docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml up -d }
 
 Write-Host 'Hot-patching dev APIs (assignments + model artifact proxy)...'
-docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/worker_assignments.py
-docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/fixtures.py
-docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/fixtures.py
-docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/worker_assignments.py
-docker cp "src/backend/edgemint/dev/model_artifact_proxy.py" edgemint-model-registry-1:/app/src/backend/edgemint/dev/model_artifact_proxy.py
-docker cp "src/backend/edgemint/services/worker_registry.py" edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py
-docker cp "src/backend/edgemint/services/model_registry.py" edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py
-docker cp "src/backend/edgemint/services/worker_gateway.py" edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py
-docker restart edgemint-worker-registry-1 edgemint-worker-gateway-1 edgemint-api-gateway-1 edgemint-model-registry-1 | Out-Host
+Invoke-External { docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/worker_assignments.py }
+Invoke-External { docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/fixtures.py }
+Invoke-External { docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/fixtures.py }
+Invoke-External { docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/worker_assignments.py }
+Invoke-External { docker cp "src/backend/edgemint/dev/model_artifact_proxy.py" edgemint-model-registry-1:/app/src/backend/edgemint/dev/model_artifact_proxy.py }
+Invoke-External { docker cp "src/backend/edgemint/services/worker_registry.py" edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py }
+Invoke-External { docker cp "src/backend/edgemint/services/model_registry.py" edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py }
+Invoke-External { docker cp "src/backend/edgemint/services/worker_gateway.py" edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py }
+Invoke-External { docker restart edgemint-worker-registry-1 edgemint-worker-gateway-1 edgemint-api-gateway-1 edgemint-model-registry-1 }
 Start-Sleep -Seconds 8
 
 Write-Host 'Rebuilding worker-registry (dev assignment API)...'
-docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml build worker-registry worker-gateway 2>&1 | Out-Host
-if ($LASTEXITCODE -ne 0) {
+$buildOk = $true
+try {
+    Invoke-External { docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml build worker-registry worker-gateway }
+} catch {
+    $buildOk = $false
+}
+if (-not $buildOk) {
     Write-Host 'Docker build unavailable — hot-patching running containers...'
-    docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/worker_assignments.py
-    docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/fixtures.py
-    docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/fixtures.py
-    docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/worker_assignments.py
-    docker cp "src/backend/edgemint/dev/model_artifact_proxy.py" edgemint-model-registry-1:/app/src/backend/edgemint/dev/model_artifact_proxy.py
-    docker cp "src/backend/edgemint/services/worker_registry.py" edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py
-    docker cp "src/backend/edgemint/services/model_registry.py" edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py
-    docker cp "src/backend/edgemint/services/worker_gateway.py" edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py
-    docker restart edgemint-worker-registry-1 edgemint-worker-gateway-1 edgemint-api-gateway-1 edgemint-model-registry-1 | Out-Host
+    Invoke-External { docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/worker_assignments.py }
+    Invoke-External { docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-worker-registry-1:/app/src/backend/edgemint/dev/fixtures.py }
+    Invoke-External { docker cp "src/backend/edgemint/dev/fixtures.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/fixtures.py }
+    Invoke-External { docker cp "src/backend/edgemint/dev/worker_assignments.py" edgemint-api-gateway-1:/app/src/backend/edgemint/dev/worker_assignments.py }
+    Invoke-External { docker cp "src/backend/edgemint/dev/model_artifact_proxy.py" edgemint-model-registry-1:/app/src/backend/edgemint/dev/model_artifact_proxy.py }
+    Invoke-External { docker cp "src/backend/edgemint/services/worker_registry.py" edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py }
+    Invoke-External { docker cp "src/backend/edgemint/services/model_registry.py" edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py }
+    Invoke-External { docker cp "src/backend/edgemint/services/worker_gateway.py" edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py }
+    Invoke-External { docker restart edgemint-worker-registry-1 edgemint-worker-gateway-1 edgemint-api-gateway-1 edgemint-model-registry-1 }
     Start-Sleep -Seconds 8
 }
-docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml up -d worker-registry worker-gateway 2>&1 | Out-Host
+Invoke-External { docker compose --env-file .env.docker -f compose.yaml -f compose.backend.yaml up -d worker-registry worker-gateway }
 
 $health8080 = curl.exe -s -o NUL -w '%{http_code}' http://127.0.0.1:8080/health/live
 $health8081 = curl.exe -s -o NUL -w '%{http_code}' http://127.0.0.1:8081/health/live
@@ -79,8 +99,9 @@ if (-not $SkipFlutter) {
     if (Test-Path $adb) {
         $device = (& $adb devices | Select-String 'device$' | Select-Object -First 1).ToString().Split()[0]
         if ($device) {
+            & $adb -s $device reverse tcp:8080 tcp:8080
             & $adb -s $device reverse tcp:8081 tcp:8081
-            Write-Host "adb reverse tcp:8081 -> device $device"
+            Write-Host "adb reverse tcp:8080/tcp:8081 -> device $device"
             $WorkerBaseUrl = 'http://127.0.0.1:8081'
         }
         & $adb devices

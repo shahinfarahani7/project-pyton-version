@@ -70,6 +70,34 @@ def test_dev_portal_lists_workspace_data(gateway_client: TestClient) -> None:
 
 
 @requires_postgres
+def test_dev_portal_creates_task_with_custom_text(gateway_client: TestClient) -> None:
+    login = gateway_client.post(
+        "/auth/sessions",
+        json={
+            "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+            "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+            "permissions": ["customer.tasks:read", "customer.tasks:write"],
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    created = gateway_client.post(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+        json={"taskType": "text.summarize", "inputText": "Customer paragraph about EdgeMint testing."},
+    )
+    assert created.status_code == 201, created.text
+    body = created.json()
+    assert body["taskType"] == "text.summarize"
+    assert body["inputLabel"] == "Pasted text"
+
+    manifest = gateway_client.get(f"/v1/dev/worker/tasks/{body['id']}/input")
+    assert manifest.status_code == 200, manifest.text
+    manifest_body = manifest.json()
+    assert manifest_body["customInput"] is True
+    assert "Customer paragraph about EdgeMint testing." in manifest_body["prompt"]
+
+
+@requires_postgres
 def test_dev_portal_creates_task(gateway_client: TestClient) -> None:
     login = gateway_client.post(
         "/auth/sessions",
@@ -94,6 +122,7 @@ def test_dev_portal_creates_task(gateway_client: TestClient) -> None:
     assert body["taskType"] == "document.ocr"
     assert body["lifecycleStatus"] == "queued"
     assert body["executionStatus"] == "pending"
+    assert body["assignmentId"] == body["id"]
     assert body["createdAt"]
     assert body["updatedAt"]
 

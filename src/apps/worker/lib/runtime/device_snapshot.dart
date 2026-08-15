@@ -12,11 +12,15 @@ class DeviceSnapshot {
     required this.freeStorageMb,
     required this.withinSchedule,
     required this.consentsGranted,
+    this.isEmulator = false,
+    this.isX86Android = false,
   });
 
   final bool available;
   final int batteryPercent;
   final bool isCharging;
+  final bool isEmulator;
+  final bool isX86Android;
   final ThermalState thermalState;
   final NetworkKind network;
   final int freeStorageMb;
@@ -32,11 +36,15 @@ class DeviceSnapshot {
     int? freeStorageMb,
     bool? withinSchedule,
     List<String>? consentsGranted,
+    bool? isEmulator,
+    bool? isX86Android,
   }) {
     return DeviceSnapshot(
       available: available ?? this.available,
       batteryPercent: batteryPercent ?? this.batteryPercent,
       isCharging: isCharging ?? this.isCharging,
+      isEmulator: isEmulator ?? this.isEmulator,
+      isX86Android: isX86Android ?? this.isX86Android,
       thermalState: thermalState ?? this.thermalState,
       network: network ?? this.network,
       freeStorageMb: freeStorageMb ?? this.freeStorageMb,

@@ -1,27 +1,5 @@
-// Adds Maven mirrors before Google Maven for blocked networks.
-gradle.settingsEvaluated { settings ->
-    settings.pluginManagement {
-        repositories {
-            maven { url 'https://maven.myket.ir' }
-            maven { url 'https://maven.aliyun.com/repository/google' }
-            google()
-            mavenCentral()
-            gradlePluginPortal()
-        }
-    }
+// Maven mirrors for blocked networks. Flutter SDK settings are patched via tools/setup_gradle_mirror.ps1.
 
-    settings.dependencyResolutionManagement {
-        repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-        repositories {
-            maven { url 'https://maven.myket.ir' }
-            maven { url 'https://maven.aliyun.com/repository/google' }
-            google()
-            mavenCentral()
-        }
-    }
-}
-
-// package:jni 1.0.1 skips kotlin-android on AGP 9+ but still uses the kotlin {} block.
 gradle.beforeProject { project ->
     if (project.name == 'jni') {
         project.pluginManager.apply('org.jetbrains.kotlin.android')
@@ -36,15 +14,15 @@ gradle.beforeProject { project ->
 allprojects {
     buildscript {
         repositories {
-            maven { url 'https://maven.myket.ir' }
             maven { url 'https://maven.aliyun.com/repository/google' }
+            maven { url 'https://maven.myket.ir' }
             google()
             mavenCentral()
         }
     }
     repositories {
-        maven { url 'https://maven.myket.ir' }
         maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.myket.ir' }
         google()
         mavenCentral()
     }

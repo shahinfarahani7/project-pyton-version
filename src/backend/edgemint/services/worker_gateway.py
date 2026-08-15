@@ -39,7 +39,9 @@ def _client_or_create() -> httpx.AsyncClient:
 
 
 def _timeout_for(path: str) -> httpx.Timeout:
-    if path.startswith("/models/") and path.endswith("/artifact"):
+    if path.startswith("/models/") and (
+        path.endswith("/artifact") or "/files/" in path
+    ):
         return httpx.Timeout(connect=30.0, read=None, write=30.0, pool=30.0)
     return httpx.Timeout(120.0)
 
@@ -55,7 +57,9 @@ def _upstream_for(path: str) -> str:
 
 
 def _is_artifact_download(path: str) -> bool:
-    return path.startswith("/models/") and path.endswith("/artifact")
+    return path.startswith("/models/") and (
+        path.endswith("/artifact") or "/files/" in path
+    )
 
 
 async def _forward_artifact_stream(

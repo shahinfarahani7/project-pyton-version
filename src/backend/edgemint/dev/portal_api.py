@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
 
 from edgemint.building_blocks.database import transaction
@@ -17,6 +17,40 @@ session_store = BrowserSessionStore()
 
 class DevCreateTaskRequest(BaseModel):
     taskType: str = Field(min_length=1, max_length=128)
+    inputText: str | None = Field(default=None, max_length=32_000)
+
+
+async def _read_uploaded_file(upload: object | None) -> tuple[str | None, str | None, bytes | None]:
+    """Accept Starlette or FastAPI UploadFile (isinstance checks differ across versions)."""
+    if upload is None or not hasattr(upload, "read"):
+        return None, None, None
+    file_name = getattr(upload, "filename", None) or getattr(upload, "name", None)
+    if not file_name:
+        return None, None, None
+    file_bytes = await upload.read()  # type: ignore[union-attr]
+    file_mime = getattr(upload, "content_type", None)
+    return str(file_name), file_mime, file_bytes
+
+
+async def _create_task_from_form(
+    workspace_id: UUID,
+    *,
+    task_type: str,
+    input_text: str | None,
+    file_name: str | None,
+    file_mime: str | None,
+    file_bytes: bytes | None,
+) -> dict:
+    if not task_type.strip():
+        raise HTTPException(422, "TASK_TYPE_REQUIRED")
+    return fixtures.create_dev_task(
+        workspace_id,
+        task_type=task_type.strip(),
+        input_text=input_text,
+        file_name=file_name,
+        file_mime=file_mime,
+        file_bytes=file_bytes,
+    )
 
 
 async def require_dev_portal_session(request: Request) -> BrowserSessionRecord:
@@ -76,12 +110,64 @@ async def list_tasks(
 
 @router.post("/v1/workspaces/{workspace_id}/tasks", status_code=201)
 async def create_task(
+    request: Request,
     workspace_id: UUID,
-    payload: DevCreateTaskRequest,
     session: BrowserSessionRecord = Depends(require_dev_portal_session),
 ) -> dict:
     _ensure_workspace_access(session, workspace_id)
-    return fixtures.create_dev_task(workspace_id, task_type=payload.taskType)
+    content_type = request.headers.get("content-type", "")
+    try:
+        if "multipart/form-data" in content_type:
+            form = await request.form()
+            task_type = str(form.get("taskType", "")).strip()
+            raw_text = form.get("inputText")
+            input_text = raw_text.strip() if isinstance(raw_text, str) and raw_text.strip() else None
+            file_name, file_mime, file_bytes = await _read_uploaded_file(form.get("inputFile"))
+            return await _create_task_from_form(
+                workspace_id,
+                task_type=task_type,
+                input_text=input_text,
+                file_name=file_name,
+                file_mime=file_mime,
+                file_bytes=file_bytes,
+            )
+        payload = DevCreateTaskRequest.model_validate(await request.json())
+        return fixtures.create_dev_task(
+            workspace_id,
+            task_type=payload.taskType,
+            input_text=payload.inputText,
+        )
+    except ValueError as exc:
+        if str(exc) == "INPUT_FILE_TOO_LARGE":
+            raise HTTPException(413, "INPUT_FILE_TOO_LARGE") from exc
+        raise
+
+
+@router.post("/v1/workspaces/{workspace_id}/tasks/upload", status_code=201)
+async def create_task_multipart(
+    workspace_id: UUID,
+    task_type: str = Form(..., alias="taskType"),
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+    input_text: str | None = Form(default=None, alias="inputText"),
+    input_file: UploadFile | None = Form(default=None, alias="inputFile"),
+) -> dict:
+    """Explicit multipart route — reliable file upload from browser FormData."""
+    _ensure_workspace_access(session, workspace_id)
+    try:
+        file_name, file_mime, file_bytes = await _read_uploaded_file(input_file)
+        normalized_text = input_text.strip() if input_text and input_text.strip() else None
+        return await _create_task_from_form(
+            workspace_id,
+            task_type=task_type,
+            input_text=normalized_text,
+            file_name=file_name,
+            file_mime=file_mime,
+            file_bytes=file_bytes,
+        )
+    except ValueError as exc:
+        if str(exc) == "INPUT_FILE_TOO_LARGE":
+            raise HTTPException(413, "INPUT_FILE_TOO_LARGE") from exc
+        raise
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}")
@@ -95,6 +181,24 @@ async def get_task(
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
     return task
+
+
+@router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}/result-file")
+async def get_task_result_file(
+    workspace_id: UUID,
+    task_id: str,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+):
+    from edgemint.dev import worker_task_inputs
+
+    _ensure_workspace_access(session, workspace_id)
+    task = fixtures.dev_task(workspace_id, task_id)
+    if task is None:
+        raise HTTPException(404, "TASK_NOT_FOUND")
+    blob = worker_task_inputs.result_content(task_id)
+    if blob is None:
+        raise HTTPException(404, "TASK_RESULT_NOT_FOUND")
+    return worker_task_inputs.content_response(blob)
 
 
 @router.get("/v1/webhook-endpoints")

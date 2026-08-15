@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import '../api/worker_api_client.dart';
@@ -11,6 +12,8 @@ import 'execution_policy.dart';
 import 'execution_status.dart';
 import 'inference_adapter.dart';
 import 'result_signer.dart';
+import '../tasks/task_execution_engine.dart';
+import '../tasks/task_type_mapper.dart';
 import 'runtime_exceptions.dart';
 import 'sandbox_limits.dart';
 
@@ -21,11 +24,15 @@ class AssignmentInputBundle {
     required this.inputBytes,
     required this.inputDigest,
     required this.modelArtifact,
+    this.manifest = const {},
+    this.isImageInput = false,
   });
 
   final Uint8List inputBytes;
   final String inputDigest;
   final ModelArtifact modelArtifact;
+  final Map<String, dynamic> manifest;
+  final bool isImageInput;
 }
 
 typedef InputLoader = Future<AssignmentInputBundle> Function(WorkerAssignment assignment);
@@ -39,6 +46,7 @@ class AssignmentCoordinator {
     DeviceConstraints? constraints,
     SandboxLimits? sandbox,
     InputLoader? inputLoader,
+    TaskExecutionEngine? taskEngine,
     String? accessToken,
     StatusListener? onStatus,
   })  : _api = api,
@@ -48,6 +56,7 @@ class AssignmentCoordinator {
         _constraints = constraints ?? const DeviceConstraints(),
         _sandbox = sandbox ?? const SandboxLimits(),
         _inputLoader = inputLoader ?? _defaultInputLoader,
+        _taskEngine = taskEngine,
         _accessToken = accessToken ?? 'token',
         _onStatus = onStatus;
 
@@ -58,6 +67,7 @@ class AssignmentCoordinator {
   final DeviceConstraints _constraints;
   final SandboxLimits _sandbox;
   final InputLoader _inputLoader;
+  final TaskExecutionEngine? _taskEngine;
   final String _accessToken;
   final StatusListener? _onStatus;
 
@@ -108,6 +118,7 @@ class AssignmentCoordinator {
     _emit(ExecutionStatus(
       phase: ExecutionPhase.preparing,
       assignmentId: assignment.assignmentId,
+      taskId: assignment.taskId,
       taskType: assignment.taskType,
     ));
     await _platform.startForegroundService(
@@ -135,46 +146,65 @@ class AssignmentCoordinator {
     _emit(_status.copyWith(phase: ExecutionPhase.running, progressMilli: decision.checkpoint?.progressMilli ?? 0));
 
     var lastReportedProgress = decision.checkpoint?.progressMilli ?? 0;
-    final output = await _inference.run(
-      inputBytes: bundle.inputBytes,
-      resumedState: decision.resumedState,
-      onProgress: (progressMilli) async {
-        if (_cancelRequested) {
-          throw const LeaseRevokedException();
-        }
-        final current = await _platform.readDeviceSnapshot();
-        final constraint = _constraints.evaluate(current, heavyTask: true);
-        if (!constraint.allowed) {
-          throw ConstraintBlockedException(constraint.violation!, constraint.detail);
-        }
-        if (!_sandbox.withinDuration(DateTime.now().difference(startedAt))) {
-          throw StateError('Execution exceeded sandbox time limit');
-        }
-        _emit(_status.copyWith(progressMilli: progressMilli));
-        await _platform.updateForegroundStatus(progressMilli: progressMilli, detail: assignment.taskType);
-        if (progressMilli - lastReportedProgress >= ExecutionPolicy.minimumProgressDeltaMilli) {
-          await _api.progressAssignment(
-            assignmentId: assignment.assignmentId,
-            accessToken: _accessToken,
-            idempotencyKey: 'progress-${assignment.attemptId}-$progressMilli',
-            body: {
-              'leaseToken': assignment.leaseToken,
-              'fenceToken': assignment.fenceToken,
-              'sequence': progressMilli,
-              'stage': 'infer',
-              'progressBps': progressMilli * 10,
-            },
-          );
-          lastReportedProgress = progressMilli;
-          await _writeCheckpoint(
-            assignment: assignment,
-            bundle: bundle,
-            progressMilli: progressMilli,
-            runtimeState: Uint8List.fromList([progressMilli]),
-          );
-        }
-      },
-    );
+    final usePipeline =
+        _taskEngine != null && TaskTypeMapper.isPipelineTask(assignment.taskType);
+    Future<void> onProgressWrapper(int progressMilli) async {
+      if (_cancelRequested) {
+        throw const LeaseRevokedException();
+      }
+      final current = await _platform.readDeviceSnapshot();
+      final constraint = _constraints.evaluate(current, heavyTask: true);
+      if (!constraint.allowed) {
+        throw ConstraintBlockedException(constraint.violation!, constraint.detail);
+      }
+      if (!_sandbox.withinDuration(DateTime.now().difference(startedAt))) {
+        throw StateError('Execution exceeded sandbox time limit');
+      }
+      _emit(_status.copyWith(progressMilli: progressMilli));
+      await _platform.updateForegroundStatus(progressMilli: progressMilli, detail: assignment.taskType);
+      if (progressMilli - lastReportedProgress >= ExecutionPolicy.minimumProgressDeltaMilli) {
+        await _api.progressAssignment(
+          assignmentId: assignment.assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: 'progress-${assignment.attemptId}-$progressMilli',
+          body: {
+            'leaseToken': assignment.leaseToken,
+            'fenceToken': assignment.fenceToken,
+            'sequence': progressMilli,
+            'stage': usePipeline ? 'pipeline' : 'infer',
+            'progressBps': progressMilli * 10,
+          },
+        );
+        lastReportedProgress = progressMilli;
+        await _writeCheckpoint(
+          assignment: assignment,
+          bundle: bundle,
+          progressMilli: progressMilli,
+          runtimeState: Uint8List.fromList([progressMilli]),
+        );
+      }
+    }
+    final InferenceOutput output;
+    if (usePipeline) {
+      output = await _taskEngine!.execute(
+        context: TaskExecutionContext(
+          assignment: assignment,
+          manifest: bundle.manifest,
+          inputBytes: bundle.inputBytes,
+          isImageInput: bundle.isImageInput,
+        ),
+        signingKey: signingMaterial,
+        freeStorageMb: device.freeStorageMb,
+        isCancelled: () => _cancelRequested,
+      );
+      await onProgressWrapper(1000);
+    } else {
+      output = await _inference.run(
+        inputBytes: bundle.inputBytes,
+        resumedState: decision.resumedState,
+        onProgress: onProgressWrapper,
+      );
+    }
 
     _emit(_status.copyWith(phase: ExecutionPhase.submitting, progressMilli: output.progressMilli));
     final resultSha256 = sha256Hex(output.resultBytes);
@@ -203,8 +233,24 @@ class AssignmentCoordinator {
 
     await _cleanup(assignment.assignmentId);
     await _platform.stopForegroundService();
-    await _inference.dispose();
-    _emit(_status.copyWith(phase: ExecutionPhase.completed, progressMilli: 1000));
+    final outputKind = output.metrics['outputKind'];
+    final structured = output.metrics['structuredResult'];
+    final resultPreview = outputKind == 'json' && structured is Map
+        ? (structured['output']?['rawText'] as String? ??
+            structured['output']?['data']?.toString() ??
+            structured['error']?['message'] as String? ??
+            'Structured task result ready')
+        : outputKind == 'image'
+            ? (output.metrics['resultSummary'] as String? ?? 'Image output ready')
+            : utf8.decode(output.resultBytes);
+    _emit(_status.copyWith(
+      phase: ExecutionPhase.completed,
+      progressMilli: 1000,
+      detail: resultPreview,
+      taskType: assignment.taskType,
+      assignmentId: assignment.assignmentId,
+      taskId: assignment.taskId,
+    ));
   }
 
   Future<void> safeStopAndCheckpoint(
