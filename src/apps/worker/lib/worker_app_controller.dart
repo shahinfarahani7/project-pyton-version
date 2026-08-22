@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'api/worker_api_client.dart';
 import 'api/worker_assignment_models.dart';
 import 'config/worker_config.dart';
-import 'debug/worker_task_log.dart';
+import 'dart:developer' as developer;
 import 'models/worker_model_catalog.dart';
 import 'platform/worker_runtime_channel.dart';
 import 'runtime/assignment_coordinator.dart';
@@ -94,17 +94,23 @@ class WorkerAppController extends ChangeNotifier {
   int freeStorageMb = 0;
   bool ocrModelsReady = false;
   String thermalLabel = 'Normal';
+  int tasksProcessed = 0;
 
-  List<String> get taskRunLogs => WorkerTaskLog.lines;
+  static const _assignmentPollInterval = Duration(seconds: 2);
+  static const _assignmentLongPollSeconds = 20;
 
-  void clearTaskRunLogs() {
-    WorkerTaskLog.clear();
-    notifyListeners();
-  }
+  int _assignmentLoopGeneration = 0;
+  bool _disposed = false;
+  bool _processingAssignment = false;
+
+  bool get isAutoAssigning => available && backendOnline && !_disposed;
 
   void _logTask(String message) {
-    WorkerTaskLog.info(message);
-    notifyListeners();
+    developer.log(message, name: 'EdgeMintWorker');
+  }
+
+  void _logError(String message, Object error, [StackTrace? stackTrace]) {
+    developer.log('$message: $error', name: 'EdgeMintWorker', error: error, stackTrace: stackTrace);
   }
 
   Future<void> bootstrap() async {
@@ -120,6 +126,74 @@ class WorkerAppController extends ChangeNotifier {
       }
     }
     notifyListeners();
+    if (available) {
+      startAutoAssignmentLoop();
+    }
+  }
+
+  void setAvailable(bool value) {
+    if (available == value) {
+      return;
+    }
+    available = value;
+    if (value) {
+      _logTask('Worker availability on — listening for assignments');
+      startAutoAssignmentLoop();
+    } else {
+      _logTask('Worker availability off — auto-assignment paused');
+      stopAutoAssignmentLoop();
+      if (executionStatus.phase == ExecutionPhase.waitingForAssignment) {
+        executionStatus = const ExecutionStatus(phase: ExecutionPhase.idle);
+      }
+    }
+    notifyListeners();
+  }
+
+  void startAutoAssignmentLoop() {
+    if (_disposed || !available) {
+      return;
+    }
+    _assignmentLoopGeneration++;
+    final generation = _assignmentLoopGeneration;
+    unawaited(_runAutoAssignmentLoop(generation));
+  }
+
+  void stopAutoAssignmentLoop() {
+    _assignmentLoopGeneration++;
+  }
+
+  bool get _isBusyExecuting => switch (executionStatus.phase) {
+        ExecutionPhase.preparing ||
+        ExecutionPhase.running ||
+        ExecutionPhase.checkpointing ||
+        ExecutionPhase.submitting ||
+        ExecutionPhase.cleaningUp => true,
+        _ => false,
+      };
+
+  Future<void> _runAutoAssignmentLoop(int generation) async {
+    _logTask('Auto-assignment loop started');
+    while (!_disposed && generation == _assignmentLoopGeneration && available) {
+      if (!canAcceptAssignments) {
+        await Future<void>.delayed(_assignmentPollInterval);
+        continue;
+      }
+      if (_processingAssignment || _isBusyExecuting) {
+        await Future<void>.delayed(_assignmentPollInterval);
+        continue;
+      }
+      await _processNextAssignment(
+        announceEmptyQueue: false,
+        waitSeconds: _assignmentLongPollSeconds,
+      );
+      if (_disposed || generation != _assignmentLoopGeneration || !available) {
+        break;
+      }
+      await Future<void>.delayed(_assignmentPollInterval);
+    }
+    if (generation == _assignmentLoopGeneration) {
+      _logTask('Auto-assignment loop stopped');
+    }
   }
 
   Future<void> _refreshDeviceReadiness() async {
@@ -351,13 +425,16 @@ class WorkerAppController extends ChangeNotifier {
       }
       _logTask('Qwen3 install verified — ready for inference');
     } catch (error, stackTrace) {
-      WorkerTaskLog.error('Model download failed', error, stackTrace);
+      _logError('Model download failed', error, stackTrace);
       modelPhase = ModelInstallPhase.failed;
       modelError = '$error';
       _logTask('Model download failed: $error');
     }
     lastSync = _formatNow();
     notifyListeners();
+    if (available && isGemmaReady) {
+      startAutoAssignmentLoop();
+    }
   }
 
   Future<void> _installFromNetworkWithFallback(
@@ -415,8 +492,24 @@ class WorkerAppController extends ChangeNotifier {
 
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
 
-  bool get canPollAssignments =>
+  /// Direct URL for browser download (backend proxy or Hugging Face fallback).
+  String get modelDownloadUrl {
+    if (usesDevMockInference) {
+      return '';
+    }
+    if (WorkerModelCatalog.bundledAssetFromEnvironment() != null) {
+      return '';
+    }
+    if (WorkerModelCatalog.usesBackendArtifactProxy() && backendOnline) {
+      return WorkerModelCatalog.resolveDownloadUrl(_config.baseUrl);
+    }
+    return WorkerModelCatalog.huggingFaceDownloadUrl;
+  }
+
+  bool get canAcceptAssignments =>
       backendOnline && !isGemmaDownloading && available;
+
+  bool get canPollAssignments => canAcceptAssignments;
 
   bool get requiresHuggingFaceToken => false;
 
@@ -448,8 +541,31 @@ class WorkerAppController extends ChangeNotifier {
     return TaskTypeMapper.requiresOcr(v1);
   }
 
-  Future<void> pollAndRunTask() async {
-    _logTask('Run task tapped — starting pollAndRunTask');
+  Future<void> pollAndRunTask() => _processNextAssignment();
+
+  Future<void> _processNextAssignment({
+    bool announceEmptyQueue = true,
+    int waitSeconds = 0,
+  }) async {
+    if (_processingAssignment) {
+      return;
+    }
+    _processingAssignment = true;
+    try {
+      await _runAssignmentCycle(
+        announceEmptyQueue: announceEmptyQueue,
+        waitSeconds: waitSeconds,
+      );
+    } finally {
+      _processingAssignment = false;
+    }
+  }
+
+  Future<void> _runAssignmentCycle({
+    required bool announceEmptyQueue,
+    required int waitSeconds,
+  }) async {
+    _logTask('Checking for next assignment');
     _logTask('Worker base URL: ${_config.baseUrl}');
     _logTask(
       'Pre-checks: available=$available, modelPhase=$modelPhase, modelReady=$isGemmaReady',
@@ -478,16 +594,18 @@ class WorkerAppController extends ChangeNotifier {
         'Model check after ensureModelReady: phase=$modelPhase ready=$isGemmaReady',
       );
 
-      _logTask('Polling worker-gateway for next assignment…');
-      final assignment = await _coordinator.pollAssignment();
+      _logTask('Waiting for assignment from worker-gateway…');
+      final assignment = await _coordinator.pollAssignment(waitSeconds: waitSeconds);
       if (assignment == null) {
-        _logTask('No tasks in queue — create one in portal: Tasks → New Task');
-        executionStatus = const ExecutionStatus(
-          phase: ExecutionPhase.idle,
-          detail: 'No tasks in queue. Create a task in the customer portal first.',
-        );
-        lastSync = _formatNow();
-        notifyListeners();
+        _logTask('No tasks in queue');
+        if (announceEmptyQueue) {
+          executionStatus = const ExecutionStatus(
+            phase: ExecutionPhase.idle,
+            detail: 'No tasks in queue. Create a task in the customer portal first.',
+          );
+          lastSync = _formatNow();
+          notifyListeners();
+        }
         return;
       }
 
@@ -527,12 +645,15 @@ class WorkerAppController extends ChangeNotifier {
       _devMockAdapter?.setTaskTypeHint(assignment.taskType);
       await _coordinator.executeAssignment(assignment);
       await _uploadAssignmentOutput(assignment);
+      if (executionStatus.phase == ExecutionPhase.completed) {
+        tasksProcessed++;
+      }
       _logTask(
         'Assignment finished: phase=${executionStatus.phase} detail=${executionStatus.detail ?? "(none)"}',
       );
       lastSync = _formatNow();
     } catch (error, stackTrace) {
-      WorkerTaskLog.error('pollAndRunTask failed', error, stackTrace);
+      _logError('Assignment run failed', error, stackTrace);
       modelError = '$error';
       executionStatus = ExecutionStatus(
         phase: ExecutionPhase.failed,
@@ -595,10 +716,24 @@ class WorkerAppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  String _formatNow() => '${DateTime.now().hour.toString().padLeft(2, '0')}:'
+      '${DateTime.now().minute.toString().padLeft(2, '0')}';
+
+  Uri _resolveDevServiceUrl(String url) {
+    final parsed = Uri.parse(url);
+    if (parsed.host != '127.0.0.1' && parsed.host != 'localhost') {
+      return parsed;
+    }
+    return parsed.replace(host: _config.baseUrl.host, port: 8080);
+  }
+
   Future<AssignmentInputBundle> _loadAssignmentInput(WorkerAssignment assignment) async {
-    _logTask('Loading input manifest: ${assignment.inputManifestUrl}');
+    final manifestUrl = _resolveDevServiceUrl(assignment.inputManifestUrl).replace(
+      queryParameters: {'taskType': assignment.taskType},
+    );
+    _logTask('Loading input manifest: $manifestUrl');
     final response = await _http
-        .get(Uri.parse(assignment.inputManifestUrl))
+        .get(manifestUrl)
         .timeout(const Duration(seconds: 15));
     if (response.statusCode != 200) {
       throw StateError(
@@ -612,7 +747,8 @@ class WorkerAppController extends ChangeNotifier {
     final Uint8List inputBytes;
     final bool isImageInput;
     if (contentUrl != null) {
-      final mediaResponse = await _http.get(Uri.parse(contentUrl)).timeout(const Duration(seconds: 30));
+      final mediaResponse =
+          await _http.get(_resolveDevServiceUrl(contentUrl)).timeout(const Duration(seconds: 30));
       if (mediaResponse.statusCode != 200) {
         throw StateError('Input content unavailable (HTTP ${mediaResponse.statusCode})');
       }
@@ -650,7 +786,8 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
     try {
-      _logTask('Uploading result to ${assignment.outputUploadUrl}');
+      final uploadUrl = _resolveDevServiceUrl(assignment.outputUploadUrl);
+      _logTask('Uploading result to $uploadUrl');
       final lastOutput = _inference.lastOutput;
       final pipelineResult = _taskEngine.lastResult;
       final metrics = <String, dynamic>{
@@ -673,7 +810,7 @@ class WorkerAppController extends ChangeNotifier {
       }
       final response = await _http
           .post(
-            Uri.parse(assignment.outputUploadUrl),
+            uploadUrl,
             headers: const {'Content-Type': 'application/json'},
             body: jsonEncode(payload),
           )
@@ -695,11 +832,10 @@ class WorkerAppController extends ChangeNotifier {
     );
   }
 
-  String _formatNow() => '${DateTime.now().hour.toString().padLeft(2, '0')}:'
-      '${DateTime.now().minute.toString().padLeft(2, '0')}';
-
   @override
   void dispose() {
+    _disposed = true;
+    stopAutoAssignmentLoop();
     _api.close();
     _http.close();
     super.dispose();

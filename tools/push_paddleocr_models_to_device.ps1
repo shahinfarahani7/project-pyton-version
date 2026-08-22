@@ -1,8 +1,9 @@
-# Push PP-OCRv5 mobile ONNX artifacts to Android device/emulator (PC sideload; no Git binaries).
+# Download (if needed) and push PP-OCRv5 mobile ONNX artifacts to Android device/emulator.
 param(
     [string]$MemuRoot = 'D:\Program Files\Microvirt\MEmu',
     [string]$ModelDir = 'dist/models/paddleocr',
-    [string]$DeviceId = ''
+    [string]$DeviceId = '',
+    [switch]$SkipDownload
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,17 +17,20 @@ $artifacts = @(
 )
 
 New-Item -ItemType Directory -Force -Path $ModelDir | Out-Null
+
+if (-not $SkipDownload) {
+    & powershell -ExecutionPolicy Bypass -File (Join-Path $Root 'tools\download_paddleocr_models.ps1') -ModelDir $ModelDir
+}
+
 foreach ($name in $artifacts) {
     $local = Join-Path $ModelDir $name
     if (-not (Test-Path $local)) {
         Write-Host "Missing $local"
-        Write-Host 'Download/export PP-OCRv5 Arabic/Persian ONNX artifacts to dist/models/paddleocr/ first.'
-        Write-Host 'See src/apps/worker/README.md (PaddleOCR sideload section).'
+        Write-Host 'Run: powershell -ExecutionPolicy Bypass -File tools\download_paddleocr_models.ps1'
         exit 1
     }
 }
 
-$deviceDir = '/sdcard/Edgemint/models/paddleocr'
 $adbCandidates = @(
     (Join-Path $MemuRoot 'adb.exe'),
     (Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe')
@@ -48,10 +52,16 @@ if (-not $device) {
         if ($device) { break }
     }
 }
+$all = @(& $adb devices | Select-String 'device$' | ForEach-Object { $_.ToString().Split()[0] })
+if (-not $DeviceId) {
+    $usb = $all | Where-Object { $_ -notmatch '^127\.0\.0\.1:' } | Select-Object -First 1
+    if ($usb) { $device = $usb }
+}
 if (-not $device) {
     throw 'No emulator/device connected'
 }
 
+$deviceDir = '/sdcard/Edgemint/models/paddleocr'
 Write-Host "Device: $device"
 & $adb -s $device shell "mkdir -p $deviceDir /data/local/tmp/paddleocr" | Out-Null
 foreach ($name in $artifacts) {

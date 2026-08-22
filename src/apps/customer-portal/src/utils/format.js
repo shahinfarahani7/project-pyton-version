@@ -1,3 +1,14 @@
+import { formatTaskType as formatTaskTypeLabel } from '../config/taskTypeCatalog';
+import { resolveLocale } from '../i18n';
+
+export function formatTaskType(value, taskOrLocale) {
+  if (value && typeof value === 'object' && value.taskType) {
+    return value.taskTypeLabel ?? formatTaskTypeLabel(value.taskType, resolveLocale());
+  }
+  const locale = taskOrLocale === 'fa' || taskOrLocale === 'en' ? taskOrLocale : resolveLocale();
+  return formatTaskTypeLabel(value, locale);
+}
+
 export function formatMicroEur(micro) {
   if (micro == null) return '—';
   return new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(micro / 1_000_000);

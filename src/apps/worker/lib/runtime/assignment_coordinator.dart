@@ -81,11 +81,14 @@ class AssignmentCoordinator {
     _onStatus?.call(next);
   }
 
-  Future<WorkerAssignment?> pollAssignment({DeviceSnapshot? snapshot}) async {
+  Future<WorkerAssignment?> pollAssignment({
+    DeviceSnapshot? snapshot,
+    int waitSeconds = 0,
+  }) async {
     _emit(_status.copyWith(phase: ExecutionPhase.waitingForAssignment));
     final device = snapshot ?? await _platform.readDeviceSnapshot();
     _constraints.ensureOrThrow(device);
-    return _api.getNextAssignment(accessToken: _accessToken);
+    return _api.getNextAssignment(accessToken: _accessToken, waitSeconds: waitSeconds);
   }
 
   Future<ResumeDecision> inspectResume(WorkerAssignment assignment, AssignmentInputBundle bundle) async {

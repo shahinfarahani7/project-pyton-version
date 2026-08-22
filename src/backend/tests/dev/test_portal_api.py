@@ -129,3 +129,75 @@ def test_dev_portal_creates_task(gateway_client: TestClient) -> None:
     after = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks")
     assert after.status_code == 200
     assert len(after.json()["items"]) == initial_count + 1
+
+
+@requires_postgres
+def test_dev_portal_lists_task_types(gateway_client: TestClient) -> None:
+    login = gateway_client.post(
+        "/auth/sessions",
+        json={
+            "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+            "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+            "permissions": ["customer.tasks:read"],
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    catalog = gateway_client.get("/v1/task-types")
+    assert catalog.status_code == 200
+    body = catalog.json()
+    assert body["total"] >= 50
+    assert any(item["value"] == "ocr.receipt" for item in body["items"])
+
+    filtered = gateway_client.get("/v1/task-types", params={"q": "nsfw"})
+    assert filtered.status_code == 200
+    assert filtered.json()["total"] >= 1
+
+
+@requires_postgres
+def test_dev_portal_rejects_unknown_task_type(gateway_client: TestClient) -> None:
+    login = gateway_client.post(
+        "/auth/sessions",
+        json={
+            "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+            "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+            "permissions": ["customer.tasks:write"],
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    created = gateway_client.post(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+        json={"taskType": "unknown.task"},
+    )
+    assert created.status_code == 422
+    assert created.json()["detail"] == "UNSUPPORTED_TASK_TYPE"
+
+
+@requires_postgres
+def test_dev_portal_task_responses_include_task_type_meta(gateway_client: TestClient) -> None:
+    login = gateway_client.post(
+        "/auth/sessions",
+        json={
+            "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+            "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+            "permissions": ["customer.tasks:read", "customer.tasks:write"],
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    created = gateway_client.post(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+        json={"taskType": "ocr.receipt"},
+    )
+    assert created.status_code == 201, created.text
+    body = created.json()
+    assert body["taskType"] == "ocr.receipt"
+    assert body["taskTypeLabel"] == "OCR receipt"
+    assert body["taskTypeMeta"]["pipelineFamily"] == "document.ocr"
+
+    listed = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks")
+    assert listed.status_code == 200
+    matched = next(item for item in listed.json()["items"] if item["id"] == body["id"])
+    assert matched["taskTypeLabel"] == "OCR receipt"
+    assert matched["taskTypeMeta"]["value"] == "ocr.receipt"

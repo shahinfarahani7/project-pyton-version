@@ -1,0 +1,144 @@
+{
+  "categories": [
+    {
+      "id": "core",
+      "labelEn": "Core",
+      "labelFa": "پایه",
+      "types": [
+        { "value": "document.ocr", "labelEn": "Document OCR", "labelFa": "OCR سند", "inputMode": "document" },
+        { "value": "document.extract", "labelEn": "Structured document extract", "labelFa": "استخراج ساختاریافته سند", "inputMode": "document" },
+        { "value": "text.summarize", "labelEn": "Text summarize", "labelFa": "خلاصه‌سازی متن", "inputMode": "text" },
+        { "value": "text.classify", "labelEn": "Text classify", "labelFa": "طبقه‌بندی متن", "inputMode": "text" },
+        { "value": "image.classify", "labelEn": "Image classify", "labelFa": "طبقه‌بندی تصویر", "inputMode": "image" },
+        { "value": "image.remove_background", "labelEn": "Remove background", "labelFa": "حذف پس‌زمینه", "inputMode": "image" }
+      ]
+    },
+    {
+      "id": "safety",
+      "labelEn": "Safety & moderation (image)",
+      "labelFa": "ایمنی و moderation (تصویر)",
+      "types": [
+        { "value": "safety.nsfw_detection", "labelEn": "NSFW detection", "labelFa": "تشخیص NSFW", "inputMode": "image" },
+        { "value": "safety.violence_detection", "labelEn": "Violence detection", "labelFa": "تشخیص خشونت", "inputMode": "image" },
+        { "value": "safety.weapon_detection", "labelEn": "Weapon detection", "labelFa": "تشخیص سلاح", "inputMode": "image" },
+        { "value": "safety.unsafe_image", "labelEn": "Unsafe image detection", "labelFa": "تشخیص تصویر ناامن", "inputMode": "image" },
+        { "value": "moderation.profile_image", "labelEn": "Profile image moderation", "labelFa": "moderation تصویر پروفایل", "inputMode": "image" },
+        { "value": "moderation.generated_image", "labelEn": "Generated image review", "labelFa": "بازبینی تصویر تولیدشده", "inputMode": "image" }
+      ]
+    },
+    {
+      "id": "textModeration",
+      "labelEn": "Text moderation",
+      "labelFa": "moderation متن",
+      "types": [
+        { "value": "moderation.prompt_safety", "labelEn": "Prompt safety check", "labelFa": "بررسی ایمنی prompt", "inputMode": "text" },
+        { "value": "moderation.text", "labelEn": "Text moderation", "labelFa": "moderation متن", "inputMode": "text" },
+        { "value": "moderation.profanity", "labelEn": "Profanity detection", "labelFa": "تشخیص فحش", "inputMode": "text" },
+        { "value": "moderation.spam_comment", "labelEn": "Spam comment detection", "labelFa": "تشخیص اسپم نظر", "inputMode": "text" }
+      ]
+    },
+    {
+      "id": "ocr",
+      "labelEn": "OCR",
+      "labelFa": "OCR",
+      "types": [
+        { "value": "ocr.receipt", "labelEn": "OCR receipt", "labelFa": "OCR رسید", "inputMode": "document" },
+        { "value": "ocr.invoice", "labelEn": "OCR invoice", "labelFa": "OCR فاکتور", "inputMode": "document" },
+        { "value": "ocr.simple_form", "labelEn": "OCR simple form", "labelFa": "OCR فرم ساده", "inputMode": "document" },
+        { "value": "ocr.product_label", "labelEn": "OCR product label", "labelFa": "OCR برچسب محصول", "inputMode": "document" }
+      ]
+    },
+    {
+      "id": "extract",
+      "labelEn": "Field extraction",
+      "labelFa": "استخراج فیلد",
+      "types": [
+        { "value": "extract.amount", "labelEn": "Extract amount", "labelFa": "استخراج مبلغ", "inputMode": "document" },
+        { "value": "extract.date", "labelEn": "Extract date", "labelFa": "استخراج تاریخ", "inputMode": "document" },
+        { "value": "extract.order_number", "labelEn": "Extract order number", "labelFa": "استخراج شماره سفارش", "inputMode": "document" },
+        { "value": "extract.document_type", "labelEn": "Document type detection", "labelFa": "تشخیص نوع سند", "inputMode": "document" }
+      ]
+    },
+    {
+      "id": "quality",
+      "labelEn": "Document & image quality",
+      "labelFa": "کیفیت سند و تصویر",
+      "types": [
+        { "value": "quality.document_image", "labelEn": "Document image quality scoring", "labelFa": "کیفیت‌سنجی تصویر سند", "inputMode": "image" },
+        { "value": "quality.blurry_image", "labelEn": "Blurry image detection", "labelFa": "تشخیص تصویر تار", "inputMode": "image" }
+      ]
+    },
+    {
+      "id": "catalog",
+      "labelEn": "Catalog & commerce",
+      "labelFa": "کاتالوگ و commerce",
+      "types": [
+        { "value": "catalog.image_tagging", "labelEn": "Image tagging", "labelFa": "برچسب‌گذاری تصویر", "inputMode": "image" },
+        { "value": "catalog.product_classification", "labelEn": "Product classification", "labelFa": "طبقه‌بندی محصول", "inputMode": "image" },
+        { "value": "catalog.duplicate_image", "labelEn": "Duplicate image detection", "labelFa": "تشخیص تصویر تکراری", "inputMode": "image" },
+        { "value": "catalog.product_quality_score", "labelEn": "Product quality scoring", "labelFa": "امتیازدهی کیفیت محصول", "inputMode": "image" },
+        { "value": "catalog.brand_logo", "labelEn": "Brand / logo detection", "labelFa": "تشخیص برند / لوگو", "inputMode": "image" },
+        { "value": "catalog.prohibited_product", "labelEn": "Prohibited product detection", "labelFa": "تشخیص محصول ممنوعه", "inputMode": "image" },
+        { "value": "catalog.fake_listing", "labelEn": "Fake listing detection", "labelFa": "تشخیص آگهی جعلی", "inputMode": "flex" }
+      ]
+    },
+    {
+      "id": "reviews",
+      "labelEn": "Reviews",
+      "labelFa": "نظرات",
+      "types": [
+        { "value": "review.fake_detection", "labelEn": "Fake review detection", "labelFa": "تشخیص نظر جعلی", "inputMode": "text" },
+        { "value": "review.sentiment", "labelEn": "Review sentiment", "labelFa": "sentiment نظر", "inputMode": "text" },
+        { "value": "review.topic_tagging", "labelEn": "Topic tagging", "labelFa": "برچسب موضوع", "inputMode": "text" }
+      ]
+    },
+    {
+      "id": "llmValidation",
+      "labelEn": "LLM validation",
+      "labelFa": "اعتبارسنجی LLM",
+      "types": [
+        { "value": "llm.summary_verification", "labelEn": "Summary verification", "labelFa": "اعتبارسنجی خلاصه", "inputMode": "text" },
+        { "value": "llm.hallucination_check", "labelEn": "Hallucination check", "labelFa": "بررسی hallucination", "inputMode": "text" },
+        { "value": "llm.ocr_output_validation", "labelEn": "OCR output validation", "labelFa": "اعتبارسنجی خروجی OCR", "inputMode": "text" },
+        { "value": "llm.ai_tag_validation", "labelEn": "AI tag validation", "labelFa": "اعتبارسنجی برچسب AI", "inputMode": "flex" },
+        { "value": "llm.caption_validation", "labelEn": "Caption validation", "labelFa": "اعتبارسنجی caption", "inputMode": "flex" },
+        { "value": "llm.policy_violation", "labelEn": "Policy violation check", "labelFa": "بررسی نقض policy", "inputMode": "text" },
+        { "value": "llm.prompt_output_consistency", "labelEn": "Prompt-output consistency check", "labelFa": "بررسی سازگاری prompt و خروجی", "inputMode": "text" },
+        { "value": "llm.image_output_safety", "labelEn": "Image-output safety check", "labelFa": "بررسی ایمنی خروجی تصویر", "inputMode": "image" },
+        { "value": "llm.answer_quality_score", "labelEn": "AI answer quality scoring", "labelFa": "امتیازدهی کیفیت پاسخ AI", "inputMode": "text" },
+        { "value": "llm.suspicious_output", "labelEn": "Suspicious output flagging", "labelFa": "علامت‌گذاری خروجی مشکوک", "inputMode": "text" }
+      ]
+    },
+    {
+      "id": "dataset",
+      "labelEn": "Dataset operations",
+      "labelFa": "عملیات dataset",
+      "types": [
+        { "value": "dataset.label_verification", "labelEn": "Dataset label verification", "labelFa": "اعتبارسنجی برچسب dataset", "inputMode": "flex" },
+        { "value": "dataset.duplicate_cleanup", "labelEn": "Duplicate data cleanup", "labelFa": "پاکسازی داده تکراری", "inputMode": "flex" },
+        { "value": "dataset.low_quality_removal", "labelEn": "Low-quality data removal", "labelFa": "حذف داده کم‌کیفیت", "inputMode": "flex" }
+      ]
+    },
+    {
+      "id": "nlp",
+      "labelEn": "NLP",
+      "labelFa": "NLP",
+      "types": [
+        { "value": "nlp.language_detection", "labelEn": "Language detection", "labelFa": "تشخیص زبان", "inputMode": "text" },
+        { "value": "nlp.text_classification", "labelEn": "Text classification", "labelFa": "طبقه‌بندی متن", "inputMode": "text" },
+        { "value": "nlp.spam_fraud_classification", "labelEn": "Spam / fraud classification", "labelFa": "طبقه‌بندی اسپم / تقلب", "inputMode": "text" }
+      ]
+    },
+    {
+      "id": "mlOps",
+      "labelEn": "ML operations",
+      "labelFa": "عملیات ML",
+      "types": [
+        { "value": "ml.active_learning_prelabel", "labelEn": "Active learning pre-labeling", "labelFa": "پیش‌برچسب‌گذاری active learning", "inputMode": "flex" },
+        { "value": "ml.consensus_label_validation", "labelEn": "Consensus-based label validation", "labelFa": "اعتبارسنجی برچسب مبتنی بر consensus", "inputMode": "flex" },
+        { "value": "ml.human_verification_quality", "labelEn": "Human-verification quality check", "labelFa": "بررسی کیفیت human verification", "inputMode": "flex" },
+        { "value": "ml.bot_abuse_risk", "labelEn": "Bot / abuse risk signal validation", "labelFa": "اعتبارسنجی سیگنال ریسک bot / abuse", "inputMode": "text" }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,9 @@ from typing import Any
 
 from fastapi.responses import Response
 
+from edgemint.dev.dev_public_urls import dev_api_public_base
+from edgemint.dev.task_type_catalog import image_blob_family, pipeline_family
+
 _OCR_DOCUMENT = """INVOICE #INV-2026-0847
 EdgeMint Demo Supplies Ltd.
 123 Cloud Street, Helsinki
@@ -46,7 +49,10 @@ _INPUT_BLOBS: dict[str, dict[str, Any]] = {}
 _RESULT_BLOBS: dict[str, dict[str, Any]] = {}
 _MAX_TEXT_CHARS = 32_000
 _MAX_FILE_BYTES = 2 * 1024 * 1024
-_DEV_API = "http://127.0.0.1:8080"
+
+
+def _dev_api_base() -> str:
+    return dev_api_public_base()
 
 
 def _pipeline_manifest(task_type: str, task_id: str, **extra: Any) -> dict[str, Any]:
@@ -137,15 +143,19 @@ def _needs_input_blob(
 ) -> bool:
     if not file_bytes:
         return False
-    if task_type in {"document.ocr", "document.extract", "image.classify"}:
+    family = pipeline_family(task_type)
+    if family in {"document.ocr", "document.extract"}:
         return _is_image(file_mime=file_mime, file_name=file_name, file_bytes=file_bytes) or _is_pdf(
             file_mime=file_mime, file_name=file_name, file_bytes=file_bytes
         )
+    if family == "image.classify":
+        return _is_image(file_mime=file_mime, file_name=file_name, file_bytes=file_bytes)
     return _is_image(file_mime=file_mime, file_name=file_name, file_bytes=file_bytes)
 
 
 def _options_for(task_type: str) -> dict[str, Any]:
-    if task_type == "document.extract":
+    family = pipeline_family(task_type)
+    if family == "document.extract":
         return {
             "languages": ["fa", "en"],
             "minOcrConfidence": 0.55,
@@ -155,12 +165,12 @@ def _options_for(task_type: str) -> dict[str, Any]:
                 "currency": "string",
             },
         }
-    if task_type in {"image.classify", "text.classify"}:
+    if family in {"image.classify", "text.classify"}:
         return {
             "allowedLabels": ["receipt", "invoice", "payment", "other"],
             "minOcrConfidence": 0.55,
         }
-    if task_type == "document.ocr":
+    if family == "document.ocr":
         return {"languages": ["fa", "en"], "minOcrConfidence": 0.55, "ocrOnly": True}
     return {"languages": ["fa", "en"], "minOcrConfidence": 0.55}
 
@@ -174,16 +184,17 @@ def _prompt_for_custom(
     user_note: str | None = None,
 ) -> str:
     note = f"\n\nUser note: {user_note.strip()}" if user_note and user_note.strip() else ""
-    if task_type in {"document.ocr", "document.extract"}:
+    family = pipeline_family(task_type)
+    if family in {"document.ocr", "document.extract"}:
         body = content_text or f"[Binary document uploaded: {file_name or 'document'}]"
         return f"OCR source document ({file_name or 'upload'}):\n\n{body}{note}"
-    if task_type == "text.summarize":
+    if family == "text.summarize":
         body = content_text or ""
         return f"Summarize the following customer text in 2 concise sentences:\n\n{body}{note}"
-    if task_type == "text.classify":
+    if family == "text.classify":
         body = content_text or ""
         return f"Classify this text:\n\n{body}{note}"
-    if task_type == "image.classify":
+    if family == "image.classify":
         meta = content_text or f"Uploaded image: {file_name or 'image'} ({file_mime or 'unknown'})"
         return f"Classify image metadata:\n\n{meta}{note}"
     if task_type == "image.remove_background":
@@ -204,7 +215,7 @@ def _store_input_blob(*, task_id: str, file_bytes: bytes, file_mime: str, file_n
 
 
 def _ensure_sample_image(task_id: str, task_type: str) -> None:
-    if task_type not in {"document.ocr", "document.extract", "image.classify"}:
+    if not image_blob_family(task_type):
         return
     if task_id in _INPUT_BLOBS:
         return
@@ -221,6 +232,7 @@ def register_task(
     task_id: str,
     task_type: str,
     input_text: str | None = None,
+    instructions: str | None = None,
     file_name: str | None = None,
     file_mime: str | None = None,
     file_bytes: bytes | None = None,
@@ -230,7 +242,8 @@ def register_task(
 
     decoded_text = _decode_upload(file_name=file_name, file_mime=file_mime, file_bytes=file_bytes)
     content_text = (input_text or decoded_text or "").strip()[:_MAX_TEXT_CHARS] or None
-    has_custom = bool(content_text or file_bytes)
+    user_note = (instructions or "").strip() or None
+    has_custom = bool(content_text or file_bytes or user_note)
     store_blob = _needs_input_blob(
         task_type=task_type,
         file_mime=file_mime,
@@ -251,10 +264,11 @@ def register_task(
             options=_options_for(task_type),
         )
         if task_id in _INPUT_BLOBS:
-            entry["inputContentUrl"] = f"{_DEV_API}/v1/dev/worker/tasks/{task_id}/input/content"
-        if task_type == "text.classify":
+            entry["inputContentUrl"] = f"{_dev_api_base()}/v1/dev/worker/tasks/{task_id}/input/content"
+        family = pipeline_family(task_type)
+        if family == "text.classify":
             entry["inputText"] = _TEXT_CLASSIFY_SAMPLE
-        elif task_type == "text.summarize":
+        elif family == "text.summarize":
             entry["inputText"] = _SUMMARIZE_DOCUMENT
         _TASK_INPUTS[task_id] = entry
         return
@@ -284,7 +298,7 @@ def register_task(
             content_text=content_text,
             file_name=file_name,
             file_mime=file_mime,
-            user_note=input_text if file_bytes and decoded_text is None else None,
+            user_note=user_note,
         ),
         customInput=True,
         inputLabel=title,
@@ -292,10 +306,16 @@ def register_task(
         options=_options_for(task_type),
     )
     if store_blob and task_id in _INPUT_BLOBS:
-        entry["inputContentUrl"] = f"{_DEV_API}/v1/dev/worker/tasks/{task_id}/input/content"
+        entry["inputContentUrl"] = f"{_dev_api_base()}/v1/dev/worker/tasks/{task_id}/input/content"
     if content_text:
         entry["inputText"] = content_text
     _TASK_INPUTS[task_id] = entry
+
+
+def ensure_registered(*, task_id: str, task_type: str) -> None:
+    if task_id in _TASK_INPUTS:
+        return
+    register_task(task_id=task_id, task_type=task_type)
 
 
 def input_manifest(task_id: str) -> dict[str, Any] | None:

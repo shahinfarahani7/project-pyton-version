@@ -34,3 +34,11 @@ def test_text_classify_manifest_has_input_text() -> None:
     assert manifest is not None
     assert manifest["inputText"]
     assert "allowedLabels" in manifest["options"]
+
+
+def test_ensure_registered_builds_sample_manifest_when_missing() -> None:
+    worker_task_inputs.ensure_registered(task_id="tsk_dev_missing", task_type="document.ocr")
+    manifest = worker_task_inputs.input_manifest("tsk_dev_missing")
+    assert manifest is not None
+    assert manifest["taskType"] == "document.ocr"
+    assert manifest["inputContentUrl"]

@@ -16,7 +16,7 @@ function onLocaleChange(event) {
 </script>
 
 <template>
-  <section>
+  <section class="em-page">
     <PageHeader :title="t('nav.settings')" :subtitle="t('settings.subtitle')" />
 
     <article class="md-card grid-2">

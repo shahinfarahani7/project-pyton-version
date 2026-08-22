@@ -30,11 +30,30 @@ abstract final class TaskTypeMapper {
     textClassify: 'text.classify',
   };
 
+  static const _textModerationTypes = {
+    'moderation.prompt_safety',
+    'moderation.text',
+    'moderation.profanity',
+    'moderation.spam_comment',
+  };
+
+  static const _summarizeTypes = {
+    'text.summarize',
+    'llm.summary_verification',
+  };
+
   static String? toV1(String backendTaskType) {
     if (pipelineTypes.contains(backendTaskType)) {
       return backendTaskType;
     }
-    return backendToV1[backendTaskType];
+    final direct = backendToV1[backendTaskType];
+    if (direct != null) {
+      return direct;
+    }
+    if (backendTaskType == 'image.remove_background') {
+      return null;
+    }
+    return _familyToV1(_pipelineFamily(backendTaskType));
   }
 
   static String toBackend(String v1Type) {
@@ -54,5 +73,56 @@ abstract final class TaskTypeMapper {
       return false;
     }
     return v1Type != ocrExtractText;
+  }
+
+  /// Canonical backend family used for dev sample inputs and options.
+  static String pipelineFamily(String backendTaskType) {
+    return _pipelineFamily(backendTaskType);
+  }
+
+  static String _pipelineFamily(String backendTaskType) {
+    if (backendTaskType.startsWith('ocr.') || backendTaskType == 'document.ocr') {
+      return 'document.ocr';
+    }
+    if (backendTaskType.startsWith('extract.') || backendTaskType == 'document.extract') {
+      return 'document.extract';
+    }
+    if (_summarizeTypes.contains(backendTaskType)) {
+      return 'text.summarize';
+    }
+    if (_textModerationTypes.contains(backendTaskType) ||
+        backendTaskType.startsWith('nlp.') ||
+        backendTaskType.startsWith('ml.') ||
+        backendTaskType.startsWith('dataset.') ||
+        backendTaskType.startsWith('review.') ||
+        backendTaskType == 'text.classify' ||
+        backendTaskType.startsWith('llm.')) {
+      if (backendTaskType == 'llm.summary_verification') {
+        return 'text.summarize';
+      }
+      if (backendTaskType == 'llm.image_output_safety') {
+        return 'image.classify';
+      }
+      return 'text.classify';
+    }
+    if (backendTaskType.startsWith('safety.') ||
+        backendTaskType.startsWith('quality.') ||
+        backendTaskType.startsWith('catalog.') ||
+        backendTaskType == 'image.classify' ||
+        backendTaskType.startsWith('moderation.')) {
+      return 'image.classify';
+    }
+    return backendTaskType;
+  }
+
+  static String? _familyToV1(String family) {
+    return switch (family) {
+      'document.ocr' => ocrExtractText,
+      'document.extract' => documentExtract,
+      'image.classify' => documentClassify,
+      'text.summarize' => documentSummarize,
+      'text.classify' => textClassify,
+      _ => null,
+    };
   }
 }

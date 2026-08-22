@@ -70,3 +70,18 @@ def test_worker_ocr_input_and_output_roundtrip(gateway_client: TestClient) -> No
     match = next(item for item in tasks.json()["items"] if item["id"] == task_id)
     assert match["executionStatus"] == "completed"
     assert match["lifecycleStatus"] == "succeeded"
+
+
+def test_worker_input_lazy_register_via_task_type_query(gateway_client: TestClient) -> None:
+    task_id = "tsk_dev_lazy_register"
+    missing = gateway_client.get(f"/v1/dev/worker/tasks/{task_id}/input")
+    assert missing.status_code == 404
+
+    manifest = gateway_client.get(
+        f"/v1/dev/worker/tasks/{task_id}/input",
+        params={"taskType": "text.classify"},
+    )
+    assert manifest.status_code == 200, manifest.text
+    body = manifest.json()
+    assert body["taskType"] == "text.classify"
+    assert "prompt" in body

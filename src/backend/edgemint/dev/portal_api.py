@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.settings import get_settings
 from edgemint.dev import fixtures
+from edgemint.dev import task_type_catalog
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
 
@@ -18,6 +19,7 @@ session_store = BrowserSessionStore()
 class DevCreateTaskRequest(BaseModel):
     taskType: str = Field(min_length=1, max_length=128)
     inputText: str | None = Field(default=None, max_length=32_000)
+    instructions: str | None = Field(default=None, max_length=8_000)
 
 
 async def _read_uploaded_file(upload: object | None) -> tuple[str | None, str | None, bytes | None]:
@@ -37,20 +39,34 @@ async def _create_task_from_form(
     *,
     task_type: str,
     input_text: str | None,
+    instructions: str | None,
     file_name: str | None,
     file_mime: str | None,
     file_bytes: bytes | None,
 ) -> dict:
     if not task_type.strip():
         raise HTTPException(422, "TASK_TYPE_REQUIRED")
-    return fixtures.create_dev_task(
+    try:
+        task_type_catalog.validate_task_submission(
+            task_type=task_type,
+            input_text=input_text,
+            instructions=instructions,
+            file_name=file_name,
+            file_mime=file_mime,
+            file_bytes=file_bytes,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    task = fixtures.create_dev_task(
         workspace_id,
         task_type=task_type.strip(),
         input_text=input_text,
+        instructions=instructions,
         file_name=file_name,
         file_mime=file_mime,
         file_bytes=file_bytes,
     )
+    return task_type_catalog.enrich_task_row(task)
 
 
 async def require_dev_portal_session(request: Request) -> BrowserSessionRecord:
@@ -99,13 +115,24 @@ async def list_workspaces(session: BrowserSessionRecord = Depends(require_dev_po
     return {"items": fixtures.dev_workspaces(), "page": fixtures.PAGE}
 
 
+@router.get("/v1/task-types")
+async def list_task_types(
+    q: str | None = None,
+    locale: str = "en",
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    _ = session
+    normalized_locale = "fa" if locale == "fa" else "en"
+    return task_type_catalog.list_catalog(query=q, locale=normalized_locale)
+
+
 @router.get("/v1/workspaces/{workspace_id}/tasks")
 async def list_tasks(
     workspace_id: UUID,
     session: BrowserSessionRecord = Depends(require_dev_portal_session),
 ) -> dict:
     _ensure_workspace_access(session, workspace_id)
-    return fixtures.dev_tasks(workspace_id)
+    return task_type_catalog.enrich_task_list(fixtures.dev_tasks(workspace_id))
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks", status_code=201)
@@ -122,24 +149,43 @@ async def create_task(
             task_type = str(form.get("taskType", "")).strip()
             raw_text = form.get("inputText")
             input_text = raw_text.strip() if isinstance(raw_text, str) and raw_text.strip() else None
+            raw_instructions = form.get("instructions")
+            instructions = (
+                raw_instructions.strip()
+                if isinstance(raw_instructions, str) and raw_instructions.strip()
+                else None
+            )
             file_name, file_mime, file_bytes = await _read_uploaded_file(form.get("inputFile"))
             return await _create_task_from_form(
                 workspace_id,
                 task_type=task_type,
                 input_text=input_text,
+                instructions=instructions,
                 file_name=file_name,
                 file_mime=file_mime,
                 file_bytes=file_bytes,
             )
         payload = DevCreateTaskRequest.model_validate(await request.json())
-        return fixtures.create_dev_task(
+        return await _create_task_from_form(
             workspace_id,
             task_type=payload.taskType,
             input_text=payload.inputText,
+            instructions=payload.instructions,
+            file_name=None,
+            file_mime=None,
+            file_bytes=None,
         )
     except ValueError as exc:
         if str(exc) == "INPUT_FILE_TOO_LARGE":
             raise HTTPException(413, "INPUT_FILE_TOO_LARGE") from exc
+        if str(exc) in {
+            "UNSUPPORTED_TASK_TYPE",
+            "INPUT_TEXT_REQUIRED",
+            "INPUT_IMAGE_REQUIRED",
+            "INPUT_FILE_OR_TEXT_REQUIRED",
+            "TASK_TYPE_REQUIRED",
+        }:
+            raise HTTPException(422, str(exc)) from exc
         raise
 
 
@@ -149,6 +195,7 @@ async def create_task_multipart(
     task_type: str = Form(..., alias="taskType"),
     session: BrowserSessionRecord = Depends(require_dev_portal_session),
     input_text: str | None = Form(default=None, alias="inputText"),
+    instructions: str | None = Form(default=None, alias="instructions"),
     input_file: UploadFile | None = Form(default=None, alias="inputFile"),
 ) -> dict:
     """Explicit multipart route — reliable file upload from browser FormData."""
@@ -156,10 +203,12 @@ async def create_task_multipart(
     try:
         file_name, file_mime, file_bytes = await _read_uploaded_file(input_file)
         normalized_text = input_text.strip() if input_text and input_text.strip() else None
+        normalized_instructions = instructions.strip() if instructions and instructions.strip() else None
         return await _create_task_from_form(
             workspace_id,
             task_type=task_type,
             input_text=normalized_text,
+            instructions=normalized_instructions,
             file_name=file_name,
             file_mime=file_mime,
             file_bytes=file_bytes,
@@ -180,7 +229,7 @@ async def get_task(
     task = fixtures.dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
-    return task
+    return task_type_catalog.enrich_task_row(task)
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}/result-file")

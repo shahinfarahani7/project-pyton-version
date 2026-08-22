@@ -1,10 +1,11 @@
-# Download Qwen3 once on the PC, then sideload to MEmu/LDPlayer (no in-app download).
+# Download Qwen3 once on the PC, then sideload to device (no in-app download).
 param(
     [string]$MemuRoot = 'D:\Program Files\Microvirt\MEmu',
     [string]$ModelDir = 'dist/models',
     [string]$BackendUrl = 'http://127.0.0.1:8081',
     [string]$DeviceId = '',
-    [switch]$SkipDownload
+    [switch]$SkipDownload,
+    [switch]$ForceDownload
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,25 +16,60 @@ $modelFile = 'Qwen3-0.6B.litertlm'
 $localPath = Join-Path $ModelDir $modelFile
 $deviceDir = '/sdcard/Edgemint/models'
 $devicePath = "$deviceDir/$modelFile"
+# Full artifact is ~586 MB; reject truncated downloads (e.g. partial curl).
+$MinQwenBytes = 550MB
 
 New-Item -ItemType Directory -Force -Path (Split-Path $localPath) | Out-Null
 
-if (-not $SkipDownload -and -not (Test-Path $localPath)) {
+function Test-QwenModelComplete {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) {
+        return $false
+    }
+    $size = (Get-Item $Path).Length
+    if ($size -lt $MinQwenBytes) {
+        Write-Host "Incomplete Qwen model at $Path ($([math]::Round($size / 1MB, 1)) MB, need >= $([math]::Round($MinQwenBytes / 1MB)) MB)" -ForegroundColor Yellow
+        return $false
+    }
+    return $true
+}
+
+function Invoke-QwenDownload {
+    if (Test-Path $localPath) {
+        Remove-Item $localPath -Force
+    }
     Write-Host "Downloading $modelFile (~586 MB) ..."
     $url = "$BackendUrl/models/mdv_qwen3_0_6b/files/$modelFile"
     $code = curl.exe -s -o NUL -w '%{http_code}' --max-time 8 $url
     if ($code -eq '200') {
-        curl.exe -L --fail -o $localPath $url
+        curl.exe -L --fail --retry 3 --retry-delay 5 -o $localPath $url
     } else {
         Write-Host "Backend proxy unavailable ($code) - trying Hugging Face ..."
         $hf = 'https://huggingface.co/litert-community/Qwen3-0.6B/resolve/main/' + $modelFile
-        curl.exe -L --fail -o $localPath $hf
+        curl.exe -L --fail --retry 3 --retry-delay 5 -o $localPath $hf
     }
-    Write-Host "Saved: $localPath"
-} elseif (Test-Path $localPath) {
-    Write-Host "Using cached model: $localPath"
-} else {
-    throw "Model not found at $localPath (run without -SkipDownload)"
+    if (-not (Test-QwenModelComplete -Path $localPath)) {
+        $size = if (Test-Path $localPath) { (Get-Item $localPath).Length } else { 0 }
+        throw "Qwen download incomplete ($size bytes). Check network/backend and retry."
+    }
+    $mb = [math]::Round((Get-Item $localPath).Length / 1MB, 1)
+    Write-Host "Saved: $localPath ($mb MB)"
+}
+
+if ($ForceDownload) {
+    Invoke-QwenDownload
+} elseif (-not $SkipDownload) {
+    if (Test-QwenModelComplete -Path $localPath) {
+        $mb = [math]::Round((Get-Item $localPath).Length / 1MB, 1)
+        Write-Host "Using cached model: $localPath ($mb MB)"
+    } else {
+        if (Test-Path $localPath) {
+            Remove-Item $localPath -Force
+        }
+        Invoke-QwenDownload
+    }
+} elseif (-not (Test-QwenModelComplete -Path $localPath)) {
+    throw "Model not found or incomplete at $localPath (run without -SkipDownload or use -ForceDownload)"
 }
 
 $adbCandidates = @(

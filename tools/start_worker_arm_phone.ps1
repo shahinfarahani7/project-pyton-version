@@ -76,17 +76,21 @@ Write-Host '   adb reverse: 8081 (worker-gateway), 8080 (api-gateway)'
 $probe8081 = & $adb -s $phone shell "curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:8081/health/live" 2>&1
 Write-Host "   Device probe :8081 → $probe8081"
 
-Write-Step '3/5 Qwen3 model sideload (~586 MB, one-time)'
+Write-Step '3/6 Qwen3 model sideload (~586 MB, one-time)'
 if ($SkipModelPush) {
     Write-Host '   Skipped (-SkipModelPush)'
 } else {
-    & powershell -ExecutionPolicy Bypass -File (Join-Path $Root 'tools\push_qwen_model_to_emulator.ps1') -SkipDownload:$(
-        Test-Path (Join-Path $Root 'dist\models\Qwen3-0.6B.litertlm')
-    )
-    # push script picks first adb device — ensure phone is only device or first USB
+    & powershell -ExecutionPolicy Bypass -File (Join-Path $Root 'tools\push_qwen_model_to_emulator.ps1') -DeviceId $phone
 }
 
-Write-Step '4/5 Worker APK'
+Write-Step '4/6 PaddleOCR model sideload'
+if ($SkipModelPush) {
+    Write-Host '   Skipped (-SkipModelPush)'
+} else {
+    & powershell -ExecutionPolicy Bypass -File (Join-Path $Root 'tools\push_paddleocr_models_to_device.ps1') -DeviceId $phone
+}
+
+Write-Step '5/6 Worker APK'
 $apkCandidates = @(
     (Join-Path $Root 'dist\android-worker\app-release-usb.apk'),
     (Join-Path $Root 'dist\android-worker\app-release.apk'),
@@ -104,7 +108,7 @@ if ($apk) {
 }
 
 if (-not $SkipPortal) {
-    Write-Step '5/5 Customer portal'
+    Write-Step '6/6 Customer portal'
     $portalRunning = Test-Health 'http://127.0.0.1:5173/'
     if ($portalRunning) {
         Write-Host '   Portal already running: http://localhost:5173'

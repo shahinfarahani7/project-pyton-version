@@ -9,5 +9,11 @@ void main() {
     expect(TaskTypeMapper.requiresOcr(TaskTypeMapper.textClassify), isFalse);
     expect(TaskTypeMapper.requiresLlm(TaskTypeMapper.ocrExtractText), isFalse);
     expect(TaskTypeMapper.isPipelineTask('image.classify'), isTrue);
+    expect(TaskTypeMapper.toV1('safety.nsfw_detection'), TaskTypeMapper.documentClassify);
+    expect(TaskTypeMapper.toV1('ocr.receipt'), TaskTypeMapper.ocrExtractText);
+    expect(TaskTypeMapper.toV1('extract.amount'), TaskTypeMapper.documentExtract);
+    expect(TaskTypeMapper.toV1('moderation.profanity'), TaskTypeMapper.textClassify);
+    expect(TaskTypeMapper.toV1('llm.summary_verification'), TaskTypeMapper.documentSummarize);
+    expect(TaskTypeMapper.pipelineFamily('catalog.product_classification'), 'image.classify');
   });
 }

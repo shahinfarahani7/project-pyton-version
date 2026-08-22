@@ -76,9 +76,10 @@ Image pipeline tasks (`document.ocr`, `document.extract`, `image.classify`, `tex
 
 Model artifacts (not in Git): `ppocrv5_mobile_det.onnx`, `ppocrv5_mobile_rec_arabic.onnx`, `ppocrv5_arabic_dict.txt`. Pin SHA-256 in `lib/inference/ocr/ocr_models.dart` after export.
 
-Sideload to device:
+Sideload to device (downloads ONNX from GreatV/oar-ocr if missing):
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File tools\download_paddleocr_models.ps1
 powershell -ExecutionPolicy Bypass -File tools\push_paddleocr_models_to_device.ps1
 ```
 

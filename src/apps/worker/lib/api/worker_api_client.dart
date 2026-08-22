@@ -148,6 +148,9 @@ class WorkerApiClient {
     int waitSeconds = 0,
     String? requestId,
   }) async {
+    final timeout = waitSeconds > 0
+        ? Duration(seconds: waitSeconds + 15)
+        : _config.requestTimeout;
     final response = await _http
         .get(
           _config.resolve(WorkerRoutes.nextAssignment).replace(queryParameters: {
@@ -155,7 +158,7 @@ class WorkerApiClient {
           }),
           headers: _headers(accessToken: accessToken, requestId: requestId),
         )
-        .timeout(_config.requestTimeout);
+        .timeout(timeout);
     if (response.statusCode == 204) {
       return null;
     }

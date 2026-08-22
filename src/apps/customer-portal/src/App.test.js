@@ -11,9 +11,12 @@ import DashboardPage from './pages/DashboardPage.vue';
 import DisputesPage from './pages/DisputesPage.vue';
 import FilesPage from './pages/FilesPage.vue';
 import LoginPage from './pages/LoginPage.vue';
+import MorePage from './pages/MorePage.vue';
 import SettingsPage from './pages/SettingsPage.vue';
+import TaskDetailPage from './pages/TaskDetailPage.vue';
 import TasksPage from './pages/TasksPage.vue';
 import TeamPage from './pages/TeamPage.vue';
+import UsagePage from './pages/UsagePage.vue';
 import WebhooksPage from './pages/WebhooksPage.vue';
 
 function resetSession() {
@@ -44,10 +47,13 @@ function createTestRouter(initialRoute = '/login') {
         children: [
           { path: '', name: 'dashboard', component: DashboardPage },
           { path: 'tasks', name: 'tasks', component: TasksPage },
+          { path: 'tasks/:id', name: 'task-detail', component: TaskDetailPage },
+          { path: 'usage', name: 'usage', component: UsagePage },
+          { path: 'billing', name: 'billing', component: BillingPage },
+          { path: 'more', name: 'more', component: MorePage },
           { path: 'files', name: 'files', component: FilesPage },
           { path: 'webhooks', name: 'webhooks', component: WebhooksPage },
           { path: 'api-keys', name: 'api-keys', component: ApiKeysPage },
-          { path: 'billing', name: 'billing', component: BillingPage },
           { path: 'disputes', name: 'disputes', component: DisputesPage },
           { path: 'team', name: 'team', component: TeamPage },
           { path: 'settings', name: 'settings', component: SettingsPage },

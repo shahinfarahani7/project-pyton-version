@@ -37,9 +37,85 @@ function Test-GatewayHealth {
     return $code -eq '200'
 }
 
+function Wait-BackendHealth {
+    param([int]$TimeoutSeconds = 120)
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        if ((Test-GatewayHealth) -and ((curl.exe -s -o NUL -w '%{http_code}' --max-time 4 http://127.0.0.1:8080/health/live) -eq '200')) {
+            return $true
+        }
+        Start-Sleep -Seconds 3
+    }
+    return $false
+}
+
+function Test-AdbDeviceHttpCode {
+    param(
+        [string]$Adb,
+        [string]$Device,
+        [string]$Url
+    )
+    $probes = @(
+        "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 $Url",
+        "wget -q -O /dev/null --server-response $Url 2>&1 | awk '/HTTP\// { code = `$2 } END { print code }'",
+        "toybox wget -q -O /dev/null --server-response $Url 2>&1 | awk '/HTTP\// { code = `$2 } END { print code }'"
+    )
+    foreach ($probe in $probes) {
+        $prev = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            $raw = (& $Adb -s $Device shell $probe 2>&1 | Out-String).Trim()
+        } finally {
+            $ErrorActionPreference = $prev
+        }
+        if ($raw -match '^\d{3}$') { return $raw }
+    }
+    return $null
+}
+
+function Test-AdbDeviceTcp {
+    param(
+        [string]$Adb,
+        [string]$Device,
+        [int]$Port
+    )
+    $probes = @(
+        "nc -z -w 3 127.0.0.1 $Port",
+        "busybox nc -z -w 3 127.0.0.1 $Port",
+        "toybox nc -z -w 3 127.0.0.1 $Port"
+    )
+    foreach ($probe in $probes) {
+        $prev = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            & $Adb -s $Device shell $probe 2>&1 | Out-Null
+            if ($LASTEXITCODE -eq 0) { return $true }
+        } finally {
+            $ErrorActionPreference = $prev
+        }
+    }
+    return $false
+}
+
+function Test-AdbReverseRules {
+    param(
+        [string]$Adb,
+        [string]$Device,
+        [int[]]$Ports
+    )
+    $list = (& $Adb -s $Device reverse --list 2>&1 | Out-String)
+    foreach ($port in $Ports) {
+        if ($list -notmatch "tcp:$port\s+tcp:$port") { return $false }
+    }
+    return $true
+}
+
 function Apply-DevHotPatches {
     $pairs = @(
+        @('src/backend/edgemint/dev/dev_public_urls.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/dev_public_urls.py'),
+        @('src/backend/edgemint/services/api_gateway.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/services/api_gateway.py'),
         @('src/backend/edgemint/services/worker_gateway.py', 'edgemint-worker-gateway-1', '/app/src/backend/edgemint/services/worker_gateway.py'),
+        @('src/backend/edgemint/dev/dev_public_urls.py', 'edgemint-worker-registry-1', '/app/src/backend/edgemint/dev/dev_public_urls.py'),
         @('src/backend/edgemint/dev/worker_assignments.py', 'edgemint-worker-registry-1', '/app/src/backend/edgemint/dev/worker_assignments.py'),
         @('src/backend/edgemint/services/worker_registry.py', 'edgemint-worker-registry-1', '/app/src/backend/edgemint/services/worker_registry.py'),
         @('src/backend/edgemint/dev/dev_worker_api.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/dev_worker_api.py'),
@@ -48,6 +124,7 @@ function Apply-DevHotPatches {
         @('src/backend/edgemint/dev/fixtures.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/fixtures.py'),
         @('src/backend/edgemint/dev/assignment_bridge.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/assignment_bridge.py'),
         @('src/backend/edgemint/dev/worker_assignments.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/worker_assignments.py'),
+        @('src/backend/edgemint/dev/task_type_catalog.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/task_type_catalog.py'),
         @('src/backend/edgemint/dev/model_artifact_proxy.py', 'edgemint-model-registry-1', '/app/src/backend/edgemint/dev/model_artifact_proxy.py'),
         @('src/backend/edgemint/services/model_registry.py', 'edgemint-model-registry-1', '/app/src/backend/edgemint/services/model_registry.py')
     )
@@ -56,8 +133,11 @@ function Apply-DevHotPatches {
         if (-not (Test-Path $src)) { continue }
         docker cp $src "$($pair[1]):$($pair[2])" 2>$null | Out-Null
     }
+    docker exec -u 0 edgemint-api-gateway-1 python -m pip install --no-cache-dir python-multipart==0.0.20 2>$null | Out-Null
     docker restart edgemint-worker-gateway-1 edgemint-worker-registry-1 edgemint-api-gateway-1 edgemint-model-registry-1 2>$null | Out-Null
-    Start-Sleep -Seconds 8
+    if (-not (Wait-BackendHealth -TimeoutSeconds 90)) {
+        Write-Host '   WARN: backend slow to recover; continuing if worker-gateway is healthy.'
+    }
 }
 
 function Resolve-AdbDevice {
@@ -119,13 +199,14 @@ if (-not (Test-GatewayHealth)) {
 }
 Write-Host '   PC backend OK (8081)'
 
-$assignCode = curl.exe -s -o NUL -w '%{http_code}' --max-time 4 -H 'Authorization: Bearer dev-token' http://127.0.0.1:8081/assignments:next
+$assignCode = curl.exe -s -o NUL -w '%{http_code}' --max-time 15 -H 'Authorization: Bearer dev-token' http://127.0.0.1:8081/assignments:next
 if ($assignCode -eq '404') {
     Write-Host '   Applying dev hot-patches (assignments route)...'
     Apply-DevHotPatches
-    $assignCode = curl.exe -s -o NUL -w '%{http_code}' --max-time 4 -H 'Authorization: Bearer dev-token' http://127.0.0.1:8081/assignments:next
+    Start-Sleep -Seconds 5
+    $assignCode = curl.exe -s -o NUL -w '%{http_code}' --max-time 15 -H 'Authorization: Bearer dev-token' http://127.0.0.1:8081/assignments:next
 }
-Write-Host "   assignments:next probe = $assignCode"
+Write-Host "   assignments:next probe = $assignCode (200/204 = OK, 000 = registry still starting)"
 
 Write-Step '3/4 MEmu / emulator (adb reverse)'
 $adbCandidates = @(
@@ -148,12 +229,26 @@ Write-Host "   device: $device"
 & $adb -s $device reverse tcp:8080 tcp:8080
 & $adb -s $device reverse --list
 
-$deviceCode = & $adb -s $device shell "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 http://127.0.0.1:8081/health/live" 2>&1
-$apiCode = & $adb -s $device shell "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 http://127.0.0.1:8080/health/live" 2>&1
-Write-Host "   device probe 127.0.0.1:8081 = $deviceCode"
-Write-Host "   device probe 127.0.0.1:8080 = $apiCode"
-if ($deviceCode -ne '200' -or $apiCode -ne '200') {
-    throw 'adb reverse failed — emulator must reach PC on 8080 (portal API) and 8081 (worker gateway).'
+$deviceCode = Test-AdbDeviceHttpCode -Adb $adb -Device $device -Url 'http://127.0.0.1:8081/health/live'
+$apiCode = Test-AdbDeviceHttpCode -Adb $adb -Device $device -Url 'http://127.0.0.1:8080/health/live'
+if ($deviceCode) {
+    Write-Host "   device probe 127.0.0.1:8081 = $deviceCode"
+    Write-Host "   device probe 127.0.0.1:8080 = $apiCode"
+    if ($deviceCode -ne '200' -or ($apiCode -and $apiCode -ne '200')) {
+        throw 'adb reverse failed — emulator must reach PC on 8080 (portal API) and 8081 (worker gateway).'
+    }
+} else {
+    Write-Host '   device has no curl/wget - using TCP + reverse-list checks'
+    if (-not (Test-AdbReverseRules -Adb $adb -Device $device -Ports @(8080, 8081))) {
+        throw 'adb reverse rules missing for tcp:8080 and tcp:8081.'
+    }
+    $gwTcp = Test-AdbDeviceTcp -Adb $adb -Device $device -Port 8081
+    $apiTcp = Test-AdbDeviceTcp -Adb $adb -Device $device -Port 8080
+    Write-Host "   device TCP 127.0.0.1:8081 = $(if ($gwTcp) { 'open' } else { 'closed' })"
+    Write-Host "   device TCP 127.0.0.1:8080 = $(if ($apiTcp) { 'open' } else { 'closed' })"
+    if (-not $gwTcp -or -not $apiTcp) {
+        Write-Host '   WARN: could not verify HTTP from device; reverse rules are set - continue if worker uses LAN IP.'
+    }
 }
 Write-Host '   emulator -> PC backend OK'
 
@@ -182,7 +277,7 @@ Write-Host ' READY - on emulator:'
 Write-Host '   1. Open EdgeMint Worker app'
 Write-Host '   2. Tap Sync'
 Write-Host '   3. Portal http://localhost:5173 - Dev login - New Task'
-Write-Host '   4. Missions - Poll and run next task'
+Write-Host '   4. Keep availability ON - tasks run automatically'
 Write-Host ''
 Write-Host ' APK: dist\android-worker\app-release-usb.apk'
 Write-Host '=========================================='

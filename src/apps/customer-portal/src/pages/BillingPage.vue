@@ -5,8 +5,6 @@ import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import { useAsyncResource } from '../composables/useAsyncResource';
 import EmptyState from '../components/ui/EmptyState.vue';
-import PageHeader from '../components/ui/PageHeader.vue';
-import StatCard from '../components/ui/StatCard.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
 import { formatMicroEur, formatNumber } from '../utils/format';
@@ -31,58 +29,59 @@ const { data: invoices, loading: invoicesLoading } = useAsyncResource(
 const loading = computed(
   () => usageLoading.value || balanceLoading.value || invoicesLoading.value,
 );
+
+const usedMicro = computed(() => usage.value?.computeMicroEur ?? 0);
+const limitMicro = computed(() => {
+  const available = balance.value?.availableMicroEur ?? 0;
+  const reserved = balance.value?.reservedMicroEur ?? 0;
+  return Math.max(usedMicro.value + available + reserved, 1);
+});
+const usagePct = computed(() => Math.min(100, Math.round((usedMicro.value / limitMicro.value) * 100)));
 </script>
 
 <template>
-  <section>
-    <PageHeader :title="t('nav.billing')" :subtitle="t('billing.subtitle')" />
-    <div v-if="loading" class="stat-grid">
-      <div v-for="n in 3" :key="n" class="md-skeleton" />
-    </div>
-    <div v-else class="stat-grid">
-      <StatCard
-        :label="t('billing.usage')"
-        :value="usage?.period ?? '—'"
-        :hint="`${formatNumber(usage?.taskCount)} ${t('dashboard.taskRuns')}`"
-        icon="monitoring"
-      />
-      <StatCard
-        :label="t('billing.available')"
-        :value="formatMicroEur(balance?.availableMicroEur)"
-        icon="account_balance_wallet"
-      />
-      <StatCard
-        :label="t('billing.compute')"
-        :value="formatMicroEur(usage?.computeMicroEur)"
-        icon="memory"
-      />
+  <section class="em-page em-page--billing">
+    <div class="em-layout-billing-top">
+      <article class="md-card em-plan-card">
+        <p class="em-plan-card__label">{{ t('billing.currentPlan') }}</p>
+        <h2 class="em-plan-card__title">{{ t('billing.enterprisePlan') }}</h2>
+        <p class="em-plan-card__price">{{ t('billing.planPrice') }}</p>
+        <p class="md-hint">{{ usage?.period ?? '—' }}</p>
+      </article>
+
+      <article class="md-card">
+      <div class="em-usage-gauge__header">
+        <span>{{ t('billing.usageSummary') }}</span>
+        <strong>{{ formatMicroEur(usedMicro) }} / {{ formatMicroEur(limitMicro) }}</strong>
+      </div>
+      <div class="em-usage-gauge__track">
+        <div class="em-usage-gauge__fill" :style="{ width: `${usagePct}%` }" />
+      </div>
+      <p class="md-hint">{{ usagePct }}% · {{ formatNumber(usage?.taskCount) }} {{ t('dashboard.taskRuns') }}</p>
+      </article>
     </div>
 
-    <article class="md-card">
-      <PageHeader :title="t('billing.invoicesTitle')" />
+    <div v-if="loading" class="md-card"><div class="md-skeleton" style="height: 6rem" /></div>
+
+    <article v-else class="md-card">
+      <h2 class="em-section-title">{{ t('billing.invoicesTitle') }}</h2>
       <EmptyState
         v-if="!(invoices?.items?.length)"
         :title="t('billing.invoicesEmpty')"
         icon="receipt_long"
       />
-      <div v-else class="md-table-wrap">
-        <table class="md-table">
-          <thead>
-            <tr>
-              <th scope="col">{{ t('billing.invoiceId') }}</th>
-              <th scope="col">{{ t('billing.status') }}</th>
-              <th scope="col">{{ t('billing.amount') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="invoice in invoices.items" :key="invoice.id">
-              <td>{{ invoice.id }}</td>
-              <td><StatusChip :status="invoice.status" /></td>
-              <td>{{ formatMicroEur(invoice.amountDueMicroEur) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ul v-else class="em-invoice-list">
+        <li v-for="invoice in invoices.items" :key="invoice.id">
+          <div>
+            <strong>{{ invoice.id }}</strong>
+            <p class="md-hint">{{ formatMicroEur(invoice.amountDueMicroEur) }}</p>
+          </div>
+          <StatusChip :status="invoice.status" />
+        </li>
+      </ul>
+      <button type="button" class="md-btn md-btn-filled md-btn-block" disabled>
+        {{ t('billing.viewInvoices') }}
+      </button>
     </article>
   </section>
 </template>

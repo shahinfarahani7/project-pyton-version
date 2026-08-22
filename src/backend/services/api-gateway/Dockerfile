@@ -4,7 +4,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app/src/backend
 WORKDIR /app
 COPY src/backend/requirements-backend.lock /app/src/backend/requirements-backend.lock
 RUN python -m pip install --no-cache-dir -r /app/src/backend/requirements-backend.lock
+RUN python -m pip install --no-cache-dir python-multipart==0.0.20
 COPY src/backend /app/src/backend
+COPY src/shared /app/src/shared
 COPY dsl /app/dsl
 USER 65532:65532
 EXPOSE 8080

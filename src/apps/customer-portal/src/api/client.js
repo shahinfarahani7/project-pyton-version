@@ -114,21 +114,36 @@ export const portalApi = {
   workspaces: () => fetchJson('/v1/workspaces'),
   tasks: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks`),
   createTask: (workspaceId, payload) => {
-    const { taskType, inputText, inputFile } = payload;
-    if (inputFile || inputText) {
+    const { taskType, inputText, inputFile, instructions } = payload;
+    if (inputFile) {
       const formData = new FormData();
       formData.append('taskType', taskType);
       if (inputText) {
         formData.append('inputText', inputText);
       }
-      if (inputFile) {
-        formData.append('inputFile', inputFile);
+      if (instructions) {
+        formData.append('instructions', instructions);
       }
-      return fetchForm(`/v1/workspaces/${workspaceId}/tasks/upload`, formData);
+      formData.append('inputFile', inputFile);
+      return fetchForm(`/v1/workspaces/${workspaceId}/tasks`, formData);
     }
-    return fetchJson(`/v1/workspaces/${workspaceId}/tasks`, { method: 'POST', body: { taskType } });
+    return fetchJson(`/v1/workspaces/${workspaceId}/tasks`, {
+      method: 'POST',
+      body: { taskType, inputText, instructions },
+    });
   },
   task: (workspaceId, taskId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks/${taskId}`),
+  taskTypes: (query) => {
+    const params = new URLSearchParams();
+    if (query?.q) {
+      params.set('q', query.q);
+    }
+    if (query?.locale) {
+      params.set('locale', query.locale);
+    }
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return fetchJson(`/v1/task-types${suffix}`);
+  },
   webhooks: () => fetchJson('/v1/webhook-endpoints'),
   apiKeys: () => fetchJson('/v1/api-keys'),
   usage: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/usage`),

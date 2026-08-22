@@ -175,8 +175,17 @@ def _sync_pending_tasks_to_worker_queue(tasks: list[dict[str, Any]]) -> None:
 
 
 def sync_all_pending_tasks_to_worker() -> None:
+    from edgemint.dev import worker_task_inputs
+    from edgemint.dev.assignment_bridge import fetch_pending_assignments_from_worker
+
     for workspace_id in DEV_WORKSPACE_IDS:
         _sync_pending_tasks_to_worker_queue(_created_tasks.get(workspace_id, []))
+
+    for assignment in fetch_pending_assignments_from_worker():
+        task_id = assignment.get("taskId") or assignment.get("assignmentId")
+        task_type = assignment.get("taskType")
+        if task_id and task_type:
+            worker_task_inputs.ensure_registered(task_id=task_id, task_type=task_type)
 
 
 def _reconcile_worker_pending_tasks() -> list[dict[str, Any]]:
@@ -204,6 +213,7 @@ def create_dev_task(
     *,
     task_type: str,
     input_text: str | None = None,
+    instructions: str | None = None,
     file_name: str | None = None,
     file_mime: str | None = None,
     file_bytes: bytes | None = None,
@@ -218,27 +228,31 @@ def create_dev_task(
         version=1,
         created_at=_now_iso(),
     )
-    if input_text or file_bytes:
-        task["inputLabel"] = file_name or ("Pasted text" if input_text and not file_bytes else "Customer upload")
+    if input_text or instructions or file_bytes:
+        task["inputLabel"] = file_name or (
+            "Pasted text" if input_text and not file_bytes else "Customer upload"
+        )
         task["inputSource"] = {
             "input_text": input_text,
+            "instructions": instructions,
             "file_name": file_name,
             "file_mime": file_mime,
             "file_bytes": file_bytes,
         }
     _created_tasks.setdefault(workspace_id, []).append(task)
-    enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
-    task["assignmentId"] = task["id"]
     from edgemint.dev import worker_task_inputs
 
     worker_task_inputs.register_task(
         task_id=task["id"],
         task_type=task_type,
         input_text=input_text,
+        instructions=instructions,
         file_name=file_name,
         file_mime=file_mime,
         file_bytes=file_bytes,
     )
+    enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
+    task["assignmentId"] = task["id"]
     task.pop("inputSource", None)
     return task
 

@@ -8,9 +8,12 @@ import DashboardPage from '../pages/DashboardPage.vue';
 import DisputesPage from '../pages/DisputesPage.vue';
 import FilesPage from '../pages/FilesPage.vue';
 import LoginPage from '../pages/LoginPage.vue';
+import MorePage from '../pages/MorePage.vue';
 import SettingsPage from '../pages/SettingsPage.vue';
+import TaskDetailPage from '../pages/TaskDetailPage.vue';
 import TasksPage from '../pages/TasksPage.vue';
 import TeamPage from '../pages/TeamPage.vue';
+import UsagePage from '../pages/UsagePage.vue';
 import WebhooksPage from '../pages/WebhooksPage.vue';
 
 const router = createRouter({
@@ -27,15 +30,24 @@ const router = createRouter({
       component: AppShell,
       meta: { requiresAuth: true },
       children: [
-        { path: '', name: 'dashboard', component: DashboardPage },
-        { path: 'tasks', name: 'tasks', component: TasksPage },
-        { path: 'files', name: 'files', component: FilesPage },
-        { path: 'webhooks', name: 'webhooks', component: WebhooksPage },
-        { path: 'api-keys', name: 'api-keys', component: ApiKeysPage },
-        { path: 'billing', name: 'billing', component: BillingPage },
-        { path: 'disputes', name: 'disputes', component: DisputesPage },
-        { path: 'team', name: 'team', component: TeamPage },
-        { path: 'settings', name: 'settings', component: SettingsPage },
+        { path: '', name: 'dashboard', component: DashboardPage, meta: { titleKey: 'nav.dashboard' } },
+        { path: 'tasks', name: 'tasks', component: TasksPage, meta: { titleKey: 'nav.tasks' } },
+        { path: 'tasks/new', redirect: { name: 'tasks' } },
+        {
+          path: 'tasks/:id',
+          name: 'task-detail',
+          component: TaskDetailPage,
+          meta: { titleKey: 'tasks.detailTitle', hideBottomNav: true, hideShellHeader: true },
+        },
+        { path: 'usage', name: 'usage', component: UsagePage, meta: { titleKey: 'nav.usage' } },
+        { path: 'billing', name: 'billing', component: BillingPage, meta: { titleKey: 'nav.billing' } },
+        { path: 'more', name: 'more', component: MorePage, meta: { titleKey: 'nav.more' } },
+        { path: 'files', name: 'files', component: FilesPage, meta: { titleKey: 'nav.files', hideBottomNav: true } },
+        { path: 'webhooks', name: 'webhooks', component: WebhooksPage, meta: { titleKey: 'nav.webhooks', hideBottomNav: true } },
+        { path: 'api-keys', name: 'api-keys', component: ApiKeysPage, meta: { titleKey: 'nav.apiKeys', hideBottomNav: true } },
+        { path: 'disputes', name: 'disputes', component: DisputesPage, meta: { titleKey: 'nav.disputes', hideBottomNav: true } },
+        { path: 'team', name: 'team', component: TeamPage, meta: { titleKey: 'nav.team', hideBottomNav: true } },
+        { path: 'settings', name: 'settings', component: SettingsPage, meta: { titleKey: 'nav.settings', hideBottomNav: true } },
       ],
     },
     {

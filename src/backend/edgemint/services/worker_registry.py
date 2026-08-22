@@ -199,6 +199,16 @@ if _dev_worker_assignments_enabled():
             status_code=200,
         )
 
+    async def _ensure_task_input(task_id: str, task_type: str) -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                await client.post(
+                    f"{_API_GATEWAY}/internal/dev/tasks/{task_id}/ensure-input",
+                    json={"taskType": task_type},
+                )
+        except httpx.HTTPError:
+            pass
+
     @app.get("/assignments:next", tags=["dev-assignments"])
     async def dev_next_assignment(token: WorkerBearerToken) -> JSONResponse:
         _ = token
@@ -208,6 +218,8 @@ if _dev_worker_assignments_enabled():
             assignment = dev_worker_assignments.pop_next_assignment()
         if assignment is None:
             return Response(status_code=204)
+        task_id = assignment.get("taskId") or assignment["assignmentId"]
+        await _ensure_task_input(task_id, assignment["taskType"])
         return JSONResponse(assignment, status_code=200)
 
     @app.post("/assignments/{assignment_id}:started", tags=["dev-assignments"])

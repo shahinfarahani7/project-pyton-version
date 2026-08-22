@@ -4,6 +4,8 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from edgemint.dev.dev_public_urls import dev_api_public_base
+
 _WORKER_MODEL_VERSION_ID = "mdv_qwen3_0_6b"
 
 _pending: list[dict[str, Any]] = []
@@ -20,6 +22,7 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
             return existing
     # Dev uses one ID everywhere so portal and worker logs match.
     assignment_id = task_id
+    api_base = dev_api_public_base()
     assignment = {
         "assignmentId": assignment_id,
         "attemptId": f"att_{secrets.token_hex(4)}",
@@ -29,8 +32,8 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
         "leaseExpiresAt": (_now() + timedelta(minutes=30)).isoformat(),
         "taskType": task_type,
         "modelVersionId": _WORKER_MODEL_VERSION_ID,
-        "inputManifestUrl": f"http://127.0.0.1:8080/v1/dev/worker/tasks/{task_id}/input",
-        "outputUploadUrl": f"http://127.0.0.1:8080/v1/dev/worker/tasks/{task_id}/output",
+        "inputManifestUrl": f"{api_base}/v1/dev/worker/tasks/{task_id}/input",
+        "outputUploadUrl": f"{api_base}/v1/dev/worker/tasks/{task_id}/output",
         "startDeadlineAt": (_now() + timedelta(minutes=5)).isoformat(),
         "taskId": task_id,
     }

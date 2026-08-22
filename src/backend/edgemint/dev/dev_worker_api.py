@@ -21,14 +21,20 @@ class DevWorkerOutputRequest(BaseModel):
     resultMimeType: str | None = None
 
 
+class DevEnsureTaskInputRequest(BaseModel):
+    taskType: str = Field(min_length=1)
+
+
 def _dev_enabled() -> bool:
     return get_settings().environment in {"development", "test"}
 
 
 @router.get("/v1/dev/worker/tasks/{task_id}/input")
-async def worker_task_input(task_id: str) -> dict:
+async def worker_task_input(task_id: str, taskType: str | None = None) -> dict:
     if not _dev_enabled():
         raise HTTPException(503, "DEV_WORKER_API_DISABLED")
+    if taskType:
+        worker_task_inputs.ensure_registered(task_id=task_id, task_type=taskType)
     manifest = worker_task_inputs.input_manifest(task_id)
     if manifest is None:
         raise HTTPException(404, "TASK_INPUT_NOT_FOUND")
@@ -76,6 +82,13 @@ async def worker_task_output(task_id: str, payload: DevWorkerOutputRequest) -> d
         result_mime_type=payload.resultMimeType,
     )
     return {"taskId": task_id, "status": "accepted", "hasResultFile": bool(result_file_bytes)}
+
+
+@router.post("/internal/dev/tasks/{task_id}/ensure-input", status_code=204)
+async def ensure_worker_task_input(task_id: str, payload: DevEnsureTaskInputRequest) -> None:
+    if not _dev_enabled():
+        raise HTTPException(503, "DEV_WORKER_API_DISABLED")
+    worker_task_inputs.ensure_registered(task_id=task_id, task_type=payload.taskType)
 
 
 @router.post("/internal/dev/sync-worker-queue")

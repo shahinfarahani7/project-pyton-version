@@ -1,21 +1,27 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import { useAsyncResource } from '../composables/useAsyncResource';
 import TaskCreateDialog from '../components/TaskCreateDialog.vue';
+import TaskResultCell from '../components/TaskResultCell.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
-import PageHeader from '../components/ui/PageHeader.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
+import { mapTaskInputError } from '../config/taskTypeCatalog';
 import { t } from '../i18n';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, formatTaskType } from '../utils/format';
 import { trackEvent } from '../telemetry';
 
 const session = useSession();
 const createOpen = ref(false);
+const createFormKey = ref(0);
 const creating = ref(false);
 const createError = ref('');
+const searchQuery = ref('');
+const typeFilter = ref('all');
+const statusFilter = ref('all');
 
 const { data: tasks, error, loading, refresh } = useAsyncResource(
   () => {
@@ -25,14 +31,38 @@ const { data: tasks, error, loading, refresh } = useAsyncResource(
   { enabled: () => Boolean(session.workspaceId && session.hasPermission('customer.tasks:read')) },
 );
 
+const typeOptions = computed(() => {
+  const types = new Set((tasks.value?.items ?? []).map((task) => task.taskType));
+  return ['all', ...types];
+});
+
+const filteredTasks = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  return (tasks.value?.items ?? []).filter((task) => {
+    const matchesType = typeFilter.value === 'all' || task.taskType === typeFilter.value;
+    const lifecycle = String(task.lifecycleStatus).toLowerCase();
+    const matchesStatus =
+      statusFilter.value === 'all' ||
+      lifecycle === statusFilter.value ||
+      String(task.executionStatus).toLowerCase() === statusFilter.value;
+    const label = formatTaskType(task).toLowerCase();
+    const matchesQuery =
+      !query ||
+      task.id.toLowerCase().includes(query) ||
+      task.taskType.toLowerCase().includes(query) ||
+      label.includes(query);
+    return matchesType && matchesStatus && matchesQuery;
+  });
+});
+
 function openCreateDialog() {
   createError.value = '';
+  createFormKey.value += 1;
   createOpen.value = true;
 }
 
 function closeCreateDialog() {
   createOpen.value = false;
-  createError.value = '';
 }
 
 async function submitCreateTask(payload) {
@@ -41,13 +71,19 @@ async function submitCreateTask(payload) {
   }
   creating.value = true;
   createError.value = '';
-  trackEvent('portal.tasks.create', { taskType: payload.taskType, hasFile: Boolean(payload.inputFile) });
+  trackEvent('portal.tasks.create', {
+    taskType: payload.taskType,
+    hasFile: Boolean(payload.inputFile),
+    hasInstructions: Boolean(payload.instructions),
+  });
   try {
     await portalApi.createTask(session.workspaceId, payload);
     await refresh();
+    createError.value = '';
     closeCreateDialog();
   } catch (err) {
-    createError.value = err?.message ?? t('tasks.createError');
+    const mapped = mapTaskInputError(err);
+    createError.value = mapped ? t(mapped) : err?.message ?? t('tasks.createError');
   } finally {
     creating.value = false;
   }
@@ -55,24 +91,48 @@ async function submitCreateTask(payload) {
 </script>
 
 <template>
-  <section>
-    <PageHeader :title="t('nav.tasks')" :subtitle="t('tasks.subtitle')">
-      <template #actions>
-        <button
-          v-if="session.hasPermission('customer.tasks:write')"
-          type="button"
-          class="md-btn md-btn-filled"
-          data-testid="create-task"
-          @click="openCreateDialog"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">add</span>
-          {{ t('tasks.create') }}
-        </button>
-      </template>
-    </PageHeader>
+  <section class="em-page">
+    <div class="em-page-toolbar">
+      <div class="em-filter-row">
+        <select v-model="typeFilter" class="md-select em-filter-select">
+          <option value="all">{{ t('tasks.filterAllTypes') }}</option>
+          <option v-for="type in typeOptions.filter((v) => v !== 'all')" :key="type" :value="type">
+            {{ type }}
+          </option>
+        </select>
+        <select v-model="statusFilter" class="md-select em-filter-select">
+          <option value="all">{{ t('tasks.filterAllStatus') }}</option>
+          <option value="completed">{{ t('tasks.statusCompleted') }}</option>
+          <option value="succeeded">{{ t('tasks.statusCompleted') }}</option>
+          <option value="running">{{ t('tasks.statusProcessing') }}</option>
+          <option value="queued">{{ t('tasks.statusProcessing') }}</option>
+          <option value="failed">{{ t('tasks.statusFailed') }}</option>
+        </select>
+      </div>
+      <label class="em-search-field">
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        <input
+          v-model="searchQuery"
+          type="search"
+          class="md-input"
+          :placeholder="t('tasks.searchPlaceholder')"
+        />
+      </label>
+      <button
+        v-if="session.hasPermission('customer.tasks:write')"
+        type="button"
+        class="md-btn md-btn-filled md-btn-block em-create-task-btn"
+        data-testid="create-task"
+        @click="openCreateDialog"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        {{ t('tasks.create') }}
+      </button>
+    </div>
 
     <TaskCreateDialog
       :open="createOpen"
+      :form-key="createFormKey"
       :submitting="creating"
       :error="createError"
       @close="closeCreateDialog"
@@ -80,51 +140,33 @@ async function submitCreateTask(payload) {
     />
 
     <p v-if="error" class="md-alert md-alert--error" role="alert">{{ error }}</p>
-    <div v-if="loading" class="md-card"><div class="md-skeleton" /></div>
+    <p v-if="createError && !createOpen" class="md-alert md-alert--error" role="alert">{{ createError }}</p>
+    <div v-if="loading" class="md-card"><div class="md-skeleton" style="height: 6rem" /></div>
     <EmptyState
-      v-else-if="!(tasks?.items?.length)"
+      v-else-if="!filteredTasks.length"
       :title="t('tasks.emptyTitle')"
       :description="t('tasks.emptyBody')"
       icon="assignment"
     />
-    <div v-else class="md-table-wrap">
-      <table class="md-table">
-        <caption class="visually-hidden">{{ t('nav.tasks') }}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{{ t('tasks.colId') }}</th>
-            <th scope="col">{{ t('tasks.colType') }}</th>
-            <th scope="col">{{ t('tasks.colLifecycle') }}</th>
-            <th scope="col">{{ t('tasks.colExecution') }}</th>
-            <th scope="col">{{ t('tasks.colInput') }}</th>
-            <th scope="col">{{ t('tasks.colResult') }}</th>
-            <th scope="col">{{ t('tasks.colCreated') }}</th>
-            <th scope="col">{{ t('tasks.colVersion') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="task in tasks.items" :key="task.id">
-            <td><code>{{ task.id }}</code></td>
-            <td>{{ task.taskType }}</td>
-            <td><StatusChip :status="task.lifecycleStatus" /></td>
-            <td><StatusChip :status="task.executionStatus" /></td>
-            <td>{{ task.inputLabel ?? '—' }}</td>
-            <td>
-              <a
-                v-if="task.resultArtifactUrl"
-                class="md-btn md-btn-text md-btn-compact task-result-download"
-                :href="task.resultArtifactUrl"
-                :download="task.inputLabel ? `result-${task.inputLabel}` : `result-${task.id}`"
-              >
-                {{ t('tasks.downloadResult') }}
-              </a>
-              <span v-else>{{ task.resultPreview ?? '—' }}</span>
-            </td>
-            <td>{{ formatDateTime(task.createdAt) }}</td>
-            <td>{{ task.version }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ul v-else class="em-task-list em-task-list--full">
+      <li class="em-task-list__header" aria-hidden="true">
+        <span>{{ t('tasks.colId') }}</span>
+        <span>{{ t('tasks.colResult') }}</span>
+        <span>{{ t('tasks.colCreated') }}</span>
+      </li>
+      <li v-for="task in filteredTasks" :key="task.id">
+        <RouterLink :to="{ name: 'task-detail', params: { id: task.id } }" class="em-task-row">
+          <div class="em-task-row__primary">
+            <code class="em-task-row__id">{{ task.id.slice(0, 8) }}</code>
+            <p class="em-task-row__type">{{ formatTaskType(task) }}</p>
+          </div>
+          <TaskResultCell :task="task" />
+          <div class="em-task-row__meta">
+            <StatusChip :status="task.lifecycleStatus" />
+            <span>{{ formatDateTime(task.createdAt) }}</span>
+          </div>
+        </RouterLink>
+      </li>
+    </ul>
   </section>
 </template>
