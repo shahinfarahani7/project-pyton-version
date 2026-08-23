@@ -5,7 +5,7 @@ variable "private_subnet_ids" { type = list(string) }
 variable "application_security_group_id" { type = string }
 variable "postgresql_engine_version" {
   type    = string
-  default = "18"
+  default = "18.4"
 }
 variable "database_instance_class" {
   type    = string

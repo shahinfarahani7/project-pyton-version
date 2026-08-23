@@ -39,7 +39,7 @@ The catalog excludes only self-referential integrity files while checksums cover
 | `database` | 17 |
 | `deploy` | 35 |
 | `docs` | 202 |
-| `dsl` | 648 |
+| `dsl` | 649 |
 | `evidence` | 371 |
 | `generated` | 23 |
 | `package-lock.json` | 1 |
@@ -47,6 +47,6 @@ The catalog excludes only self-referential integrity files while checksums cover
 | `production` | 14 |
 | `reference` | 17 |
 | `samples` | 161 |
-| `src` | 1584 |
+| `src` | 494 |
 | `tests` | 30 |
 | `tools` | 87 |

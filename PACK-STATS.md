@@ -2,9 +2,9 @@
 
 - Version: `5.0.0`
 - Language: English only
-- Non-integrity content files: `3439`
-- Text lines: `869794`
-- Semantic vector lines: `531292`
+- Non-integrity content files: `2350`
+- Text lines: `765583`
+- Semantic vector lines: `595000`
 - OpenAPI operations and operation samples: `141`
 - Typed CloudEvent contracts and examples: `186`
 - Cursor operation execution units: `141`
@@ -17,72 +17,58 @@
 
 ## File types
 
-- `.bat`: 3
-- `.bin`: 24
-- `.c`: 11
-- `.cc`: 8
-- `.check_cache`: 8
-- `.cmake`: 29
+- `.bat`: 1
+- `.cc`: 1
+- `.cmake`: 1
 - `.conf`: 2
-- `.cpp`: 23
-- `.css`: 4
-- `.dart`: 370
-- `.entitlements`: 7
+- `.cpp`: 4
+- `.css`: 2
+- `.dart`: 76
 - `.env`: 1
-- `.example`: 4
-- `.gn`: 1
-- `.gradle`: 13
-- `.h`: 48
+- `.example`: 3
+- `.gradle`: 1
+- `.h`: 7
 - `.hcl`: 1
-- `.html`: 43
-- `.ico`: 5
+- `.html`: 2
+- `.ico`: 1
 - `.iml`: 2
-- `.jar`: 2
-- `.java`: 8
-- `.js`: 32
-- `.json`: 880
+- `.jar`: 1
+- `.java`: 1
+- `.js`: 23
+- `.json`: 780
 - `.jsonl`: 9
-- `.kt`: 13
-- `.kts`: 8
-- `.lock`: 6
-- `.log`: 10
-- `.m`: 2
-- `.manifest`: 5
-- `.map`: 1
-- `.md`: 261
-- `.ninja`: 16
-- `.o`: 32
-- `.pbxproj`: 6
+- `.kt`: 6
+- `.kts`: 3
+- `.lock`: 4
+- `.log`: 2
+- `.m`: 1
+- `.manifest`: 1
+- `.md`: 238
+- `.pbxproj`: 1
 - `.pem`: 1
-- `.plist`: 21
-- `.png`: 107
-- `.podspec`: 4
-- `.pro`: 3
-- `.properties`: 10
+- `.plist`: 4
+- `.png`: 24
+- `.properties`: 2
 - `.proto`: 10
 - `.ps1`: 16
 - `.pub`: 1
 - `.py`: 318
-- `.rc`: 5
+- `.rc`: 1
 - `.sh`: 8
 - `.sig`: 1
 - `.sql`: 16
-- `.storyboard`: 6
-- `.svg`: 3
-- `.swift`: 26
+- `.storyboard`: 2
+- `.swift`: 5
 - `.tf`: 13
-- `.toml`: 2
+- `.toml`: 1
 - `.ts`: 5
-- `.txt`: 75
+- `.txt`: 3
 - `.vue`: 41
-- `.wasm`: 1
-- `.xcconfig`: 25
-- `.xcprivacy`: 2
-- `.xcscheme`: 6
-- `.xcsettings`: 6
-- `.xcworkspacedata`: 9
-- `.xib`: 3
-- `.xml`: 32
-- `.yaml`: 659
+- `.xcconfig`: 3
+- `.xcscheme`: 1
+- `.xcsettings`: 2
+- `.xcworkspacedata`: 2
+- `.xml`: 7
+- `.yaml`: 638
 - `.yml`: 7
-- `<none>`: 99
+- `<none>`: 43
