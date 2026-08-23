@@ -133,8 +133,14 @@
         "license": {
           "additionalProperties": false,
           "properties": {
+            "approvalId": {
+              "type": "string"
+            },
             "noticePath": {
-              "type": "null"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "status": {
               "type": "string"

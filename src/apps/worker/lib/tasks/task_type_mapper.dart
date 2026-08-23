@@ -1,10 +1,15 @@
-/// Maps backend assignment task types to internal v1 pipeline capabilities.
+/// Maps public catalog task types to internal runtime capabilities.
 abstract final class TaskTypeMapper {
   static const ocrExtractText = 'ocr.extract_text.v1';
   static const documentExtract = 'document.extract.v1';
   static const documentClassify = 'document.classify.v1';
   static const documentSummarize = 'document.summarize.v1';
   static const textClassify = 'text.classify.v1';
+  static const documentImageQuality = 'quality.document_image';
+  static const blurryImage = 'quality.blurry_image';
+  static const duplicateImage = 'catalog.duplicate_image';
+  static const visionAnalyze = 'vision.analyze.v1';
+  static const removeBackground = 'image.remove_background.v1';
 
   static const pipelineTypes = {
     ocrExtractText,
@@ -12,117 +17,104 @@ abstract final class TaskTypeMapper {
     documentClassify,
     documentSummarize,
     textClassify,
+    documentImageQuality,
+    blurryImage,
+    duplicateImage,
+    visionAnalyze,
+    removeBackground,
   };
-
   static const backendToV1 = {
     'document.ocr': ocrExtractText,
     'document.extract': documentExtract,
-    'image.classify': documentClassify,
-    'text.summarize': documentSummarize,
+    'text.summarize': textClassify,
     'text.classify': textClassify,
   };
-
   static const v1ToBackend = {
     ocrExtractText: 'document.ocr',
     documentExtract: 'document.extract',
     documentClassify: 'image.classify',
     documentSummarize: 'text.summarize',
     textClassify: 'text.classify',
+    visionAnalyze: 'image.classify',
+    removeBackground: 'image.remove_background',
+  };
+  static const _visionTypes = {
+    'image.classify',
+    'safety.nsfw_detection',
+    'safety.violence_detection',
+    'safety.weapon_detection',
+    'safety.unsafe_image',
+    'moderation.profile_image',
+    'moderation.generated_image',
+    'catalog.image_tagging',
+    'catalog.product_classification',
+    'catalog.product_quality_score',
+    'catalog.brand_logo',
+    'catalog.prohibited_product',
+    'llm.image_output_safety',
   };
 
-  static const _textModerationTypes = {
-    'moderation.prompt_safety',
-    'moderation.text',
-    'moderation.profanity',
-    'moderation.spam_comment',
-  };
-
-  static const _summarizeTypes = {
-    'text.summarize',
-    'llm.summary_verification',
-  };
-
-  static String? toV1(String backendTaskType) {
-    if (pipelineTypes.contains(backendTaskType)) {
-      return backendTaskType;
-    }
-    final direct = backendToV1[backendTaskType];
-    if (direct != null) {
-      return direct;
-    }
-    if (backendTaskType == 'image.remove_background') {
-      return null;
-    }
-    return _familyToV1(_pipelineFamily(backendTaskType));
+  static String? toV1(String type) {
+    if (pipelineTypes.contains(type)) return type;
+    final direct = backendToV1[type];
+    if (direct != null) return direct;
+    if (type == 'image.remove_background') return removeBackground;
+    if (_visionTypes.contains(type)) return visionAnalyze;
+    return _familyToV1(_pipelineFamily(type));
   }
 
-  static String toBackend(String v1Type) {
-    return v1ToBackend[v1Type] ?? v1Type;
+  static String toBackend(String v1Type) => v1ToBackend[v1Type] ?? v1Type;
+  static bool isPipelineTask(String type) => toV1(type) != null;
+  static bool requiresOcr(String type) => const {
+    ocrExtractText,
+    documentExtract,
+    documentClassify,
+    documentSummarize,
+  }.contains(type);
+  static bool requiresLlm(String type, {bool ocrOnly = false}) {
+    if (ocrOnly && type == ocrExtractText) return false;
+    return const {
+      documentExtract,
+      documentClassify,
+      documentSummarize,
+      textClassify,
+      visionAnalyze,
+    }.contains(type);
   }
 
-  static bool isPipelineTask(String backendTaskType) {
-    return toV1(backendTaskType) != null;
-  }
-
-  static bool requiresOcr(String v1Type) {
-    return v1Type != textClassify;
-  }
-
-  static bool requiresLlm(String v1Type, {bool ocrOnly = false}) {
-    if (ocrOnly && v1Type == ocrExtractText) {
-      return false;
-    }
-    return v1Type != ocrExtractText;
-  }
-
-  /// Canonical backend family used for dev sample inputs and options.
-  static String pipelineFamily(String backendTaskType) {
-    return _pipelineFamily(backendTaskType);
-  }
-
-  static String _pipelineFamily(String backendTaskType) {
-    if (backendTaskType.startsWith('ocr.') || backendTaskType == 'document.ocr') {
+  static String pipelineFamily(String type) => _pipelineFamily(type);
+  static String _pipelineFamily(String type) {
+    if (type.startsWith('ocr.') || type == 'document.ocr')
       return 'document.ocr';
-    }
-    if (backendTaskType.startsWith('extract.') || backendTaskType == 'document.extract') {
+    if (type.startsWith('extract.') || type == 'document.extract')
       return 'document.extract';
-    }
-    if (_summarizeTypes.contains(backendTaskType)) {
-      return 'text.summarize';
-    }
-    if (_textModerationTypes.contains(backendTaskType) ||
-        backendTaskType.startsWith('nlp.') ||
-        backendTaskType.startsWith('ml.') ||
-        backendTaskType.startsWith('dataset.') ||
-        backendTaskType.startsWith('review.') ||
-        backendTaskType == 'text.classify' ||
-        backendTaskType.startsWith('llm.')) {
-      if (backendTaskType == 'llm.summary_verification') {
-        return 'text.summarize';
-      }
-      if (backendTaskType == 'llm.image_output_safety') {
-        return 'image.classify';
-      }
+    if (type == 'text.summarize') return 'text.classify';
+    if (_visionTypes.contains(type)) return 'vision.analyze';
+    if (type == documentImageQuality ||
+        type == blurryImage ||
+        type == duplicateImage)
+      return type;
+    if (type.startsWith('moderation.') ||
+        type.startsWith('nlp.') ||
+        type.startsWith('ml.') ||
+        type.startsWith('dataset.') ||
+        type.startsWith('review.') ||
+        type.startsWith('llm.') ||
+        type == 'catalog.fake_listing' ||
+        type == 'text.classify')
       return 'text.classify';
-    }
-    if (backendTaskType.startsWith('safety.') ||
-        backendTaskType.startsWith('quality.') ||
-        backendTaskType.startsWith('catalog.') ||
-        backendTaskType == 'image.classify' ||
-        backendTaskType.startsWith('moderation.')) {
-      return 'image.classify';
-    }
-    return backendTaskType;
+    return type;
   }
 
-  static String? _familyToV1(String family) {
-    return switch (family) {
-      'document.ocr' => ocrExtractText,
-      'document.extract' => documentExtract,
-      'image.classify' => documentClassify,
-      'text.summarize' => documentSummarize,
-      'text.classify' => textClassify,
-      _ => null,
-    };
-  }
+  static String? _familyToV1(String family) => switch (family) {
+    'document.ocr' => ocrExtractText,
+    'document.extract' => documentExtract,
+    'vision.analyze' => visionAnalyze,
+    'text.summarize' => documentSummarize,
+    'text.classify' => textClassify,
+    documentImageQuality => documentImageQuality,
+    blurryImage => blurryImage,
+    duplicateImage => duplicateImage,
+    _ => null,
+  };
 }

@@ -15,6 +15,8 @@ checked = 0
 for path in sorted(ROOT.rglob("*.md")):
     if "archive" in path.parts:
         continue
+    if "ephemeral" in path.parts or "plugin_symlinks" in path.parts:
+        continue
     checked += 1
     text = path.read_text(encoding="utf-8")
     if "tools/validate_all.py" in text:

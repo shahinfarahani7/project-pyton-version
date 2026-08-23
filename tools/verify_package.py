@@ -11,13 +11,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CHECKSUMS = ROOT / "CHECKSUMS.sha256"
 MANIFEST = ROOT / "PACKAGE-MANIFEST.json"
-EXCLUDED_PATH_PREFIXES = (".git/", "__pycache__/", ".pytest_cache/")
+EXCLUDED_DIRECTORY_NAMES = {
+    ".git",
+    ".idea",
+    ".venv",
+    ".pytest_cache",
+    ".dart_tool",
+    ".terraform",
+    ".tmp_e2e",
+    "__pycache__",
+    "node_modules",
+    "build",
+    "dist",
+}
+EXCLUDED_LOCAL_FILES = {".env", ".env.docker", "tmp-cookies.txt", "tmp_cookies.txt"}
 
 
 def is_distributable(relative: str) -> bool:
-    if relative == ".env":
+    parts = Path(relative).parts
+    if not parts:
         return False
-    return not any(relative.startswith(prefix) for prefix in EXCLUDED_PATH_PREFIXES)
+    if parts[-1] in EXCLUDED_LOCAL_FILES or parts[-1].startswith(".tmp"):
+        return False
+    return not any(part in EXCLUDED_DIRECTORY_NAMES for part in parts[:-1])
 
 
 def sha256_file(path: Path) -> str:

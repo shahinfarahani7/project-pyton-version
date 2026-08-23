@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../worker_app_controller.dart';
-import '../worker_model_download_link.dart';
 import '../worker_theme.dart';
 
 class WorkerModelsTab extends StatelessWidget {
@@ -98,10 +97,6 @@ class WorkerModelCard extends StatelessWidget {
               label: Text(controller.gemmaDownloadLabel),
             ),
           ),
-          if (!controller.isGemmaReady && !controller.usesDevMockInference) ...[
-            const SizedBox(height: 12),
-            WorkerModelDownloadLink(url: controller.modelDownloadUrl),
-          ],
         ],
       ),
     );

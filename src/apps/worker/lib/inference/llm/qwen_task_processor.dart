@@ -42,9 +42,8 @@ class QwenTaskProcessor {
   bool _loaded = false;
 
   Future<void> ensureLoaded({required String signingKey}) async {
-    if (_loaded) {
-      return;
-    }
+    // Another task may have activated InternVL; always re-select the exact
+    // verified Qwen artifact before text generation.
     await _adapter.loadVerified(
       ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,

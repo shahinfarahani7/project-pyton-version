@@ -193,3 +193,21 @@ async def claim_deliveries(
             )
         ).mappings().all()
         return [dict(row) for row in rows]
+
+
+async def expand_outbox_events(*, relay_instance_id: str) -> int:
+    """Fan out durable Outbox events without exposing lease credentials."""
+    async with transaction(isolation="READ COMMITTED") as connection:
+        expanded = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT eventing.expand_outbox_batch(
+                        :owner, 64, :lease_seconds, 10
+                    )
+                    """
+                ),
+                {"owner": relay_instance_id, "lease_seconds": 30},
+            )
+        ).scalar_one()
+        return int(expanded)

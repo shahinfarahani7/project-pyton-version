@@ -9,6 +9,7 @@ import '../inference/llm/qwen_task_processor.dart';
 import '../inference/ocr/ocr_engine.dart';
 import '../inference/ocr/ocr_models.dart';
 import '../models/worker_model_catalog.dart';
+import '../models/worker_vision_model_catalog.dart';
 import '../runtime/device_tier_policy.dart';
 import '../runtime/inference_adapter.dart';
 import '../tasks/idempotency_store.dart';
@@ -22,12 +23,14 @@ class TaskExecutionContext {
     required this.assignment,
     required this.manifest,
     required this.inputBytes,
+    this.compareImageBytes,
     required this.isImageInput,
   });
 
   final WorkerAssignment assignment;
   final Map<String, dynamic> manifest;
   final Uint8List inputBytes;
+  final Uint8List? compareImageBytes;
   final bool isImageInput;
 }
 
@@ -37,10 +40,10 @@ class TaskExecutionEngine {
     required QwenTaskProcessor qwenProcessor,
     MobileTaskDispatcher? dispatcher,
     IdempotencyStore? idempotencyStore,
-  })  : _ocrEngine = ocrEngine,
-        _qwenProcessor = qwenProcessor,
-        _dispatcher = dispatcher ?? MobileTaskDispatcher(),
-        _idempotency = idempotencyStore ?? IdempotencyStore();
+  }) : _ocrEngine = ocrEngine,
+       _qwenProcessor = qwenProcessor,
+       _dispatcher = dispatcher ?? MobileTaskDispatcher(),
+       _idempotency = idempotencyStore ?? IdempotencyStore();
 
   final OcrEngine _ocrEngine;
   final QwenTaskProcessor _qwenProcessor;
@@ -96,7 +99,10 @@ class TaskExecutionEngine {
       final v1Type = request.type;
       final tier = DeviceTierPolicy.fromFreeStorageMb(freeStorageMb);
       if (TaskTypeMapper.requiresOcr(v1Type) &&
-          TaskTypeMapper.requiresLlm(v1Type, ocrOnly: request.options.ocrOnly) &&
+          TaskTypeMapper.requiresLlm(
+            v1Type,
+            ocrOnly: request.options.ocrOnly,
+          ) &&
           !DeviceTierPolicy.allowsCombinedOcrLlm(tier)) {
         final result = _failedResult(
           request,
@@ -173,15 +179,18 @@ class TaskExecutionEngine {
           taskId: result.taskId,
           status: result.status,
           output: result.output,
-          metrics: {
-            ...result.metrics,
-            ...metrics.toJson(),
-          },
+          metrics: {...result.metrics, ...metrics.toJson()},
           modelInfo: {
             'ocrDetector': PaddleOcrModelCatalog.detectorVersion,
             'ocrRecognizer': PaddleOcrModelCatalog.recognizerVersion,
-            'llm': WorkerModelCatalog.displayName,
-            'runtime': 'LiteRT/flutter_gemma',
+            'llm': request.type == TaskTypeMapper.visionAnalyze
+                ? WorkerVisionModelCatalog.displayName
+                : request.type == TaskTypeMapper.removeBackground
+                ? 'MediaPipe SelfieSegmenter float16'
+                : WorkerModelCatalog.displayName,
+            'runtime': request.type == TaskTypeMapper.removeBackground
+                ? 'MediaPipe Tasks Vision/TFLite'
+                : 'LiteRT-LM/flutter_gemma',
           },
           error: result.error,
         );
@@ -189,7 +198,11 @@ class TaskExecutionEngine {
         _lastResult = enriched;
         return _toInferenceOutput(enriched);
       } on WorkerError catch (error) {
-        final result = _failedResult(request, error, retryable: error.retryable);
+        final result = _failedResult(
+          request,
+          error,
+          retryable: error.retryable,
+        );
         _idempotency.put(request.idempotencyKey, result);
         _lastResult = result;
         return _toInferenceOutput(result);
@@ -215,21 +228,28 @@ class TaskExecutionEngine {
     final manifest = context.manifest;
     final optionsJson = manifest['options'] as Map<String, dynamic>?;
     final options = WorkerTaskOptions.fromJson(optionsJson);
-    final v1Type = TaskTypeMapper.toV1(context.assignment.taskType) ??
+    final v1Type =
+        TaskTypeMapper.toV1(context.assignment.taskType) ??
         context.assignment.taskType;
-    final text = manifest['inputText'] as String? ??
+    final text =
+        manifest['inputText'] as String? ??
         manifest['contentText'] as String? ??
         (context.isImageInput ? null : utf8.decode(context.inputBytes));
     return WorkerTaskRequest(
       schemaVersion: manifest['schemaVersion'] as String? ?? '1.0',
       taskId: context.assignment.taskId ?? context.assignment.assignmentId,
-      idempotencyKey: manifest['idempotencyKey'] as String? ??
-          context.assignment.attemptId,
+      idempotencyKey:
+          manifest['idempotencyKey'] as String? ?? context.assignment.attemptId,
       type: v1Type,
+      sourceTaskType: context.assignment.taskType,
       input: WorkerTaskInput(
         imageBytes: context.isImageInput ? context.inputBytes : null,
+        compareImageBytes: context.compareImageBytes,
         text: text,
         imageUri: manifest['imageUri'] as String?,
+        data: Map<String, dynamic>.from(
+          (manifest['inputData'] as Map?) ?? const <String, dynamic>{},
+        ),
       ),
       options: options,
       deadlineAt: _parseDate(manifest['deadlineAt'] as String?),

@@ -59,7 +59,7 @@ services:
         echo DEV_SEED_APPLIED
     restart: "no"
   minio:
-    image: ${MINIO_IMAGE:-minio/minio:latest}
+    image: ${MINIO_IMAGE:?Set MINIO_IMAGE to a digest-pinned image reference}
     networks: [edgemint]
     command: server /data --console-address :9001
     environment:
@@ -67,7 +67,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD}
     ports: ["9000:9000", "9001:9001"]
   mailpit:
-    image: ${MAILPIT_IMAGE:-axllent/mailpit:latest}
+    image: ${MAILPIT_IMAGE:?Set MAILPIT_IMAGE to a digest-pinned image reference}
     networks: [edgemint]
     ports: ["1025:1025", "8025:8025"]
 

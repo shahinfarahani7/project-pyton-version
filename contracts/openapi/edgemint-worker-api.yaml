@@ -2838,6 +2838,7 @@ components:
       - fenceToken
       - resultSha256
       - outputArtifactId
+      - outputInline
       - metrics
       - signature
       properties:
@@ -2849,6 +2850,10 @@ components:
           type: string
         outputArtifactId:
           type: string
+        outputInline:
+          type: string
+          minLength: 1
+          maxLength: 2097152
         metrics:
           type: object
         signature:

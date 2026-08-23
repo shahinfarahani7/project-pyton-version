@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     model_signing_secret: str | None = None
     model_chunk_size_bytes: int = 4_194_304
     model_approved_licenses: str = "Apache-2.0,MIT,BSD-3-Clause"
+    lease_credential_encryption_key: str | None = None
+    worker_api_public_base_url: str = "http://worker-gateway:8080"
 
     @model_validator(mode="after")
     def reject_insecure_production_configuration(self) -> Settings:

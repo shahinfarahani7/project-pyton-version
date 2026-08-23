@@ -1,0 +1,117 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/marginguardpolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "MarginGuardPolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "name": {
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        "owners": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "evaluation",
+            "active",
+            "deprecated",
+            "retired",
+            "blocked"
+          ],
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "status",
+        "owners"
+      ],
+      "type": "object"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "properties": {
+        "minimumContributionMarginBps": {
+          "type": "integer"
+        },
+        "stressedScenario": {
+          "additionalProperties": false,
+          "properties": {
+            "admissionFailsClosed": {
+              "type": "boolean"
+            },
+            "includeInfrastructureBps": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "admissionFailsClosed",
+            "includeInfrastructureBps"
+          ],
+          "type": "object"
+        },
+        "telemetry": {
+          "additionalProperties": false,
+          "properties": {
+            "alertBelowBps": {
+              "type": "integer"
+            },
+            "metric": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "alertBelowBps",
+            "metric"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "minimumContributionMarginBps",
+        "stressedScenario",
+        "telemetry"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "title": "EdgeMint MarginGuardPolicy",
+  "type": "object"
+}

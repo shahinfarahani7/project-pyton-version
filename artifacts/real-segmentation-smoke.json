@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "runtime": "ai-edge-litert 2.2.0/XNNPACK CPU",
+  "model": "selfie_segmenter.tflite",
+  "modelSha256": "191ac9529ae506ee0beefa6b2c945a172dab9d07d1e802a290a4e4038226658b",
+  "inputShape": [
+    1,
+    256,
+    256,
+    3
+  ],
+  "outputShape": [
+    256,
+    256
+  ],
+  "maskMin": 0.0,
+  "maskMax": 0.29618990421295166,
+  "maskMean": 0.00011731817357940599,
+  "inferenceMs": 5,
+  "durationMs": 35,
+  "output": "artifacts/real-segmentation-output.png"
+}

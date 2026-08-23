@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "runtime": "litert-lm-python",
+  "model": "InternVL3-1B.litertlm",
+  "modelSha256": "c1f0dfd2794a5bcb315810099e0a0e3f774ee6b7244107c7d5ed0c0172d20279",
+  "image": "edgemint-test-product.png",
+  "directJson": false,
+  "qwenRepairUsed": true,
+  "durationMs": 19710,
+  "output": {
+    "label": "Red leather bag with a logo on the front.",
+    "confidence": 0.95,
+    "evidence": [
+      "The bag has a rectangular shape with rounded edges.",
+      "There is a prominent logo centered on the front flap of the bag.",
+      "The bag appears to be made of leather with a smooth texture.",
+      "There are no visible straps or handles on the bag.",
+      "The bag has a small, round, embossed design on the front flap.",
+      "There are no visible handles or straps on the bag."
+    ]
+  }
+}

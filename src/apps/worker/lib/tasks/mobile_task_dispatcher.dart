@@ -1,11 +1,12 @@
 import 'handlers/document_handlers.dart';
 import 'handlers/ocr_extract_text_handler.dart';
+import 'handlers/lightweight_vision_handlers.dart';
 import 'handlers/task_handler.dart';
+import 'handlers/vision_handlers.dart';
 
 class MobileTaskDispatcher {
-  MobileTaskDispatcher({
-    List<TaskHandler>? handlers,
-  }) : _handlers = handlers ?? _defaultHandlers;
+  MobileTaskDispatcher({List<TaskHandler>? handlers})
+    : _handlers = handlers ?? _defaultHandlers;
 
   final List<TaskHandler> _handlers;
 
@@ -15,6 +16,11 @@ class MobileTaskDispatcher {
     DocumentClassifyHandler(),
     DocumentSummarizeHandler(),
     TextClassifyHandler(),
+    DocumentImageQualityHandler(),
+    BlurryImageHandler(),
+    DuplicateImageHandler(),
+    VisionAnalyzeHandler(),
+    RemoveBackgroundHandler(),
   ];
 
   TaskHandler? handlerFor(String v1Type) {

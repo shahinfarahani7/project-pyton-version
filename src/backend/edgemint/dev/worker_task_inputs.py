@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 from typing import Any
 
 from fastapi.responses import Response
@@ -49,6 +50,30 @@ _INPUT_BLOBS: dict[str, dict[str, Any]] = {}
 _RESULT_BLOBS: dict[str, dict[str, Any]] = {}
 _MAX_TEXT_CHARS = 32_000
 _MAX_FILE_BYTES = 2 * 1024 * 1024
+
+_FLEX_SAMPLES: dict[str, dict[str, Any]] = {
+    "catalog.fake_listing": {"listing": {"title": "New phone - unusually low price", "description": "Prepay by crypto", "price": 99, "currency": "EUR", "sellerSignals": {"accountAgeDays": 1, "completedSales": 0}}},
+    "llm.ai_tag_validation": {"content": "Red leather shoulder bag", "candidateTags": ["red", "leather", "backpack"], "allowedTags": ["red", "leather", "shoulder-bag", "backpack"]},
+    "llm.caption_validation": {"caption": "A red bag on a table", "imageDescription": "A red leather shoulder bag photographed on a white table"},
+    "dataset.label_verification": {"record": {"id": "r1", "text": "Refund has not arrived"}, "candidateLabel": "billing", "allowedLabels": ["billing", "delivery", "account"]},
+    "dataset.duplicate_cleanup": {"records": [{"id": "r1", "payload": "USB C cable 1m"}, {"id": "r2", "payload": "1 metre USB-C cable"}, {"id": "r3", "payload": "Wireless mouse"}]},
+    "dataset.low_quality_removal": {"records": [{"id": "r1", "payload": "Complete product description"}, {"id": "r2", "payload": "x"}], "qualityCriteria": ["specific", "non-empty", "useful"], "threshold": 0.6},
+    "ml.active_learning_prelabel": {"record": {"id": "r1", "text": "Package arrived two days late"}, "allowedLabels": ["delivery", "product", "billing"]},
+    "ml.consensus_label_validation": {"record": {"id": "r1", "text": "Excellent battery"}, "votes": [{"annotatorId": "a1", "label": "positive", "confidence": 0.9}, {"annotatorId": "a2", "label": "positive", "confidence": 0.8}, {"annotatorId": "a3", "label": "neutral", "confidence": 0.6}]},
+    "ml.human_verification_quality": {"record": {"id": "r1", "claim": "Photo contains a receipt"}, "verification": {"verdict": "yes", "evidence": ["merchant name and total visible"], "durationSeconds": 18}},
+}
+
+_FLEX_OUTPUT_SCHEMAS: dict[str, dict[str, str]] = {
+    "catalog.fake_listing": {"fake": "boolean", "riskScore": "number", "reasons": "array"},
+    "llm.ai_tag_validation": {"validTags": "array", "rejectedTags": "array", "score": "number", "reasons": "array"},
+    "llm.caption_validation": {"valid": "boolean", "score": "number", "issues": "array", "suggestedCaption": "string"},
+    "dataset.label_verification": {"valid": "boolean", "correctedLabel": "string", "confidence": "number", "reasons": "array"},
+    "dataset.duplicate_cleanup": {"duplicateGroups": "array", "keepIds": "array", "removeIds": "array"},
+    "dataset.low_quality_removal": {"acceptedIds": "array", "rejected": "array", "threshold": "number"},
+    "ml.active_learning_prelabel": {"label": "string", "confidence": "number", "needsHumanReview": "boolean", "evidence": "array"},
+    "ml.consensus_label_validation": {"consensusLabel": "string", "agreementScore": "number", "disputed": "boolean", "reason": "string"},
+    "ml.human_verification_quality": {"valid": "boolean", "qualityScore": "number", "issues": "array", "recommendation": "string"},
+}
 
 
 def _dev_api_base() -> str:
@@ -154,6 +179,8 @@ def _needs_input_blob(
 
 
 def _options_for(task_type: str) -> dict[str, Any]:
+    if task_type in _FLEX_OUTPUT_SCHEMAS:
+        return {"maxOutputTokens": 512, "outputSchema": _FLEX_OUTPUT_SCHEMAS[task_type]}
     family = pipeline_family(task_type)
     if family == "document.extract":
         return {
@@ -173,6 +200,20 @@ def _options_for(task_type: str) -> dict[str, Any]:
     if family == "document.ocr":
         return {"languages": ["fa", "en"], "minOcrConfidence": 0.55, "ocrOnly": True}
     return {"languages": ["fa", "en"], "minOcrConfidence": 0.55}
+
+
+def _flex_input_data(task_type: str, content_text: str | None) -> dict[str, Any] | None:
+    if task_type not in _FLEX_SAMPLES:
+        return None
+    if content_text:
+        try:
+            parsed = json.loads(content_text)
+        except json.JSONDecodeError as exc:
+            raise ValueError("FLEX_INPUT_MUST_BE_JSON_OBJECT") from exc
+        if not isinstance(parsed, dict):
+            raise ValueError("FLEX_INPUT_MUST_BE_JSON_OBJECT")
+        return parsed
+    return _FLEX_SAMPLES[task_type]
 
 
 def _prompt_for_custom(
@@ -263,6 +304,9 @@ def register_task(
             outputKind="text" if task_type != "image.remove_background" else "image",
             options=_options_for(task_type),
         )
+        flex_data = _flex_input_data(task_type, None)
+        if flex_data is not None:
+            entry["inputData"] = flex_data
         if task_id in _INPUT_BLOBS:
             entry["inputContentUrl"] = f"{_dev_api_base()}/v1/dev/worker/tasks/{task_id}/input/content"
         family = pipeline_family(task_type)
@@ -305,6 +349,9 @@ def register_task(
         outputKind="image" if task_type == "image.remove_background" else "text",
         options=_options_for(task_type),
     )
+    flex_data = _flex_input_data(task_type, content_text)
+    if flex_data is not None:
+        entry["inputData"] = flex_data
     if store_blob and task_id in _INPUT_BLOBS:
         entry["inputContentUrl"] = f"{_dev_api_base()}/v1/dev/worker/tasks/{task_id}/input/content"
     if content_text:

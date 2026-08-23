@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../runtime/execution_status.dart';
 import '../../worker_app_controller.dart';
-import '../worker_model_download_link.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
 
@@ -324,12 +323,6 @@ class _AvailabilityCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
-            ],
-            if (!controller.isGemmaReady &&
-                !controller.usesDevMockInference &&
-                controller.modelDownloadUrl.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              WorkerModelDownloadLink(url: controller.modelDownloadUrl),
             ],
           ],
         ),

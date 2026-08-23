@@ -11,6 +11,7 @@ from edgemint.building_blocks.database import transaction
 from edgemint.security.problems import request_trace_id
 from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
+from edgemint.workers.assignments import AssignmentCommandService, AssignmentCredentialBootstrapService
 from edgemint.workers.errors import WorkerServiceError
 from edgemint.workers.schemas import (
     CreateChallengeRequest,
@@ -23,6 +24,8 @@ from edgemint.workers.schemas import (
 
 app = create_service_app("worker-registry")
 enrollment = WorkerEnrollmentService()
+assignment_bootstrap = AssignmentCredentialBootstrapService()
+assignment_commands = AssignmentCommandService()
 
 
 @app.exception_handler(WorkerServiceError)
@@ -165,6 +168,98 @@ def _dev_worker_assignments_enabled() -> bool:
     from edgemint.building_blocks.settings import get_settings
 
     return get_settings().environment in {"development", "test"}
+
+
+if not _dev_worker_assignments_enabled():
+    from pydantic import BaseModel, Field
+
+    class StartAssignmentRequest(BaseModel):
+        leaseToken: str = Field(min_length=16, max_length=512)
+        fenceToken: int = Field(ge=1)
+
+    class RenewAssignmentRequest(StartAssignmentRequest):
+        sequence: int = Field(ge=1)
+
+    class CompleteAssignmentRequest(StartAssignmentRequest):
+        resultSha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+        outputArtifactId: str = Field(min_length=1, max_length=128)
+        outputInline: str = Field(min_length=1, max_length=2 * 1024 * 1024)
+        signature: str = Field(min_length=16, max_length=512)
+        metrics: dict = Field(default_factory=dict)
+
+    @app.get("/assignments:next", tags=["assignments"])
+    async def next_automatic_assignment(token: WorkerBearerToken) -> JSONResponse:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            assignment = await assignment_bootstrap.next_assignment(
+                connection,
+                access_token=token,
+            )
+        if assignment is None:
+            return Response(status_code=204)
+        response = JSONResponse(assignment, status_code=200)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+        return response
+
+    @app.post("/assignments/{assignment_id}:started", tags=["assignments"])
+    async def start_automatic_assignment(
+        assignment_id: str,
+        payload: StartAssignmentRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.start(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+            )
+        return JSONResponse(receipt, status_code=200)
+
+    @app.post("/assignments/{assignment_id}:renew", tags=["assignments"])
+    async def renew_automatic_assignment(
+        assignment_id: str,
+        payload: RenewAssignmentRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.renew(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+                sequence=payload.sequence,
+            )
+        return JSONResponse(receipt, status_code=200)
+
+    @app.post("/assignments/{assignment_id}:complete", tags=["assignments"], status_code=202)
+    async def complete_automatic_assignment(
+        assignment_id: str,
+        payload: CompleteAssignmentRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.complete(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+                result_sha256=payload.resultSha256,
+                output_artifact_id=payload.outputArtifactId,
+                output_inline=payload.outputInline,
+                signature=payload.signature,
+                metrics=payload.metrics,
+            )
+        return JSONResponse(receipt, status_code=202)
 
 
 if _dev_worker_assignments_enabled():

@@ -11,13 +11,16 @@ abstract final class WorkerModelCatalog {
 
   static const fileName = 'Qwen3-0.6B.litertlm';
 
-  static const approximateDownloadSize = '~586 MB';
+  static const approximateDownloadSize = '~614 MB';
 
   static const huggingFaceDownloadUrl =
       'https://huggingface.co/litert-community/Qwen3-0.6B/resolve/main/$fileName';
 
-  /// Placeholder digest used when the on-device model is managed by flutter_gemma.
-  static const installedDigestMarker = 'installed-on-device';
+  /// SHA-256 published for the canonical LiteRT-LM artifact.
+  static const artifactSha256 =
+      '555579ff2f4fd13379abe69c1c3ab5200f7338bc92471557f1d6614a6e5ab0b4';
+
+  static const installedDigestMarker = artifactSha256;
 
   static const _useBackendArtifact = bool.fromEnvironment(
     'WORKER_USE_BACKEND_ARTIFACT',

@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "workers": 20,
+  "taskTypes": 56,
+  "assignmentFlows": 1120,
+  "expectedAssignmentFlows": 1120,
+  "staleFenceRejections": 1120,
+  "elapsedSeconds": 0.01099631900001441,
+  "flowsPerSecond": 101852.26528973308,
+  "scope": "control-plane cryptography and fencing; model inference reported separately",
+  "failures": []
+}

@@ -8,8 +8,6 @@ x-backend-environment: &backend-environment
   EDGEMINT_JWT_SIGNING_SECRET: ${EDGEMINT_JWT_SIGNING_SECRET:-local-docker-jwt-secret-change-me}
   EDGEMINT_JWT_ISSUER: ${EDGEMINT_JWT_ISSUER:-edgemint-local}
   EDGEMINT_HUGGINGFACE_TOKEN: ${HUGGINGFACE_TOKEN:-}
-  EDGEMINT_DEV_API_PUBLIC_URL: ${EDGEMINT_DEV_API_PUBLIC_URL:-}
-  EDGEMINT_WORKER_PUBLIC_URL: ${EDGEMINT_WORKER_PUBLIC_URL:-}
 
 x-backend-service: &backend-service
   init: true

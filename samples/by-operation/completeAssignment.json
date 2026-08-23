@@ -19,6 +19,7 @@
       "fenceToken": 1,
       "resultSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "outputArtifactId": "id_01J00000000000000000000000",
+      "outputInline": "{\"status\":\"completed\"}",
       "metrics": {},
       "signature": "example"
     }
