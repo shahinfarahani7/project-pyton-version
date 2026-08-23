@@ -16,7 +16,7 @@ def enqueue_assignment_for_worker(*, task_id: str, task_type: str) -> dict[str, 
             response = client.post(url, json={"taskId": task_id, "taskType": task_type})
             response.raise_for_status()
             return response.json()
-    except httpx.HTTPError:
+    except (httpx.HTTPError, OSError, RuntimeError):
         pass
 
     from edgemint.dev.worker_assignments import enqueue_dev_assignment
@@ -34,7 +34,7 @@ def fetch_pending_assignments_from_worker() -> list[dict[str, Any]]:
             body = response.json()
             items = body.get("items", body)
             return items if isinstance(items, list) else []
-    except httpx.HTTPError:
+    except (httpx.HTTPError, OSError, RuntimeError):
         pass
 
     from edgemint.dev.worker_assignments import list_pending_assignments

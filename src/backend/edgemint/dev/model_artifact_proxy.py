@@ -14,6 +14,8 @@ class _ArtifactSpec:
     hf_repo: str
     file_name: str
     requires_auth: bool
+    sha256: str | None = None
+    size_bytes: int | None = None
 
 
 _SUPPORTED_ARTIFACTS: dict[str, _ArtifactSpec] = {
@@ -21,6 +23,7 @@ _SUPPORTED_ARTIFACTS: dict[str, _ArtifactSpec] = {
         hf_repo="litert-community/Qwen3-0.6B",
         file_name="Qwen3-0.6B.litertlm",
         requires_auth=False,
+        sha256="555579ff2f4fd13379abe69c1c3ab5200f7338bc92471557f1d6614a6e5ab0b4",
     ),
     "mdv_gemma_3n_e2b_int4": _ArtifactSpec(
         hf_repo="google/gemma-3n-E2B-it-litert-lm",
@@ -79,6 +82,8 @@ async def stream_model_artifact(model_version_id: str) -> StreamingResponse:
 
     response_headers = {
         "Content-Disposition": f'attachment; filename="{spec.file_name}"',
+        **({"X-Artifact-SHA256": spec.sha256} if spec.sha256 else {}),
+        **({"X-Artifact-Size": str(spec.size_bytes)} if spec.size_bytes else {}),
     }
     content_length = response.headers.get("content-length")
     if content_length:

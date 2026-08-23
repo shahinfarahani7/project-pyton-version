@@ -1,6 +1,6 @@
 {
   "unresolvedDesignBlockers": 0,
-  "externalEvidenceRequirementCount": 38,
+  "externalEvidenceRequirementCount": 41,
   "externalEvidenceRequirements": [
     {
       "category": "cloud",
@@ -266,7 +266,28 @@
       "name": "RELEASE_APPROVAL_MANIFEST",
       "owner": "Release Manager",
       "secret": false,
-      "validation": "^evidence/actual/release-evidence\\.json$"
+      "validation": "^evidence/actual/legal-finance/signed-approvals\\.json$"
+    },
+    {
+      "category": "approvals",
+      "name": "LEGAL_PRIVACY_APPROVAL",
+      "owner": "Legal",
+      "secret": false,
+      "validation": "^evidence/actual/legal-finance/privacy-dpa\\.json$"
+    },
+    {
+      "category": "approvals",
+      "name": "FINANCE_TAX_PAYOUT_APPROVAL",
+      "owner": "Finance",
+      "secret": false,
+      "validation": "^evidence/actual/legal-finance/payout-tax-kyc\\.json$"
+    },
+    {
+      "category": "approvals",
+      "name": "MODEL_LICENSE_APPROVAL",
+      "owner": "Legal",
+      "secret": false,
+      "validation": "^evidence/actual/legal-finance/model-licenses\\.json$"
     }
   ],
   "errors": []

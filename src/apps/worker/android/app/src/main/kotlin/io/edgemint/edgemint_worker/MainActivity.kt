@@ -8,5 +8,6 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         WorkerRuntimePlugin.registerWith(flutterEngine, this)
         OcrRuntimePlugin.registerWith(flutterEngine, this)
+        ImageSegmenterPlugin.registerWith(flutterEngine, this)
     }
 }

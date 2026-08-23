@@ -76,7 +76,7 @@ BEGIN
       WHERE consent.worker_id = worker.id AND consent.withdrawn_at_utc IS NULL
     )
     AND device.status = 'active'
-    AND device.attestation_status = 'valid'
+    AND device.attestation_status = 'verified'
     AND device.attestation_expires_at_utc > CURRENT_TIMESTAMP
     AND heartbeat.received_at_utc >= CURRENT_TIMESTAMP - make_interval(secs => p_heartbeat_max_age_seconds)
     AND heartbeat.battery_bps >= preference.minimum_battery_percent * 100

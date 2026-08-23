@@ -1,4 +1,6 @@
-FROM node:24-bookworm-slim AS build
+ARG NODE_RUNTIME_IMAGE
+ARG NGINX_RUNTIME_IMAGE
+FROM ${NODE_RUNTIME_IMAGE} AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY src/apps/customer-portal/package.json ./src/apps/customer-portal/
@@ -12,7 +14,7 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV VITE_TELEMETRY_ENABLED=${VITE_TELEMETRY_ENABLED}
 RUN npm run build -w @edgemint/operations-portal
 
-FROM nginx:1.27-alpine
+FROM ${NGINX_RUNTIME_IMAGE}
 COPY src/apps/operations-portal/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/src/apps/operations-portal/dist /usr/share/nginx/html
 EXPOSE 80

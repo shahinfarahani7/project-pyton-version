@@ -2,9 +2,9 @@
 
 - Version: `5.0.0`
 - Language: English only
-- Non-integrity content files: `3860`
-- Text lines: `759758`
-- Semantic vector lines: `595000`
+- Non-integrity content files: `3439`
+- Text lines: `869794`
+- Semantic vector lines: `531292`
 - OpenAPI operations and operation samples: `141`
 - Typed CloudEvent contracts and examples: `186`
 - Cursor operation execution units: `141`
@@ -17,85 +17,72 @@
 
 ## File types
 
-- `.bat`: 1
-- `.bin`: 6
-- `.cc`: 7
-- `.check_cache`: 1
-- `.cmake`: 8
+- `.bat`: 3
+- `.bin`: 24
+- `.c`: 11
+- `.cc`: 8
+- `.check_cache`: 8
+- `.cmake`: 29
 - `.conf`: 2
-- `.cpp`: 5
-- `.css`: 2
-- `.d`: 28
-- `.dart`: 24
-- `.dat`: 2
-- `.depend`: 3
-- `.dill`: 7
-- `.dll`: 2
-- `.docker`: 1
+- `.cpp`: 23
+- `.css`: 4
+- `.dart`: 370
+- `.entitlements`: 7
 - `.env`: 1
-- `.example`: 3
-- `.exe`: 5
-- `.exp`: 1
-- `.filters`: 10
-- `.frag`: 6
-- `.h`: 41
+- `.example`: 4
+- `.gn`: 1
+- `.gradle`: 13
+- `.h`: 48
 - `.hcl`: 1
-- `.html`: 2
-- `.ico`: 1
-- `.ilk`: 1
+- `.html`: 43
+- `.ico`: 5
 - `.iml`: 2
-- `.jar`: 1
-- `.java`: 1
-- `.js`: 18
-- `.json`: 2079
+- `.jar`: 2
+- `.java`: 8
+- `.js`: 32
+- `.json`: 880
 - `.jsonl`: 9
-- `.key`: 2
-- `.kt`: 3
-- `.kts`: 3
-- `.lastbuildstate`: 9
-- `.lib`: 3
-- `.list`: 1
-- `.lock`: 3
-- `.m`: 1
-- `.manifest`: 1
-- `.md`: 234
-- `.obj`: 13
-- `.otf`: 3
-- `.pbxproj`: 1
-- `.pdb`: 5
+- `.kt`: 13
+- `.kts`: 8
+- `.lock`: 6
+- `.log`: 10
+- `.m`: 2
+- `.manifest`: 5
+- `.map`: 1
+- `.md`: 261
+- `.ninja`: 16
+- `.o`: 32
+- `.pbxproj`: 6
 - `.pem`: 1
-- `.plist`: 4
-- `.png`: 23
-- `.properties`: 3
+- `.plist`: 21
+- `.png`: 107
+- `.podspec`: 4
+- `.pro`: 3
+- `.properties`: 10
 - `.proto`: 10
-- `.ps1`: 2
+- `.ps1`: 16
 - `.pub`: 1
-- `.py`: 282
-- `.rc`: 1
-- `.recipe`: 9
-- `.res`: 1
-- `.rule`: 6
-- `.sh`: 7
+- `.py`: 318
+- `.rc`: 5
+- `.sh`: 8
 - `.sig`: 1
-- `.sln`: 2
-- `.sql`: 12
-- `.stamp`: 41
-- `.storyboard`: 2
-- `.swift`: 5
-- `.tag`: 5
-- `.tf`: 12
-- `.tlog`: 54
-- `.toml`: 1
+- `.sql`: 16
+- `.storyboard`: 6
+- `.svg`: 3
+- `.swift`: 26
+- `.tf`: 13
+- `.toml`: 2
 - `.ts`: 5
-- `.txt`: 19
-- `.vcxproj`: 12
-- `.vue`: 29
-- `.xcconfig`: 3
-- `.xcscheme`: 1
-- `.xcsettings`: 2
-- `.xcworkspacedata`: 2
-- `.xml`: 12
-- `.yaml`: 639
+- `.txt`: 75
+- `.vue`: 41
+- `.wasm`: 1
+- `.xcconfig`: 25
+- `.xcprivacy`: 2
+- `.xcscheme`: 6
+- `.xcsettings`: 6
+- `.xcworkspacedata`: 9
+- `.xib`: 3
+- `.xml`: 32
+- `.yaml`: 659
 - `.yml`: 7
-- `.z`: 3
-- `<none>`: 78
+- `<none>`: 99

@@ -155,6 +155,18 @@
       }
     },
     {
+      "name": "FINANCE_TAX_PAYOUT_APPROVAL",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/FINANCE_TAX_PAYOUT_APPROVAL.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
       "name": "GA1_MODEL_RELEASE_MANIFEST",
       "verifiedAt": "2000-01-01T00:00:00Z",
       "evidence": {
@@ -191,6 +203,18 @@
       }
     },
     {
+      "name": "LEGAL_PRIVACY_APPROVAL",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/LEGAL_PRIVACY_APPROVAL.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
       "name": "MAILPIT_IMAGE",
       "verifiedAt": "2000-01-01T00:00:00Z",
       "evidence": {
@@ -207,6 +231,18 @@
       "verifiedAt": "2000-01-01T00:00:00Z",
       "evidence": {
         "path": "evidence/actual/example/external-inputs/MINIO_IMAGE.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "mediaType": "application/json",
+        "generatedAt": "2000-01-01T00:00:00Z",
+        "releaseId": "EM-20000101-EXAMPLE",
+        "commitSha": "0000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "MODEL_LICENSE_APPROVAL",
+      "verifiedAt": "2000-01-01T00:00:00Z",
+      "evidence": {
+        "path": "evidence/actual/example/external-inputs/MODEL_LICENSE_APPROVAL.json",
         "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
         "mediaType": "application/json",
         "generatedAt": "2000-01-01T00:00:00Z",

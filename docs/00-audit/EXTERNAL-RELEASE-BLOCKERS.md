@@ -2,7 +2,7 @@
 
 Unresolved design blockers: **0**
 
-External release evidence requirements: **38**
+External release evidence requirements: **41**
 
 External evidence is supplied by the target organization and release. It is exact, typed, owned, and fail-closed; it is not an implementation ambiguity.
 
@@ -45,4 +45,7 @@ External evidence is supplied by the target organization and release. It is exac
 | supplyChain | `POSTGRES_DEV_IMAGE` | Database | `^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$` |
 | supplyChain | `POSTGRES_TOOLS_IMAGE` | Database | `^[a-z0-9./:_-]+@sha256:[0-9a-f]{64}$` |
 | models | `GA1_MODEL_RELEASE_MANIFEST` | ML Lead | `^evidence/actual/models/.+\.json$` |
-| approvals | `RELEASE_APPROVAL_MANIFEST` | Release Manager | `^evidence/actual/release-evidence\.json$` |
+| approvals | `RELEASE_APPROVAL_MANIFEST` | Release Manager | `^evidence/actual/legal-finance/signed-approvals\.json$` |
+| approvals | `LEGAL_PRIVACY_APPROVAL` | Legal | `^evidence/actual/legal-finance/privacy-dpa\.json$` |
+| approvals | `FINANCE_TAX_PAYOUT_APPROVAL` | Finance | `^evidence/actual/legal-finance/payout-tax-kyc\.json$` |
+| approvals | `MODEL_LICENSE_APPROVAL` | Legal | `^evidence/actual/legal-finance/model-licenses\.json$` |

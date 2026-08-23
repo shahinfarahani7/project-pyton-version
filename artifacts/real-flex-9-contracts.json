@@ -1,0 +1,143 @@
+{
+  "runtime": "litert-lm-python",
+  "model": "Qwen3-0.6B.litertlm",
+  "caseCount": 9,
+  "passed": 9,
+  "failed": 0,
+  "durationMs": 36673,
+  "results": [
+    {
+      "taskType": "catalog.fake_listing",
+      "passed": true,
+      "durationMs": 4169,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "fake": false,
+        "riskScore": 0,
+        "reasons": [
+          "The price is 99, which is below the average price for a new phone in the market."
+        ]
+      }
+    },
+    {
+      "taskType": "llm.ai_tag_validation",
+      "passed": true,
+      "durationMs": 4714,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "validTags": [
+          "red",
+          "leather",
+          "backpack"
+        ],
+        "rejectedTags": [],
+        "score": 1.0,
+        "reasons": []
+      }
+    },
+    {
+      "taskType": "llm.caption_validation",
+      "passed": true,
+      "durationMs": 4646,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "valid": false,
+        "score": 0.0,
+        "issues": [],
+        "suggestedCaption": "A red leather bag with a blue shoe"
+      }
+    },
+    {
+      "taskType": "dataset.label_verification",
+      "passed": true,
+      "durationMs": 6370,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "valid": true,
+        "correctedLabel": "parcel late",
+        "confidence": 0.95,
+        "reasons": [
+          "The label 'parcel late' is a valid description of a delivery or service issue.",
+          "The candidate label 'billing' is not appropriate for this context.",
+          "The allowed labels 'billing' and 'delivery' are both valid in this scenario."
+        ]
+      }
+    },
+    {
+      "taskType": "dataset.duplicate_cleanup",
+      "passed": true,
+      "durationMs": 2618,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "duplicateGroups": [
+          "USB C cable"
+        ],
+        "keepIds": [
+          "1",
+          "2"
+        ],
+        "removeIds": []
+      }
+    },
+    {
+      "taskType": "dataset.low_quality_removal",
+      "passed": true,
+      "durationMs": 2514,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "acceptedIds": [
+          "1"
+        ],
+        "rejected": [
+          "2"
+        ],
+        "threshold": 0.6
+      }
+    },
+    {
+      "taskType": "ml.active_learning_prelabel",
+      "passed": true,
+      "durationMs": 3062,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "label": "delivery",
+        "confidence": 0.9,
+        "needsHumanReview": false,
+        "evidence": []
+      }
+    },
+    {
+      "taskType": "ml.consensus_label_validation",
+      "passed": true,
+      "durationMs": 2993,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "consensusLabel": "positive",
+        "agreementScore": 2,
+        "disputed": false,
+        "reason": ""
+      }
+    },
+    {
+      "taskType": "ml.human_verification_quality",
+      "passed": true,
+      "durationMs": 3489,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "valid": true,
+        "qualityScore": 1.0,
+        "issues": [],
+        "recommendation": "The verification is valid with a quality score of 1.0."
+      }
+    }
+  ]
+}

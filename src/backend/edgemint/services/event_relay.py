@@ -16,6 +16,7 @@ from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.eventing.relay import (
     claim_deliveries,
     create_subscription,
+    expand_outbox_events,
     open_connection,
     resume_connection,
 )
@@ -188,6 +189,7 @@ async def events(websocket: WebSocket) -> None:
         )
 
         while True:
+            await expand_outbox_events(relay_instance_id=relay_instance_id)
             deliveries = await claim_deliveries(
                 connection_id=connection_id,
                 relay_instance_id=relay_instance_id,

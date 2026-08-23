@@ -9,10 +9,10 @@ dependencies:
     sdk: flutter
   http: ^1.2.2
   crypto: ^3.0.6
+  image: ^4.5.4
   flutter_gemma: ^1.4.0
   flutter_gemma_litertlm: ^1.2.0
   background_downloader: ^9.5.7
-  url_launcher: ^6.3.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

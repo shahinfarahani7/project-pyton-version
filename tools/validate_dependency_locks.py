@@ -66,7 +66,7 @@ for path in root.rglob("Dockerfile"):
             errors.append(
                 f"{path.relative_to(root)}:FROM image is not digest-pinned or fail-closed variable:{image}"
             )
-    if "${PYTHON_RUNTIME_IMAGE:" not in text:
+    if ("python" in text.lower() or "backend" in path.parts) and "${PYTHON_RUNTIME_IMAGE:" not in text:
         errors.append(f"{path.relative_to(root)}:mandatory immutable Python runtime image input missing")
 
 compose = (root / "compose.yaml").read_text()

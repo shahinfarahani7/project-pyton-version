@@ -1,0 +1,270 @@
+{
+  "runtime": "LiteRT-LM CPU",
+  "visionModel": "InternVL3-1B.litertlm",
+  "repairModel": "Qwen3-0.6B.litertlm",
+  "image": "edgemint-test-product.png",
+  "caseCount": 13,
+  "passed": 13,
+  "failed": 0,
+  "durationMs": 152487,
+  "results": [
+    {
+      "taskType": "image.classify",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 8078,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "label": "bag",
+        "confidence": 0.95,
+        "evidence": [
+          "brown leather bag",
+          "structured bag with zippers and a flap"
+        ]
+      }
+    },
+    {
+      "taskType": "safety.nsfw_detection",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 4773,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "nsfw": false,
+        "riskScore": 0.0,
+        "categories": [],
+        "reason": "No explicit content detected."
+      }
+    },
+    {
+      "taskType": "safety.violence_detection",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 4544,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "violence": false,
+        "riskScore": 0.0,
+        "categories": [
+          "compact",
+          "handbag"
+        ],
+        "reason": ""
+      }
+    },
+    {
+      "taskType": "safety.weapon_detection",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 8025,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "weapon": false,
+        "riskScore": 0.5,
+        "types": [
+          "replica"
+        ],
+        "reason": "The bag appears to be a replica, possibly a model or a similar item. There are no visible weapons or objects that could indicate the presence of a real weapon."
+      }
+    },
+    {
+      "taskType": "safety.unsafe_image",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 4635,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "safe": true,
+        "riskScore": 0.0,
+        "categories": [
+          "wallet",
+          "handbag"
+        ],
+        "reason": ""
+      }
+    },
+    {
+      "taskType": "moderation.profile_image",
+      "passed": true,
+      "qwenRepairUsed": false,
+      "fallbackApplied": false,
+      "durationMs": 1703,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "allowed": true,
+        "riskScore": 0.0,
+        "issues": [],
+        "reason": ""
+      }
+    },
+    {
+      "taskType": "moderation.generated_image",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 9141,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "allowed": false,
+        "riskScore": 1.0,
+        "categories": [
+          "visual content"
+        ],
+        "reason": "The image appears to be a visual content, possibly a product design or handbag design. However, without additional context or visible evidence of the image itself, it is not possible to definitively assess its content or relevance to the task at hand.",
+        "needsHumanReview": true
+      }
+    },
+    {
+      "taskType": "catalog.image_tagging",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": true,
+      "durationMs": 33473,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "tags": [],
+        "confidence": 0.0,
+        "evidence": [],
+        "needsHumanReview": true,
+        "fallbackApplied": true
+      }
+    },
+    {
+      "taskType": "catalog.product_classification",
+      "passed": true,
+      "qwenRepairUsed": false,
+      "fallbackApplied": false,
+      "durationMs": 2224,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "category": "handbag",
+        "confidence": 0.95,
+        "alternatives": [
+          "handbag"
+        ]
+      }
+    },
+    {
+      "taskType": "catalog.product_quality_score",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 22262,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "score": 1.0,
+        "issues": [
+          {
+            "type": "product_image_quality_score",
+            "score": 1
+          },
+          {
+            "type": "product_framing_score",
+            "score": 0.5
+          },
+          {
+            "type": "product_visibility_score",
+            "score": 0.5
+          },
+          {
+            "type": "product_design_score",
+            "score": 0.5
+          },
+          {
+            "type": "product_material_score",
+            "score": 0.5
+          }
+        ],
+        "recommendations": [
+          "Improve product image quality by ensuring clear and high-resolution images.",
+          "Enhance product framing to provide a better visual experience.",
+          "Optimize product visibility by adjusting the display settings.",
+          "Refine product design to ensure consistency and aesthetics."
+        ]
+      }
+    },
+    {
+      "taskType": "catalog.brand_logo",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": true,
+      "durationMs": 33859,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "detected": false,
+        "brands": [],
+        "confidence": 0.0,
+        "evidence": [],
+        "needsHumanReview": true,
+        "fallbackApplied": true
+      }
+    },
+    {
+      "taskType": "catalog.prohibited_product",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 4838,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "prohibited": true,
+        "riskScore": 1.0,
+        "categories": [
+          "Prohibited"
+        ],
+        "reason": "The bag is prohibited due to its design."
+      }
+    },
+    {
+      "taskType": "llm.image_output_safety",
+      "passed": true,
+      "qwenRepairUsed": true,
+      "fallbackApplied": false,
+      "durationMs": 12737,
+      "missing": [],
+      "wrongTypes": [],
+      "consistencyIssue": null,
+      "output": {
+        "safe": false,
+        "riskScore": 1.0,
+        "categories": [
+          "beauty",
+          "handbags",
+          "safety",
+          "travel",
+          "clothing"
+        ],
+        "reason": ""
+      }
+    }
+  ]
+}
