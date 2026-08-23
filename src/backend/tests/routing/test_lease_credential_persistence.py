@@ -52,11 +52,12 @@ async def test_router_persists_hash_and_encrypted_bootstrap_copy() -> None:
         router_instance_id="router-test",
     )
 
-    params = connection.execute.await_args_list[1].args[1]
-    assert params["assignment_id"] == assignment_id
+    first_params = connection.execute.await_args_list[0].args[1]
+    second_params = connection.execute.await_args_list[1].args[1]
+    assert second_params["assignment_id"] == assignment_id
     raw = assignment["leaseToken"]
-    encrypted = params["lease_token_ciphertext"]
-    assert params["lease_token_hash"] == hash_session_token(raw)
+    encrypted = second_params["lease_token_ciphertext"]
+    assert first_params["lease_token_hash"] == hash_session_token(raw)
     assert raw.encode("utf-8") not in encrypted
     assert LeaseCredentialCipher.from_settings(settings).decrypt(
         encrypted,
