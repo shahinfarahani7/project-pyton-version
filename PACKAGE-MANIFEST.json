@@ -37,14 +37,14 @@
     },
     {
       "path": ".env.docker.example",
-      "sizeBytes": 1295,
-      "sha256": "e3776efb91854d14d0e293a38a7184ca1091d186c745a3c7f91da52eb0ad5d1b",
+      "sizeBytes": 1348,
+      "sha256": "fea1dae8cd0338a0839a28ebfbb7b882ded7792842e7f9e8c2c315cb1690a2eb",
       "lines": 30
     },
     {
       "path": ".env.example",
-      "sizeBytes": 1014,
-      "sha256": "3245e392488e232bd96fdda4c9d8aa85c5df0a094133c1b30f30b539ad17ab7b",
+      "sizeBytes": 1033,
+      "sha256": "8f3a435e640e951ee1b433e2e9e7630bea11b1082aae79eae5a42b18f1ed9563",
       "lines": 19
     },
     {
@@ -109,8 +109,8 @@
     },
     {
       "path": ".gitignore",
-      "sizeBytes": 806,
-      "sha256": "e0b0eeb8d1e0aaccabe4b25b9e8227032a8f0e0fb24ef6f44a844aee0ce1c319",
+      "sizeBytes": 844,
+      "sha256": "de5d64c018778726015ecabbf79cdb237f729fb186c8b13bbcf62563ecaab751",
       "lines": 38
     },
     {
@@ -145,8 +145,8 @@
     },
     {
       "path": "CURSOR-SAFE-INTEGRATION.md",
-      "sizeBytes": 2836,
-      "sha256": "c361cc8a44791e4007d425b3391533e5908439b508999378724dad086244e135",
+      "sizeBytes": 2930,
+      "sha256": "e97f40acfc112fc4dc8f03cbdf5db720cce93963341e6649b7d68539298e3d5b",
       "lines": 94
     },
     {
@@ -229,26 +229,26 @@
     },
     {
       "path": "artifacts/real-56-task-control-plane-load.json",
-      "sizeBytes": 344,
-      "sha256": "f21ec3eaa04466b38a5290473007c96a4c3df15cde8a1a4e36e0129816c886c7",
+      "sizeBytes": 356,
+      "sha256": "4492a26d3f895f0ebf30dc1367d59b2414c5c029077dea50f7b152b8a6f7f3a2",
       "lines": 12
     },
     {
       "path": "artifacts/real-flex-9-contracts.json",
-      "sizeBytes": 3282,
-      "sha256": "7c75bdf5863cdd58950d651ea98783c9735722bc8bbdcc3e3a6d20f098179357",
+      "sizeBytes": 3425,
+      "sha256": "a86b59c7b78d864f4c417a80591c73671e959569aec5d0baea89e4bcb0fe54ad",
       "lines": 143
     },
     {
       "path": "artifacts/real-internvl-smoke.json",
-      "sizeBytes": 808,
-      "sha256": "ed474dbda76605f437ea2077380b91254b18752224456bcb01de013190dd7460",
+      "sizeBytes": 830,
+      "sha256": "0775ff83d88049ba4d0943cf2c9d773828b43ff904ccf96e32914a44c67c0b6e",
       "lines": 22
     },
     {
       "path": "artifacts/real-qwen-25-contracts.json",
-      "sizeBytes": 8127,
-      "sha256": "80d4a034019455e9fb3ba34d1a4651759831c3ed49bc496b9bbce1b8e00b1194",
+      "sizeBytes": 8489,
+      "sha256": "643f53ea978c15a79666f47106a517b75c52f8a2c0c201496a5322fc1763f732",
       "lines": 362
     },
     {
@@ -259,14 +259,14 @@
     },
     {
       "path": "artifacts/real-segmentation-smoke.json",
-      "sizeBytes": 472,
-      "sha256": "0b1d860c61d452eaea633c4b14c689901e852429c168dbd9bbc569ab027c72f2",
+      "sizeBytes": 494,
+      "sha256": "77f1ea91e0bf7a6cbe987e2f150bbcd7edf4c58d891bc7007fb46dbb85ae40b8",
       "lines": 22
     },
     {
       "path": "artifacts/real-vision-13-contracts.json",
-      "sizeBytes": 6840,
-      "sha256": "9afec54a4d3cb505ff0985aec103d70b8f5658b820ecde95b7bd15426f203228",
+      "sizeBytes": 7110,
+      "sha256": "e4784452934b27c2e21fd66535ecab21e8181c9c1cf75b75ab5f8df8a71a558f",
       "lines": 270
     },
     {
@@ -283,8 +283,8 @@
     },
     {
       "path": "compose.yaml",
-      "sizeBytes": 2615,
-      "sha256": "9850616e86ac121b8d187ecaf002b3eeca276c84901a1cca7283ddb88026d53c",
+      "sizeBytes": 2690,
+      "sha256": "2bf40dd4e743e0c7352e3180ed4f41e129b96196fa29fc1fa9f2559e91ed6625",
       "lines": 75
     },
     {
@@ -1423,8 +1423,8 @@
     },
     {
       "path": "contracts/openapi/edgemint-worker-api.yaml",
-      "sizeBytes": 97374,
-      "sha256": "5658a2959233502c74f340aacd8fc62cf84f3bd88e9413f1f273897bc0a6c292",
+      "sizeBytes": 100744,
+      "sha256": "a635410fe27ff56b5ca9e278d752d4c1cea786ad767ecf933f2a31a504083505",
       "lines": 3370
     },
     {
@@ -1579,8 +1579,8 @@
     },
     {
       "path": "database/sql/008_auto_assignment_protocol.sql",
-      "sizeBytes": 10798,
-      "sha256": "053275375f8d70fc7968b739ad8b89e1cdea3e1b2094ee124ccef6cb82ded85b",
+      "sizeBytes": 11083,
+      "sha256": "270784196213486bb7d409bf83bca74f63c1da525204039a0863d06fad44b6ae",
       "lines": 285
     },
     {
@@ -1609,20 +1609,20 @@
     },
     {
       "path": "database/sql/012_assignment_lease_credential_bootstrap.sql",
-      "sizeBytes": 885,
-      "sha256": "158050b07f0f13b12d11d71eb2dec22c27e4121ae7035e3723e5e5751a81aeab",
+      "sizeBytes": 906,
+      "sha256": "d222936a500713c04e08d2fd1e5a19f9ca7f3dc86392a2f77229424b92dbe302",
       "lines": 21
     },
     {
       "path": "database/sql/013_websocket_outbox_expansion_replay.sql",
-      "sizeBytes": 5285,
-      "sha256": "4345982a3a90f147e397aea7e9a65823a72f177f3a2a9bcb1fb21b940552c7cb",
+      "sizeBytes": 5426,
+      "sha256": "7c3c0bd6f179ea3c573779f912be3864a2dced284fe8025232a5cce6b04f33e4",
       "lines": 141
     },
     {
       "path": "database/sql/014_result_completion_invariants.sql",
-      "sizeBytes": 254,
-      "sha256": "444cf4caac72a69cab3d192ff46ffb8d442b8fc8e7f80d6cdcca6c44f6511deb",
+      "sizeBytes": 264,
+      "sha256": "0d591f961b4432a94cc85c97999ac359735467c08fbc2a4da28eb8c1db00e1a0",
       "lines": 10
     },
     {
@@ -1795,8 +1795,8 @@
     },
     {
       "path": "deploy/terraform/aws/outputs.tf",
-      "sizeBytes": 172,
-      "sha256": "f99785bba3e1091a35fe49f30f1b7584ed7caa8bf6e487e21812a2f1f1bc5082",
+      "sizeBytes": 179,
+      "sha256": "ff9e2af20e1188657c1c28901453891f79eb0ec1c20f49b54430468b70902f01",
       "lines": 7
     },
     {
@@ -1807,8 +1807,8 @@
     },
     {
       "path": "deploy/terraform/aws/rds.tf",
-      "sizeBytes": 2406,
-      "sha256": "c78ae34c71e9f3f8dfb327e6549bf5299c09c19ab304295a5c0c9d963ade63c2",
+      "sizeBytes": 2490,
+      "sha256": "b48504f8769194c65eee9c31d6c5e472e64569cd382526a96a1f24eee29081b6",
       "lines": 84
     },
     {
@@ -1819,8 +1819,8 @@
     },
     {
       "path": "deploy/terraform/aws/variables.tf",
-      "sizeBytes": 662,
-      "sha256": "5467e81d2a0605f66aa108486b046b9acb13e3785f6fc3dd05b3b52ba18d03ea",
+      "sizeBytes": 689,
+      "sha256": "9fd37826c58134bcb374d340189e29d3caf9d61b6db205a3968b07af159c384f",
       "lines": 27
     },
     {
@@ -2989,26 +2989,26 @@
     },
     {
       "path": "docs/11-testing/56-TASK-INFRASTRUCTURE-AND-REAL-TEST-2026-08-22.md",
-      "sizeBytes": 5327,
-      "sha256": "328aec361c9c79a2972fa3a5f1339836b16d6069d1d5afa1754ec29100fcfeee",
+      "sizeBytes": 5419,
+      "sha256": "02a640c2e432fecae7a197755136c3bb9fc33c701aacb5d86a93476ebb9f694e",
       "lines": 92
     },
     {
       "path": "docs/11-testing/AUTOMATIC-LEASE-CREDENTIAL-BOOTSTRAP-2026-08-22.md",
-      "sizeBytes": 3495,
-      "sha256": "368a2b6d367d5a4e54e4d4d87d07892a378ff01709afb27ca1be53d847ed2032",
+      "sizeBytes": 3546,
+      "sha256": "a452d5a78565c7fd905797eb53b799982f36c843c8daf2c2473e0688b8ba1bff",
       "lines": 51
     },
     {
       "path": "docs/11-testing/PRODUCTION-AUTO-ASSIGNMENT-E2E-2026-08-22.md",
-      "sizeBytes": 3166,
-      "sha256": "a4084a6244f6080c894fa667e48d31a1fc9731b4dbe2a0f955855a665f3bb3b7",
+      "sizeBytes": 3221,
+      "sha256": "4f6c1f78fe233e16a342a1b807aeea66bad068868ecb75eb32056c795dc0f0f4",
       "lines": 55
     },
     {
       "path": "docs/11-testing/QWEN-FLEX-VISION-COMPLETION-2026-08-22.md",
-      "sizeBytes": 4297,
-      "sha256": "0add95c829c51320688f4e0b536046e16f65222c0c554bb75efa7abfc6751c01",
+      "sizeBytes": 4355,
+      "sha256": "4eb34de80f639cbc30d5b6550919571a2ee808a06d0b3b351ef75dfefd22ead8",
       "lines": 58
     },
     {
@@ -6307,14 +6307,14 @@
     },
     {
       "path": "dsl/schemas/marginguardpolicy.schema.json",
-      "sizeBytes": 2661,
-      "sha256": "cd4760aa2d639f0224f9c80cbc76de0110cdcd442aa15b6d253977511d717750",
+      "sizeBytes": 2778,
+      "sha256": "abaa7c26dff8a34a20d141a82eff4a330d0fa796a553f8aca642582ca20454f6",
       "lines": 117
     },
     {
       "path": "dsl/schemas/modelprofile.schema.json",
-      "sizeBytes": 5427,
-      "sha256": "acc4733547bab2a6e144344c27c05065cbee8ddb6bd4d41466b733a07030321a",
+      "sizeBytes": 5662,
+      "sha256": "c3090ca1e81d7308b67b758e9fab92df96aecae98bffb6b6650748af09253b33",
       "lines": 235
     },
     {
@@ -9583,8 +9583,8 @@
     },
     {
       "path": "samples/by-operation/completeAssignment.json",
-      "sizeBytes": 1251,
-      "sha256": "94d6cb97f4f2c81d4521bbf1e5fe55495637a674ad733e1bde0baac66f6935b0",
+      "sizeBytes": 1293,
+      "sha256": "24b7e7b1f418da834193c7e09edb2e9183a9c0c55e5381c81a5be1f74e0ffd0e",
       "lines": 42
     },
     {
@@ -10471,8 +10471,8 @@
     },
     {
       "path": "src/apps/customer-portal/Dockerfile",
-      "sizeBytes": 855,
-      "sha256": "394ba3f048f4c5397e59ec061b28efaef09c578563b36ad0824d7bbfbf6ed226",
+      "sizeBytes": 876,
+      "sha256": "ade4f2784558bc255b2b63a2b4b5c7259d5305dfdf1211adeacb00b08c1c3efb",
       "lines": 21
     },
     {
@@ -10675,8 +10675,8 @@
     },
     {
       "path": "src/apps/customer-portal/src/pages/SettingsPage.vue",
-      "sizeBytes": 2082,
-      "sha256": "e4fb52726d06f1c64d462e9ea685558b80f7933e4c696ab361506eab030edd6e",
+      "sizeBytes": 2143,
+      "sha256": "a9ce6174b20934188072b2c5d388a6a9c8601e3d2ec0c98a794699cf7fd60c28",
       "lines": 61
     },
     {
@@ -10753,8 +10753,8 @@
     },
     {
       "path": "src/apps/operations-portal/Dockerfile",
-      "sizeBytes": 865,
-      "sha256": "e84de4d568688626c549f8b5b6c448d90ef665487415462fef41987bedf5fbee",
+      "sizeBytes": 886,
+      "sha256": "c3d0ca8f8ace49909f7a0a2587a0a8bd218ea563d24a5439fb622f3c1b192db2",
       "lines": 21
     },
     {
@@ -10969,8 +10969,8 @@
     },
     {
       "path": "src/apps/worker/android/app/build.gradle.kts",
-      "sizeBytes": 1323,
-      "sha256": "43c11f511fa0f4df4dc68af3c2c040e1d2627e4968b2c3e37bbbc173a418d3e0",
+      "sizeBytes": 1371,
+      "sha256": "235d3a4e3bb6e52e9dd79d976f14dae783790a9dabcf44be7a595279778610bc",
       "lines": 48
     },
     {
@@ -10999,14 +10999,14 @@
     },
     {
       "path": "src/apps/worker/android/app/src/main/kotlin/io/edgemint/edgemint_worker/ImageSegmenterPlugin.kt",
-      "sizeBytes": 5057,
-      "sha256": "b5b5268021761f76d0b75b6906560982a84bc58f298e68c1441dae40d3c59e97",
+      "sizeBytes": 5169,
+      "sha256": "1f037f753cb46f31340f265353605032e5303bb95b7bfc25538025f29970b415",
       "lines": 112
     },
     {
       "path": "src/apps/worker/android/app/src/main/kotlin/io/edgemint/edgemint_worker/MainActivity.kt",
-      "sizeBytes": 496,
-      "sha256": "a931e2cf11032d46789018441ade2e519ca9c104cdf8f68c0c271ed34e01b5d9",
+      "sizeBytes": 509,
+      "sha256": "060608063a42edba3cb6b1140774a440be4e6e8fd04dbaa0ce6c02b0796fe0ae",
       "lines": 13
     },
     {
@@ -11461,8 +11461,8 @@
     },
     {
       "path": "src/apps/worker/lib/api/worker_api_client.dart",
-      "sizeBytes": 10211,
-      "sha256": "9c9094c151fd3bbcf7bf30fb1d4839930c601d0937ec9ca10f2c2e83b82962d9",
+      "sizeBytes": 10558,
+      "sha256": "a61779bfd6726410ceea14448de6aad65dfe1f3bc37ac6ecdcdcc8286e7396ad",
       "lines": 347
     },
     {
@@ -11485,8 +11485,8 @@
     },
     {
       "path": "src/apps/worker/lib/contracts/task_contract_catalog.dart",
-      "sizeBytes": 16921,
-      "sha256": "9b85a1220eb387541d06a548efa5b17a07991ee41bd6a1cead0ac198efaf5710",
+      "sizeBytes": 17460,
+      "sha256": "4dd233cfb0d4877dc92d67b2d213e81038950600e392002118020c00242bc2c9",
       "lines": 539
     },
     {
@@ -11515,8 +11515,8 @@
     },
     {
       "path": "src/apps/worker/lib/inference/llm/qwen_task_processor.dart",
-      "sizeBytes": 3292,
-      "sha256": "d1a54c2368e7ca4f132451cef12439094c4701134d1c7eb1e25b38c310db91d9",
+      "sizeBytes": 3295,
+      "sha256": "9d6306323ca49a3cf48dc13e76a4d039ffb3e5bf028bb7d870cba1fee5b2e70a",
       "lines": 105
     },
     {
@@ -11557,8 +11557,8 @@
     },
     {
       "path": "src/apps/worker/lib/inference/vision/lightweight_vision.dart",
-      "sizeBytes": 3428,
-      "sha256": "d6f705b24a32d46ed2c7f14d5fdb43e6250cb87b17a25eb7da90cdf0b8dddf8c",
+      "sizeBytes": 3537,
+      "sha256": "4e2fa97ca1dfa6f5b3f83f3e42015d849e5094e1abaea5a8b1982e2be3f393e1",
       "lines": 109
     },
     {
@@ -11569,14 +11569,14 @@
     },
     {
       "path": "src/apps/worker/lib/models/worker_model_catalog.dart",
-      "sizeBytes": 2221,
-      "sha256": "23ed729f1095d3fbe8a34742acb23403155b7afebc0bbc2c9dd866180cc666dd",
+      "sizeBytes": 2289,
+      "sha256": "068d5724276af2a38a73c8d7725d9c005c3172b9374dd56db262194d5cefd028",
       "lines": 68
     },
     {
       "path": "src/apps/worker/lib/models/worker_vision_model_catalog.dart",
-      "sizeBytes": 689,
-      "sha256": "fee8690d1edcede0028e4edb583cdbde639e78b9e90b5598af7d303a846e0ba0",
+      "sizeBytes": 707,
+      "sha256": "c07d52972b8a2cbaa19d9abcd3b2a6c94ce6ac921d75c177696d1f226db8d86d",
       "lines": 18
     },
     {
@@ -11587,8 +11587,8 @@
     },
     {
       "path": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
-      "sizeBytes": 13526,
-      "sha256": "d27c6bea2b2254576a3a81736c284abb334f8fdfc7a027fee4ee521623329234",
+      "sizeBytes": 13898,
+      "sha256": "7fc2f94f2af210ddf9e4a50a8c5cf8b50a3a190c164ea6e23d088a73bf97b6ce",
       "lines": 372
     },
     {
@@ -11689,8 +11689,8 @@
     },
     {
       "path": "src/apps/worker/lib/runtime/vision_litert_adapter.dart",
-      "sizeBytes": 3608,
-      "sha256": "ded744998a105aef29f0376857f7402c1297cf6034ccfe372d4d1e1bb930161b",
+      "sizeBytes": 3723,
+      "sha256": "62aebd8fd65f4edaca8bff5752ee494596cff9a2d425ed4c51365b51ffac932a",
       "lines": 115
     },
     {
@@ -11707,8 +11707,8 @@
     },
     {
       "path": "src/apps/worker/lib/tasks/handlers/lightweight_vision_handlers.dart",
-      "sizeBytes": 2258,
-      "sha256": "05bb05881cc17a089fef884656a0198f310b33bf723ad12c2c8579aaa0e001f4",
+      "sizeBytes": 2307,
+      "sha256": "a6597f9ad2016ba00d8040a9576992f17f12d6fc71e295bc26cf276be17815bb",
       "lines": 49
     },
     {
@@ -11731,8 +11731,8 @@
     },
     {
       "path": "src/apps/worker/lib/tasks/handlers/vision_handlers.dart",
-      "sizeBytes": 5724,
-      "sha256": "08d585f91587160a769b0983af4c056c82e2ac417563967272baa2853960ec5c",
+      "sizeBytes": 5878,
+      "sha256": "e67c6e87ffefc735b2579ce3da2d0b6538d4dc633a5bce960f3d73598ec8aa26",
       "lines": 154
     },
     {
@@ -11755,8 +11755,8 @@
     },
     {
       "path": "src/apps/worker/lib/tasks/task_type_mapper.dart",
-      "sizeBytes": 4090,
-      "sha256": "e0e21f190b5126745fe82154d130ec04395367f24e5a489a643286f4bcd5f348",
+      "sizeBytes": 4210,
+      "sha256": "f46c2bcd6f68d6fb7b164c59cb5a9c80459d048506d908d1dd281202e749a0a6",
       "lines": 120
     },
     {
@@ -11773,8 +11773,8 @@
     },
     {
       "path": "src/apps/worker/lib/ui/tabs/worker_home_tab.dart",
-      "sizeBytes": 20928,
-      "sha256": "6faaf957d1d94e04c9eedc00b0a1b7473b75726238475ae3dbf8b6af827acefe",
+      "sizeBytes": 21546,
+      "sha256": "c04418b20693d8b1a7c6246d963a94cddb7b64f976e9e5cf21e4630fe6f04a7d",
       "lines": 618
     },
     {
@@ -11785,8 +11785,8 @@
     },
     {
       "path": "src/apps/worker/lib/ui/tabs/worker_models_tab.dart",
-      "sizeBytes": 3587,
-      "sha256": "85f389b5c0b84dbf8654989e2a96b2a75c45e3f0946a3e498c355288f62d34cb",
+      "sizeBytes": 3691,
+      "sha256": "3f285407a3daaec180c2c3a761b75ba7dd7c2b637d367c4043515d658bc7dff7",
       "lines": 104
     },
     {
@@ -11827,38 +11827,38 @@
     },
     {
       "path": "src/apps/worker/lib/validation/task_input_validator.dart",
-      "sizeBytes": 4735,
-      "sha256": "9182be325260874fbc8b1f245e1a6167acfe40cc2cbd10a358cb4f418605908f",
+      "sizeBytes": 4881,
+      "sha256": "120409c6b13a3817f205b44ce964f098e347bc64b79482879114980919f8ef6c",
       "lines": 146
     },
     {
       "path": "src/apps/worker/lib/validation/vision_consistency_validator.dart",
-      "sizeBytes": 2806,
-      "sha256": "17519282b816cbde8075cecbd26854880f3a7d4c123b72c1e5d6d10d6cdcb1c2",
+      "sizeBytes": 2874,
+      "sha256": "ea7ee70ab1b4d22c68c0b2fa97f7525a4cfa26ac5522fa26faf24e1dbde766a1",
       "lines": 68
     },
     {
       "path": "src/apps/worker/lib/validation/vision_output_normalizer.dart",
-      "sizeBytes": 4105,
-      "sha256": "8849e3ef78505247de6d4736707579686212a45135f6e38b1f1968bb21f1684e",
+      "sizeBytes": 4215,
+      "sha256": "5fef2b478ce79f7d96691b7bbed8fe949ec39d5bd5802cd3de20027ccfb728d9",
       "lines": 110
     },
     {
       "path": "src/apps/worker/lib/worker_app_controller.dart",
-      "sizeBytes": 28682,
-      "sha256": "704a55886b2aa6e990a3e260bc8eb06dce3985692438a6b7632f0fa461170c66",
+      "sizeBytes": 29525,
+      "sha256": "ed64c43f4d97c2449889f6c3ce542c1bf5a5136fc9f4041aae3ae5ff766d732c",
       "lines": 843
     },
     {
       "path": "src/apps/worker/pubspec.lock",
-      "sizeBytes": 19907,
-      "sha256": "fd57cf80fafae605dda570dc2fa38a60b777d1be7e8ef0fb914b0f67dba736f2",
+      "sizeBytes": 20580,
+      "sha256": "7a6b3dfa0d41adef2f2f107a016ef81eaab471f3f208781c63f58f0ab07a3ed6",
       "lines": 673
     },
     {
       "path": "src/apps/worker/pubspec.yaml",
-      "sizeBytes": 478,
-      "sha256": "4de7248d1fd2ac8f9d656e89cfd10285c70e44f1b2e9bd1c40e50b09b71ca05b",
+      "sizeBytes": 501,
+      "sha256": "eff47e32991b6e413614d527f19c8ae0f06a25c0e289e72382f4a8d66c5cf85f",
       "lines": 23
     },
     {
@@ -11929,8 +11929,8 @@
     },
     {
       "path": "src/apps/worker/windows/flutter/generated_plugin_registrant.cc",
-      "sizeBytes": 317,
-      "sha256": "542725c06d81a89bdd95eb2239f9cf6bde3de0e1845e6ef8cf1b85901e9ba637",
+      "sizeBytes": 331,
+      "sha256": "1d2ad74386c67565fe454c26f75db521c166c56d982dce3e81491e2815b4f058",
       "lines": 14
     },
     {
@@ -11941,8 +11941,8 @@
     },
     {
       "path": "src/apps/worker/windows/flutter/generated_plugins.cmake",
-      "sizeBytes": 765,
-      "sha256": "e8eaf9b20e9b6c79ce48f7ae05bf4778581a56cfbb8656d124cc31f77f9133b2",
+      "sizeBytes": 790,
+      "sha256": "f9e2acc90b71465babd1f7cd402c96b0dd726e8b1ed7d6c5dd2cb396de976203",
       "lines": 25
     },
     {
@@ -12085,8 +12085,8 @@
     },
     {
       "path": "src/backend/edgemint/building_blocks/eventing/relay.py",
-      "sizeBytes": 6858,
-      "sha256": "a0dc5070b3fe219b388937c30255385f20dfacbf7957929bd05136e824880c69",
+      "sizeBytes": 7071,
+      "sha256": "4150b7de69358a58775d638c58984c36ccda34983567de7ab77a0a60106865b4",
       "lines": 213
     },
     {
@@ -12109,8 +12109,8 @@
     },
     {
       "path": "src/backend/edgemint/building_blocks/settings.py",
-      "sizeBytes": 2277,
-      "sha256": "cdc2b3aa73cb7d21910967630a5cc228c1a65f8176fbb6a42c09722e9f011c44",
+      "sizeBytes": 2339,
+      "sha256": "6111b1eb45eb6d2257cbfb064900068953f125db10de43d172bd4ad05fae6b4d",
       "lines": 62
     },
     {
@@ -12133,8 +12133,8 @@
     },
     {
       "path": "src/backend/edgemint/dev/assignment_bridge.py",
-      "sizeBytes": 1579,
-      "sha256": "b175f516b6a1faa19b1350009b82a21b940e40cf8f31e3a6109bab9e56ac7030",
+      "sizeBytes": 1581,
+      "sha256": "f38b837cf6bee12487d5cc2fbce8ff2ed2476487800f131755210a5063e137fd",
       "lines": 42
     },
     {
@@ -12157,8 +12157,8 @@
     },
     {
       "path": "src/backend/edgemint/dev/model_artifact_proxy.py",
-      "sizeBytes": 3221,
-      "sha256": "2565310378e546315daeeb34ef23b1e03620efdc60acee4e99cddb098d32da76",
+      "sizeBytes": 3313,
+      "sha256": "ecb36ae62c2bf08d56346f52d5ffa152784b206e2eaf83f47ad726f849d3463d",
       "lines": 92
     },
     {
@@ -12181,8 +12181,8 @@
     },
     {
       "path": "src/backend/edgemint/dev/worker_task_inputs.py",
-      "sizeBytes": 18388,
-      "sha256": "2b52f82e62950d3a388fb6152b8281ef64ef55aa89c25dae21c101e272f3a4c8",
+      "sizeBytes": 18445,
+      "sha256": "09ca432aeee53248f918615555254e97d8b7a2d8c82fbbb32ddf45c0febd9799",
       "lines": 455
     },
     {
@@ -12577,8 +12577,8 @@
     },
     {
       "path": "src/backend/edgemint/routing/service.py",
-      "sizeBytes": 9736,
-      "sha256": "0d6254a48ee11bc8aa678dfe63a6014260faf1d8dd73bbe422616319e74c9f25",
+      "sizeBytes": 9993,
+      "sha256": "1681440c1288b6a18e834f29fa7b7c607aed6d3b66a1c94fcca3e923dc1296fb",
       "lines": 257
     },
     {
@@ -12607,8 +12607,8 @@
     },
     {
       "path": "src/backend/edgemint/security/lease_credentials.py",
-      "sizeBytes": 2126,
-      "sha256": "83929231a1d5ae0107437efcfb8226d71ebb8e260de0e8a56dc049908512a147",
+      "sizeBytes": 2183,
+      "sha256": "b14d86f7e0f89789e6c8ed02ad76186e98f2319d5688df9cf9f1348723d80e04",
       "lines": 57
     },
     {
@@ -12667,8 +12667,8 @@
     },
     {
       "path": "src/backend/edgemint/services/event_relay.py",
-      "sizeBytes": 14106,
-      "sha256": "5eff9c31a3248630f97d60fbed532a48912aeaabb94b72e5afd769ba63c298d3",
+      "sizeBytes": 14436,
+      "sha256": "b7e82a9cf3b9c6fda4a045c59335885e5eeb6f6cb5a8a38c93a8bc4147b9de2f",
       "lines": 330
     },
     {
@@ -12763,8 +12763,8 @@
     },
     {
       "path": "src/backend/edgemint/services/worker_registry.py",
-      "sizeBytes": 14806,
-      "sha256": "7251629ff5141936787e99f839b70eb1b93a09c0b7ec521c2bfd202755eb032f",
+      "sizeBytes": 15185,
+      "sha256": "e5861a75d7b184fdda14a0f0385feac67f45abc821a386253bbc68ed44a0f3b1",
       "lines": 379
     },
     {
@@ -12919,8 +12919,8 @@
     },
     {
       "path": "src/backend/edgemint/workers/assignments.py",
-      "sizeBytes": 20161,
-      "sha256": "27f269b2e4cbee0912777528c4d0271583b151c60c672bce6fa780f5fea1da35",
+      "sizeBytes": 20648,
+      "sha256": "0c78f02a579247d9a3770c2dec46b765ac6d253e6c813372ee716fd8f8c3fc0a",
       "lines": 487
     },
     {
@@ -12943,8 +12943,8 @@
     },
     {
       "path": "src/backend/edgemint/workers/errors.py",
-      "sizeBytes": 1677,
-      "sha256": "1ec97c75d62578a09eae849a77125b1716e60a0d4b54dc17c84fecc76e2457f9",
+      "sizeBytes": 1713,
+      "sha256": "b5af89942649e5683be3c64c20494c9ee38cee0f5aae725a0113a804899e733f",
       "lines": 36
     },
     {
@@ -13291,8 +13291,8 @@
     },
     {
       "path": "src/backend/tests/dev/test_worker_task_inputs.py",
-      "sizeBytes": 2876,
-      "sha256": "fac397180408e34b832201030e12e4b34a358d9c27410abbc4f89c476e7cf750",
+      "sizeBytes": 2903,
+      "sha256": "e02b8e66b807e436ec7578ec3081a6fb05e57a32dc4f73b1618152eb17c963f6",
       "lines": 68
     },
     {
@@ -13345,8 +13345,8 @@
     },
     {
       "path": "src/backend/tests/routing/test_lease_credential_persistence.py",
-      "sizeBytes": 1986,
-      "sha256": "b9f11b20187e0c69e8601d20577728f3a1b59003d8efdb9566e64c7581ec3bd1",
+      "sizeBytes": 2050,
+      "sha256": "28f805a2199f126274e9e8b4acd960130f1c86d9712aca7d1eb5f5b5885a44b8",
       "lines": 64
     },
     {
@@ -13405,14 +13405,14 @@
     },
     {
       "path": "src/backend/tests/workers/test_assignment_commands.py",
-      "sizeBytes": 1845,
-      "sha256": "1adcecd09006f0da3c2563b55f837c804075701829b2a3b913d5e218426be936",
+      "sizeBytes": 1902,
+      "sha256": "4a90ea94df27bb25b5b296b534259fc3e1d93c4604622d8ab8bdbef3c0a54f62",
       "lines": 57
     },
     {
       "path": "src/backend/tests/workers/test_assignment_credential_bootstrap.py",
-      "sizeBytes": 5260,
-      "sha256": "e856ae8fb28ca59d28a44ae7ee803dc1b3a6c97bdbac3cebac5c96d80b54aa81",
+      "sizeBytes": 5404,
+      "sha256": "25b1ad4c452f848dfed95311ebc83c808ed308cd12937aaca3ea6a94f7a09c8f",
       "lines": 144
     },
     {
@@ -13423,8 +13423,8 @@
     },
     {
       "path": "src/backend/uv.lock",
-      "sizeBytes": 119384,
-      "sha256": "e4dc96794b478d10761084039d6a621ad454fa6b90e450f9212966a9f1d77f82",
+      "sizeBytes": 120260,
+      "sha256": "a3aa0955e236ad116607bc6b36c73e24b1ddd6cec7a179fc66c538b2dd2046c5",
       "lines": 876
     },
     {
@@ -13699,8 +13699,8 @@
     },
     {
       "path": "tools/generate_compose_backend.py",
-      "sizeBytes": 2904,
-      "sha256": "daf048284531f32ac99b4c1bf43b6f0ca4ea9bf60def9f12c6ddb28aa2215b98",
+      "sizeBytes": 3013,
+      "sha256": "a6a8f48ec1487a74fdf79d3f279d27e67c1639a8ad22bd72adc308115a73b9c5",
       "lines": 109
     },
     {
@@ -13759,8 +13759,8 @@
     },
     {
       "path": "tools/regenerate_package_metadata.py",
-      "sizeBytes": 6498,
-      "sha256": "72ec4834d18fb1d5ce6d546eaf10d183d2e7be617603ca3ccad205d308dd2730",
+      "sizeBytes": 6665,
+      "sha256": "dc3e41c6565bd2ed47c1407d0221eb7efd8f402609c8ce83d95d84418ebd4469",
       "lines": 167
     },
     {
@@ -13783,8 +13783,8 @@
     },
     {
       "path": "tools/run_56_task_protocol_load.py",
-      "sizeBytes": 3372,
-      "sha256": "28da20a0d29610ab7af9b7534a73ec9d1bcd7257ae1fecd33778fe6d1b8bca88",
+      "sizeBytes": 3455,
+      "sha256": "42d24e86bf15950b623ae6d44904bd36d772912c4829245459df435a2f85b17d",
       "lines": 83
     },
     {
@@ -13801,8 +13801,8 @@
     },
     {
       "path": "tools/run_lightweight_vision_real_test.py",
-      "sizeBytes": 2349,
-      "sha256": "55c011e1401e3d1e3bd3ee5f6ba57d941e9272e5db810cfaa19c9c1cebe9686a",
+      "sizeBytes": 2414,
+      "sha256": "659f4f48e53723639f6ad00c802c26da2e7490388cf97df9f36cf2b86bcc7936",
       "lines": 65
     },
     {
@@ -13813,44 +13813,44 @@
     },
     {
       "path": "tools/run_production_auto_assignment_e2e.py",
-      "sizeBytes": 12629,
-      "sha256": "e1b97c5c6bbc78ff0cf4a9193a090efe15f3fb92b84df3839ec069c35ba43bfd",
+      "sizeBytes": 12898,
+      "sha256": "20b6319b63ab52343f10596a5e84ed3b1a6ea20728c04b1542441eb1e443d01b",
       "lines": 269
     },
     {
       "path": "tools/run_qwen_real_inference.py",
-      "sizeBytes": 1410,
-      "sha256": "d8088704fbbcea6bcce44fad571c4b3e6db262692a6f7c114742c088de86ef2a",
+      "sizeBytes": 1452,
+      "sha256": "da1ba55c85328eab1108825cefca9250a3e57376bdb0824d969d41f00b90d83f",
       "lines": 42
     },
     {
       "path": "tools/run_real_flex_contract_matrix.py",
-      "sizeBytes": 4076,
-      "sha256": "6416984b309662b92b432b4a88ce1004275f11fcb58ebf186e6a0a6cf92bab0f",
+      "sizeBytes": 4106,
+      "sha256": "0dd91bd6ad30704848c3c1022310c8873ffb9782698a22be989007c07175a49b",
       "lines": 30
     },
     {
       "path": "tools/run_real_internvl_smoke.py",
-      "sizeBytes": 3495,
-      "sha256": "6278816cc0b16f6c7528eeb1d8fa950cd554d53b84df2eb22583d3f3e5297d76",
+      "sizeBytes": 3529,
+      "sha256": "a12ba3d638a154b06f64bb055d62bfb33bbb547ab911f029809110797cbb6836",
       "lines": 34
     },
     {
       "path": "tools/run_real_qwen_contract_matrix.py",
-      "sizeBytes": 7060,
-      "sha256": "01e62e0fb7d2cad9ca2b36dc5cb4963be025330c41404e6d1e7f3fdfc37d7f30",
+      "sizeBytes": 7141,
+      "sha256": "426792924ef7e4da3a9b8e34aa5d2d6643745762664969d91300b95c3fd464c4",
       "lines": 81
     },
     {
       "path": "tools/run_real_segmentation_smoke.py",
-      "sizeBytes": 1952,
-      "sha256": "9ccee35752f0112fc391d8de83bc2486e0ad8b09c689ad70360506331cf777db",
+      "sizeBytes": 1971,
+      "sha256": "345acb3d585da2b1b4f1e5140a6a1984be746aef90c143896e1b9f22e190c751",
       "lines": 19
     },
     {
       "path": "tools/run_real_vision_13_contract_matrix.py",
-      "sizeBytes": 9977,
-      "sha256": "48ad7270a834bf9136f5fa150f4e4c80a9311bd325a335a780adcc6b2d2a214d",
+      "sizeBytes": 10060,
+      "sha256": "5a65535ebd193ca09e5a4149e395988abbab58d398d18fb3af6a4c8326d6bebd",
       "lines": 83
     },
     {
@@ -13969,14 +13969,14 @@
     },
     {
       "path": "tools/validate_dependency_locks.py",
-      "sizeBytes": 4033,
-      "sha256": "cb296e9fa9d41cc00748d507afe79682446154998d124f138d2dcf626938edbe",
+      "sizeBytes": 4133,
+      "sha256": "7dca61b04da4203453926b6e45c24682f079c7af55024ba9410f900be21f3264",
       "lines": 100
     },
     {
       "path": "tools/validate_docs.py",
-      "sizeBytes": 1849,
-      "sha256": "12d04cd635cd576bae9ab98d40b95b89150c6f8b4dcb6ec7ce2898dadd33b434",
+      "sizeBytes": 1897,
+      "sha256": "564ab8ea00381538be8e2b9b2199f8a1af3bb5c2939f102749d11272e5b177bb",
       "lines": 48
     },
     {
@@ -14065,8 +14065,8 @@
     },
     {
       "path": "tools/validate_sql.py",
-      "sizeBytes": 5996,
-      "sha256": "5e7fab31cd5d7e1259ba32fc8d8e200f3610d5c649a98154156eeda095bb1a88",
+      "sizeBytes": 6035,
+      "sha256": "ba738de3e1c98fd67deb03272e11e6dac25ac69da66dfe5eab9c07273f4db29d",
       "lines": 39
     },
     {
@@ -14089,20 +14089,20 @@
     },
     {
       "path": "tools/verify_package.py",
-      "sizeBytes": 5553,
-      "sha256": "9e1d7474d6aeb1beca06f7cd81a97f9e051156497f489758ce0c73ed1988d45e",
+      "sizeBytes": 5666,
+      "sha256": "1123020332c1435d3d01dd1a9ed4b2ddc42e566116cecbd3d60b8422e3bbfe21",
       "lines": 113
     },
     {
       "path": "tools/verify_production_auto_assignment_source.py",
-      "sizeBytes": 2753,
-      "sha256": "3a0f6cf2a04fe518a6d75adb3a708ccb38f3769cdba0b0f2f2346dfa988d64d1",
+      "sizeBytes": 2817,
+      "sha256": "b625af769893a54695a94e53d79eb270f092a2f3bbb193f26527fbcc8ac4e0cd",
       "lines": 64
     },
     {
       "path": "tools/verify_production_completion_source.py",
-      "sizeBytes": 1365,
-      "sha256": "94656cb6adbe9ec9a1deadb94a501f87434d1ddc0b113a7198f95c0ab2b19fe3",
+      "sizeBytes": 1387,
+      "sha256": "978343bcb1d3231ce1c61ccee42b5402e71ab3897f6d4235e411123c8de0cdf3",
       "lines": 22
     },
     {
@@ -14113,8 +14113,8 @@
     },
     {
       "path": "tools/verify_task_catalog_infrastructure.py",
-      "sizeBytes": 3071,
-      "sha256": "46b21f38781660058dfa29d112831cf7759b410663a7e779bdae5058827de5ad",
+      "sizeBytes": 3113,
+      "sha256": "52b3fc4b0f9f1dc03029bde68d90a64c2c35c1b1fcc37ab15a1363c4809d91ff",
       "lines": 42
     },
     {
@@ -14125,8 +14125,8 @@
     },
     {
       "path": "tools/verify_websocket_replay_source.py",
-      "sizeBytes": 1195,
-      "sha256": "05fef347f3d7b30e81c4894b0d4ea0a60f763f5e0d6f4176012ca6194096908a",
+      "sizeBytes": 1217,
+      "sha256": "0331b2d37182587356f37f13ccb7dd617a128b7f445761a6429e1886d728c6cf",
       "lines": 22
     },
     {
