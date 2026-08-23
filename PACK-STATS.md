@@ -3,7 +3,7 @@
 - Version: `5.0.0`
 - Language: English only
 - Non-integrity content files: `2350`
-- Text lines: `765583`
+- Text lines: `765584`
 - Semantic vector lines: `595000`
 - OpenAPI operations and operation samples: `141`
 - Typed CloudEvent contracts and examples: `186`

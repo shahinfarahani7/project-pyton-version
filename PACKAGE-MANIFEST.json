@@ -176,7 +176,7 @@
     {
       "path": "PACK-STATS.md",
       "sizeBytes": 1437,
-      "sha256": "a8749ece1b17af8f3e437a6dd036e997ffdc3ca17713fbdf84a557f3f4aec6e3",
+      "sha256": "4ba7e74263109a5d26c76d73ad5f4078927970c2a0ee01feb40585091c4baac3",
       "lines": 74
     },
     {
@@ -13345,9 +13345,9 @@
     },
     {
       "path": "src/backend/tests/routing/test_lease_credential_persistence.py",
-      "sizeBytes": 2050,
-      "sha256": "28f805a2199f126274e9e8b4acd960130f1c86d9712aca7d1eb5f5b5885a44b8",
-      "lines": 64
+      "sizeBytes": 2143,
+      "sha256": "75acd7de379a220fa211e3dd2813cb6ee0ce4831f311f8fd45b393703e13b081",
+      "lines": 65
     },
     {
       "path": "src/backend/tests/routing/test_router_engine.py",
