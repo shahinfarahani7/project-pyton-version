@@ -3,15 +3,23 @@ import 'dart:typed_data';
 class WorkerTaskInput {
   const WorkerTaskInput({
     this.imageBytes,
+    this.compareImageBytes,
     this.text,
     this.imageUri,
+    this.data = const {},
   });
 
   final Uint8List? imageBytes;
+  final Uint8List? compareImageBytes;
   final String? text;
   final String? imageUri;
 
+  /// Canonical structured payload for Flex and paired-text contracts.
+  final Map<String, dynamic> data;
+
   bool get hasImage => imageBytes != null && imageBytes!.isNotEmpty;
+  bool get hasCompareImage =>
+      compareImageBytes != null && compareImageBytes!.isNotEmpty;
   bool get hasText => text != null && text!.trim().isNotEmpty;
 }
 
@@ -37,7 +45,8 @@ class WorkerTaskOptions {
       return const WorkerTaskOptions();
     }
     return WorkerTaskOptions(
-      languages: (json['languages'] as List<dynamic>?)
+      languages:
+          (json['languages'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const ['fa', 'en'],
@@ -58,6 +67,7 @@ class WorkerTaskRequest {
     required this.taskId,
     required this.idempotencyKey,
     required this.type,
+    this.sourceTaskType = '',
     required this.input,
     this.options = const WorkerTaskOptions(),
     this.deadlineAt,
@@ -68,6 +78,9 @@ class WorkerTaskRequest {
   final String taskId;
   final String idempotencyKey;
   final String type;
+
+  /// Backend catalog type, preserved after routing to an internal capability.
+  final String sourceTaskType;
   final WorkerTaskInput input;
   final WorkerTaskOptions options;
   final DateTime? deadlineAt;

@@ -26,12 +26,12 @@ class FakeOcrEngine implements OcrEngine {
         ? cannedLines
         : [
             const OcrLineResult(
-              text: 'فروشگاه نمونه',
+              text: 'Sample Store',
               confidence: 0.93,
               box: [12, 40, 410, 92],
             ),
             const OcrLineResult(
-              text: 'مبلغ کل: 2450000 ریال',
+              text: 'Total amount: 2450000 IRR',
               confidence: 0.91,
               box: [12, 100, 410, 140],
             ),

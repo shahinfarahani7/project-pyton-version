@@ -21,6 +21,7 @@ from edgemint.routing.fencing import (
 )
 from edgemint.routing.policy import RoutingPolicy
 from edgemint.security.tokens import hash_session_token
+from edgemint.security.lease_credentials import LeaseCredentialCipher
 
 
 @dataclass
@@ -92,6 +93,10 @@ class RouterService:
     ) -> dict[str, Any]:
         lease_token = secrets.token_urlsafe(48)
         token_hash = hash_session_token(lease_token)
+        token_ciphertext = LeaseCredentialCipher.from_settings(self.settings).encrypt(
+            lease_token,
+            worker_device_id=worker_device_id,
+        )
         row = (
             await connection.execute(
                 text(
@@ -120,6 +125,21 @@ class RouterService:
         ).mappings().first()
         if row is None:
             raise router_error("WORKER_NOT_ELIGIBLE")
+        await connection.execute(
+            text(
+                """
+                INSERT INTO public.assignment_lease_credentials(
+                    assignment_id, worker_device_id, lease_token_ciphertext
+                )
+                VALUES (:assignment_id, :worker_device_id, :lease_token_ciphertext)
+                """
+            ),
+            {
+                "assignment_id": row["assignment_id"],
+                "worker_device_id": worker_device_id,
+                "lease_token_ciphertext": token_ciphertext,
+            },
+        )
         return {
             "assignmentId": str(row["assignment_id"]),
             "fenceToken": int(row["fence_token"]),

@@ -13,7 +13,7 @@ def test_catalog_contains_core_task_types() -> None:
 
 
 def test_search_task_types() -> None:
-    payload = task_type_catalog.list_catalog(query="رسید", locale="fa")
+    payload = task_type_catalog.list_catalog(query="receipt", locale="fa")
     assert payload["total"] >= 1
     assert any(item["value"] == "ocr.receipt" for item in payload["items"])
 

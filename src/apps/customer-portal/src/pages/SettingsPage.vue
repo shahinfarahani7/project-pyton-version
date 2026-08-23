@@ -24,7 +24,7 @@ function onLocaleChange(event) {
         <label for="locale-select">{{ t('settings.locale') }}</label>
         <select id="locale-select" class="md-select" :value="locale" @change="onLocaleChange">
           <option value="en">English</option>
-          <option value="fa">فارسی</option>
+          <option value="fa">Persian (FA)</option>
         </select>
         <p class="login-note">{{ t('settings.localeHint') }}</p>
       </div>

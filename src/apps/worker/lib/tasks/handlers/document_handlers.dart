@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../contracts/worker_error.dart';
+import '../../contracts/task_contract_catalog.dart';
 import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/prompt_templates.dart';
@@ -26,15 +27,26 @@ class DocumentExtractHandler with OcrPipelineMixin implements TaskHandler {
   }) async {
     final ocr = await runOcr(request, ocrEngine, metrics);
     final llmStart = DateTime.now();
-    final schemaJson = jsonEncode(request.options.outputSchema ?? {});
-    final prompt = PromptTemplates.documentExtract(
-      ocrText: ocr.rawText,
-      ocrConfidence: ocr.averageConfidence,
-      outputSchemaJson: schemaJson,
+    final contract = TaskContractCatalog.forType(request.sourceTaskType);
+    final schema =
+        request.options.outputSchema ??
+        contract?.outputSchema ??
+        const <String, dynamic>{};
+    final prompt = PromptTemplates.contractedTask(
+      taskType: request.sourceTaskType,
+      instruction:
+          contract?.instruction ??
+          'Extract requested fields without invention.',
+      inputJson: jsonEncode({
+        'ocrText': ocr.rawText,
+        'ocrConfidence': ocr.averageConfidence,
+        ...request.input.data,
+      }),
+      outputSchemaJson: jsonEncode(schema),
     );
     final data = await qwenProcessor.runJsonTask(
       prompt: prompt,
-      outputSchema: request.options.outputSchema,
+      outputSchema: schema,
       signingKey: signingKey,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
@@ -66,7 +78,8 @@ class DocumentClassifyHandler with OcrPipelineMixin implements TaskHandler {
     bool Function()? isCancelled,
   }) async {
     final ocr = await runOcr(request, ocrEngine, metrics);
-    final labels = request.options.allowedLabels ?? ['receipt', 'invoice', 'other'];
+    final labels =
+        request.options.allowedLabels ?? ['receipt', 'invoice', 'other'];
     final llmStart = DateTime.now();
     final prompt = PromptTemplates.documentClassify(
       ocrText: ocr.rawText,
@@ -139,14 +152,29 @@ class TextClassifyHandler implements TaskHandler {
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
   }) async {
-    final labels = request.options.allowedLabels ?? ['payment', 'ticketing', 'login', 'other'];
+    final contract = TaskContractCatalog.forType(request.sourceTaskType);
+    final labels = request.options.allowedLabels ?? const <String>[];
     final llmStart = DateTime.now();
-    final prompt = PromptTemplates.textClassify(
-      inputText: request.input.text!,
-      allowedLabelsJson: jsonEncode(labels),
-    );
+    final schema = request.options.outputSchema ?? contract?.outputSchema;
+    final input = <String, dynamic>{
+      if (request.input.hasText) 'text': request.input.text,
+      ...request.input.data,
+      if (labels.isNotEmpty) 'allowedLabels': labels,
+    };
+    final prompt = contract == null
+        ? PromptTemplates.textClassify(
+            inputText: request.input.text!,
+            allowedLabelsJson: jsonEncode(labels),
+          )
+        : PromptTemplates.contractedTask(
+            taskType: request.sourceTaskType,
+            instruction: contract.instruction,
+            inputJson: jsonEncode(input),
+            outputSchemaJson: jsonEncode(schema),
+          );
     final data = await qwenProcessor.runJsonTask(
       prompt: prompt,
+      outputSchema: schema,
       signingKey: signingKey,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;

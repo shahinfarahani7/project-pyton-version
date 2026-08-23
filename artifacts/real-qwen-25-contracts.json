@@ -1,0 +1,362 @@
+{
+  "runtime": "litert-lm-python",
+  "model": "Qwen3-0.6B.litertlm",
+  "caseCount": 25,
+  "passed": 25,
+  "failed": 0,
+  "durationMs": 102149,
+  "results": [
+    {
+      "taskType": "text.summarize",
+      "passed": true,
+      "durationMs": 7207,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "summary": "EdgeMint runs verified AI tasks on devices.",
+        "keyPoints": [
+          "EdgeMint runs verified AI tasks on devices.",
+          "EdgeMint is a verified AI service."
+        ]
+      }
+    },
+    {
+      "taskType": "text.classify",
+      "passed": true,
+      "durationMs": 5173,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "label": "security",
+        "confidence": 0.9,
+        "evidence": [
+          "The verification code '123' is a common type of security code used for authentication purposes."
+        ]
+      }
+    },
+    {
+      "taskType": "moderation.prompt_safety",
+      "passed": true,
+      "durationMs": 5283,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "safe": true,
+        "riskScore": 0,
+        "categories": [
+          "account-security"
+        ],
+        "reason": "The question is about account security and does not involve any risk or malicious activity."
+      }
+    },
+    {
+      "taskType": "moderation.text",
+      "passed": true,
+      "durationMs": 4383,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "allowed": true,
+        "riskScore": 0,
+        "categories": [
+          "delivery"
+        ],
+        "reason": "The message is positive and appreciative of the delivery service."
+      }
+    },
+    {
+      "taskType": "moderation.profanity",
+      "passed": true,
+      "durationMs": 3540,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "containsProfanity": true,
+        "confidence": 0.9,
+        "spans": [
+          "This product is excellent."
+        ]
+      }
+    },
+    {
+      "taskType": "moderation.spam_comment",
+      "passed": true,
+      "durationMs": 3562,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "spam": false,
+        "confidence": 0.5,
+        "signals": [
+          "click",
+          "repeated",
+          "buy",
+          "click"
+        ]
+      }
+    },
+    {
+      "taskType": "review.fake_detection",
+      "passed": true,
+      "durationMs": 2323,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "fake": false,
+        "riskScore": 0,
+        "signals": []
+      }
+    },
+    {
+      "taskType": "review.sentiment",
+      "passed": true,
+      "durationMs": 2478,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "sentiment": "negative",
+        "confidence": 0.5,
+        "aspects": [
+          "slow delivery"
+        ]
+      }
+    },
+    {
+      "taskType": "review.topic_tagging",
+      "passed": true,
+      "durationMs": 2368,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "tags": [
+          "battery",
+          "camera"
+        ],
+        "confidence": 0.95
+      }
+    },
+    {
+      "taskType": "llm.summary_verification",
+      "passed": true,
+      "durationMs": 2726,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "valid": true,
+        "coverageScore": 1.0,
+        "unsupportedClaims": [],
+        "missingPoints": []
+      }
+    },
+    {
+      "taskType": "llm.hallucination_check",
+      "passed": true,
+      "durationMs": 2232,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "hallucinated": false,
+        "riskScore": 0,
+        "unsupportedClaims": []
+      }
+    },
+    {
+      "taskType": "llm.ocr_output_validation",
+      "passed": true,
+      "durationMs": 3746,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "valid": true,
+        "qualityScore": 100,
+        "issues": [],
+        "correctedText": "INVOICE 42 TOTAL 19.90 EUR."
+      }
+    },
+    {
+      "taskType": "llm.policy_violation",
+      "passed": true,
+      "durationMs": 5986,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "violates": true,
+        "severity": "high",
+        "policies": [
+          "no personal phone numbers"
+        ],
+        "reason": "The content includes a personal phone number (+1 555 0100) which violates the policy of not using personal phone numbers."
+      }
+    },
+    {
+      "taskType": "llm.prompt_output_consistency",
+      "passed": true,
+      "durationMs": 2182,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "consistent": true,
+        "score": 1.0,
+        "issues": []
+      }
+    },
+    {
+      "taskType": "llm.answer_quality_score",
+      "passed": true,
+      "durationMs": 5671,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "score": 1.0,
+        "dimensions": {
+          "answer": "4",
+          "question": "2+2",
+          "input": "2+2"
+        },
+        "issues": [
+          {
+            "issue": "Answer is correct",
+            "score": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "llm.suspicious_output",
+      "passed": true,
+      "durationMs": 2461,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "suspicious": true,
+        "riskScore": 0.5,
+        "signals": []
+      }
+    },
+    {
+      "taskType": "nlp.language_detection",
+      "passed": true,
+      "durationMs": 2581,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "language": "arabic",
+        "confidence": 0.9,
+        "alternatives": []
+      }
+    },
+    {
+      "taskType": "nlp.text_classification",
+      "passed": true,
+      "durationMs": 4735,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "label": "billing",
+        "confidence": 0.9,
+        "evidence": [
+          {
+            "reasoning": "The text mentions a parcel being late, which is a common issue related to billing or delivery delays."
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "nlp.spam_fraud_classification",
+      "passed": true,
+      "durationMs": 3249,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "label": "spammer",
+        "confidence": 0.9,
+        "signals": [
+          "You won a prize",
+          "Send your password now"
+        ]
+      }
+    },
+    {
+      "taskType": "ml.bot_abuse_risk",
+      "passed": true,
+      "durationMs": 3862,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "risk": "high",
+        "score": 0.85,
+        "signals": [
+          {
+            "type": "request",
+            "count": 500,
+            "duration": "1 second"
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "document.extract",
+      "passed": true,
+      "durationMs": 2306,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "vendor": "ACME",
+        "total": 99.16,
+        "currency": "EUR"
+      }
+    },
+    {
+      "taskType": "extract.amount",
+      "passed": true,
+      "durationMs": 3675,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "amount": 49.9,
+        "currency": "EUR",
+        "evidence": "EUR 49.90"
+      }
+    },
+    {
+      "taskType": "extract.date",
+      "passed": true,
+      "durationMs": 4892,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "date": "2026-08-03",
+        "original": "Invoice date: 2026-08-03",
+        "confidence": 1.0
+      }
+    },
+    {
+      "taskType": "extract.order_number",
+      "passed": true,
+      "durationMs": 4253,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "orderNumber": "PO-EM-441",
+        "confidence": 1.0,
+        "evidence": "Purchase order PO-EM-441"
+      }
+    },
+    {
+      "taskType": "extract.document_type",
+      "passed": true,
+      "durationMs": 4620,
+      "missing": [],
+      "wrongTypes": [],
+      "output": {
+        "documentType": "INVOICE",
+        "confidence": 1.0,
+        "evidence": [
+          {
+            "evidence": "INVOICE #42. Bill to ACME. Total 10 EUR."
+          }
+        ]
+      }
+    }
+  ]
+}

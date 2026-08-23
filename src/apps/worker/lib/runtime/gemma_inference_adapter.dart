@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_gemma/core/di/service_registry.dart';
 
 import '../models/worker_model_catalog.dart';
 import 'inference_adapter.dart';
@@ -16,14 +18,27 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   InferenceBackend get backend => InferenceBackend.liteRt;
 
   @override
-  Future<void> loadVerified(ModelArtifact artifact, {required String signingKey}) async {
+  Future<void> loadVerified(
+    ModelArtifact artifact, {
+    required String signingKey,
+  }) async {
     if (artifact.backend != InferenceBackend.liteRt) {
       throw ModelIntegrityException('Expected LiteRT model artifact');
     }
-    if (artifact.digestSha256 != WorkerModelCatalog.installedDigestMarker &&
+    if (artifact.digestSha256 != WorkerModelCatalog.artifactSha256 ||
         artifact.modelVersionId != WorkerModelCatalog.modelVersionId) {
-      throw ModelIntegrityException('Unexpected model version for worker runtime');
+      throw ModelIntegrityException(
+        'Unexpected model version for worker runtime',
+      );
     }
+    final path = await ServiceRegistry.instance.fileSystemService.getTargetPath(
+      WorkerModelCatalog.fileName,
+    );
+    if (!await File(path).exists()) {
+      throw ModelIntegrityException('Verified Qwen artifact missing on disk');
+    }
+    await _model?.close();
+    await WorkerModelCatalog.installBuilder().fromFile(path).install();
     final active = await FlutterGemma.getActiveModel(
       maxTokens: 4096,
       preferredBackend: PreferredBackend.cpu,
@@ -45,8 +60,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     final prompt = utf8.decode(inputBytes);
     final chat = await _model!.createChat(
       maxOutputTokens: 256,
-      systemInstruction:
-          'You are EdgeMint worker AI. Answer concisely for the assigned task payload.',
+      systemInstruction: 'You are EdgeMint worker AI. Answer concisely for the assigned task payload.',
     );
     await chat.addQueryChunk(Message.text(text: prompt, isUser: true));
     await onProgress?.call(700);
@@ -55,7 +69,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     final text = switch (reply) {
       TextResponse(:final token) => token,
       ThinkingResponse(:final content) => content,
-      FunctionCallResponse(:final name, :final args) => '$name(${args.toString()})',
+      FunctionCallResponse(:final name, :final args) =>
+        '$name(${args.toString()})',
       ParallelFunctionCallResponse(:final calls) =>
         calls.map((call) => '${call.name}(${call.args})').join(', '),
     };

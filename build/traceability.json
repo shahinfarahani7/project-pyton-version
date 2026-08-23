@@ -5,7 +5,7 @@
   "allScenarios": 215,
   "openApiOperations": 141,
   "operationContracts": 141,
-  "sqlTables": 75,
+  "sqlTables": 76,
   "rows": [
     {
       "requirement": "req-bill-001",

@@ -43,7 +43,12 @@ abstract final class JsonOutputValidator {
     for (final entry in schema.entries) {
       final key = entry.key;
       if (!data.containsKey(key)) {
-        continue;
+        return WorkerError(
+          code: WorkerErrorCode.outputSchemaMismatch,
+          message: 'Required field $key is missing',
+          retryable: true,
+          stage: WorkerTaskStage.llm,
+        );
       }
       final expected = entry.value.toString();
       final value = data[key];
@@ -63,13 +68,41 @@ abstract final class JsonOutputValidator {
           stage: WorkerTaskStage.llm,
         );
       }
+      if (expected.contains('boolean') && value is! bool && value != null) {
+        return WorkerError(
+          code: WorkerErrorCode.outputSchemaMismatch,
+          message: 'Field $key expected boolean',
+          retryable: true,
+          stage: WorkerTaskStage.llm,
+        );
+      }
+      if (expected.contains('array') && value is! List && value != null) {
+        return WorkerError(
+          code: WorkerErrorCode.outputSchemaMismatch,
+          message: 'Field $key expected array',
+          retryable: true,
+          stage: WorkerTaskStage.llm,
+        );
+      }
+      if (expected.contains('object') && value is! Map && value != null) {
+        return WorkerError(
+          code: WorkerErrorCode.outputSchemaMismatch,
+          message: 'Field $key expected object',
+          retryable: true,
+          stage: WorkerTaskStage.llm,
+        );
+      }
     }
     return null;
   }
 
   static String _stripThinkBlocks(String input) {
     var cleaned = input.replaceAll(
-      RegExp(r'<\s*think\s*>[\s\S]*?<\s*/\s*think\s*>', dotAll: true, caseSensitive: false),
+      RegExp(
+        r'<\s*think\s*>[\s\S]*?<\s*/\s*think\s*>',
+        dotAll: true,
+        caseSensitive: false,
+      ),
       '',
     );
     cleaned = cleaned.replaceAll(

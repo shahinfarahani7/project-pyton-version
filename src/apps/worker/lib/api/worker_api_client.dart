@@ -184,6 +184,29 @@ class WorkerApiClient {
     return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
+  Future<CommandReceipt> renewAssignment({
+    required String assignmentId,
+    required String accessToken,
+    required String leaseToken,
+    required int fenceToken,
+    required int sequence,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.renewAssignment(assignmentId),
+      body: {
+        'leaseToken': leaseToken,
+        'fenceToken': fenceToken,
+        'sequence': sequence,
+      },
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
   Future<CommandReceipt> progressAssignment({
     required String assignmentId,
     required String accessToken,

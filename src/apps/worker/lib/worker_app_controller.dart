@@ -492,20 +492,6 @@ class WorkerAppController extends ChangeNotifier {
 
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
 
-  /// Direct URL for browser download (backend proxy or Hugging Face fallback).
-  String get modelDownloadUrl {
-    if (usesDevMockInference) {
-      return '';
-    }
-    if (WorkerModelCatalog.bundledAssetFromEnvironment() != null) {
-      return '';
-    }
-    if (WorkerModelCatalog.usesBackendArtifactProxy() && backendOnline) {
-      return WorkerModelCatalog.resolveDownloadUrl(_config.baseUrl);
-    }
-    return WorkerModelCatalog.huggingFaceDownloadUrl;
-  }
-
   bool get canAcceptAssignments =>
       backendOnline && !isGemmaDownloading && available;
 
@@ -745,6 +731,7 @@ class WorkerAppController extends ChangeNotifier {
         'Process ${assignment.taskType} task ${assignment.taskId ?? assignment.assignmentId}';
     final contentUrl = manifest['inputContentUrl'] as String?;
     final Uint8List inputBytes;
+    Uint8List? compareImageBytes;
     final bool isImageInput;
     if (contentUrl != null) {
       final mediaResponse =
@@ -755,6 +742,18 @@ class WorkerAppController extends ChangeNotifier {
       inputBytes = mediaResponse.bodyBytes;
       isImageInput = true;
       _logTask('Input image loaded (${inputBytes.length} bytes) from $contentUrl');
+      final compareContentUrl = manifest['compareInputContentUrl'] as String?;
+      if (compareContentUrl != null) {
+        final compareResponse = await _http
+            .get(_resolveDevServiceUrl(compareContentUrl))
+            .timeout(const Duration(seconds: 30));
+        if (compareResponse.statusCode != 200) {
+          throw StateError(
+            'Compare input unavailable (HTTP ${compareResponse.statusCode})',
+          );
+        }
+        compareImageBytes = compareResponse.bodyBytes;
+      }
     } else {
       inputBytes = Uint8List.fromList(utf8.encode(prompt));
       isImageInput = false;
@@ -764,6 +763,7 @@ class WorkerAppController extends ChangeNotifier {
     }
     return AssignmentInputBundle(
       inputBytes: inputBytes,
+      compareImageBytes: compareImageBytes,
       inputDigest: sha256Hex(inputBytes),
       manifest: manifest,
       isImageInput: isImageInput,

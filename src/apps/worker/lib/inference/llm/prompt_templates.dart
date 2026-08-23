@@ -82,4 +82,36 @@ $brokenJson
 ---
 /no_think
 ''';
+
+  static String contractedTask({
+    required String taskType,
+    required String instruction,
+    required String inputJson,
+    required String outputSchemaJson,
+  }) =>
+      '''
+You are executing EdgeMint task type "$taskType".
+$instruction
+Return exactly one JSON object and no markdown or explanation.
+Every key in this output contract is required:
+$outputSchemaJson
+Input:
+$inputJson
+/no_think
+''';
+
+  static String visionTask({
+    required String taskType,
+    required String instruction,
+    required String outputSchemaJson,
+    required String contextJson,
+  }) =>
+      '''
+Inspect the attached image for EdgeMint task "$taskType".
+$instruction
+Use visible evidence only. Return exactly one JSON object and no markdown.
+Every key in this output contract is required: $outputSchemaJson
+Additional context: $contextJson
+/no_think
+''';
 }

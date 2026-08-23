@@ -24,6 +24,7 @@ class AssignmentInputBundle {
     required this.inputBytes,
     required this.inputDigest,
     required this.modelArtifact,
+    this.compareImageBytes,
     this.manifest = const {},
     this.isImageInput = false,
   });
@@ -31,6 +32,7 @@ class AssignmentInputBundle {
   final Uint8List inputBytes;
   final String inputDigest;
   final ModelArtifact modelArtifact;
+  final Uint8List? compareImageBytes;
   final Map<String, dynamic> manifest;
   final bool isImageInput;
 }
@@ -136,7 +138,11 @@ class AssignmentCoordinator {
     }
 
     final signingMaterial = await _platform.signingMaterial();
-    await _inference.loadVerified(bundle.modelArtifact, signingKey: signingMaterial);
+    final usePipeline =
+        _taskEngine != null && TaskTypeMapper.isPipelineTask(assignment.taskType);
+    if (!usePipeline) {
+      await _inference.loadVerified(bundle.modelArtifact, signingKey: signingMaterial);
+    }
 
     await _api.reportAssignmentStarted(
       assignmentId: assignment.assignmentId,
@@ -149,8 +155,6 @@ class AssignmentCoordinator {
     _emit(_status.copyWith(phase: ExecutionPhase.running, progressMilli: decision.checkpoint?.progressMilli ?? 0));
 
     var lastReportedProgress = decision.checkpoint?.progressMilli ?? 0;
-    final usePipeline =
-        _taskEngine != null && TaskTypeMapper.isPipelineTask(assignment.taskType);
     Future<void> onProgressWrapper(int progressMilli) async {
       if (_cancelRequested) {
         throw const LeaseRevokedException();
@@ -194,6 +198,7 @@ class AssignmentCoordinator {
           assignment: assignment,
           manifest: bundle.manifest,
           inputBytes: bundle.inputBytes,
+          compareImageBytes: bundle.compareImageBytes,
           isImageInput: bundle.isImageInput,
         ),
         signingKey: signingMaterial,
@@ -212,7 +217,9 @@ class AssignmentCoordinator {
     _emit(_status.copyWith(phase: ExecutionPhase.submitting, progressMilli: output.progressMilli));
     final resultSha256 = sha256Hex(output.resultBytes);
     final outputArtifactId = 'art_${assignment.attemptId}';
-    final signer = ResultSigner(signingMaterial: signingMaterial);
+    // The result MAC is scoped to this short-lived lease capability. The server
+    // can verify it without persisting a device private secret.
+    final signer = ResultSigner(signingMaterial: assignment.leaseToken);
     final signature = signer.sign(
       assignmentId: assignment.assignmentId,
       fenceToken: assignment.fenceToken,
@@ -229,6 +236,7 @@ class AssignmentCoordinator {
         'fenceToken': assignment.fenceToken,
         'resultSha256': resultSha256,
         'outputArtifactId': outputArtifactId,
+        'outputInline': utf8.decode(output.resultBytes),
         'metrics': output.metrics,
         'signature': signature,
       },
