@@ -5,13 +5,15 @@ import { RouterLink } from 'vue-router';
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import { useAsyncResource } from '../composables/useAsyncResource';
+import { useTaskEventStream } from '../composables/useTaskEventStream';
 import TaskCreateDialog from '../components/TaskCreateDialog.vue';
-import TaskResultCell from '../components/TaskResultCell.vue';
+import TaskDetailCell from '../components/TaskDetailCell.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { mapTaskInputError } from '../config/taskTypeCatalog';
 import { t } from '../i18n';
 import { formatDateTime, formatTaskType } from '../utils/format';
+import { sortTasksNewestFirst } from '../utils/taskSort';
 import { trackEvent } from '../telemetry';
 
 const session = useSession();
@@ -31,6 +33,26 @@ const { data: tasks, error, loading, refresh } = useAsyncResource(
   { enabled: () => Boolean(session.workspaceId && session.hasPermission('customer.tasks:read')) },
 );
 
+function applyTaskEvent(event) {
+  if (!event?.task || !tasks.value?.items) {
+    void refresh({ silent: true });
+    return;
+  }
+  const items = [...tasks.value.items];
+  const index = items.findIndex((item) => item.id === event.taskId);
+  if (index >= 0) {
+    items[index] = event.task;
+  } else {
+    items.unshift(event.task);
+  }
+  tasks.value = { ...tasks.value, items: sortTasksNewestFirst(items) };
+}
+
+useTaskEventStream(() => session.workspaceId, {
+  enabled: () => Boolean(session.workspaceId && session.hasPermission('customer.tasks:read')),
+  onTaskEvent: applyTaskEvent,
+});
+
 const typeOptions = computed(() => {
   const types = new Set((tasks.value?.items ?? []).map((task) => task.taskType));
   return ['all', ...types];
@@ -38,7 +60,8 @@ const typeOptions = computed(() => {
 
 const filteredTasks = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
-  return (tasks.value?.items ?? []).filter((task) => {
+  return sortTasksNewestFirst(
+    (tasks.value?.items ?? []).filter((task) => {
     const matchesType = typeFilter.value === 'all' || task.taskType === typeFilter.value;
     const lifecycle = String(task.lifecycleStatus).toLowerCase();
     const matchesStatus =
@@ -52,7 +75,8 @@ const filteredTasks = computed(() => {
       task.taskType.toLowerCase().includes(query) ||
       label.includes(query);
     return matchesType && matchesStatus && matchesQuery;
-  });
+    }),
+  );
 });
 
 function openCreateDialog() {
@@ -151,7 +175,7 @@ async function submitCreateTask(payload) {
     <ul v-else class="em-task-list em-task-list--full">
       <li class="em-task-list__header" aria-hidden="true">
         <span>{{ t('tasks.colId') }}</span>
-        <span>{{ t('tasks.colResult') }}</span>
+        <span>{{ t('tasks.colDetail') }}</span>
         <span>{{ t('tasks.colCreated') }}</span>
       </li>
       <li v-for="task in filteredTasks" :key="task.id">
@@ -160,7 +184,7 @@ async function submitCreateTask(payload) {
             <code class="em-task-row__id">{{ task.id.slice(0, 8) }}</code>
             <p class="em-task-row__type">{{ formatTaskType(task) }}</p>
           </div>
-          <TaskResultCell :task="task" />
+          <TaskDetailCell :task="task" />
           <div class="em-task-row__meta">
             <StatusChip :status="task.lifecycleStatus" />
             <span>{{ formatDateTime(task.createdAt) }}</span>

@@ -144,6 +144,7 @@ def _tasks_for_workspace(workspace_id: UUID) -> list[dict[str, Any]]:
         )
         known_ids.add(task_id)
     _sync_pending_tasks_to_worker_queue(_created_tasks.get(workspace_id, []))
+    tasks.sort(key=lambda task: task.get("createdAt", ""), reverse=True)
     return tasks
 
 
@@ -208,6 +209,30 @@ def dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
     return None
 
 
+def find_task_workspace(task_id: str) -> UUID | None:
+    for workspace_id, tasks in _created_tasks.items():
+        if any(task["id"] == task_id for task in tasks):
+            return workspace_id
+    for workspace_id in DEV_WORKSPACE_IDS:
+        if any(task["id"] == task_id for task in _seeded_tasks(workspace_id)):
+            return workspace_id
+    return None
+
+
+def _notify_task_event(workspace_id: UUID, task_id: str, event: str) -> None:
+    from edgemint.dev import task_events, task_type_catalog
+
+    task = dev_task(workspace_id, task_id)
+    if task is None:
+        return
+    task_events.publish_task_event(
+        workspace_id,
+        event=event,
+        task_id=task_id,
+        task=task_type_catalog.enrich_task_row(dict(task)),
+    )
+
+
 def create_dev_task(
     workspace_id: UUID,
     *,
@@ -232,6 +257,10 @@ def create_dev_task(
         task["inputLabel"] = file_name or (
             "Pasted text" if input_text and not file_bytes else "Customer upload"
         )
+        if input_text and input_text.strip():
+            task["inputPreview"] = input_text.strip()[:2000]
+        if instructions and instructions.strip():
+            task["instructions"] = instructions.strip()[:800]
         task["inputSource"] = {
             "input_text": input_text,
             "instructions": instructions,
@@ -254,6 +283,7 @@ def create_dev_task(
     enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
     task["assignmentId"] = task["id"]
     task.pop("inputSource", None)
+    _notify_task_event(workspace_id, task["id"], "task.created")
     return task
 
 
@@ -267,9 +297,11 @@ def update_dev_task_execution(
     result_mime_type: str | None = None,
 ) -> bool:
     updated = False
-    for tasks in _created_tasks.values():
+    workspace_id: UUID | None = None
+    for ws_id, tasks in _created_tasks.items():
         for task in tasks:
             if task["id"] == task_id:
+                workspace_id = ws_id
                 task["lifecycleStatus"] = lifecycle_status
                 task["executionStatus"] = execution_status
                 task["updatedAt"] = _now_iso()
@@ -280,9 +312,10 @@ def update_dev_task_execution(
                 if result_mime_type is not None:
                     task["resultMimeType"] = result_mime_type
                 updated = True
-    for tasks in (_seeded_tasks(DEV_WORKSPACE_PRIMARY), _seeded_tasks(DEV_WORKSPACE_STAGING)):
-        for task in tasks:
+    for ws_id in (DEV_WORKSPACE_PRIMARY, DEV_WORKSPACE_STAGING):
+        for task in _seeded_tasks(ws_id):
             if task["id"] == task_id:
+                workspace_id = ws_id
                 task["lifecycleStatus"] = lifecycle_status
                 task["executionStatus"] = execution_status
                 task["updatedAt"] = _now_iso()
@@ -293,6 +326,8 @@ def update_dev_task_execution(
                 if result_mime_type is not None:
                     task["resultMimeType"] = result_mime_type
                 updated = True
+    if updated and workspace_id is not None:
+        _notify_task_event(workspace_id, task_id, "task.updated")
     return updated
 
 

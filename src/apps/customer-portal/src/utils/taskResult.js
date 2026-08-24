@@ -33,6 +33,18 @@ export function taskResultState(task) {
   return { kind: 'none' };
 }
 
+/** True while the portal should keep polling for an updated result. */
+export function taskAwaitingResult(task) {
+  const lifecycle = String(task?.lifecycleStatus ?? '').toLowerCase();
+  if (lifecycle === 'failed') {
+    return false;
+  }
+  if (['succeeded', 'completed'].includes(lifecycle)) {
+    return !(task?.resultPreview || task?.resultArtifactUrl);
+  }
+  return true;
+}
+
 export function taskResultDownloadName(task) {
   if (task?.inputLabel) {
     return `result-${task.inputLabel}`;

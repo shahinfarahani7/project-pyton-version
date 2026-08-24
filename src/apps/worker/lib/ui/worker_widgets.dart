@@ -63,9 +63,9 @@ class WorkerKpiCard extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               height: 36,
+              width: double.infinity,
               child: CustomPaint(
                 painter: _SparklinePainter(values: sparkline!, color: accent),
-                size: const Size(double.infinity, 36),
               ),
             ),
           ],
@@ -260,6 +260,9 @@ class WorkerLineChart extends StatelessWidget {
       width: double.infinity,
       child: CustomPaint(
         painter: _AreaLinePainter(values: values, color: color),
+        child: CustomPaint(
+          foregroundPainter: _ChartGridPainter(),
+        ),
       ),
     );
   }
@@ -512,21 +515,53 @@ class _DonutPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final total = segments.fold<double>(0, (sum, s) => sum + s.value);
-    if (total <= 0) return;
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    if (total <= 0) {
+      return;
+    }
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height).deflate(12);
+    canvas.drawArc(
+      rect,
+      0,
+      2 * math.pi,
+      false,
+      Paint()
+        ..color = WorkerColors.surfaceContainerHigh
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 18,
+    );
     var start = -math.pi / 2;
     for (final segment in segments) {
       final sweep = (segment.value / total) * 2 * math.pi;
+      if (sweep <= 0) {
+        continue;
+      }
       final paint = Paint()
         ..color = segment.color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 18
         ..strokeCap = StrokeCap.butt;
-      canvas.drawArc(rect.deflate(12), start, sweep, false, paint);
+      canvas.drawArc(rect, start, sweep, false, paint);
       start += sweep;
     }
   }
 
   @override
   bool shouldRepaint(covariant _DonutPainter oldDelegate) => oldDelegate.segments != segments;
+}
+
+class _ChartGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final baseline = size.height - 1;
+    canvas.drawLine(
+      Offset(0, baseline),
+      Offset(size.width, baseline),
+      Paint()
+        ..color = WorkerColors.outlineVariant
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ChartGridPainter oldDelegate) => false;
 }

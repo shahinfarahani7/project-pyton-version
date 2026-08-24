@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import asyncio
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.settings import get_settings
 from edgemint.dev import fixtures
+from edgemint.dev import task_events
 from edgemint.dev import task_type_catalog
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
@@ -133,6 +136,39 @@ async def list_tasks(
 ) -> dict:
     _ensure_workspace_access(session, workspace_id)
     return task_type_catalog.enrich_task_list(fixtures.dev_tasks(workspace_id))
+
+
+@router.get("/v1/workspaces/{workspace_id}/tasks/events")
+async def stream_task_events(
+    workspace_id: UUID,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> StreamingResponse:
+    """Push task create/update events to the portal (SSE — no polling)."""
+    _ensure_workspace_access(session, workspace_id)
+
+    async def event_stream():
+        queue = await task_events.subscribe(workspace_id)
+        try:
+            yield "event: ready\ndata: {}\n\n"
+            while True:
+                try:
+                    payload = await asyncio.wait_for(queue.get(), timeout=30.0)
+                except asyncio.TimeoutError:
+                    yield ": heartbeat\n\n"
+                    continue
+                yield f"event: task\ndata: {payload}\n\n"
+        finally:
+            await task_events.unsubscribe(workspace_id, queue)
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks", status_code=201)

@@ -7,8 +7,10 @@ import { useSession } from '../auth/session';
 import StatCard from '../components/ui/StatCard.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import TaskResultCell from '../components/TaskResultCell.vue';
+import UsageTrendChart from '../components/UsageTrendChart.vue';
 import { t } from '../i18n';
 import { formatDateTime, formatMicroEur, formatNumber, formatTaskType } from '../utils/format';
+import { buildDonutGradient } from '../utils/chartHelpers';
 
 const session = useSession();
 const loading = ref(true);
@@ -44,39 +46,23 @@ const distribution = computed(() => {
   }
   const total = taskItems.value.length || 1;
   const palette = ['#7c4dff', '#5b8def', '#34d399', '#fbbf24', '#94a3b8'];
-  return Object.entries(buckets)
+  const slices = Object.entries(buckets)
     .map(([label, count], index) => ({
       label,
       count,
-      pct: Math.round((count / total) * 1000) / 10,
+      pct: (count / total) * 100,
       color: palette[index % palette.length],
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
+  const pctTotal = slices.reduce((sum, slice) => sum + slice.pct, 0) || 1;
+  return slices.map((slice) => ({
+    ...slice,
+    pct: Math.round((slice.pct / pctTotal) * 1000) / 10,
+  }));
 });
 
-const donutSegments = computed(() => {
-  let offset = 0;
-  const circumference = 2 * Math.PI * 42;
-  return distribution.value.map((slice) => {
-    const dash = (slice.pct / 100) * circumference;
-    const segment = { ...slice, dash, offset, circumference };
-    offset += dash;
-    return segment;
-  });
-});
-
-const trendPoints = computed(() => {
-  const counts = [3, 5, 4, 7, 6, 8, taskItems.value.length || 5];
-  const max = Math.max(...counts, 1);
-  return counts
-    .map((value, index) => {
-      const x = 20 + index * 40;
-      const y = 90 - (value / max) * 70;
-      return `${x},${y}`;
-    })
-    .join(' ');
-});
+const donutGradient = computed(() => buildDonutGradient(distribution.value));
 
 onMounted(() => {
   if (!session.workspaceId) {
@@ -137,31 +123,18 @@ onMounted(() => {
     </div>
 
     <div class="em-layout-charts">
-      <article class="md-card em-chart-card">
-        <h2 class="em-section-title">{{ t('dashboard.usageTrend') }}</h2>
-        <svg class="em-line-chart" viewBox="0 0 260 100" role="img" :aria-label="t('dashboard.usageTrend')">
-          <polyline class="em-line-chart__grid" points="0,90 260,90" />
-          <polyline class="em-line-chart__line" :points="trendPoints" />
-        </svg>
-      </article>
+      <UsageTrendChart :task-items="taskItems" />
 
       <article class="md-card em-chart-card">
         <h2 class="em-section-title">{{ t('dashboard.distribution') }}</h2>
-        <div class="em-donut-layout">
-          <svg class="em-donut" viewBox="0 0 100 100" role="img" :aria-label="t('dashboard.distribution')">
-            <circle cx="50" cy="50" r="42" class="em-donut__track" />
-            <circle
-              v-for="(segment, index) in donutSegments"
-              :key="segment.label"
-              cx="50"
-              cy="50"
-              r="42"
-              class="em-donut__segment"
-              :stroke="segment.color"
-              :stroke-dasharray="`${segment.dash} ${segment.circumference}`"
-              :stroke-dashoffset="-donutSegments.slice(0, index).reduce((sum, s) => sum + s.dash, 0)"
-            />
-          </svg>
+        <div v-if="!distribution.length" class="empty-state">{{ t('usage.noData') }}</div>
+        <div v-else class="em-donut-layout">
+          <div
+            class="em-donut-ring"
+            role="img"
+            :aria-label="t('dashboard.distribution')"
+            :style="{ background: donutGradient }"
+          />
           <ul class="em-donut-legend">
             <li v-for="slice in distribution" :key="slice.label">
               <span class="em-donut-legend__dot" :style="{ background: slice.color }" />

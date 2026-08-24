@@ -174,6 +174,19 @@ def enrich_task_row(row: dict[str, Any], *, locale: str = "en") -> dict[str, Any
     enriched = dict(row)
     enriched["taskTypeMeta"] = meta
     enriched["taskTypeLabel"] = label_for(task_type, locale=locale)
+
+    task_id = str(row.get("id", ""))
+    if task_id and (not enriched.get("inputPreview") or not enriched.get("inputLabel")):
+        from edgemint.dev import worker_task_inputs
+
+        manifest = worker_task_inputs.input_manifest(task_id)
+        if manifest:
+            if not enriched.get("inputLabel"):
+                enriched["inputLabel"] = manifest.get("inputLabel") or manifest.get("documentTitle")
+            if not enriched.get("inputPreview"):
+                preview = manifest.get("inputText") or manifest.get("prompt")
+                if preview:
+                    enriched["inputPreview"] = str(preview)[:2000]
     return enriched
 
 

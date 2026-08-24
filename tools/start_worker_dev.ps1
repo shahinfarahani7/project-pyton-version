@@ -111,29 +111,18 @@ function Test-AdbReverseRules {
 }
 
 function Apply-DevHotPatches {
-    $pairs = @(
-        @('src/backend/edgemint/dev/dev_public_urls.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/dev_public_urls.py'),
-        @('src/backend/edgemint/services/api_gateway.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/services/api_gateway.py'),
-        @('src/backend/edgemint/services/worker_gateway.py', 'edgemint-worker-gateway-1', '/app/src/backend/edgemint/services/worker_gateway.py'),
-        @('src/backend/edgemint/dev/dev_public_urls.py', 'edgemint-worker-registry-1', '/app/src/backend/edgemint/dev/dev_public_urls.py'),
-        @('src/backend/edgemint/dev/worker_assignments.py', 'edgemint-worker-registry-1', '/app/src/backend/edgemint/dev/worker_assignments.py'),
-        @('src/backend/edgemint/services/worker_registry.py', 'edgemint-worker-registry-1', '/app/src/backend/edgemint/services/worker_registry.py'),
-        @('src/backend/edgemint/dev/dev_worker_api.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/dev_worker_api.py'),
-        @('src/backend/edgemint/dev/portal_api.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/portal_api.py'),
-        @('src/backend/edgemint/dev/worker_task_inputs.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/worker_task_inputs.py'),
-        @('src/backend/edgemint/dev/fixtures.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/fixtures.py'),
-        @('src/backend/edgemint/dev/assignment_bridge.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/assignment_bridge.py'),
-        @('src/backend/edgemint/dev/worker_assignments.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/worker_assignments.py'),
-        @('src/backend/edgemint/dev/task_type_catalog.py', 'edgemint-api-gateway-1', '/app/src/backend/edgemint/dev/task_type_catalog.py'),
-        @('src/backend/edgemint/dev/model_artifact_proxy.py', 'edgemint-model-registry-1', '/app/src/backend/edgemint/dev/model_artifact_proxy.py'),
-        @('src/backend/edgemint/services/model_registry.py', 'edgemint-model-registry-1', '/app/src/backend/edgemint/services/model_registry.py')
-    )
-    foreach ($pair in $pairs) {
-        $src = Join-Path $Root $pair[0]
-        if (-not (Test-Path $src)) { continue }
-        docker cp $src "$($pair[1]):$($pair[2])" 2>$null | Out-Null
+    # Image tags lag repo source; sync the full Python package instead of cherry-picking files.
+    $edgemintSrc = Join-Path $Root 'src/backend/edgemint'
+    if (-not (Test-Path $edgemintSrc)) {
+        throw "Missing $edgemintSrc"
     }
-    docker exec -u 0 edgemint-api-gateway-1 python -m pip install --no-cache-dir python-multipart==0.0.20 2>$null | Out-Null
+    docker cp $edgemintSrc edgemint-worker-registry-1:/app/src/backend/ 2>$null | Out-Null
+    docker cp $edgemintSrc edgemint-api-gateway-1:/app/src/backend/ 2>$null | Out-Null
+    docker cp (Join-Path $edgemintSrc 'services/worker_gateway.py') edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py 2>$null | Out-Null
+    docker cp (Join-Path $edgemintSrc 'services/model_registry.py') edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py 2>$null | Out-Null
+    Invoke-Quiet {
+        docker exec -u 0 edgemint-api-gateway-1 python -m pip install --root-user-action=ignore --no-cache-dir python-multipart==0.0.20 2>$null | Out-Null
+    }
     docker restart edgemint-worker-gateway-1 edgemint-worker-registry-1 edgemint-api-gateway-1 edgemint-model-registry-1 2>$null | Out-Null
     if (-not (Wait-BackendHealth -TimeoutSeconds 90)) {
         Write-Host '   WARN: backend slow to recover; continuing if worker-gateway is healthy.'
@@ -265,7 +254,20 @@ if (-not $SkipPortal) {
             npm run dev -- --host 0.0.0.0 --port 5173 2>&1
         } -ArgumentList $Root
         Start-Sleep -Seconds 6
+        $lanIp = (
+            Get-NetIPAddress -AddressFamily IPv4 |
+            Where-Object {
+                $_.IPAddress -notlike '127.*' -and
+                $_.PrefixOrigin -ne 'WellKnown' -and
+                $_.InterfaceAlias -notlike '*WSL*' -and
+                $_.InterfaceAlias -notlike '*Default Switch*'
+            } |
+            Select-Object -First 1 -ExpandProperty IPAddress
+        )
         Write-Host "   Portal starting: http://localhost:5173 (job $($portalJob.Id))"
+        if ($lanIp) {
+            Write-Host "   LAN access:    http://${lanIp}:5173"
+        }
     }
 } else {
     Write-Host '   Skipped (-SkipPortal)'

@@ -1,37 +1,19 @@
 <script setup>
-import { ref } from 'vue';
-
 import { useSession } from '../auth/session';
 import PageHeader from '../components/ui/PageHeader.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
-import { resolveLocale, t } from '../i18n';
+import { t } from '../i18n';
 
 const session = useSession();
-const locale = ref(resolveLocale());
-
-function onLocaleChange(event) {
-  locale.value = event.target.value;
-  document.documentElement.lang = locale.value === 'fa' ? 'fa' : 'en';
-}
 </script>
 
 <template>
   <section class="em-page">
     <PageHeader :title="t('nav.settings')" :subtitle="t('settings.subtitle')" />
 
-    <article class="md-card grid-2">
-      <div class="md-field">
-        <label for="locale-select">{{ t('settings.locale') }}</label>
-        <select id="locale-select" class="md-select" :value="locale" @change="onLocaleChange">
-          <option value="en">English</option>
-          <option value="fa">Persian (FA)</option>
-        </select>
-        <p class="login-note">{{ t('settings.localeHint') }}</p>
-      </div>
-      <div>
-        <p class="stat-card__label">{{ t('settings.telemetry') }}</p>
-        <p>{{ t('settings.telemetryHint') }}</p>
-      </div>
+    <article class="md-card">
+      <p class="stat-card__label">{{ t('settings.telemetry') }}</p>
+      <p>{{ t('settings.telemetryHint') }}</p>
     </article>
 
     <article class="md-card">
