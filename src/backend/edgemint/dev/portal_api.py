@@ -220,9 +220,10 @@ async def create_task(
             "INPUT_IMAGE_REQUIRED",
             "INPUT_FILE_OR_TEXT_REQUIRED",
             "TASK_TYPE_REQUIRED",
+            "FLEX_INPUT_MUST_BE_JSON_OBJECT",
         }:
             raise HTTPException(422, str(exc)) from exc
-        raise
+        raise HTTPException(500, "TASK_CREATE_FAILED") from exc
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks/upload", status_code=201)

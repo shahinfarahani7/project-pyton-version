@@ -5,6 +5,7 @@ import TaskTypePicker from './TaskTypePicker.vue';
 import {
   getTaskType,
   taskTypeAccept,
+  taskTypeNeedsFlexJson,
   taskTypeNeedsImage,
   taskTypeNeedsText,
 } from '../config/taskTypeCatalog';
@@ -32,6 +33,7 @@ const dragOver = ref(false);
 const acceptAttr = computed(() => taskTypeAccept(taskType.value));
 const needsText = computed(() => taskTypeNeedsText(taskType.value));
 const needsImage = computed(() => taskTypeNeedsImage(taskType.value));
+const needsFlexJson = computed(() => taskTypeNeedsFlexJson(taskType.value));
 
 const inputModes = [
   { id: 'image', labelKey: 'tasks.inputModeImage', icon: 'image' },
@@ -105,8 +107,9 @@ function validatePayload() {
   const note = instructions.value.trim();
   const file = inputFile.value;
   const entry = getTaskType(taskType.value);
+  const hasCustomInput = Boolean(text || note || file);
 
-  if (!text && !note && !file) {
+  if (!hasCustomInput) {
     localError.value = '';
     return true;
   }
@@ -115,12 +118,28 @@ function validatePayload() {
     localError.value = t('tasks.inputTextRequired');
     return false;
   }
-  if (needsImage.value && !file && !text) {
+  if (needsImage.value && !file) {
     localError.value = t('tasks.inputImageRequired');
     return false;
   }
+  if (needsFlexJson.value && text) {
+    try {
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        localError.value = t('tasks.flexJsonRequired');
+        return false;
+      }
+    } catch {
+      localError.value = t('tasks.flexJsonRequired');
+      return false;
+    }
+  }
   if (entry?.inputMode === 'image' && file && !file.type.startsWith('image/')) {
     localError.value = t('tasks.inputImageRequired');
+    return false;
+  }
+  if (file && file.size > 2 * 1024 * 1024) {
+    localError.value = t('tasks.inputFileTooLarge');
     return false;
   }
   localError.value = '';

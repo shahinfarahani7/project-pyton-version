@@ -87,6 +87,12 @@ export function taskTypeNeedsImage(value) {
   return entry?.inputMode === 'image';
 }
 
+/** @param {string} value */
+export function taskTypeNeedsFlexJson(value) {
+  const entry = getTaskType(value);
+  return entry?.inputMode === 'flex';
+}
+
 /** @param {string} value @param {string} locale */
 export function formatTaskType(value, locale) {
   const entry = getTaskType(value);
@@ -119,9 +125,16 @@ export function filterTaskTypeCategories(query, locale) {
     .filter(Boolean);
 }
 
-/** @param {Error & { problem?: { detail?: string; title?: string } }} error */
+/** @param {Error & { problem?: { detail?: string; title?: string; code?: string } }} error */
 export function mapTaskInputError(error) {
-  const detail = String(error?.problem?.detail ?? error?.message ?? error?.problem?.title ?? '');
+  const problem = error?.problem ?? {};
+  const detailValue = problem.detail;
+  const detail =
+    typeof detailValue === 'string'
+      ? detailValue
+      : typeof detailValue === 'object' && detailValue !== null && 'code' in detailValue
+        ? String(detailValue.code)
+        : String(problem.code ?? error?.message ?? problem.title ?? '');
   if (detail.includes('UNSUPPORTED_TASK_TYPE')) {
     return 'tasks.unsupportedTaskType';
   }
@@ -133,6 +146,15 @@ export function mapTaskInputError(error) {
   }
   if (detail.includes('INPUT_FILE_OR_TEXT_REQUIRED')) {
     return 'tasks.inputFileOrTextRequired';
+  }
+  if (detail.includes('FLEX_INPUT_MUST_BE_JSON_OBJECT')) {
+    return 'tasks.flexJsonRequired';
+  }
+  if (detail.includes('INPUT_FILE_TOO_LARGE')) {
+    return 'tasks.inputFileTooLarge';
+  }
+  if (detail.includes('AUTH_INVALID_CREDENTIAL') || detail.includes('AUTH_SESSION_REVOKED')) {
+    return 'tasks.sessionExpired';
   }
   return null;
 }

@@ -102,9 +102,13 @@ async function submitCreateTask(payload) {
   });
   try {
     await portalApi.createTask(session.workspaceId, payload);
-    await refresh();
     createError.value = '';
     closeCreateDialog();
+    try {
+      await refresh({ silent: true });
+    } catch {
+      // Task was created; SSE or a later refresh will update the list.
+    }
   } catch (err) {
     const mapped = mapTaskInputError(err);
     createError.value = mapped ? t(mapped) : err?.message ?? t('tasks.createError');
