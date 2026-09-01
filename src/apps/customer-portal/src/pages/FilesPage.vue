@@ -30,7 +30,7 @@ const files = [
 </script>
 
 <template>
-  <section>
+  <section class="em-page">
     <PageHeader :title="t('nav.files')" :subtitle="t('files.subtitle')">
       <template #actions>
         <button type="button" class="md-btn md-btn-filled" disabled>
@@ -40,7 +40,7 @@ const files = [
       </template>
     </PageHeader>
 
-    <div class="upload-zone md-card">
+    <div class="upload-zone">
       <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
       <p>{{ t('files.uploadHint') }}</p>
     </div>

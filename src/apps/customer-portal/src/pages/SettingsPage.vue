@@ -17,18 +17,20 @@ const session = useSession();
     </article>
 
     <article class="md-card">
-      <PageHeader :title="t('settings.sessionTitle')" />
-      <dl class="stat-grid">
+      <header class="em-section-header">
+        <h2 class="em-section-title">{{ t('settings.sessionTitle') }}</h2>
+      </header>
+      <dl class="em-kv-list">
         <div>
-          <dt class="stat-card__label">{{ t('dashboard.sessionId') }}</dt>
-          <dd>{{ session.sessionPublicId ?? '—' }}</dd>
+          <dt>{{ t('dashboard.sessionId') }}</dt>
+          <dd><code>{{ session.sessionPublicId ?? '—' }}</code></dd>
         </div>
         <div>
-          <dt class="stat-card__label">{{ t('dashboard.workspaceId') }}</dt>
-          <dd>{{ session.workspaceId ?? '—' }}</dd>
+          <dt>{{ t('dashboard.workspaceId') }}</dt>
+          <dd><code>{{ session.workspaceId ?? '—' }}</code></dd>
         </div>
         <div>
-          <dt class="stat-card__label">{{ t('settings.permissions') }}</dt>
+          <dt>{{ t('settings.permissions') }}</dt>
           <dd class="permission-list">
             <StatusChip v-for="permission in session.permissions" :key="permission" :status="permission" />
           </dd>

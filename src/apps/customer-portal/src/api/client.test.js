@@ -4,9 +4,35 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { fetchJson, getCsrfToken, setCsrfToken } from './client.js';
+import { apiErrorMessage, fetchJson, getCsrfToken, setCsrfToken } from './client.js';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
+describe('apiErrorMessage', () => {
+  it('reads FastAPI auth detail objects', () => {
+    expect(
+      apiErrorMessage({
+        detail: {
+          code: 'AUTH_INVALID_CREDENTIAL',
+          title: 'Invalid credentials',
+          detail: null,
+        },
+      }),
+    ).toBe('Invalid credentials');
+  });
+
+  it('reads string validation detail codes', () => {
+    expect(apiErrorMessage({ detail: 'INPUT_IMAGE_REQUIRED' })).toBe('INPUT_IMAGE_REQUIRED');
+  });
+
+  it('reads validation error arrays', () => {
+    expect(
+      apiErrorMessage({
+        detail: [{ loc: ['body', 'taskType'], msg: 'Field required' }],
+      }),
+    ).toBe('body.taskType: Field required');
+  });
+});
 
 describe('api client security', () => {
   it('uses generated Problem type shape on failure', async () => {

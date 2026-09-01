@@ -79,6 +79,14 @@ const filteredTasks = computed(() => {
   );
 });
 
+const listError = computed(() => {
+  if (!error.value) {
+    return '';
+  }
+  const mapped = mapTaskInputError({ message: error.value });
+  return mapped ? t(mapped) : error.value;
+});
+
 function openCreateDialog() {
   createError.value = '';
   createFormKey.value += 1;
@@ -167,7 +175,7 @@ async function submitCreateTask(payload) {
       @submit="submitCreateTask"
     />
 
-    <p v-if="error" class="md-alert md-alert--error" role="alert">{{ error }}</p>
+    <p v-if="listError" class="md-alert md-alert--error" role="alert">{{ listError }}</p>
     <p v-if="createError && !createOpen" class="md-alert md-alert--error" role="alert">{{ createError }}</p>
     <div v-if="loading" class="md-card"><div class="md-skeleton" style="height: 6rem" /></div>
     <EmptyState

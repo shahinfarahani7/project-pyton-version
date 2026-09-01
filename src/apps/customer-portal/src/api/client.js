@@ -1,9 +1,49 @@
 const CSRF_HEADER = 'X-CSRF-Token';
 
+/** Normalize API/Problem+ and FastAPI error payloads into user-visible text. */
+export function apiErrorMessage(problem) {
+  if (problem == null) {
+    return 'Request failed';
+  }
+  if (typeof problem === 'string') {
+    return problem.trim() || 'Request failed';
+  }
+  if (typeof problem !== 'object') {
+    return String(problem);
+  }
+
+  const detail = problem.detail;
+  if (typeof detail === 'string' && detail.trim()) {
+    return detail.trim();
+  }
+  if (Array.isArray(detail)) {
+    const first = detail[0];
+    if (first && typeof first === 'object') {
+      const field = Array.isArray(first.loc) ? first.loc.filter(Boolean).join('.') : '';
+      const message = first.msg ?? first.message;
+      if (field && message) {
+        return `${field}: ${message}`;
+      }
+      return message ?? JSON.stringify(first);
+    }
+    return String(first ?? problem.title ?? 'Request failed');
+  }
+  if (detail && typeof detail === 'object') {
+    if (typeof detail.detail === 'string' && detail.detail.trim()) {
+      return detail.detail.trim();
+    }
+    return detail.title ?? detail.code ?? problem.title ?? problem.code ?? 'Request failed';
+  }
+
+  return problem.title ?? problem.message ?? problem.code ?? 'Request failed';
+}
+
 export class ApiClientError extends Error {
   constructor(problem) {
-    super(problem.detail ?? problem.title);
-    this.problem = problem;
+    const normalized = typeof problem === 'string' ? { detail: problem } : problem ?? {};
+    super(apiErrorMessage(normalized));
+    this.problem = normalized;
+    this.status = normalized.status;
   }
 }
 
@@ -66,7 +106,7 @@ export async function fetchJson(path, options = {}) {
     });
   }
   if (!response.ok) {
-    throw new ApiClientError(payload);
+    throw new ApiClientError({ ...payload, status: response.status });
   }
   return payload;
 }
@@ -98,7 +138,7 @@ export async function fetchForm(path, formData) {
     });
   }
   if (!response.ok) {
-    throw new ApiClientError(payload);
+    throw new ApiClientError({ ...payload, status: response.status });
   }
   return payload;
 }

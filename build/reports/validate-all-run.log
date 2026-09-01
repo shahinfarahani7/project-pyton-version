@@ -1,0 +1,245 @@
+
+[2026-08-23 09:25:07] RUN tools/validate_dsl.py
+{
+  "documents": 609,
+  "kinds": 39,
+  "errors": 0
+}
+
+EXIT 0
+[2026-08-23 09:25:08] RUN tools/validate_contracts.py
+{
+  "operationIds": 141,
+  "canonicalEvents": 186,
+  "cloudEventExamples": 186,
+  "asyncChannels": 186,
+  "errors": 0
+}
+
+EXIT 0
+[2026-08-23 09:25:09] RUN tools/validate_contract_examples.py
+{
+  "status": "passed",
+  "samples": 141,
+  "operations": 141,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:25:10] RUN tools/validate_cloudevent_examples.py
+{
+  "status": "passed",
+  "messages": 186,
+  "examples": 186,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:25:10] RUN tools/validate_traceability.py
+{
+  "requirements": 80,
+  "useCases": 60,
+  "useCaseScenarios": 120,
+  "allScenarios": 215,
+  "openApiOperations": 141,
+  "operationContracts": 141,
+  "sqlTables": 76,
+  "errors": 0
+}
+
+EXIT 0
+[2026-08-23 09:25:11] RUN tools/verify_vectors.py
+{
+  "files": 9,
+  "lines": 595000,
+  "counts": {
+    "claim-vectors.jsonl": 25000,
+    "fraud-vectors.jsonl": 60000,
+    "ledger-vectors.jsonl": 90000,
+    "pricing-vectors.jsonl": 110000,
+    "reward-vectors.jsonl": 90000,
+    "routing-vectors.jsonl": 100000,
+    "task-lifecycle-vectors.jsonl": 70000,
+    "webhook-vectors.jsonl": 30000,
+    "worker-resume-vectors.jsonl": 20000
+  },
+  "semanticOracles": [
+    "claim-vectors.jsonl",
+    "fraud-vectors.jsonl",
+    "ledger-vectors.jsonl",
+    "pricing-vectors.jsonl",
+    "reward-vectors.jsonl",
+    "routing-vectors.jsonl",
+    "task-lifecycle-vectors.jsonl",
+    "webhook-vectors.jsonl",
+    "worker-resume-vectors.jsonl"
+  ],
+  "errors": 0
+}
+
+EXIT 0
+[2026-08-23 09:44:49] RUN tools/validate_sql.py
+{
+  "status": "passed",
+  "engine": "PostgreSQL 18",
+  "migrations": 15,
+  "tables": 75,
+  "rlsTables": 36,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:50] RUN tools/validate_websocket_architecture.py
+{
+  "status": "passed",
+  "transport": "wss",
+  "database": "PostgreSQL 18",
+  "eventCount": 186,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:51] RUN tools/validate_infra.py
+{
+  "status": "passed_with_warning",
+  "terraformFiles": 13,
+  "helmServices": 21,
+  "hclParser": "structural-fallback",
+  "warnings": [
+    "python-hcl2 unavailable; Terraform received structural source validation only. Install tools/requirements.lock for full HCL parsing."
+  ],
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:51] RUN tools/validate_infrastructure_source.py
+{
+  "status": "passed",
+  "services": 21,
+  "database": "PostgreSQL 18",
+  "transport": "WebSocket"
+}
+
+EXIT 0
+[2026-08-23 09:44:51] RUN tools/validate_reference.py
+{
+  "referenceFiles": 17,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:51] RUN tools/validate_samples.py
+{
+  "operations": 141,
+  "operationSamples": 141,
+  "journeys": 20,
+  "errors": 0
+}
+
+EXIT 0
+[2026-08-23 09:44:52] RUN tools/validate_release_blockers.py
+{
+  "unresolvedDesignBlockers": 0,
+  "externalEvidenceRequirementCount": 41,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:52] RUN tools/validate_docs.py
+{
+  "markdownFiles": 241,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:52] RUN tools/compile_dsl.py
+compiled 609 documents
+
+EXIT 0
+[2026-08-23 09:44:53] RUN tools/validate_cursor_plan.py
+{
+  "status": "passed",
+  "workPackages": 27,
+  "executionUnits": 141,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:53] RUN tools/validate_production_pack.py
+{
+  "status": "passed",
+  "requiredFiles": 31,
+  "closedFindings": 147,
+  "workPackages": 27,
+  "scores": [
+    100,
+    100,
+    100
+  ],
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:54] RUN tools/validate_dependency_locks.py
+{
+  "status": "passed",
+  "backendDependencies": 38,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:55] RUN tools/validate_release_inputs.py
+{
+  "status": "passed",
+  "releaseInputs": 41,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:55] RUN tools/regenerate_release_evidence_schema.py
+{
+  "status": "regenerated",
+  "externalInputs": 40,
+  "artifacts": 27,
+  "tests": 21
+}
+
+EXIT 0
+[2026-08-23 09:44:55] RUN tools/regenerate_release_evidence_template.py
+{
+  "status": "regenerated",
+  "externalInputs": 40,
+  "artifacts": 27,
+  "tests": 21
+}
+
+EXIT 0
+[2026-08-23 09:44:55] RUN tools/validate_evidence_contract.py
+{
+  "status": "passed",
+  "externalInputs": 40,
+  "artifacts": 27,
+  "tests": 21,
+  "errors": []
+}
+
+EXIT 0
+[2026-08-23 09:44:55] RUN tools/regenerate_package_metadata.py
+{
+  "status": "metadata-regenerated",
+  "manifestEntries": 2352,
+  "checksumEntries": 2353,
+  "distributionFiles": 2354
+}
+
+EXIT 0
+[2026-08-23 09:44:59] RUN tools/verify_package.py
+{
+  "status": "passed",
+  "checksumEntries": 2353,
+  "actualFilesExcludingChecksum": 2353,
+  "errors": []
+}
+
+EXIT 0
+FAILED: 

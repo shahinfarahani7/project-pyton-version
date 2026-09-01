@@ -125,35 +125,46 @@ export function filterTaskTypeCategories(query, locale) {
     .filter(Boolean);
 }
 
-/** @param {Error & { problem?: { detail?: string; title?: string; code?: string } }} error */
+/** @param {Error & { problem?: { detail?: unknown; title?: string; code?: string } }} error */
 export function mapTaskInputError(error) {
   const problem = error?.problem ?? {};
   const detailValue = problem.detail;
-  const detail =
-    typeof detailValue === 'string'
-      ? detailValue
-      : typeof detailValue === 'object' && detailValue !== null && 'code' in detailValue
-        ? String(detailValue.code)
-        : String(problem.code ?? error?.message ?? problem.title ?? '');
-  if (detail.includes('UNSUPPORTED_TASK_TYPE')) {
+  const haystack = [
+    typeof detailValue === 'string' ? detailValue : '',
+    typeof detailValue === 'object' && detailValue !== null && 'code' in detailValue
+      ? String(detailValue.code)
+      : '',
+    typeof detailValue === 'object' && detailValue !== null && 'title' in detailValue
+      ? String(detailValue.title)
+      : '',
+    problem.code,
+    problem.title,
+    error?.message,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  if (haystack.includes('UNSUPPORTED_TASK_TYPE')) {
     return 'tasks.unsupportedTaskType';
   }
-  if (detail.includes('INPUT_TEXT_REQUIRED')) {
+  if (haystack.includes('INPUT_TEXT_REQUIRED')) {
     return 'tasks.inputTextRequired';
   }
-  if (detail.includes('INPUT_IMAGE_REQUIRED')) {
+  if (haystack.includes('INPUT_IMAGE_REQUIRED')) {
     return 'tasks.inputImageRequired';
   }
-  if (detail.includes('INPUT_FILE_OR_TEXT_REQUIRED')) {
+  if (haystack.includes('INPUT_FILE_OR_TEXT_REQUIRED')) {
     return 'tasks.inputFileOrTextRequired';
   }
-  if (detail.includes('FLEX_INPUT_MUST_BE_JSON_OBJECT')) {
+  if (haystack.includes('FLEX_INPUT_MUST_BE_JSON_OBJECT')) {
     return 'tasks.flexJsonRequired';
   }
-  if (detail.includes('INPUT_FILE_TOO_LARGE')) {
+  if (haystack.includes('INPUT_FILE_TOO_LARGE')) {
     return 'tasks.inputFileTooLarge';
   }
-  if (detail.includes('AUTH_INVALID_CREDENTIAL') || detail.includes('AUTH_SESSION_REVOKED')) {
+  if (
+    /AUTH_INVALID_CREDENTIAL|AUTH_SESSION_REVOKED|Invalid credentials|Session revoked/i.test(haystack)
+  ) {
     return 'tasks.sessionExpired';
   }
   return null;
