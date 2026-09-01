@@ -15,6 +15,10 @@ class MobileTaskDispatcher {
     DocumentExtractHandler(),
     DocumentClassifyHandler(),
     DocumentSummarizeHandler(),
+
+    // text.summarize -> Qwen only, no OCR
+    TextSummarizeHandler(),
+
     TextClassifyHandler(),
     DocumentImageQualityHandler(),
     BlurryImageHandler(),
@@ -29,8 +33,11 @@ class MobileTaskDispatcher {
         return handler;
       }
     }
+
     return null;
   }
 
-  Iterable<String> get capabilities => _handlers.map((h) => h.capability);
+  Iterable<String> get capabilities {
+    return _handlers.map((handler) => handler.capability);
+  }
 }

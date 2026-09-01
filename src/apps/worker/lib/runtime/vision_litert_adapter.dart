@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'package:convert/convert.dart';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -22,7 +22,7 @@ class VisionLiteRtAdapter {
           .fromNetwork(WorkerVisionModelCatalog.downloadUrl, foreground: true)
           .install();
     }
-    final path = await ServiceRegistry.instance.fileSystemService.getTargetPath(
+    final path = await ServiceRegistry.instance.fileSystemService.getReadTargetPath(
       id,
     );
     if (!await File(path).exists()) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import '../api/worker_assignment_models.dart';
@@ -49,8 +50,11 @@ class TaskExecutionEngine {
   final QwenTaskProcessor _qwenProcessor;
   final MobileTaskDispatcher _dispatcher;
   final IdempotencyStore _idempotency;
+
   WorkerTaskResult? _lastResult;
   bool _running = false;
+
+  Future<bool>? _modelReadyFuture;
 
   WorkerTaskResult? get lastResult => _lastResult;
 
@@ -58,17 +62,21 @@ class TaskExecutionEngine {
     required bool qwenReady,
     required bool ocrReady,
   }) async {
-    final caps = <String>[];
-    for (final cap in _dispatcher.capabilities) {
-      if (TaskTypeMapper.requiresOcr(cap) && !ocrReady) {
+    final capabilities = <String>[];
+
+    for (final capability in _dispatcher.capabilities) {
+      if (TaskTypeMapper.requiresOcr(capability) && !ocrReady) {
         continue;
       }
-      if (TaskTypeMapper.requiresLlm(cap) && !qwenReady) {
+
+      if (TaskTypeMapper.requiresLlm(capability) && !qwenReady) {
         continue;
       }
-      caps.add(cap);
+
+      capabilities.add(capability);
     }
-    return caps;
+
+    return capabilities;
   }
 
   Future<InferenceOutput> execute({
@@ -80,29 +88,78 @@ class TaskExecutionEngine {
     if (_running) {
       throw StateError('Concurrent task execution is not allowed');
     }
+
     _running = true;
+
     try {
       final request = _buildRequest(context);
+
+      developer.log(
+        '[TASK START] '
+        'taskId=${request.taskId} '
+        'type=${request.type} '
+        'hasText=${request.input.hasText} '
+        'hasImage=${request.input.hasImage}',
+        name: 'EdgeMintTaskEngine',
+      );
+
+      // -----------------------------------------------------------------------
+      // Idempotency
+      // -----------------------------------------------------------------------
+
       final cached = _idempotency.get(request.idempotencyKey);
+
       if (cached != null) {
+        developer.log(
+          '[TASK CACHE HIT] '
+          'taskId=${request.taskId}',
+          name: 'EdgeMintTaskEngine',
+        );
+
         _lastResult = cached;
         return _toInferenceOutput(cached);
       }
 
+      // -----------------------------------------------------------------------
+      // Validation
+      // -----------------------------------------------------------------------
+
       final validationError = TaskInputValidator.validate(request);
+
       if (validationError != null) {
+        developer.log(
+          '[TASK VALIDATION FAILED] '
+          'taskId=${request.taskId} '
+          'type=${request.type} '
+          'code=${validationError.codeName} '
+          'message=${validationError.message}',
+          name: 'EdgeMintTaskEngine',
+        );
+
         final result = _failedResult(request, validationError);
+
         _lastResult = result;
+
         return _toInferenceOutput(result);
       }
 
       final v1Type = request.type;
+
+      // -----------------------------------------------------------------------
+      // Device capability check
+      // -----------------------------------------------------------------------
+
       final tier = DeviceTierPolicy.fromFreeStorageMb(freeStorageMb);
-      if (TaskTypeMapper.requiresOcr(v1Type) &&
-          TaskTypeMapper.requiresLlm(
-            v1Type,
-            ocrOnly: request.options.ocrOnly,
-          ) &&
+
+      final requiresOcr = TaskTypeMapper.requiresOcr(v1Type);
+
+      final requiresLlm = TaskTypeMapper.requiresLlm(
+        v1Type,
+        ocrOnly: request.options.ocrOnly,
+      );
+
+      if (requiresOcr &&
+          requiresLlm &&
           !DeviceTierPolicy.allowsCombinedOcrLlm(tier)) {
         final result = _failedResult(
           request,
@@ -113,12 +170,26 @@ class TaskExecutionEngine {
             stage: WorkerTaskStage.validation,
           ),
         );
+
         _lastResult = result;
+
         return _toInferenceOutput(result);
       }
 
+      // -----------------------------------------------------------------------
+      // Handler
+      // -----------------------------------------------------------------------
+
       final handler = _dispatcher.handlerFor(v1Type);
+
       if (handler == null) {
+        developer.log(
+          '[TASK HANDLER MISSING] '
+          'taskId=${request.taskId} '
+          'type=$v1Type',
+          name: 'EdgeMintTaskEngine',
+        );
+
         final result = _failedResult(
           request,
           WorkerError(
@@ -128,16 +199,44 @@ class TaskExecutionEngine {
             stage: WorkerTaskStage.validation,
           ),
         );
+
         _lastResult = result;
+
         return _toInferenceOutput(result);
       }
 
-      if (TaskTypeMapper.requiresOcr(v1Type)) {
+      developer.log(
+        '[TASK HANDLER] '
+        'taskId=${request.taskId} '
+        'type=$v1Type '
+        'handler=${handler.runtimeType}',
+        name: 'EdgeMintTaskEngine',
+      );
+
+      // -----------------------------------------------------------------------
+      // OCR readiness
+      // -----------------------------------------------------------------------
+
+      if (requiresOcr) {
         final ocrReady = await _ocrEngine.isReady();
+
         if (!ocrReady) {
+          developer.log(
+            '[OCR LOAD] '
+            'taskId=${request.taskId}',
+            name: 'EdgeMintTaskEngine',
+          );
+
           try {
             await _ocrEngine.ensureLoaded();
-          } catch (_) {
+          } catch (error, stackTrace) {
+            developer.log(
+              '[OCR LOAD ERROR] $error',
+              name: 'EdgeMintTaskEngine',
+              error: error,
+              stackTrace: stackTrace,
+            );
+
             final result = _failedResult(
               request,
               const WorkerError(
@@ -147,14 +246,25 @@ class TaskExecutionEngine {
                 stage: WorkerTaskStage.ocr,
               ),
             );
+
             _lastResult = result;
+
             return _toInferenceOutput(result);
           }
         }
       }
 
+      // -----------------------------------------------------------------------
+      // Metrics
+      // -----------------------------------------------------------------------
+
       final metrics = WorkerTaskMetrics();
+
       metrics.inputBytes = context.inputBytes.length;
+
+      // -----------------------------------------------------------------------
+      // Execute
+      // -----------------------------------------------------------------------
 
       try {
         if (isCancelled?.call() == true) {
@@ -166,6 +276,15 @@ class TaskExecutionEngine {
           );
         }
 
+        developer.log(
+          '[TASK EXECUTE] '
+          'taskId=${request.taskId} '
+          'type=$v1Type '
+          'ocr=$requiresOcr '
+          'llm=$requiresLlm',
+          name: 'EdgeMintTaskEngine',
+        );
+
         final result = await handler.handle(
           request: request,
           ocrEngine: _ocrEngine,
@@ -174,6 +293,7 @@ class TaskExecutionEngine {
           metrics: metrics,
           isCancelled: isCancelled,
         );
+
         final enriched = WorkerTaskResult(
           schemaVersion: result.schemaVersion,
           taskId: result.taskId,
@@ -190,23 +310,60 @@ class TaskExecutionEngine {
                 : WorkerModelCatalog.displayName,
             'runtime': request.type == TaskTypeMapper.removeBackground
                 ? 'MediaPipe Tasks Vision/TFLite'
-                : 'LiteRT-LM/flutter_gemma',
+                : request.type == TaskTypeMapper.visionAnalyze
+                ? 'LiteRT-LM/flutter_gemma'
+                : 'MediaPipe/flutter_gemma',
           },
           error: result.error,
         );
+
         _idempotency.put(request.idempotencyKey, enriched);
+
         _lastResult = enriched;
+
+        developer.log(
+          '[TASK COMPLETED] '
+          'taskId=${request.taskId} '
+          'type=$v1Type '
+          'status=${enriched.status.name}',
+          name: 'EdgeMintTaskEngine',
+        );
+
         return _toInferenceOutput(enriched);
-      } on WorkerError catch (error) {
+      } on WorkerError catch (error, stackTrace) {
+        developer.log(
+          '[TASK EXECUTION ERROR] '
+          'type=${request.type} '
+          'taskId=${request.taskId} '
+          'code=${error.codeName} '
+          'error=${error.message}',
+          name: 'EdgeMintTaskEngine',
+          error: error,
+          stackTrace: stackTrace,
+        );
+
         final result = _failedResult(
           request,
           error,
           retryable: error.retryable,
         );
+
         _idempotency.put(request.idempotencyKey, result);
+
         _lastResult = result;
+
         return _toInferenceOutput(result);
-      } catch (error) {
+      } catch (error, stackTrace) {
+        developer.log(
+          '[TASK EXECUTION ERROR] '
+          'type=${request.type} '
+          'taskId=${request.taskId} '
+          'error=$error',
+          name: 'EdgeMintTaskEngine',
+          error: error,
+          stackTrace: stackTrace,
+        );
+
         final result = _failedResult(
           request,
           WorkerError(
@@ -216,7 +373,9 @@ class TaskExecutionEngine {
             stage: WorkerTaskStage.llm,
           ),
         );
+
         _lastResult = result;
+
         return _toInferenceOutput(result);
       }
     } finally {
@@ -224,17 +383,45 @@ class TaskExecutionEngine {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Request builder
+  // ---------------------------------------------------------------------------
+
   WorkerTaskRequest _buildRequest(TaskExecutionContext context) {
     final manifest = context.manifest;
+
     final optionsJson = manifest['options'] as Map<String, dynamic>?;
+
     final options = WorkerTaskOptions.fromJson(optionsJson);
+
     final v1Type =
         TaskTypeMapper.toV1(context.assignment.taskType) ??
         context.assignment.taskType;
-    final text =
-        manifest['inputText'] as String? ??
-        manifest['contentText'] as String? ??
-        (context.isImageInput ? null : utf8.decode(context.inputBytes));
+
+    final String? text;
+
+    if (context.isImageInput) {
+      text =
+          manifest['inputText'] as String? ??
+          manifest['contentText'] as String? ??
+          manifest['prompt'] as String?;
+    } else {
+      text =
+          manifest['inputText'] as String? ??
+          manifest['contentText'] as String? ??
+          manifest['prompt'] as String? ??
+          utf8.decode(context.inputBytes);
+    }
+
+    developer.log(
+      '[TASK BUILD] '
+      'backendType=${context.assignment.taskType} '
+      'v1Type=$v1Type '
+      'isImage=${context.isImageInput} '
+      'textChars=${text?.length ?? 0}',
+      name: 'EdgeMintTaskEngine',
+    );
+
     return WorkerTaskRequest(
       schemaVersion: manifest['schemaVersion'] as String? ?? '1.0',
       taskId: context.assignment.taskId ?? context.assignment.assignmentId,
@@ -261,8 +448,13 @@ class TaskExecutionEngine {
     if (raw == null || raw.isEmpty) {
       return null;
     }
+
     return DateTime.tryParse(raw);
   }
+
+  // ---------------------------------------------------------------------------
+  // Failure
+  // ---------------------------------------------------------------------------
 
   WorkerTaskResult _failedResult(
     WorkerTaskRequest request,
@@ -272,6 +464,7 @@ class TaskExecutionEngine {
     final status = error.retryable || retryable == true
         ? WorkerResultStatus.retryable
         : WorkerResultStatus.failed;
+
     if (error.code == WorkerErrorCode.deadlineExceeded) {
       return WorkerTaskResult(
         schemaVersion: request.schemaVersion,
@@ -280,6 +473,7 @@ class TaskExecutionEngine {
         error: error,
       );
     }
+
     if (error.code == WorkerErrorCode.cancelled) {
       return WorkerTaskResult(
         schemaVersion: request.schemaVersion,
@@ -288,6 +482,7 @@ class TaskExecutionEngine {
         error: error,
       );
     }
+
     return WorkerTaskResult(
       schemaVersion: request.schemaVersion,
       taskId: request.taskId,
@@ -296,8 +491,13 @@ class TaskExecutionEngine {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Output
+  // ---------------------------------------------------------------------------
+
   InferenceOutput _toInferenceOutput(WorkerTaskResult result) {
     final payload = jsonEncode(result.toJson());
+
     return InferenceOutput(
       resultBytes: Uint8List.fromList(utf8.encode(payload)),
       progressMilli: 1000,

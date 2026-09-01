@@ -139,6 +139,62 @@ class DocumentSummarizeHandler with OcrPipelineMixin implements TaskHandler {
   }
 }
 
+class TextSummarizeHandler implements TaskHandler {
+  @override
+  String get capability => 'text.summarize.v1';
+
+  @override
+  Future<WorkerTaskResult> handle({
+    required WorkerTaskRequest request,
+    required OcrEngine ocrEngine,
+    required QwenTaskProcessor qwenProcessor,
+    required String signingKey,
+    required WorkerTaskMetrics metrics,
+    bool Function()? isCancelled,
+  }) async {
+    final inputText = request.input.text;
+
+    if (inputText == null || inputText.trim().isEmpty) {
+      throw const WorkerError(
+        code: WorkerErrorCode.invalidTask,
+        message: 'Text input is required for text.summarize.v1',
+        retryable: false,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+
+    if (isCancelled?.call() == true) {
+      throw const WorkerError(
+        code: WorkerErrorCode.cancelled,
+        message: 'Task cancelled',
+        retryable: false,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+
+    final llmStart = DateTime.now();
+
+    // فعلاً همان template خلاصه‌سازی موجود را reuse می‌کنیم.
+    // این template صرفاً متن می‌گیرد و نیاز واقعی به OCR ندارد.
+    final prompt = PromptTemplates.documentSummarize(ocrText: inputText);
+
+    final data = await qwenProcessor.runJsonTask(
+      prompt: prompt,
+      signingKey: signingKey,
+    );
+
+    metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
+
+    return WorkerTaskResult(
+      schemaVersion: request.schemaVersion,
+      taskId: request.taskId,
+      status: WorkerResultStatus.succeeded,
+      output: {'data': data},
+      metrics: metrics.toJson(),
+    );
+  }
+}
+
 class TextClassifyHandler implements TaskHandler {
   @override
   String get capability => 'text.classify.v1';

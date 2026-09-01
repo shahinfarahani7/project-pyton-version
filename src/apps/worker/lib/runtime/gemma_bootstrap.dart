@@ -1,20 +1,20 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
-import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
+import 'package:flutter_gemma_mediapipe/flutter_gemma_mediapipe.dart';
 
-/// Initializes flutter_gemma once for LiteRT-LM inference.
 abstract final class GemmaBootstrap {
-  static var _initialized = false;
+  static bool _initialized = false;
 
   static Future<void> ensureInitialized() async {
     if (_initialized) {
       return;
     }
-    WidgetsFlutterBinding.ensureInitialized();
+
     await FlutterGemma.initialize(
-      inferenceEngines: const [LiteRtLmEngine()],
-      maxDownloadRetries: 10,
+      inferenceEngines: [
+        MediaPipeEngine(),
+      ],
     );
+
     _initialized = true;
   }
 }

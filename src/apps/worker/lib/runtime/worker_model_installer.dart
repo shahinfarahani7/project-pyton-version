@@ -8,11 +8,25 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 import '../models/worker_model_catalog.dart';
 import 'gemma_bootstrap.dart';
 
-/// Installs or restores the on-device Qwen3 model without redundant downloads.
+/// Installs, restores, and registers the EdgeMint on-device model.
+///
+/// IMPORTANT:
+///
+/// This class manages:
+/// - model file existence
+/// - model installation
+/// - model registration
+/// - active model identity
+///
+/// This class MUST NOT:
+/// - create an inference model instance
+/// - call FlutterGemma.getActiveModel()
+/// - close an inference model instance
+///
+/// Runtime model ownership belongs to GemmaLiteRtInferenceAdapter.
 abstract final class WorkerModelInstaller {
   static const _runtimeChannel = MethodChannel('io.edgemint/worker_runtime');
-  /// Older builds saved the backend proxy download as `artifact` instead of the
-  /// real filename — treat as a legacy install id.
+
   static const legacyMisnamedId = 'artifact';
 
   static const externalSideloadPaths = [
@@ -22,208 +36,434 @@ abstract final class WorkerModelInstaller {
     '/storage/emulated/0/Download/${WorkerModelCatalog.fileName}',
   ];
 
+  // ---------------------------------------------------------------------------
+  // Ensure ready
+  // ---------------------------------------------------------------------------
+
   static Future<bool> ensureReady({void Function(String message)? log}) async {
     await GemmaBootstrap.ensureInitialized();
 
-    final sideloadPath = await _findExternalSideload();
+    log?.call('Checking ${WorkerModelCatalog.displayName} installation');
 
-    final importedPath = await _importViaPlatform(log: log);
-    if (importedPath != null) {
-      if (await _installFromExternalFile(importedPath, log: log)) {
-        return true;
-      }
-    }
+    // -------------------------------------------------------------------------
+    // 1. Check canonical installed model
+    // -------------------------------------------------------------------------
 
-    if (FlutterGemma.hasActiveModel()) {
-      try {
-        await FlutterGemma.getActiveModel(
-          maxTokens: 4096,
-          preferredBackend: PreferredBackend.cpu,
-        );
-        log?.call('Qwen3 model already active');
-        return true;
-      } catch (error) {
-        log?.call('Active model restore failed: $error');
-        await _clearStaleRegistration(log: log);
-      }
-    }
+    final registered = await FlutterGemma.isModelInstalled(
+      WorkerModelCatalog.fileName,
+    );
 
-    // Prefer adb sideload when present — metadata in app storage may be stale.
-    if (sideloadPath != null) {
-      log?.call('External model found — importing from $sideloadPath');
-      if (await _installFromExternalFile(sideloadPath, log: log)) {
-        return true;
-      }
-    }
+    if (registered) {
+      log?.call('${WorkerModelCatalog.displayName} is registered on device');
 
-    if (await FlutterGemma.isModelInstalled(WorkerModelCatalog.fileName)) {
-      log?.call('Qwen3 registered — activating from app storage');
-      final ok = await _activateFromInstalledId(WorkerModelCatalog.fileName, log: log);
-      if (ok) {
-        return true;
-      }
-      log?.call('Stale registry entry — clearing and retrying sideload');
-      await _clearStaleRegistration(
-        modelId: WorkerModelCatalog.fileName,
-        log: log,
-      );
-      if (sideloadPath != null) {
-        return _installFromExternalFile(sideloadPath, log: log);
-      }
-    }
+      final path = await _installedModelPath(WorkerModelCatalog.fileName);
 
-    if (await FlutterGemma.isModelInstalled(legacyMisnamedId)) {
-      log?.call('Migrating legacy model file name ($legacyMisnamedId)');
-      return _migrateLegacyArtifact(log: log);
-    }
+      if (path != null) {
+        log?.call('Installed model file exists: $path');
 
-    final installed = await FlutterGemma.listInstalledModels();
-    for (final modelId in installed) {
-      if (modelId == WorkerModelCatalog.fileName ||
-          modelId == legacyMisnamedId ||
-          modelId.toLowerCase().contains('qwen') ||
-          modelId.endsWith('.litertlm')) {
-        log?.call('Trying to activate installed model: $modelId');
-        if (await _activateFromInstalledId(modelId, log: log)) {
+        // If an active identity already exists, do NOT instantiate
+        // the model here. The inference adapter will do that.
+        if (FlutterGemma.hasActiveModel()) {
+          log?.call(
+            '${WorkerModelCatalog.displayName} '
+            'has an active inference identity',
+          );
+
           return true;
         }
+
+        // File exists but no active identity.
+        // Re-register the same physical file.
+        log?.call(
+          'Model file exists but active identity is missing; '
+          'restoring registration',
+        );
+
+        final activated = await _activateExistingFile(path, log: log);
+
+        if (activated) {
+          return true;
+        }
+
+        // IMPORTANT:
+        // Never delete the physical model merely because activation failed.
+        log?.call(
+          'Model file is present but registration activation failed. '
+          'Keeping model on disk.',
+        );
+
+        return false;
+      }
+
+      // Registered metadata exists but physical file is gone.
+      log?.call('Model registry exists but physical file is missing');
+
+      await _removeMissingFileRegistration(
+        WorkerModelCatalog.fileName,
+        log: log,
+      );
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Android-managed sideload import
+    // -------------------------------------------------------------------------
+
+    final importedPath = await _importViaPlatform(log: log);
+
+    if (importedPath != null) {
+      final installed = await _installFromExternalFile(importedPath, log: log);
+
+      if (installed) {
+        return true;
       }
     }
-    if (installed.isNotEmpty) {
-      log?.call('Installed models: ${installed.join(", ")}');
+
+    // -------------------------------------------------------------------------
+    // 3. Explicit external sideload locations
+    // -------------------------------------------------------------------------
+
+    final sideloadPath = await _findExternalSideload();
+
+    if (sideloadPath != null) {
+      log?.call('External model found: $sideloadPath');
+
+      final installed = await _installFromExternalFile(sideloadPath, log: log);
+
+      if (installed) {
+        return true;
+      }
     }
+
+    // -------------------------------------------------------------------------
+    // 4. Legacy registration migration
+    // -------------------------------------------------------------------------
+
+    if (await FlutterGemma.isModelInstalled(legacyMisnamedId)) {
+      log?.call('Legacy model registration found: $legacyMisnamedId');
+
+      final migrated = await _migrateLegacyArtifact(log: log);
+
+      if (migrated) {
+        return true;
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Diagnostics only
+    // -------------------------------------------------------------------------
+
+    final installedModels = await FlutterGemma.listInstalledModels();
+
+    if (installedModels.isNotEmpty) {
+      log?.call(
+        'Installed model registry: '
+        '${installedModels.join(", ")}',
+      );
+    } else {
+      log?.call('No installed inference model found');
+    }
+
     return false;
   }
 
+  // ---------------------------------------------------------------------------
+  // Verify active identity
+  // ---------------------------------------------------------------------------
+
   static Future<bool> verifyActive({void Function(String message)? log}) async {
     await GemmaBootstrap.ensureInitialized();
-    if (!FlutterGemma.hasActiveModel()) {
+
+    final registered = await FlutterGemma.isModelInstalled(
+      WorkerModelCatalog.fileName,
+    );
+
+    if (!registered) {
+      log?.call(
+        '${WorkerModelCatalog.displayName} '
+        'is not registered',
+      );
+
       return false;
     }
-    try {
-      await FlutterGemma.getActiveModel(
-        maxTokens: 4096,
-        preferredBackend: PreferredBackend.cpu,
+
+    final path = await _installedModelPath(WorkerModelCatalog.fileName);
+
+    if (path == null) {
+      log?.call(
+        '${WorkerModelCatalog.displayName} '
+        'registration exists but model file is missing',
       );
-      log?.call('Qwen3 model verified active');
+
+      return false;
+    }
+
+    if (!FlutterGemma.hasActiveModel()) {
+      log?.call('No active inference model identity');
+
+      return false;
+    }
+
+    // IMPORTANT:
+    // Do NOT call getActiveModel() here.
+    //
+    // Runtime loading is intentionally delegated to
+    // GemmaLiteRtInferenceAdapter.
+    log?.call(
+      '${WorkerModelCatalog.displayName} '
+      'registration and active identity verified',
+    );
+
+    return true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Resolve installed model path
+  // ---------------------------------------------------------------------------
+
+  static Future<String?> _installedModelPath(String modelId) async {
+    try {
+      final path = await ServiceRegistry.instance.fileSystemService
+          .getReadTargetPath(modelId);
+
+      final file = File(path);
+
+      if (await file.exists()) {
+        return path;
+      }
+    } catch (_) {
+      // Missing/unreadable registration is handled by caller.
+    }
+
+    return null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Activate an already-existing file
+  // ---------------------------------------------------------------------------
+
+  static Future<bool> _activateExistingFile(
+    String path, {
+    void Function(String message)? log,
+  }) async {
+    final file = File(path);
+
+    if (!await file.exists()) {
+      log?.call('Cannot activate missing model file: $path');
+
+      return false;
+    }
+
+    final size = await file.length();
+
+    log?.call(
+      'Activating ${WorkerModelCatalog.displayName} '
+      'from existing file '
+      '(${(size / 1024 / 1024).toStringAsFixed(1)} MB)',
+    );
+
+    try {
+      await WorkerModelCatalog.installBuilder().fromFile(path).install();
+
+      if (!FlutterGemma.hasActiveModel()) {
+        log?.call(
+          '${WorkerModelCatalog.displayName} was registered '
+          'but active identity was not created',
+        );
+
+        return false;
+      }
+
+      log?.call(
+        '${WorkerModelCatalog.displayName} '
+        'registration activation successful',
+      );
+
       return true;
     } catch (error) {
-      log?.call('Model activation check failed: $error');
+      log?.call(
+        '${WorkerModelCatalog.displayName} '
+        'registration activation failed: $error',
+      );
+
+      // IMPORTANT:
+      // Never uninstall here.
       return false;
     }
   }
 
-  static Future<void> _clearStaleRegistration({
-    String? modelId,
+  // ---------------------------------------------------------------------------
+  // Remove stale metadata only when physical file is missing
+  // ---------------------------------------------------------------------------
+
+  static Future<void> _removeMissingFileRegistration(
+    String modelId, {
     void Function(String message)? log,
   }) async {
     try {
       await FlutterGemma.clearActiveInferenceIdentity();
-    } catch (_) {}
-    if (modelId != null) {
-      try {
-        await FlutterGemma.uninstallModel(modelId);
-      } catch (_) {}
+    } catch (_) {
+      // Best-effort cleanup.
     }
-    log?.call('Cleared stale on-device model registry');
+
+    try {
+      await FlutterGemma.uninstallModel(modelId);
+    } catch (_) {
+      // Best-effort cleanup.
+    }
+
+    log?.call(
+      'Removed stale model metadata because '
+      'the physical model file was missing',
+    );
   }
 
-  static Future<String?> _importViaPlatform({void Function(String message)? log}) async {
+  // ---------------------------------------------------------------------------
+  // Android sideload import
+  // ---------------------------------------------------------------------------
+
+  static Future<String?> _importViaPlatform({
+    void Function(String message)? log,
+  }) async {
     if (kIsWeb || !Platform.isAndroid) {
       return null;
     }
+
     try {
-      log?.call('Checking sideload paths via Android import…');
+      log?.call('Checking Android sideload locations');
+
       final raw = await _runtimeChannel.invokeMethod<Map<Object?, Object?>>(
         'importSideloadedModel',
         {'fileName': WorkerModelCatalog.fileName},
       );
+
       final path = raw?['path'] as String?;
+
       if (path == null || path.isEmpty) {
-        log?.call('No sideload model found on device storage');
+        log?.call('No sideloaded model found');
+
         return null;
       }
+
       final copiedFrom = raw?['copiedFrom'] as String?;
-      if (copiedFrom != null) {
-        log?.call('Imported sideload model from $copiedFrom');
+
+      if (copiedFrom != null && copiedFrom.isNotEmpty) {
+        log?.call('Imported sideloaded model from $copiedFrom');
       } else {
-        log?.call('Using model already in app storage: $path');
+        log?.call('Using model already available at $path');
       }
+
       return path;
     } catch (error) {
       log?.call('Native sideload import failed: $error');
+
       return null;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Find external sideload
+  // ---------------------------------------------------------------------------
 
   static Future<String?> _findExternalSideload() async {
     if (kIsWeb || !Platform.isAndroid) {
       return null;
     }
+
     for (final candidate in externalSideloadPaths) {
-      if (await File(candidate).exists()) {
+      final file = File(candidate);
+
+      if (await file.exists()) {
         return candidate;
       }
     }
+
     return null;
   }
 
-  static Future<bool> _activateFromInstalledId(
-    String modelId, {
+  // ---------------------------------------------------------------------------
+  // Legacy migration
+  // ---------------------------------------------------------------------------
+
+  static Future<bool> _migrateLegacyArtifact({
     void Function(String message)? log,
   }) async {
-    final path = await _installedModelPath(modelId);
-    if (path == null) {
-      log?.call('Model $modelId metadata missing on disk');
-      return false;
-    }
-    return _installFromExternalFile(path, log: log);
-  }
-
-  static Future<bool> _migrateLegacyArtifact({void Function(String message)? log}) async {
     final legacyPath = await _installedModelPath(legacyMisnamedId);
+
     if (legacyPath == null) {
+      log?.call('Legacy registration exists but physical file is missing');
+
       return false;
     }
+
     final ok = await _installFromExternalFile(legacyPath, log: log);
+
+    // Only remove the legacy registration after
+    // the canonical registration succeeds.
     if (ok) {
       try {
         await FlutterGemma.uninstallModel(legacyMisnamedId);
-      } catch (_) {}
+      } catch (_) {
+        // Migration itself already succeeded.
+      }
     }
+
     return ok;
   }
 
-  static Future<String?> _installedModelPath(String modelId) async {
-    try {
-      final path =
-          await ServiceRegistry.instance.fileSystemService.getTargetPath(modelId);
-      if (await File(path).exists()) {
-        return path;
-      }
-    } catch (_) {}
-    return null;
-  }
+  // ---------------------------------------------------------------------------
+  // Install from local/external file
+  // ---------------------------------------------------------------------------
 
   static Future<bool> _installFromExternalFile(
     String path, {
     void Function(String message)? log,
   }) async {
     try {
-      await WorkerModelCatalog.installBuilder()
-          .fromFile(path)
-          .install();
-      await FlutterGemma.getActiveModel(
-        maxTokens: 4096,
-        preferredBackend: PreferredBackend.cpu,
+      final file = File(path);
+
+      if (!await file.exists()) {
+        log?.call('External model file does not exist: $path');
+
+        return false;
+      }
+
+      final size = await file.length();
+
+      log?.call(
+        'Installing ${WorkerModelCatalog.displayName} '
+        'from local file: $path '
+        '(${(size / 1024 / 1024).toStringAsFixed(1)} MB)',
       );
-      log?.call('Qwen3 model ready (local file, no download)');
+
+      await WorkerModelCatalog.installBuilder().fromFile(path).install();
+
+      if (!FlutterGemma.hasActiveModel()) {
+        log?.call(
+          '${WorkerModelCatalog.displayName} installed '
+          'but active identity is missing',
+        );
+
+        return false;
+      }
+
+      log?.call(
+        '${WorkerModelCatalog.displayName} '
+        'ready from local file',
+      );
+
       return true;
     } catch (error) {
-      log?.call('Local model activation failed: $error');
+      log?.call('Local model installation/registration failed: $error');
+
+      // IMPORTANT:
+      // Keep source/downloaded file.
       return false;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Network install
+  // ---------------------------------------------------------------------------
 
   static Future<void> installFromNetwork({
     required String downloadUrl,
@@ -231,15 +471,47 @@ abstract final class WorkerModelInstaller {
     void Function(String message)? log,
   }) async {
     await GemmaBootstrap.ensureInitialized();
+
     log?.call('Starting network install: $downloadUrl');
+
     await WorkerModelCatalog.installBuilder()
         .fromNetwork(downloadUrl, foreground: true)
         .withProgress(onProgress)
         .install();
-    await FlutterGemma.getActiveModel(
-      maxTokens: 4096,
-      preferredBackend: PreferredBackend.cpu,
+
+    log?.call(
+      '${WorkerModelCatalog.displayName} '
+      'download/install completed',
     );
-    log?.call('Qwen3 model ready');
+
+    // IMPORTANT:
+    // Do NOT call getActiveModel() here.
+    //
+    // Installer only verifies registration/identity.
+    // Actual native runtime creation happens exactly once
+    // inside GemmaLiteRtInferenceAdapter.
+
+    final registered = await FlutterGemma.isModelInstalled(
+      WorkerModelCatalog.fileName,
+    );
+
+    if (!registered) {
+      throw StateError(
+        '${WorkerModelCatalog.displayName} '
+        'download completed but registration is missing',
+      );
+    }
+
+    if (!FlutterGemma.hasActiveModel()) {
+      throw StateError(
+        '${WorkerModelCatalog.displayName} '
+        'download completed but active identity is missing',
+      );
+    }
+
+    log?.call(
+      '${WorkerModelCatalog.displayName} '
+      'installed and active identity is ready',
+    );
   }
 }

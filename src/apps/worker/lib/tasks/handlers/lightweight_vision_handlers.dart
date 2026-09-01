@@ -1,3 +1,4 @@
+import '../../contracts/worker_error.dart';
 import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/qwen_task_processor.dart';
