@@ -1,0 +1,32 @@
+{
+  "taskType": "catalog.fake_listing",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for catalog.fake_listing",
+  "input": {
+    "flexInput": {
+      "listing": {
+        "title": "Brand new iPhone",
+        "price": 50
+      }
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_catalog_fake_listing",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "fake": true,
+        "riskScore": 0.88,
+        "reasons": [
+          "price_too_low",
+          "stock_photo_signals"
+        ]
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

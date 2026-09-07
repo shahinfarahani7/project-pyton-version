@@ -1,0 +1,12 @@
+{
+  "taskId": "P2-T14",
+  "completedAt": "2026-09-02",
+  "serviceModule": "src/backend/edgemint/routing/resource_reservations.py",
+  "integration": {
+    "reserve": "RouterService.acquire_assignment_lease",
+    "activate": "AssignmentCommandService.start",
+    "release": "AssignmentCommandService.complete"
+  },
+  "featureFlag": "EDGEMINT_WORKER_RESOURCE_RESERVATIONS_ENABLED",
+  "tests": "src/backend/tests/routing/test_resource_reservations.py"
+}

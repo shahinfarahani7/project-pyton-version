@@ -1,0 +1,49 @@
+apiVersion: edgemint.io/v1
+kind: UserResourcePolicy
+metadata:
+  name: production-resource-policy-v1
+  version: 1.0.0
+  status: active
+  description: Initial production resource contribution policy (Architecture Sections 15, 17, 64).
+  owners:
+  - mobile
+  - routing
+spec:
+  resourcePolicy:
+    defaultApprovedPercent: 30
+    maximumApprovedPercent: 50
+    safetyReservePercent: 15
+    heartbeatMaximumAgeSeconds: 30
+    overbookingAllowed: false
+  contributionModes:
+  - id: balanced
+    label: Balanced
+    approvedPercent: 30
+    requiresExplicitOptIn: false
+  - id: performance
+    label: Performance
+    approvedPercent: 50
+    requiresExplicitOptIn: true
+  runtimeLimits:
+    mediapipe_llm:
+      maximumSessionsPerDevice: 1
+    paddle_ocr:
+      defaultMaximumSessionsPerDevice: 1
+      certifiedMaximumSessionsPerDevice: 2
+    heavy_vision:
+      maximumSessionsPerDevice: 1
+      exclusive: true
+  assignmentLimits:
+    absoluteMaximumPerDevice: 3
+  consentChangeBehavior:
+    increaseAppliesToNewReservationsOnly: true
+    decreaseStopsNewStagesAboveLimit: true
+    revocationStopsNewWorkImmediately: true
+  contributionRequiresExplicitOptIn: true
+  contributionEnabledByDefault: false
+  cpuEnforcement:
+    measurementWindowMs: 5000
+    coveredProcessScope: aggregate_worker_process_native
+    toleratedBurstBps: 1200
+    controlStopReactionBoundMs: 3000
+    enforcementMechanism: windowed_cpu_share_v1

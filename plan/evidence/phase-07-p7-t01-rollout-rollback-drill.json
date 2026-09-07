@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "drill": "architecture-v1-rollback-dry-run",
+  "runbook": "docs/08-sre/runbooks/RB-025-release-rollback.md",
+  "drillDoc": "docs/08-sre/drills/DR-001-architecture-v1-rollback-dry-run.md",
+  "executedAt": "2026-09-02T10:04:20.878826+00:00",
+  "environment": "dry-run-source-verify",
+  "checks": {
+    "runbook_rb025_exists": "pass",
+    "immutable_image_digest_policy": "pass",
+    "forward_compatible_migrations": "pass",
+    "stale_fence_invariant": "pass",
+    "lease_credential_destroyed_on_complete": "pass",
+    "no_destructive_db_downgrade": "pass",
+    "production_gate_script": "pass",
+    "validate_all_script": "pass"
+  },
+  "failedChecks": [],
+  "classification": "IMPLEMENTED_DEV_ONLY"
+}

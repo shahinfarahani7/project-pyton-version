@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "taskId": "P7-CHAOS-consent-50-to-30",
+  "test": "test_p7_chaos_consent_50_to_30",
+  "harness": "tools/run_production_chaos_harness.py",
+  "generatedAt": "2026-09-02T10:04:22.527827+00:00",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "notes": "Dev/staging invariant proof via pytest + source verify; live chaos deferred to staging deploy."
+}

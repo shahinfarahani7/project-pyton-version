@@ -1,0 +1,14 @@
+{
+  "taskId": "P5-CROSS-01",
+  "completedAt": "2026-09-02",
+  "summary": "Pluggable result validation framework with JSON Schema + business rules; document.ocr reference integration wired into complete and verification paths.",
+  "artifacts": {
+    "validator": "src/backend/edgemint/results/validator.py",
+    "schemaLoader": "src/backend/edgemint/results/task_type_schemas.py",
+    "productionPath": "src/backend/edgemint/workers/assignments.py#complete",
+    "verificationPath": "src/backend/edgemint/verification/service.py",
+    "referenceTask": "dsl/catalog/task-types/document-ocr.yaml",
+    "tests": "src/backend/tests/results/test_document_ocr_validator.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_document_ocr_validator.py tests/verification/test_verification_engine.py -q (20 passed)"
+}

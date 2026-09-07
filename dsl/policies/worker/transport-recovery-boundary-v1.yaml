@@ -1,0 +1,44 @@
+version: "1.0.0"
+name: transport-recovery-boundary-v1
+description: >
+  Worker transport recovery boundary (Architecture v2 §2.4). Retransmission of the
+  same persisted ACK/progress/checkpoint/result identity is transport behavior only;
+  it does not grant task selection, retry, reassignment, or cloud-fallback authority.
+
+allowedWorkerComponents:
+  - RuntimeSafetyController
+  - WorkerResourceEnforcer
+  - ExecutionPlanRunner
+  - ModelRuntimeManager
+  - ContextBudgetManager
+  - CheckpointManager
+  - AssignmentEventReporter
+  - TransportRecoveryJournal
+
+forbiddenWorkerComponents:
+  - LocalTaskSelector
+  - LocalRetryOrchestrator
+  - LocalReassignmentManager
+  - LocalCloudFallbackDecision
+
+transportRecovery:
+  deliveryAckMeaning: transport_receipt_only
+  mayRetransmitSameIdentity: true
+  mustNotRerunInferenceOnLostAck: true
+  reconnectionBackoffIsTransportNotTaskRetry: true
+  requiresFreshServerAuthorizationAfter:
+    - lease_expiry
+    - safety_stop
+    - process_restart
+    - generation_change
+
+boundedPlanExecution:
+  workerMayExecuteOnlyServerAuthorizedPlan: true
+  stageLocalValidationIsPreflightOnly: true
+  stageRetryRequiresSeparateServerAuthorization: true
+
+eventIdentityBands:
+  ack: "fenceToken * 1e9 + 1"
+  progress: "fenceToken * 1e9 + 2_000_000 + sequence"
+  checkpoint: "fenceToken * 1e9 + 3_000_000 + sequence"
+  result: "fenceToken * 1e9 + 900_000_000"

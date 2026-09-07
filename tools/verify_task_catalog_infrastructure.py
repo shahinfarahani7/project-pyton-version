@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-catalog = json.loads((ROOT / "src/shared/task-types/catalog.json").read_text())
+catalog = json.loads((ROOT / "src/shared/task-types/catalog.json").read_text(encoding="utf-8"))
 types = [item for category in catalog["categories"] for item in category["types"]]
 values = {item["value"] for item in types}
 mapper = (ROOT / "src/apps/worker/lib/tasks/task_type_mapper.dart").read_text()
@@ -22,6 +22,10 @@ vision_normalizer = (ROOT / "src/apps/worker/lib/validation/vision_output_normal
 checks = {
     "catalog_has_56_unique_types": len(types) == len(values) == 56,
     "all_input_modes_known": {item["inputMode"] for item in types} <= {"text", "image", "document", "flex"},
+    "all_resource_envelope_refs_bound": len(types) == 56 and all(
+        isinstance(item.get("resourceEnvelopeRef"), str) and item["resourceEnvelopeRef"].startswith("TaskResourceEnvelope/")
+        for item in types
+    ),
     "lightweight_handlers_registered": all(name in dispatcher for name in (
         "DocumentImageQualityHandler", "BlurryImageHandler", "DuplicateImageHandler"
     )),

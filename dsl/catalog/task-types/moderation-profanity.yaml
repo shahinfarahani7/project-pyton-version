@@ -1,0 +1,88 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: moderation-profanity
+  version: 2.0.0
+  status: active
+  description: Production task contract for moderation.profanity (Qwen profanity detection)
+  labels:
+    domain: moderation
+    family: qwen
+  owners:
+  - product
+  - platform
+spec:
+  code: moderation.profanity
+  lifecycle: commercial-candidate
+  billing:
+    measure: total_token
+    quantum: 1000
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - inlineText
+    properties:
+      inlineText:
+        type: string
+      options:
+        type: object
+    additionalProperties: false
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        required:
+        - containsProfanity
+        - confidence
+        - spans
+        properties:
+          containsProfanity:
+            type: boolean
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+          spans:
+            type: array
+            items:
+              type: string
+      metrics:
+        type: object
+    additionalProperties: false
+  inputLimits:
+    maximumBytes: 1048576
+    allowedContentTypes:
+    - text/plain
+    - application/json
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 120
+  modelCandidates:
+  - modelRef: ModelProfile/qwen2.5-0.5b@2.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

@@ -14,6 +14,8 @@ from edgemint.dev import task_events
 from edgemint.dev import task_type_catalog
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
+from edgemint.tasks.catalog_closure import validate_queue_admission
+from edgemint.tasks.errors import TaskServiceError
 
 router = APIRouter()
 session_store = BrowserSessionStore()
@@ -50,6 +52,10 @@ async def _create_task_from_form(
     if not task_type.strip():
         raise HTTPException(422, "TASK_TYPE_REQUIRED")
     try:
+        validate_queue_admission(
+            catalog_code=task_type.strip(),
+            mode=get_settings().catalog_closure_mode,  # type: ignore[arg-type]
+        )
         task_type_catalog.validate_task_submission(
             task_type=task_type,
             input_text=input_text,
@@ -60,6 +66,8 @@ async def _create_task_from_form(
         )
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    except TaskServiceError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
     task = fixtures.create_dev_task(
         workspace_id,
         task_type=task_type.strip(),

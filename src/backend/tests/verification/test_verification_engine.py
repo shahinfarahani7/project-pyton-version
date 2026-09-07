@@ -55,7 +55,11 @@ def sample_submission(**overrides: object) -> ResultSubmission:
             output_artifact_id="art_test",
         ),
         "metrics": {"latencyMs": 1200},
-        "output_inline": '{"content":"hello"}',
+        "output_inline": (
+            '{"schemaVersion":"1","taskId":"tsk_test","status":"SUCCEEDED",'
+            '"output":{"rawText":"hello","ocrLines":[{"text":"hello","confidence":0.95,"box":[0,0,1,1]}]},'
+            '"metrics":{"averageOcrConfidence":0.95}}'
+        ),
     }
     base.update(overrides)
     return ResultSubmission(**base)

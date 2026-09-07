@@ -1,0 +1,8 @@
+{
+  "taskId": "P5-QWEN-19",
+  "taskTypeId": "nlp.spam_fraud_classification",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/nlp-spam-fraud-classification.yaml",
+  "goldenFixture": "tests/golden/fixtures/nlp.spam_fraud_classification.json",
+  "tests": "src/backend/tests/results/test_nlp_ml_validators.py"
+}

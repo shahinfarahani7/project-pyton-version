@@ -1,0 +1,44 @@
+{
+  "taskId": "P3-T14",
+  "completedAt": "2026-09-02",
+  "summary": "Worker attaches predicted vs observed execution cost feedback on assignment completion; backend validates schema and persists rows for Phase 6 calibration feedback loop.",
+  "artifacts": {
+    "sqlMigration": "database/sql/020_worker_execution_cost_feedback.sql",
+    "schema": "dsl/schemas/workerexecutioncostfeedback.schema.json",
+    "backendService": "src/backend/edgemint/workers/execution_cost_feedback.py",
+    "backendIngestion": "src/backend/edgemint/workers/assignments.py",
+    "workerCatalog": "src/apps/worker/lib/telemetry/resource_envelope_catalog.dart",
+    "workerBuilder": "src/apps/worker/lib/telemetry/execution_cost_feedback.dart",
+    "coordinatorWiring": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "tests": [
+      "src/backend/tests/workers/test_execution_cost_feedback.py",
+      "src/apps/worker/test/telemetry/execution_cost_feedback_test.dart"
+    ]
+  },
+  "sampleTelemetry": {
+    "predicted": {
+      "cpuUnits": 40,
+      "peakMemoryBytes": 1610612736,
+      "durationMs": 180000,
+      "energyClass": "medium",
+      "runtimeClass": "mediapipe_llm"
+    },
+    "observed": {
+      "cpuAverageBps": 2100,
+      "peakMemoryBytes": 1835008000,
+      "durationMs": 64000,
+      "thermalDeltaBps": 500,
+      "throughputPerSec": 12.5,
+      "throughputUnit": "tokens"
+    },
+    "variance": {
+      "durationMs": -116000,
+      "peakMemoryBytes": 224395264,
+      "durationRatioMilli": 355
+    }
+  },
+  "testRun": {
+    "backend": "py -3.13 -m pytest tests/workers/test_execution_cost_feedback.py -q (3 passed)",
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

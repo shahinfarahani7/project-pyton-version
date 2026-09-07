@@ -1,0 +1,6 @@
+{
+  "taskId": "P6-T11",
+  "completedAt": "2026-09-02",
+  "tests": "docs/08-sre/runbooks/RB-022-adaptive-concurrency-certification.md",
+  "module": "src/backend/edgemint/workers/calibration.py"
+}

@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "taskId": "P8-A20",
+  "auditId": "A20",
+  "acceptanceCase": "T20",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "13",
+    "33",
+    "34",
+    "73"
+  ],
+  "generatedAt": "2026-09-06T09:08:27.478375+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "versionedPredictionPolicyDsl": "dsl/policies/calibration/versioned-prediction-v1.yaml",
+    "calibrationPredictionModule": "src/backend/edgemint/routing/calibration_prediction.py",
+    "calibrationModule": "src/backend/edgemint/routing/calibration.py",
+    "costEstimator": "src/backend/edgemint/routing/cost_estimator.py",
+    "executionAllocation": "src/backend/edgemint/routing/execution_allocation.py",
+    "calibrationFeedback": "src/backend/edgemint/workers/calibration_feedback.py",
+    "routerService": "src/backend/edgemint/routing/service.py",
+    "backendTests": "src/backend/tests/routing/test_versioned_calibration_prediction.py",
+    "adaptiveExecutionTests": "src/backend/tests/routing/test_adaptive_execution.py",
+    "calibrationFeedbackTests": "src/backend/tests/workers/test_calibration_feedback.py",
+    "p6T03Evidence": "plan/evidence/phase-06-p6-t03-device-calibration-loop.json",
+    "p6T07Evidence": "plan/evidence/phase-06-p6-t07-prediction-feedback-loop.json"
+  },
+  "t20Scenario": {
+    "title": "Cold/warm prediction; aged profile; changed artifact; underestimated peak",
+    "coldWarmDistinction": true,
+    "profileExpiryFallback": true,
+    "futureOnlyFeedback": true,
+    "routerVersionedPredictionHook": true,
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T20 cold/warm end-to-end allocation identity proof NOT_RUN",
+    "Profile expiry production sweeper NOT_RUN",
+    "Underestimated peak device matrix NOT_RUN"
+  ],
+  "errors": []
+}

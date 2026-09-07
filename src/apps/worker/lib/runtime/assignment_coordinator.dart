@@ -4,13 +4,27 @@ import 'dart:typed_data';
 import '../api/worker_api_client.dart';
 import '../api/worker_assignment_models.dart';
 import '../platform/worker_runtime_channel.dart';
+import 'assignment_event_reporter.dart';
+import 'assignment_inbox.dart';
+import 'assignment_receiver.dart';
 import 'checkpoint_store.dart';
 import 'device_constraints.dart';
+import 'execution_stop_tracker.dart';
+import 'process_lifecycle_coordinator.dart';
+import 'runtime_safety_controller.dart';
+import 'privacy_cleanup_coordinator.dart';
+import 'storage_pressure_manager.dart';
+import 'worker_heartbeat_telemetry.dart';
+import 'worker_resource_enforcer.dart';
+import 'worker_resource_budget.dart';
 import 'device_snapshot.dart';
 import 'encrypted_store.dart';
 import 'execution_policy.dart';
 import 'execution_status.dart';
+import 'failure_evidence.dart';
 import 'inference_adapter.dart';
+import '../telemetry/execution_cost_feedback.dart';
+import '../telemetry/worker_task_metrics.dart';
 import 'result_signer.dart';
 import '../tasks/task_execution_engine.dart';
 import '../tasks/task_type_mapper.dart';
@@ -46,32 +60,57 @@ class AssignmentCoordinator {
     required WorkerRuntimeChannel platform,
     required InferenceAdapter inference,
     DeviceConstraints? constraints,
+    RuntimeSafetyController? safetyController,
+    WorkerResourceEnforcer? resourceEnforcer,
     SandboxLimits? sandbox,
     InputLoader? inputLoader,
     TaskExecutionEngine? taskEngine,
     String? accessToken,
     StatusListener? onStatus,
+    AssignmentReceiver? assignmentReceiver,
+    StoragePressureManager? storagePressure,
+    AssignmentInbox? assignmentInbox,
+    ProcessLifecycleCoordinator? processLifecycle,
+    PrivacyCleanupCoordinator? privacyCleanup,
   })  : _api = api,
         _checkpointStore = CheckpointStore(store),
         _platform = platform,
         _inference = inference,
         _constraints = constraints ?? const DeviceConstraints(),
+        _safety = safetyController ?? const RuntimeSafetyController(),
+        _resourceEnforcer = resourceEnforcer,
         _sandbox = sandbox ?? const SandboxLimits(),
         _inputLoader = inputLoader ?? _defaultInputLoader,
         _taskEngine = taskEngine,
         _accessToken = accessToken ?? 'token',
-        _onStatus = onStatus;
+        _onStatus = onStatus,
+        _receiver = assignmentReceiver ?? AssignmentReceiver(),
+        _storagePressure = storagePressure ?? StoragePressureManager(),
+        _assignmentInbox = assignmentInbox ?? AssignmentInbox(store: store),
+        _processLifecycle = processLifecycle,
+        _privacyCleanup = privacyCleanup ?? PrivacyCleanupCoordinator();
 
   final WorkerApiClient _api;
   final CheckpointStore _checkpointStore;
   final WorkerRuntimeChannel _platform;
   final InferenceAdapter _inference;
   final DeviceConstraints _constraints;
+  final RuntimeSafetyController _safety;
+  final WorkerResourceEnforcer? _resourceEnforcer;
   final SandboxLimits _sandbox;
   final InputLoader _inputLoader;
   final TaskExecutionEngine? _taskEngine;
   final String _accessToken;
   final StatusListener? _onStatus;
+  final AssignmentReceiver _receiver;
+  final StoragePressureManager _storagePressure;
+  final AssignmentInbox _assignmentInbox;
+  final ProcessLifecycleCoordinator? _processLifecycle;
+  final PrivacyCleanupCoordinator _privacyCleanup;
+  final FailureEvidenceMapper _failureMapper = const FailureEvidenceMapper();
+  final ExecutionStopTracker _stopTracker = ExecutionStopTracker();
+  bool _assignmentStarted = false;
+  WorkerResourceReservationEntry? _activeReservation;
 
   ExecutionStatus _status = const ExecutionStatus(phase: ExecutionPhase.idle);
   bool _cancelRequested = false;
@@ -85,15 +124,63 @@ class AssignmentCoordinator {
 
   Future<WorkerAssignment?> pollAssignment({
     DeviceSnapshot? snapshot,
+    RuntimeSafetySignals? safetySignals,
     int waitSeconds = 0,
   }) async {
     _emit(_status.copyWith(phase: ExecutionPhase.waitingForAssignment));
     final device = snapshot ?? await _platform.readDeviceSnapshot();
     _constraints.ensureOrThrow(device);
+    _safety.ensureExecuteOrThrow(device, signals: safetySignals ?? RuntimeSafetySignals.none);
     return _api.getNextAssignment(accessToken: _accessToken, waitSeconds: waitSeconds);
   }
 
+  Future<void> reconcileInboxBootstrap() async {
+    final bootstrap = await _api.getAssignmentInboxBootstrap(accessToken: _accessToken);
+    final deliveries = bootstrap['deliveries'] as List<dynamic>? ?? const [];
+    final serverEntries = deliveries.map((item) {
+      final map = item as Map<String, dynamic>;
+      return AssignmentInboxEntry(
+        assignmentId: map['assignmentId'] as String,
+        attemptId: map['assignmentId'] as String,
+        fenceToken: map['fenceToken'] as int,
+        recordedAt: DateTime.now().toUtc(),
+        deliveryInboxId: map['deliveryInboxId'] as String?,
+        ackedAt: (map['acked'] as bool? ?? false) ? DateTime.now().toUtc() : null,
+      );
+    });
+    await _assignmentInbox.reconcileBootstrap(serverEntries: serverEntries);
+  }
+
+  Future<WorkerAssignment?> acceptPolledAssignment(WorkerAssignment assignment) async {
+    await reconcileInboxBootstrap();
+    final receipt = await _assignmentInbox.recordBeforeProcess(
+      assignment,
+      deliveryInboxId: assignment.deliveryInboxId,
+    );
+    if (receipt.disposition == AssignmentInboxDisposition.staleFenceSuperseded) {
+      throw AssignmentRejectedException(
+        AssignmentValidationIssue(
+          step: AssignmentValidationStep.fence,
+          failureCode: 'ASSIGNMENT_STALE_FENCE',
+          retryable: false,
+          detail: 'local inbox has newer fence ${receipt.entry.fenceToken}',
+        ),
+      );
+    }
+    if (receipt.disposition == AssignmentInboxDisposition.duplicateReplay) {
+      return null;
+    }
+    return assignment;
+  }
+
   Future<ResumeDecision> inspectResume(WorkerAssignment assignment, AssignmentInputBundle bundle) async {
+    if (_processLifecycle?.requiresFreshGrantReconciliation ?? false) {
+      return const ResumeDecision(
+        startFresh: true,
+        discardedStaleCheckpoint: true,
+        blockedPendingFreshGrant: true,
+      );
+    }
     final checkpoint = await _checkpointStore.latestFor(assignment.assignmentId);
     if (checkpoint == null) {
       return const ResumeDecision(startFresh: true);
@@ -113,12 +200,62 @@ class AssignmentCoordinator {
   Future<void> executeAssignment(
     WorkerAssignment assignment, {
     DeviceSnapshot? snapshot,
+    RuntimeSafetySignals? safetySignals,
+    ResourceClassTotals? taskResourceRequest,
     ResumeDecision? resume,
   }) async {
     _cancelRequested = false;
+    _assignmentStarted = false;
     final startedAt = DateTime.now();
+    try {
+      await _executeAssignmentBody(
+        assignment,
+        startedAt: startedAt,
+        snapshot: snapshot,
+        safetySignals: safetySignals,
+        taskResourceRequest: taskResourceRequest,
+        resume: resume,
+      );
+    } catch (error) {
+      await _submitFailureEvidence(
+        assignment: assignment,
+        error: error,
+        startedAt: startedAt,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> _executeAssignmentBody(
+    WorkerAssignment assignment, {
+    required DateTime startedAt,
+    DeviceSnapshot? snapshot,
+    RuntimeSafetySignals? safetySignals,
+    ResourceClassTotals? taskResourceRequest,
+    ResumeDecision? resume,
+  }) async {
     final device = snapshot ?? await _platform.readDeviceSnapshot();
+    _receiver.ensureAccepted(_receiver.validateContract(assignment));
+    _processLifecycle?.acknowledgeFreshGrantReconciliation();
+    await _assignmentInbox.recordBeforeProcess(
+      assignment,
+      deliveryInboxId: assignment.deliveryInboxId,
+    );
+    _receiver.ensureAccepted(_receiver.validateConsent(device));
+    _storagePressure.ensureHeadroomForWork(device);
     _constraints.ensureOrThrow(device, heavyTask: true);
+    _safety.ensureExecuteOrThrow(
+      device,
+      signals: safetySignals ?? RuntimeSafetySignals.none,
+      heavyTask: true,
+    );
+
+    if (_resourceEnforcer != null && taskResourceRequest != null) {
+      _resourceEnforcer!.ensureWithinBudgetOrThrow(
+        reserved: const ResourceClassTotals(cpuUnits: 0, memoryBytes: 0, storageBytes: 0),
+        requested: taskResourceRequest,
+      );
+    }
 
     _emit(ExecutionStatus(
       phase: ExecutionPhase.preparing,
@@ -132,10 +269,18 @@ class AssignmentCoordinator {
     );
 
     final bundle = await _inputLoader(assignment);
+    final feedbackBuilder = ExecutionCostFeedbackBuilder(
+      taskType: assignment.taskType,
+      inputBytes: bundle.inputBytes.length,
+      startSnapshot: device,
+    );
     final decision = resume ?? await inspectResume(assignment, bundle);
-    if (decision.checkpoint != null && assignment.fenceToken != decision.checkpoint!.fenceToken) {
-      throw StaleFenceException(assignment.fenceToken, decision.checkpoint!.fenceToken);
-    }
+    _receiver.ensureAccepted(
+      _receiver.validateFence(
+        assignment: assignment,
+        checkpointFenceToken: decision.checkpoint?.fenceToken,
+      ),
+    );
 
     final signingMaterial = await _platform.signingMaterial();
     final usePipeline =
@@ -151,7 +296,31 @@ class AssignmentCoordinator {
       fenceToken: assignment.fenceToken,
       idempotencyKey: 'start-${assignment.attemptId}',
     );
+    await _assignmentInbox.markAcked(assignment.assignmentId, fenceToken: assignment.fenceToken);
+    _assignmentStarted = true;
+    _activeReservation = WorkerHeartbeatTelemetry.reservationForTask(
+      assignmentId: assignment.assignmentId,
+      taskType: assignment.taskType,
+    );
+    final checkpoint = await _checkpointStore.latestFor(assignment.assignmentId);
+    _storagePressure.bindActiveAssignment(
+      assignmentId: assignment.assignmentId,
+      fenceToken: assignment.fenceToken,
+      protectedModelIds: {
+        assignment.modelVersionId,
+        bundle.modelArtifact.modelVersionId,
+      },
+      protectedBlobRefs: {
+        if (checkpoint != null) checkpoint.encryptedBlobRef,
+        if (decision.checkpoint != null) decision.checkpoint!.encryptedBlobRef,
+      },
+    );
 
+    _privacyCleanup.bindActiveBuffers(assignmentId: assignment.assignmentId);
+    _privacyCleanup.registerTempBlob(
+      assignmentId: assignment.assignmentId,
+      blobRef: 'runtime/decode/${assignment.assignmentId}',
+    );
     _emit(_status.copyWith(phase: ExecutionPhase.running, progressMilli: decision.checkpoint?.progressMilli ?? 0));
 
     var lastReportedProgress = decision.checkpoint?.progressMilli ?? 0;
@@ -163,6 +332,15 @@ class AssignmentCoordinator {
       final constraint = _constraints.evaluate(current, heavyTask: true);
       if (!constraint.allowed) {
         throw ConstraintBlockedException(constraint.violation!, constraint.detail);
+      }
+      final safety = _safety.evaluate(
+        current,
+        signals: safetySignals ?? RuntimeSafetySignals.none,
+        heavyTask: true,
+        phase: RuntimeSafetyPhase.duringWork,
+      );
+      if (!safety.mayExecute) {
+        throw RuntimeSafetyException(safety);
       }
       if (!_sandbox.withinDuration(DateTime.now().difference(startedAt))) {
         throw StateError('Execution exceeded sandbox time limit');
@@ -193,6 +371,12 @@ class AssignmentCoordinator {
     }
     final InferenceOutput output;
     if (usePipeline) {
+      final eventReporter = AssignmentEventReporter(
+        api: _api,
+        assignment: assignment,
+        accessToken: _accessToken,
+        inputSha256: bundle.inputDigest,
+      );
       output = await _taskEngine!.execute(
         context: TaskExecutionContext(
           assignment: assignment,
@@ -204,6 +388,7 @@ class AssignmentCoordinator {
         signingKey: signingMaterial,
         freeStorageMb: device.freeStorageMb,
         isCancelled: () => _cancelRequested,
+        eventReporter: eventReporter,
       );
       await onProgressWrapper(1000);
     } else {
@@ -227,6 +412,16 @@ class AssignmentCoordinator {
       outputArtifactId: outputArtifactId,
     );
 
+    final endSnapshot = await _platform.readDeviceSnapshot();
+    final taskMetrics = _taskMetricsFromOutput(output.metrics, startedAt: startedAt)
+      ..inputBytes ??= bundle.inputBytes.length;
+    final costFeedback = feedbackBuilder.build(
+      metrics: taskMetrics,
+      endSnapshot: endSnapshot,
+    );
+    final completionMetrics = Map<String, dynamic>.from(output.metrics)
+      ..['costFeedback'] = costFeedback.toJson();
+
     await _api.completeAssignment(
       assignmentId: assignment.assignmentId,
       accessToken: _accessToken,
@@ -237,12 +432,12 @@ class AssignmentCoordinator {
         'resultSha256': resultSha256,
         'outputArtifactId': outputArtifactId,
         'outputInline': utf8.decode(output.resultBytes),
-        'metrics': output.metrics,
+        'metrics': completionMetrics,
         'signature': signature,
       },
     );
 
-    await _cleanup(assignment.assignmentId);
+    await _cleanup(assignment);
     await _platform.stopForegroundService();
     final outputKind = output.metrics['outputKind'];
     final structured = output.metrics['structuredResult'];
@@ -279,6 +474,44 @@ class AssignmentCoordinator {
     _emit(_status.copyWith(phase: ExecutionPhase.paused));
   }
 
+  Future<void> _submitFailureEvidence({
+    required WorkerAssignment assignment,
+    required Object error,
+    required DateTime startedAt,
+  }) async {
+    final checkpoint = await _checkpointStore.latestFor(assignment.assignmentId);
+    final evidence = _failureMapper.map(
+      assignment: assignment,
+      error: error,
+      executionTime: DateTime.now().difference(startedAt),
+      checkpointId: checkpoint?.encryptedBlobRef,
+    );
+    if (evidence == null) {
+      return;
+    }
+    try {
+      await _api.failAssignment(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+        idempotencyKey: 'fail-${assignment.attemptId}-${evidence.failureCode}',
+        body: evidence.toFailRequest(leaseToken: assignment.leaseToken),
+      );
+    } finally {
+      _storagePressure.clearActiveAssignment();
+      if (_assignmentStarted) {
+        await _cleanup(assignment, preserveCheckpoint: checkpoint != null);
+        await _platform.stopForegroundService();
+      }
+      _emit(_status.copyWith(
+        phase: ExecutionPhase.failed,
+        detail: evidence.failureCode,
+        assignmentId: assignment.assignmentId,
+        taskId: assignment.taskId,
+        taskType: assignment.taskType,
+      ));
+    }
+  }
+
   Future<void> abandon(WorkerAssignment assignment, {required String reason}) async {
     await _api.abandonAssignment(
       assignmentId: assignment.assignmentId,
@@ -288,7 +521,7 @@ class AssignmentCoordinator {
       reason: reason,
       idempotencyKey: 'abandon-${assignment.attemptId}',
     );
-    await _cleanup(assignment.assignmentId);
+    await _cleanup(assignment);
     await _platform.stopForegroundService();
     _emit(_status.copyWith(phase: ExecutionPhase.failed, detail: reason));
   }
@@ -333,9 +566,91 @@ class AssignmentCoordinator {
     );
   }
 
-  Future<void> _cleanup(String assignmentId) async {
+  Future<void> _cleanup(WorkerAssignment assignment, {bool preserveCheckpoint = false}) async {
     _emit(_status.copyWith(phase: ExecutionPhase.cleaningUp));
-    await _checkpointStore.purge(assignmentId);
+    _stopTracker.requestStop(reason: 'assignment_cleanup');
+    _activeReservation = null;
+    _storagePressure.clearActiveAssignment();
+    await _privacyCleanup.cleanupAfterAssignment(
+      assignmentId: assignment.assignmentId,
+      checkpointStore: _checkpointStore,
+      preserveCheckpoint: preserveCheckpoint,
+    );
+    final proof = buildPhysicalReleaseProof(
+      assignmentId: assignment.assignmentId,
+      fenceToken: assignment.fenceToken,
+      cleanupPhase: 'cleanup',
+    );
+    _stopTracker.confirmStop(proof: proof);
+    try {
+      await _api.confirmPhysicalStop(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+        leaseToken: assignment.leaseToken,
+        fenceToken: assignment.fenceToken,
+        proof: proof,
+        idempotencyKey: 'confirm-stop-${assignment.attemptId}',
+      );
+    } catch (_) {
+      // Server may already have logically released; local stop confirmation still recorded.
+    } finally {
+      _stopTracker.reset();
+    }
+  }
+
+  List<String> activeAssignmentIds() {
+    final assignmentId = _status.assignmentId;
+    if (assignmentId == null) {
+      return const [];
+    }
+    return switch (_status.phase) {
+      ExecutionPhase.idle ||
+      ExecutionPhase.waitingForAssignment ||
+      ExecutionPhase.completed ||
+      ExecutionPhase.failed =>
+        const [],
+      _ => [assignmentId],
+    };
+  }
+
+  WorkerHeartbeatTelemetryContext heartbeatTelemetryContext({
+    required DeviceSnapshot snapshot,
+    required int sequence,
+    RuntimeExclusiveGroupEnforcer? runtimeExclusiveGroups,
+    List<Map<String, String>> installedModels = const [],
+    List<String> loadedModelIds = const [],
+    int cpuUsageBps = 0,
+    WorkerCalibrationView? calibrationView,
+    String contributionModeId = 'balanced',
+    Map<String, dynamic>? identityLifecycleView,
+  }) {
+    return WorkerHeartbeatTelemetryContext(
+      sequence: sequence,
+      snapshot: snapshot,
+      currentLeases: activeAssignmentIds(),
+      installedModels: installedModels,
+      loadedModelIds: loadedModelIds,
+      cpuUsageBps: cpuUsageBps,
+      runtimeExclusiveGroups: runtimeExclusiveGroups,
+      calibrationView: calibrationView,
+      activeReservation: _activeReservation,
+      contributionModeId: contributionModeId,
+      identityLifecycleView: identityLifecycleView,
+    );
+  }
+
+  WorkerTaskMetrics _taskMetricsFromOutput(
+    Map<String, dynamic> metrics, {
+    required DateTime startedAt,
+  }) {
+    final taskMetrics = WorkerTaskMetrics(startedAt: startedAt);
+    taskMetrics.queueMs = metrics['queueMs'] as int? ?? 0;
+    taskMetrics.preprocessMs = metrics['preprocessMs'] as int? ?? 0;
+    taskMetrics.ocrMs = metrics['ocrMs'] as int? ?? 0;
+    taskMetrics.llmMs = metrics['llmMs'] as int? ?? 0;
+    taskMetrics.inputBytes = metrics['inputBytes'] as int?;
+    taskMetrics.peakMemoryMb = metrics['peakMemoryMb'] as int?;
+    return taskMetrics;
   }
 
   static Future<AssignmentInputBundle> _defaultInputLoader(WorkerAssignment assignment) async {
@@ -363,10 +678,12 @@ class ResumeDecision {
     this.checkpoint,
     this.resumedState,
     this.discardedStaleCheckpoint = false,
+    this.blockedPendingFreshGrant = false,
   });
 
   final bool startFresh;
   final CheckpointRecord? checkpoint;
   final Uint8List? resumedState;
   final bool discardedStaleCheckpoint;
+  final bool blockedPendingFreshGrant;
 }

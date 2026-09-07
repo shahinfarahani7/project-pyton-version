@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "taskId": "P8-A01",
+  "auditId": "A01",
+  "acceptanceCase": "T01",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "20",
+    "22",
+    "23",
+    "50",
+    "60"
+  ],
+  "generatedAt": "2026-09-06T07:22:01.153396+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sql": "database/sql/025_task_runs_terminal_cas.sql",
+    "service": "src/backend/edgemint/tasks/task_run.py",
+    "admissionWiring": "src/backend/edgemint/tasks/admission.py",
+    "assignmentWiring": "src/backend/edgemint/workers/assignments.py",
+    "tests": "src/backend/tests/tasks/test_task_run_terminal_cas.py"
+  },
+  "t01Scenario": {
+    "title": "Cancel/Complete race; one terminal commit wins",
+    "unitProof": true,
+    "integrationRaceHarness": "NOT_RUN",
+    "note": "SQL CAS function + service wiring present; concurrent integration repro deferred."
+  },
+  "gaps": [
+    "task_attempts.task_run_id backfill/link on attempt creation not yet enforced",
+    "VALIDATING stage before SUCCEEDED terminal commit not yet split",
+    "T01 concurrent cancel+complete integration harness NOT_RUN"
+  ],
+  "errors": []
+}

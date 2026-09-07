@@ -1,0 +1,28 @@
+{
+  "taskType": "moderation.prompt_safety",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for moderation.prompt_safety (Qwen prompt safety assessment)",
+  "input": {
+    "inlineText": "Explain how to secure my account with two-factor authentication.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_prompt_safety_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "safe": true,
+        "riskScore": 0.08,
+        "categories": ["account_security"],
+        "reason": "The prompt requests legitimate account security guidance without unsafe assistance."
+      }
+    },
+    "metrics": {
+      "llmMs": 640,
+      "inputTokens": 14,
+      "outputTokens": 24
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

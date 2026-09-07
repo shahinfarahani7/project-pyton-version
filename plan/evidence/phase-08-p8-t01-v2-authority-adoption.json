@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "taskId": "P8-T01",
+  "architectureVersion": "2.0",
+  "generatedAt": "2026-09-06",
+  "classification": "IMPLEMENTED_PRODUCTION",
+  "changes": [
+    "docs/EDGE-MINT-TARGET-ARCHITECTURE-v1.md — SUPERSEDED banner",
+    "START-HERE.md — v2 as step 1",
+    "production/canonical-decisions.yaml — architectureVersion 2.0",
+    "plan/TODO.md, plan/README.md, plan/closure-checklist.md, plan/audit-matrix.md — v2 authority",
+    ".cursor/rules/architecture-plan-todo.mdc — v2 authority",
+    "tools/validate_architecture_v2_adoption.py"
+  ],
+  "v1DigestSha256": "1f129782f6f8efc1274c14b3654b6cde5aefacfa7af82aa9da0b423ccf60abe5",
+  "validator": "tools/validate_architecture_v2_adoption.py"
+}

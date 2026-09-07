@@ -1,0 +1,24 @@
+{
+  "taskId": "P2-T13",
+  "completedAt": "2026-09-02",
+  "migration": "database/sql/018_worker_resource_reservations.sql",
+  "table": "public.worker_resource_reservations",
+  "statuses": ["reserved", "active", "released", "expired", "revoked"],
+  "resourceClasses": [
+    "cpu_units",
+    "memory_bytes",
+    "storage_bytes",
+    "accelerator_units",
+    "model_session_units",
+    "exclusive_group"
+  ],
+  "functions": [
+    "create_worker_resource_reservation",
+    "activate_worker_resource_reservation",
+    "release_worker_resource_reservation",
+    "release_worker_resource_reservation_by_assignment",
+    "worker_device_resource_totals"
+  ],
+  "tests": "tests/database/test_worker_resource_reservations_sql.py",
+  "validateSql": "passed (19 migrations)"
+}

@@ -1,0 +1,6 @@
+{
+  "taskId": "P6-T01",
+  "completedAt": "2026-09-02",
+  "tests": "src/backend/tests/routing/test_adaptive_execution.py",
+  "module": "dsl/policies/consent/production-resource-policy-v1.yaml"
+}

@@ -1,0 +1,40 @@
+---
+description: Keep plan/TODO.md in sync when completing architecture implementation tasks
+alwaysApply: true
+---
+
+# Architecture plan TODO discipline
+
+When working on tasks from [plan/](../plan/):
+
+## On task completion (required)
+
+1. Update [plan/TODO.md](../plan/TODO.md):
+   - Change `- [ ]` to `- [x]` for the task ID (e.g. `P1-T03`, `P5-QWEN-12`, `P7-CHAOS-lease-expiry`).
+   - Refresh the **Summary** table counts (Done / In Progress / Blocked).
+   - Set **Last updated** to today's date (ISO `YYYY-MM-DD`).
+   - Add a one-line evidence note if applicable (commit hash, test path, artifact under `artifacts/` or `evidence/`).
+
+2. Update the matching task block in [plan/phases/](../plan/phases/):
+   - Set **Status:** to `done` (or `blocked` / `in_progress` as appropriate).
+   - Fill **Evidence** with concrete paths — never leave vague.
+
+3. If the task closes a [plan/closure-checklist.md](../plan/closure-checklist.md) item, check that box only when evidence meets Section 66 (`IMPLEMENTED_PRODUCTION`).
+
+4. Update [plan/audit-matrix.md](../plan/audit-matrix.md) when the task changes feature classification.
+
+## Done definition (Section 66)
+
+Never mark a task complete without evidence in: Source, SQL, Contracts, DSL, Events, Tests, Production Path — or an explicit gap classification (`MISSING`, `PARTIAL`, etc.) documented in audit-matrix.
+
+## Constraints
+
+- Do not contradict [docs/EDGE-MINT-TARGET-ARCHITECTURE-v2.md](../docs/EDGE-MINT-TARGET-ARCHITECTURE-v2.md) (frozen v2). Further revisions require v3+.
+- Respect phase dependencies in phase files; do not skip phases without documented dependency overrides.
+- [cursor/work-packages.json](../cursor/work-packages.json) remains the implementation DAG; note WP cross-refs in phase task blocks when relevant.
+- Forbidden worker components (Section 2.3) must never be introduced: `LocalTaskSelector`, `LocalRetryOrchestrator`, `LocalReassignmentManager`, `LocalCloudFallbackDecision`.
+
+## When starting a task
+
+- Set **Status:** to `in_progress` in the phase file.
+- Optionally note `in_progress` in TODO summary table for that phase.

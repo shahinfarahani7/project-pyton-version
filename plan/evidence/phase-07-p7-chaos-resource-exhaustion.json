@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "taskId": "P7-CHAOS-resource-exhaustion",
+  "test": "test_p7_chaos_resource_exhaustion_no_overcommit",
+  "harness": "tools/run_production_chaos_harness.py",
+  "generatedAt": "2026-09-02T10:04:22.522784+00:00",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "notes": "Dev/staging invariant proof via pytest + source verify; live chaos deferred to staging deploy."
+}

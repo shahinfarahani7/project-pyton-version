@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "taskId": "P8-A16",
+  "auditId": "A16",
+  "acceptanceCase": "T16",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "4",
+    "24",
+    "32",
+    "53",
+    "54"
+  ],
+  "generatedAt": "2026-09-06T08:30:01.245607+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "contextProfileDsl": "dsl/catalog/context-profiles/qwen2.5-0.5b-artifact-v1.yaml",
+    "artifactIdentityModule": "src/backend/edgemint/models/artifact_identity.py",
+    "workerModelCatalog": "src/apps/worker/lib/models/worker_model_catalog.dart",
+    "artifactVerifier": "src/apps/worker/lib/runtime/model_artifact_verifier.dart",
+    "downloadVerifyHook": "src/apps/worker/lib/runtime/model_download_verify_hook.dart",
+    "installCoordinator": "src/apps/worker/lib/runtime/artifact_install_coordinator.dart",
+    "modelInstaller": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+    "modelRuntimeManager": "src/apps/worker/lib/runtime/model_runtime_manager.dart",
+    "backendTests": "src/backend/tests/models/test_artifact_identity.py",
+    "verifierTests": "src/apps/worker/test/runtime/model_artifact_verifier_test.dart",
+    "runtimeManagerTests": "src/apps/worker/test/runtime/model_runtime_manager_test.dart",
+    "coordinatorTests": "src/apps/worker/test/runtime/artifact_install_coordinator_test.dart",
+    "p3T16Evidence": "plan/evidence/phase-03-p3-t16-model-download-verify-hook.json"
+  },
+  "t16Scenario": {
+    "title": "Interrupted download, bad hash, concurrent install, upgrade during session",
+    "artifactIdentityManifest": true,
+    "digestSignatureVerification": true,
+    "concurrentInstallSerialization": true,
+    "upgradeBlockedWithOpenSessions": true,
+    "workerTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T16 interrupted download recovery E2E NOT_RUN",
+    "Physical-device concurrent install certification NOT_RUN",
+    "Upgrade-during-active-session device proof NOT_RUN"
+  ],
+  "errors": []
+}

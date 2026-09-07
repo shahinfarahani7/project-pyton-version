@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-09",
+  "taskTypeId": "ml.human_verification_quality",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/ml-human-verification-quality.yaml",
+  "goldenFixture": "tests/golden/fixtures/ml.human_verification_quality.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

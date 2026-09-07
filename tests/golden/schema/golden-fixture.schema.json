@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EdgeMintGoldenFixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["taskType", "fixtureVersion", "input", "workerResult"],
+  "properties": {
+    "taskType": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fixtureVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "input": {
+      "type": "object"
+    },
+    "workerResult": {
+      "type": "object"
+    },
+    "expectedResultSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "minimumConfidenceMilli": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    }
+  }
+}

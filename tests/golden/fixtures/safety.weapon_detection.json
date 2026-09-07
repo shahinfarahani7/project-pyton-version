@@ -1,0 +1,28 @@
+{
+  "taskType": "safety.weapon_detection",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for safety.weapon_detection",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_safety_weapon_detection",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "weapon": false,
+        "riskScore": 0.03,
+        "types": [],
+        "reason": "No weapons visible."
+      },
+      "visionRuntimeClass": "safety_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

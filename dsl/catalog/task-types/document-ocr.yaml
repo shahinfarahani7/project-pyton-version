@@ -7,6 +7,9 @@ metadata:
   description: Production task contract for document.ocr
   labels:
     domain: document
+    family: paddle_ocr
+    ocrVariant: canonical
+    runtimeClass: paddle_ocr
   owners:
   - product
   - platform

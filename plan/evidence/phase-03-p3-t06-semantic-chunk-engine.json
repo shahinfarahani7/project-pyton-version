@@ -1,0 +1,19 @@
+{
+  "taskId": "P3-T06",
+  "completedAt": "2026-09-02",
+  "summary": "SemanticChunkEngine splits long input on paragraph/sentence boundaries with overlap and map-stage metadata.",
+  "artifacts": {
+    "source": "src/apps/worker/lib/inference/llm/semantic_chunk_engine.dart",
+    "integration": "src/apps/worker/lib/inference/llm/qwen_task_processor.dart",
+    "goldenFixture": "src/apps/worker/test/inference/llm/fixtures/semantic_chunk_golden.dart",
+    "tests": "src/apps/worker/test/inference/llm/semantic_chunk_engine_test.dart"
+  },
+  "rules": [
+    "paragraph boundaries",
+    "sentence boundaries",
+    "controlled overlap with deduplication",
+    "token budget from ContextBudgetProfile",
+    "deterministic chunk IDs"
+  ],
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

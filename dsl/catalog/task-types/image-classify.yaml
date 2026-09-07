@@ -4,9 +4,11 @@ metadata:
   name: image-classify
   version: 2.0.0
   status: active
-  description: Production task contract for image.classify
+  description: Production vision contract for image.classify
   labels:
-    domain: image
+    domain: vision
+    family: internvl
+    visionCategory: vlm
   owners:
   - product
   - platform
@@ -22,20 +24,20 @@ spec:
     type: object
     required:
     - assetRef
-    - options
+    additionalProperties: false
     properties:
       assetRef:
         type: string
         pattern: ^file_[A-Za-z0-9]+$
       options:
         type: object
-    additionalProperties: false
   outputSchema:
     type: object
     required:
     - status
     - data
     - metrics
+    additionalProperties: false
     properties:
       status:
         enum:
@@ -44,27 +46,39 @@ spec:
         - failed
       data:
         type: object
+        required:
+        - label
+        - confidence
+        - evidence
+        properties:
+          label:
+            type: string
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+          evidence:
+            type: array
+            items:
+              type: string
       metrics:
         type: object
-    additionalProperties: false
   inputLimits:
     maximumBytes: 20971520
     allowedContentTypes:
-    - application/pdf
     - image/jpeg
     - image/png
+    - image/webp
   requiredCapabilities:
-    minimumWorkerTier: T1
+    minimumWorkerTier: T2
     attestationRequired: true
     secureNetworkRequired: true
     maximumExecutionSeconds: 180
   modelCandidates:
   - modelRef: ModelProfile/minicpm-v-4.6-q4@2.0.0
     priority: 1
-  - modelRef: ModelProfile/gemma-3n-e2b-int4@2.0.0
-    priority: 2
   verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
-  dataPolicyRef: DataPolicy/internal-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
   defaultVerification: standard
   retention:
     inputHours: 24

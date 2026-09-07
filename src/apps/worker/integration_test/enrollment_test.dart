@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:edgemint_worker/api/worker_api_client.dart';
 import 'package:edgemint_worker/api/worker_routes.dart';
 import 'package:edgemint_worker/config/worker_config.dart';
+import 'package:edgemint_worker/runtime/worker_enrollment_payload.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -66,16 +67,11 @@ void main() {
     final registration = await client.registerWorkerDevice(
       idempotencyKey: 'idem-register',
       requestId: 'req-register',
-      payload: <String, dynamic>{
-        'installationId': 'install-test',
-        'platform': 'android',
-        'appVersion': '5.0.0',
-        'capabilities': <String, dynamic>{},
-        'attestation': <String, dynamic>{
-          'challengeId': challenge.challengeId,
-          'nonce': challenge.nonce,
-        },
-      },
+      payload: WorkerEnrollmentPayload.registration(
+        installationId: 'install-test',
+        challengeId: challenge.challengeId,
+        nonce: challenge.nonce,
+      ),
     );
     expect(registration.workerId, 'wrk_test');
     expect(recording.paths.any((path) => path.contains(WorkerRoutes.registerDevice)), isTrue);

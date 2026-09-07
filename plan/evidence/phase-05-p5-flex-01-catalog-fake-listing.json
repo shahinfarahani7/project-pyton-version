@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-01",
+  "taskTypeId": "catalog.fake_listing",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/catalog-fake-listing.yaml",
+  "goldenFixture": "tests/golden/fixtures/catalog.fake_listing.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

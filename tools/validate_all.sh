@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python tools/validate_architecture_v2_adoption.py
+python tools/analyze_v2_policy_readiness.py
+python tools/analyze_v2_current_state_register.py
 python tools/validate_dsl.py
+python tools/validate_catalog_closure.py
 python tools/validate_contracts.py
 python tools/validate_contract_examples.py
 python tools/validate_cloudevent_examples.py

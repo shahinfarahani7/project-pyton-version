@@ -1,0 +1,27 @@
+{
+  "taskType": "llm.answer_quality_score",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.answer_quality_score",
+  "input": {
+    "inlineText": "Question=2+2? Answer=4",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_answer_quality_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "score": 0.98,
+        "dimensions": {
+          "correctness": 1.0,
+          "clarity": 0.95,
+          "completeness": 0.98
+        },
+        "issues": []
+      }
+    },
+    "metrics": {"llmMs": 450}
+  },
+  "minimumConfidenceMilli": 960
+}

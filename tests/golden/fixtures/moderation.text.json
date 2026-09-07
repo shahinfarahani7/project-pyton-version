@@ -1,0 +1,28 @@
+{
+  "taskType": "moderation.text",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for moderation.text (Qwen text moderation)",
+  "input": {
+    "inlineText": "Thanks for the quick delivery. The package arrived in perfect condition.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_moderation_text_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "allowed": true,
+        "riskScore": 0.05,
+        "categories": ["benign_feedback"],
+        "reason": "Positive delivery feedback with no policy violations detected."
+      }
+    },
+    "metrics": {
+      "llmMs": 580,
+      "inputTokens": 16,
+      "outputTokens": 20
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

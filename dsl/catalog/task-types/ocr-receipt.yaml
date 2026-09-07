@@ -1,0 +1,96 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: ocr-receipt
+  version: 2.0.0
+  status: active
+  description: OCR receipt variant routed to paddle_ocr runtime
+  labels:
+    domain: ocr
+    family: paddle_ocr
+    ocrVariant: receipt
+    runtimeClass: paddle_ocr
+  owners:
+  - product
+  - platform
+spec:
+  code: ocr.receipt
+  lifecycle: commercial-candidate
+  billing:
+    measure: page
+    quantum: 1
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    - options
+    additionalProperties: false
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    additionalProperties: false
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        properties:
+          rawText:
+            type: string
+          ocrLines:
+            type: array
+            items:
+              type: object
+              properties:
+                text:
+                  type: string
+                confidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                box:
+                  type: array
+                  items:
+                    type: number
+      metrics:
+        type: object
+  inputLimits:
+    maximumBytes: 52428800
+    allowedContentTypes:
+    - application/pdf
+    - image/jpeg
+    - image/png
+  requiredCapabilities:
+    minimumWorkerTier: T1
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 300
+  modelCandidates:
+  - modelRef: ModelProfile/paddleocr-mobile@2.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: verified
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

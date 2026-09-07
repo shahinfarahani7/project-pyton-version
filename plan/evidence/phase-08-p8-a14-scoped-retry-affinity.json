@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "taskId": "P8-A14",
+  "auditId": "A14",
+  "acceptanceCase": "T14",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "9",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "52",
+    "73"
+  ],
+  "generatedAt": "2026-09-06T08:25:44.701608+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "routingPolicyDsl": "dsl/policies/routing/smart-router-v2.yaml",
+    "retryMatrixDsl": "dsl/policies/retry/task-retry-matrix-v1.yaml",
+    "sqlMigration": "database/sql/035_task_run_budgets.sql",
+    "retryClassifier": "src/backend/edgemint/routing/retry_classifier.py",
+    "taskRunBudget": "src/backend/edgemint/routing/task_run_budget.py",
+    "artifactAffinity": "src/backend/edgemint/routing/artifact_affinity.py",
+    "failureAffinity": "src/backend/edgemint/routing/failure_affinity.py",
+    "cloudFallback": "src/backend/edgemint/routing/cloud_fallback.py",
+    "schedulerWiring": "src/backend/edgemint/routing/service.py",
+    "backendT14Tests": "src/backend/tests/routing/test_scoped_retry_affinity.py",
+    "retryClassifierTests": "src/backend/tests/routing/test_retry_classifier.py",
+    "failureAffinityTests": "src/backend/tests/routing/test_failure_affinity.py"
+  },
+  "t14Scenario": {
+    "title": "Permanent error, corrupt artifact, thermal repeat, no Worker, exhausted Attempt",
+    "permanentInputNoRetry": true,
+    "artifactPoolBlock": true,
+    "failureAffinityCooldown": true,
+    "taskRunBudgetNotReset": true,
+    "cloudFallbackBudgetGate": true,
+    "forbiddenSchedulerAbsentInLib": true,
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T14 exhausted Attempt then new Attempt end-to-end harness NOT_RUN",
+    "No eligible Worker saturation scenario NOT_RUN",
+    "Physical-device thermal repeat certification NOT_RUN"
+  ],
+  "errors": []
+}

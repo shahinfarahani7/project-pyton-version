@@ -1,0 +1,8 @@
+{
+  "taskId": "P5-QWEN-20",
+  "taskTypeId": "ml.bot_abuse_risk",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/ml-bot-abuse-risk.yaml",
+  "goldenFixture": "tests/golden/fixtures/ml.bot_abuse_risk.json",
+  "tests": "src/backend/tests/results/test_nlp_ml_validators.py"
+}

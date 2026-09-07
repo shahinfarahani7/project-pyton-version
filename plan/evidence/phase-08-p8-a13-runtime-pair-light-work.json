@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "taskId": "P8-A13",
+  "auditId": "A13",
+  "acceptanceCase": "T13",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "29",
+    "30",
+    "31",
+    "32",
+    "35",
+    "64"
+  ],
+  "generatedAt": "2026-09-06T08:23:01.635707+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "runtimeCompatibilityDsl": "dsl/catalog/runtime-compatibility/production-v1.yaml",
+    "exclusiveGroupsDsl": "dsl/policies/scheduling/production-exclusive-groups-v1.yaml",
+    "runtimeCompatibilityModule": "src/backend/edgemint/routing/runtime_compatibility.py",
+    "exclusiveGroupsModule": "src/backend/edgemint/routing/exclusive_groups.py",
+    "workerEnforcer": "src/apps/worker/lib/runtime/runtime_exclusive_group_enforcer.dart",
+    "backendT13Tests": "src/backend/tests/routing/test_runtime_pair_light_work.py",
+    "backendAdaptiveTests": "src/backend/tests/routing/test_adaptive_execution.py",
+    "backendExclusiveTests": "src/backend/tests/routing/test_exclusive_group_enforcement.py",
+    "workerEnforcerTests": "src/apps/worker/test/runtime/runtime_exclusive_group_enforcer_test.dart",
+    "certificationRunbook": "docs/08-sre/runbooks/RB-022-adaptive-concurrency-certification.md"
+  },
+  "t13Scenario": {
+    "title": "Qwen+VLM, OCR pair, certified Qwen+OCR, control-message load",
+    "qwenVlmBlocked": true,
+    "certifiedQwenOcrPair": true,
+    "lightWorkDuringHeavy": true,
+    "workerExclusiveEnforcer": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T13 large Upload/JSON/hash control-message load harness NOT_RUN",
+    "Physical-device Qwen+VLM conflict certification NOT_RUN",
+    "Transfer load responsiveness under total resource caps NOT_RUN"
+  ],
+  "errors": []
+}

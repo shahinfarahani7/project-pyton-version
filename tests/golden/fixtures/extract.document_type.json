@@ -1,0 +1,25 @@
+{
+  "taskType": "extract.document_type",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for extract.document_type",
+  "input": {
+    "assetRef": "file_golden_doctype_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_extract_doctype_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "INVOICE #42. Bill to ACME. Total 10 EUR.",
+      "ocrLines": [],
+      "data": {
+        "documentType": "invoice",
+        "confidence": 0.95,
+        "evidence": ["INVOICE #42", "Total 10 EUR"]
+      }
+    },
+    "metrics": {"ocrMs": 780, "llmMs": 710}
+  },
+  "minimumConfidenceMilli": 960
+}

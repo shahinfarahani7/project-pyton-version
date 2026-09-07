@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-04",
+  "taskTypeId": "dataset.label_verification",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/dataset-label-verification.yaml",
+  "goldenFixture": "tests/golden/fixtures/dataset.label_verification.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

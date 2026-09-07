@@ -1,0 +1,18 @@
+{
+  "taskId": "P3-T01",
+  "completedAt": "2026-09-02",
+  "summary": "RuntimeSafetyController for OOM/thermal/OS pressure deferral without local scheduling authority.",
+  "artifacts": {
+    "source": "src/apps/worker/lib/runtime/runtime_safety_controller.dart",
+    "integration": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "tests": "src/apps/worker/test/runtime/runtime_safety_controller_test.dart"
+  },
+  "decisions": [
+    "EXECUTE",
+    "DEFER_FOR_SAFETY",
+    "PAUSE_FOR_SAFETY",
+    "ABORT_FOR_SAFETY"
+  ],
+  "forbiddenClassesAbsent": true,
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored and static grep verified"
+}

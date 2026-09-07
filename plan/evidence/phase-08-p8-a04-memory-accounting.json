@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "taskId": "P8-A04",
+  "auditId": "A04",
+  "acceptanceCase": "T04",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "12",
+    "16",
+    "19",
+    "24",
+    "40"
+  ],
+  "generatedAt": "2026-09-06T07:41:04.838439+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sql": "database/sql/028_worker_memory_accounting.sql",
+    "service": "src/backend/edgemint/routing/memory_accounting.py",
+    "reservationWiring": "src/backend/edgemint/routing/resource_reservations.py",
+    "heartbeatWiring": "src/backend/edgemint/workers/enrollment.py",
+    "workerModule": "src/apps/worker/lib/runtime/memory_accounting.dart",
+    "heartbeatTelemetry": "src/apps/worker/lib/runtime/worker_heartbeat_telemetry.dart",
+    "backendTests": "src/backend/tests/routing/test_memory_accounting.py",
+    "workerTests": "src/apps/worker/test/runtime/memory_accounting_test.dart",
+    "reservationLedger": "database/sql/018_worker_resource_reservations.sql"
+  },
+  "t04Scenario": {
+    "title": "Scheduler race; warm model; snapshot reconciliation",
+    "residentDedupUnitProof": true,
+    "warmModelRetainedAfterTaskPeakRelease": true,
+    "workerMemoryAccountingTest": "SKIPPED_NO_FLUTTER",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T04 dual-scheduler race integration harness NOT_RUN",
+    "Transfer memory bucket not yet populated from telemetry",
+    "OpenAPI/heartbeat schema sync for memoryAccounting pending"
+  ],
+  "errors": [
+    "flutter CLI unavailable; memory_accounting_test.dart not executed"
+  ]
+}

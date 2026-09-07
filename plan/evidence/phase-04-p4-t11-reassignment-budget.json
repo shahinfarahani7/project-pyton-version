@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T11",
+  "completedAt": "2026-09-02",
+  "summary": "Reassignment budget enforced before scheduler ranking; exhausted budget raises NO_CAPACITY terminal failure.",
+  "artifacts": {
+    "service": "src/backend/edgemint/routing/service.py#check_reassignment_budget",
+    "policy": "dsl/policies/routing/smart-router-v2.yaml#maxWorkerReassignments",
+    "tests": "src/backend/tests/routing/test_scheduler_stack.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_scheduler_stack.py::test_reassignment_budget_enforced_in_scheduler_stack -q (1 passed)"
+}

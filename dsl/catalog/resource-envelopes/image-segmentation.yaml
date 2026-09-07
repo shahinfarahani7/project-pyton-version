@@ -1,0 +1,22 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: image-segmentation
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Segmentation / background removal envelope.
+spec:
+  taskType: image.remove_background
+  runtimeClass: segmentation_runtime
+  requiredModelIds: []
+  cpuUnits: 28
+  memoryReservationBytes: 805306368
+  storageReservationBytes: 104857600
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 120000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: vision_inference

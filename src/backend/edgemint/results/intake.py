@@ -60,16 +60,11 @@ def assert_output_size(*, inline_output: str | None, max_bytes: int) -> None:
 
 
 def assert_result_schema(*, inline_output: str | None, task_type: str) -> None:
-    if inline_output is None:
-        return
-    try:
-        payload = json.loads(inline_output)
-    except json.JSONDecodeError as exc:
-        raise result_error("RESULT_SCHEMA_INVALID", detail="inline output must be JSON") from exc
-    if not isinstance(payload, dict):
-        raise result_error("RESULT_SCHEMA_INVALID", detail="inline output must be an object")
-    if task_type.startswith("document.") and "content" not in payload:
-        raise result_error("RESULT_SCHEMA_INVALID", detail="document result requires content")
+    from edgemint.results.validator import validate_task_result
+
+    outcome = validate_task_result(task_type=task_type, inline_output=inline_output)
+    if not outcome.valid:
+        raise result_error(outcome.failure_code or "RESULT_SCHEMA_INVALID", detail=outcome.detail)
 
 
 def verify_worker_signature(

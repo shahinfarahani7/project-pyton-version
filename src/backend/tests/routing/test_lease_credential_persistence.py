@@ -38,6 +38,7 @@ async def test_router_persists_hash_and_encrypted_bootstrap_copy() -> None:
     settings = Settings(
         environment="test",
         lease_credential_encryption_key=base64.urlsafe_b64encode(key).decode("ascii"),
+        worker_resource_reservations_enabled=False,
     )
     connection = AsyncMock()
     assignment_id = uuid4()

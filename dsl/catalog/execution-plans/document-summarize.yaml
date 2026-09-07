@@ -1,0 +1,83 @@
+apiVersion: edgemint.io/v1
+kind: TaskExecutionPlan
+metadata:
+  name: document-summarize
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Canonical multi-stage plan for document.summarize (architecture §14).
+spec:
+  taskType: document.summarize
+  inputMode: document
+  planVersion: 2026-q3-v1
+  stages:
+    - sequence: 1
+      name: pdf-decode
+      operation: pdf_decode
+      runtimeClass: system
+      checkpointEnabled: false
+      retryPolicy: stage_once
+      estimatedDurationMs: 15000
+    - sequence: 2
+      name: ocr
+      operation: ocr
+      runtimeClass: paddle_ocr
+      requiredModelIds:
+        - paddleocr-mobile
+      checkpointEnabled: true
+      retryPolicy: stage_with_backoff
+      estimatedDurationMs: 90000
+      exclusiveGroup: ocr_inference
+    - sequence: 3
+      name: text-normalize
+      operation: text_normalize
+      runtimeClass: system
+      checkpointEnabled: false
+      retryPolicy: none
+      estimatedDurationMs: 5000
+    - sequence: 4
+      name: chunk
+      operation: chunk
+      runtimeClass: system
+      checkpointEnabled: true
+      retryPolicy: none
+      estimatedDurationMs: 10000
+    - sequence: 5
+      name: llm-map
+      operation: llm_map
+      runtimeClass: mediapipe_llm
+      requiredModelIds:
+        - qwen2.5-0.5b
+      checkpointEnabled: true
+      retryPolicy: stage_with_backoff
+      validationRule: map_output_schema_v1
+      estimatedDurationMs: 120000
+      exclusiveGroup: llm_inference
+    - sequence: 6
+      name: llm-reduce
+      operation: llm_reduce
+      runtimeClass: mediapipe_llm
+      requiredModelIds:
+        - qwen2.5-0.5b
+      checkpointEnabled: true
+      retryPolicy: stage_with_backoff
+      validationRule: reduce_output_schema_v1
+      estimatedDurationMs: 90000
+      exclusiveGroup: llm_inference
+    - sequence: 7
+      name: validate
+      operation: validate
+      runtimeClass: system
+      checkpointEnabled: false
+      retryPolicy: none
+      validationRule: result_schema_v1
+      estimatedDurationMs: 5000
+    - sequence: 8
+      name: submit
+      operation: submit
+      runtimeClass: network_io
+      checkpointEnabled: false
+      retryPolicy: stage_once
+      estimatedDurationMs: 3000

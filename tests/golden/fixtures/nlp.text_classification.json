@@ -1,0 +1,25 @@
+{
+  "taskType": "nlp.text_classification",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for nlp.text_classification",
+  "input": {
+    "inlineText": "My parcel is late.",
+    "options": {
+      "allowedLabels": ["billing", "delivery"]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_nlp_text_classification_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "label": "delivery",
+        "confidence": 0.91,
+        "evidence": ["parcel", "late"]
+      }
+    },
+    "metrics": {"llmMs": 420}
+  },
+  "minimumConfidenceMilli": 960
+}

@@ -19,7 +19,7 @@ void main() {
   test('execution routes match worker API contract', () {
     expect(WorkerRoutes.nextAssignment, '/assignments:next');
     expect(WorkerRoutes.completeAssignment('asg_test'), '/assignments/asg_test:complete');
-    expect(WorkerRoutes.executionRoutes.length, 7);
+    expect(WorkerRoutes.executionRoutes.length, 9);
   });
 
   test('WorkerApiException preserves problem code', () {

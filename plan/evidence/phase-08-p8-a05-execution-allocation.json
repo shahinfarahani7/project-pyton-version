@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "taskId": "P8-A05",
+  "auditId": "A05",
+  "acceptanceCase": "T05",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "12",
+    "12.1",
+    "13",
+    "20",
+    "60"
+  ],
+  "generatedAt": "2026-09-06T07:46:58.102700+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sql": "database/sql/029_task_execution_allocations.sql",
+    "service": "src/backend/edgemint/routing/execution_allocation.py",
+    "admissionWiring": "src/backend/edgemint/tasks/admission.py",
+    "atomicWiring": "src/backend/edgemint/routing/atomic_assignment.py",
+    "envelopeRegistry": "src/backend/edgemint/routing/envelope_registry.py",
+    "executionPlanResolver": "src/backend/edgemint/routing/execution_plan_resolver.py",
+    "backendTests": "src/backend/tests/routing/test_execution_allocation.py",
+    "envelopeCatalog": "dsl/catalog/resource-envelopes/text-summarize.yaml"
+  },
+  "t05Scenario": {
+    "title": "Same Revision 300 vs 30k tokens; stage demand increases",
+    "staticEnvelopeIndependentOfInput": true,
+    "allocationScalesWithTokensAndPlan": true,
+    "assignmentReferencesAllocation": "wired_in_atomic_assignment.py",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T05 end-to-end admission\u2192assignment integration harness NOT_RUN",
+    "create_revision path does not yet mint TaskRun/allocation",
+    "OpenAPI assignment payload sync for executionAllocationId pending"
+  ],
+  "errors": []
+}

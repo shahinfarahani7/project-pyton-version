@@ -1,0 +1,8 @@
+{
+  "taskId": "P5-QWEN-11",
+  "taskTypeId": "llm.hallucination_check",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/llm-hallucination-check.yaml",
+  "goldenFixture": "tests/golden/fixtures/llm.hallucination_check.json",
+  "tests": "src/backend/tests/results/test_llm_validators.py"
+}

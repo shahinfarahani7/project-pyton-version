@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "taskId": "P8-A10",
+  "auditId": "A10",
+  "acceptanceCase": "T10",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "4",
+    "25",
+    "32"
+  ],
+  "generatedAt": "2026-09-06T08:16:45.497201+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "contextProfileDsl": "dsl/catalog/context-profiles/qwen2.5-0.5b-artifact-v1.yaml",
+    "contextProfileRegistry": "src/backend/edgemint/routing/context_profile_registry.py",
+    "contextBudget": "src/backend/edgemint/routing/context_budget.py",
+    "executionAllocationCap": "src/backend/edgemint/routing/execution_allocation.py",
+    "workerContextManager": "src/apps/worker/lib/inference/llm/context_budget_manager.dart",
+    "formattedPromptBuilder": "src/apps/worker/lib/inference/llm/formatted_prompt_builder.dart",
+    "outputLimitEnforcer": "src/apps/worker/lib/inference/llm/output_limit_enforcer.dart",
+    "qwenProcessor": "src/apps/worker/lib/inference/llm/qwen_task_processor.dart",
+    "backendTests": "src/backend/tests/routing/test_context_budget.py",
+    "workerBoundaryTests": "src/apps/worker/test/inference/llm/formatted_prompt_boundary_test.dart",
+    "legacyContextTests": "src/apps/worker/test/inference/llm/context_budget_manager_test.dart"
+  },
+  "t10Scenario": {
+    "title": "Multilingual/JSON near context edge; template and truncation",
+    "artifactBoundEffectiveLimit": true,
+    "formattedPromptBoundaryTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "outputLimitEnforcement": "output_limit_enforcer.dart",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T10 native tokenizer exact-count integration harness NOT_RUN",
+    "Runtime stop mechanism certification on physical device NOT_RUN"
+  ],
+  "errors": []
+}

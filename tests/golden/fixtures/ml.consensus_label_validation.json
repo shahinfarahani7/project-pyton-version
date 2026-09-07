@@ -1,0 +1,39 @@
+{
+  "taskType": "ml.consensus_label_validation",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for ml.consensus_label_validation",
+  "input": {
+    "flexInput": {
+      "record": {
+        "id": "r2"
+      },
+      "votes": [
+        {
+          "label": "spam",
+          "annotator": "a1"
+        },
+        {
+          "label": "spam",
+          "annotator": "a2"
+        }
+      ]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ml_consensus_label_validation",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "consensusLabel": "spam",
+        "agreementScore": 1.0,
+        "disputed": false,
+        "reason": "unanimous votes"
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

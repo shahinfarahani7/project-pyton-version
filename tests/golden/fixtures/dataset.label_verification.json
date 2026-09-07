@@ -1,0 +1,37 @@
+{
+  "taskType": "dataset.label_verification",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for dataset.label_verification",
+  "input": {
+    "flexInput": {
+      "record": {
+        "id": "r1",
+        "text": "billing issue"
+      },
+      "candidateLabel": "billing",
+      "allowedLabels": [
+        "billing",
+        "delivery"
+      ]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_dataset_label_verification",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "valid": true,
+        "correctedLabel": "billing",
+        "confidence": 0.9,
+        "reasons": [
+          "billing keyword"
+        ]
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

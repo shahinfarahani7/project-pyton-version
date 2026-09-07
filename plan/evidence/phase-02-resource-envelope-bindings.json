@@ -1,0 +1,239 @@
+{
+  "boundAt": "2026-09-01",
+  "total": 56,
+  "templateRefs": [
+    "TaskResourceEnvelope/document-extract@1.0.0",
+    "TaskResourceEnvelope/document-ocr@1.0.0",
+    "TaskResourceEnvelope/flex-input@1.0.0",
+    "TaskResourceEnvelope/image-segmentation@1.0.0",
+    "TaskResourceEnvelope/text-classify@1.0.0",
+    "TaskResourceEnvelope/text-summarize@1.0.0",
+    "TaskResourceEnvelope/vision-analyze@1.0.0"
+  ],
+  "bindings": [
+    {
+      "taskType": "document.ocr",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0"
+    },
+    {
+      "taskType": "document.extract",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0"
+    },
+    {
+      "taskType": "text.summarize",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-summarize@1.0.0"
+    },
+    {
+      "taskType": "text.classify",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "image.classify",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "image.remove_background",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/image-segmentation@1.0.0"
+    },
+    {
+      "taskType": "safety.nsfw_detection",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "safety.violence_detection",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "safety.weapon_detection",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "safety.unsafe_image",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "moderation.profile_image",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "moderation.generated_image",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "moderation.prompt_safety",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "moderation.text",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "moderation.profanity",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "moderation.spam_comment",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "ocr.receipt",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0"
+    },
+    {
+      "taskType": "ocr.invoice",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0"
+    },
+    {
+      "taskType": "ocr.simple_form",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0"
+    },
+    {
+      "taskType": "ocr.product_label",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0"
+    },
+    {
+      "taskType": "extract.amount",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0"
+    },
+    {
+      "taskType": "extract.date",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0"
+    },
+    {
+      "taskType": "extract.order_number",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0"
+    },
+    {
+      "taskType": "extract.document_type",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0"
+    },
+    {
+      "taskType": "quality.document_image",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "quality.blurry_image",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.image_tagging",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.product_classification",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.duplicate_image",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.product_quality_score",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.brand_logo",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.prohibited_product",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "catalog.fake_listing",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "review.fake_detection",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "review.sentiment",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "review.topic_tagging",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "llm.summary_verification",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-summarize@1.0.0"
+    },
+    {
+      "taskType": "llm.hallucination_check",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "llm.ocr_output_validation",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "llm.ai_tag_validation",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "llm.caption_validation",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "llm.policy_violation",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "llm.prompt_output_consistency",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "llm.image_output_safety",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0"
+    },
+    {
+      "taskType": "llm.answer_quality_score",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "llm.suspicious_output",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "dataset.label_verification",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "dataset.duplicate_cleanup",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "dataset.low_quality_removal",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "nlp.language_detection",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "nlp.text_classification",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "nlp.spam_fraud_classification",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    },
+    {
+      "taskType": "ml.active_learning_prelabel",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "ml.consensus_label_validation",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "ml.human_verification_quality",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0"
+    },
+    {
+      "taskType": "ml.bot_abuse_risk",
+      "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0"
+    }
+  ]
+}

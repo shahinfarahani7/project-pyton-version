@@ -1,0 +1,197 @@
+apiVersion: edgemint.io/v1
+kind: CheckpointPolicyMatrix
+metadata:
+  name: task-checkpoint-matrix-v1
+  version: 1.0.0
+  status: active
+  description: Section 28/46 checkpoint/resume defaults for all 56 catalog task types
+  owners:
+  - platform
+  - mobile
+spec:
+  defaultMaximumIntervalSeconds: 60
+  mobileCheckpointPolicyRef: CheckpointPolicy/mobile-checkpoint-v2@2.0.0
+  entries:
+  - taskType: catalog.brand_logo
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: catalog.duplicate_image
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: catalog.fake_listing
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: catalog.image_tagging
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: catalog.product_classification
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: catalog.product_quality_score
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: catalog.prohibited_product
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: dataset.duplicate_cleanup
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: dataset.label_verification
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: dataset.low_quality_removal
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: document.extract
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: document.ocr
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: extract.amount
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: extract.date
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: extract.document_type
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: extract.order_number
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: image.classify
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: image.remove_background
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: llm.ai_tag_validation
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: llm.answer_quality_score
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: llm.caption_validation
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: llm.hallucination_check
+    checkpointEnabled: true
+    checkpointStrategy: chunk
+    maximumIntervalSeconds: 60
+  - taskType: llm.image_output_safety
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: llm.ocr_output_validation
+    checkpointEnabled: true
+    checkpointStrategy: chunk
+    maximumIntervalSeconds: 60
+  - taskType: llm.policy_violation
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: llm.prompt_output_consistency
+    checkpointEnabled: true
+    checkpointStrategy: chunk
+    maximumIntervalSeconds: 60
+  - taskType: llm.summary_verification
+    checkpointEnabled: true
+    checkpointStrategy: chunk
+    maximumIntervalSeconds: 60
+  - taskType: llm.suspicious_output
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: ml.active_learning_prelabel
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: ml.bot_abuse_risk
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: ml.consensus_label_validation
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: ml.human_verification_quality
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: moderation.generated_image
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: moderation.profanity
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: moderation.profile_image
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: moderation.prompt_safety
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: moderation.spam_comment
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: moderation.text
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: nlp.language_detection
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: nlp.spam_fraud_classification
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: nlp.text_classification
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: ocr.invoice
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: ocr.product_label
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: ocr.receipt
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: ocr.simple_form
+    checkpointEnabled: true
+    checkpointStrategy: stage
+    maximumIntervalSeconds: 60
+  - taskType: quality.blurry_image
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: quality.document_image
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: review.fake_detection
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: review.sentiment
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: review.topic_tagging
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: safety.nsfw_detection
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: safety.unsafe_image
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: safety.violence_detection
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: safety.weapon_detection
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: text.classify
+    checkpointEnabled: false
+    checkpointStrategy: none
+  - taskType: text.summarize
+    checkpointEnabled: true
+    checkpointStrategy: chunk
+    maximumIntervalSeconds: 60

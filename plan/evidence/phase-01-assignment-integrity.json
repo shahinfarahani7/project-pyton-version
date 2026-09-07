@@ -1,0 +1,71 @@
+{
+  "phase": 1,
+  "auditedAt": "2026-09-01",
+  "summary": "Assignment integrity verified via SQL validation, source contract scripts, and backend pytest. E2E requires live PostgreSQL.",
+  "commands": {
+    "validate_sql": {
+      "exitCode": 0,
+      "migrations": 15,
+      "note": "012_assignment_lease_credential_bootstrap.sql included"
+    },
+    "pytest": {
+      "exitCode": 0,
+      "passed": 35,
+      "suites": [
+        "tests/workers/test_assignment_credential_bootstrap.py",
+        "tests/workers/test_assignment_commands.py",
+        "tests/routing/test_lease_credential_persistence.py",
+        "tests/workers/",
+        "tests/routing/",
+        "tests/event_relay/"
+      ]
+    },
+    "verify_websocket_replay_source": {
+      "exitCode": 0,
+      "checks": [
+        "durable_outbox_expansion",
+        "idempotent_fanout",
+        "worker_target_filter",
+        "no_lease_token_in_delivery"
+      ]
+    },
+    "verify_production_completion_source": {
+      "exitCode": 0
+    },
+    "verify_production_auto_assignment_source": {
+      "exitCode": 0,
+      "checks": {
+        "router_creates_encrypted_credential_atomically": true,
+        "bootstrap_is_target_device_only": true,
+        "production_start_endpoint": true,
+        "production_renew_endpoint": true,
+        "start_uses_postgresql_fence_gate": true,
+        "renew_uses_monotonic_postgresql_gate": true
+      }
+    },
+    "run_production_auto_assignment_e2e": {
+      "exitCode": 2,
+      "status": "blocked",
+      "reasons": [
+        "EDGEMINT_DATABASE_URL is not configured",
+        "EDGEMINT_LEASE_CREDENTIAL_ENCRYPTION_KEY is not configured"
+      ]
+    }
+  },
+  "taskOutcomes": {
+    "P1-T01": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "012 SQL + validate_sql.py" },
+    "P1-T02": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "AssignmentCredentialBootstrapService + 9 bootstrap tests" },
+    "P1-T03": { "status": "PARTIAL", "evidence": "013 outbox SQL + event_relay tests; transactional enqueue on start/renew" },
+    "P1-T04": { "status": "PARTIAL", "evidence": "event_relay WS fanout; worker-gateway is HTTP proxy; mobile polls assignments:next" },
+    "P1-T05": { "status": "TEST_ONLY", "evidence": "verify_websocket_replay_source.py exit 0" },
+    "P1-T06": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "renew() + renew_auto_assignment_lease SQL" },
+    "P1-T07": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "start_deadline_at_utc gate in bootstrap SELECT" },
+    "P1-T08": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "ASSIGNMENT_STALE_FENCE + verify_production_completion_source.py" },
+    "P1-T09": { "status": "MISSING", "evidence": "No reservation release hook; deferred to Phase 2 ledger (P2-T13)" },
+    "P1-T10": { "status": "PARTIAL", "evidence": "routing/policy deliveryAckMeaning=transport_receipt_only; eventing.acknowledge_delivery SQL" },
+    "P1-T11": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "leased→running via start_auto_assigned_work; complete path in assignments.py" },
+    "P1-T12": { "status": "IMPLEMENTED_DEV_ONLY", "evidence": "Closed codes in workers/errors.py (ASSIGNMENT_STALE_FENCE, LEASE_* etc.)" },
+    "P1-T13": { "status": "PARTIAL", "evidence": "E2E blocked without DB; substitute source verify + pytest" },
+    "P1-T14": { "status": "done", "evidence": "closure-checklist assignment section updated 2026-09-01" }
+  }
+}

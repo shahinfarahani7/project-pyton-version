@@ -1,0 +1,33 @@
+{
+  "taskType": "ml.human_verification_quality",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for ml.human_verification_quality",
+  "input": {
+    "flexInput": {
+      "record": {
+        "id": "r3"
+      },
+      "verification": {
+        "decision": "approve",
+        "notes": "clear evidence"
+      }
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ml_human_verification_quality",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "valid": true,
+        "qualityScore": 0.9,
+        "issues": [],
+        "recommendation": "accept verification"
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

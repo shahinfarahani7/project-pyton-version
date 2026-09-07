@@ -5,6 +5,8 @@ import 'package:edgemint_worker/contracts/worker_task_request.dart';
 import 'package:edgemint_worker/contracts/worker_task_result.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
 import 'package:edgemint_worker/inference/ocr/fake_ocr_engine.dart';
+import 'package:edgemint_worker/runtime/execution_plan_runner.dart';
+import 'package:edgemint_worker/runtime/model_runtime_manager.dart';
 import 'package:edgemint_worker/tasks/task_execution_engine.dart';
 import 'package:edgemint_worker/tasks/task_type_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,6 +93,47 @@ void main() {
       );
       expect(output.metrics['taskStatus'], 'succeeded');
       expect(engine.lastResult?.output?['data']?['label'], 'payment');
+    });
+
+    test('clears execution plan binding after llm task completes', () async {
+      final memory = InMemoryModelRuntimeManager(verifyArtifact: false);
+      final runner = ExecutionPlanRunner(modelRuntime: memory);
+      final engine = TaskExecutionEngine(
+        ocrEngine: FakeOcrEngine(),
+        qwenProcessor: QwenTaskProcessor(
+          runner: (_) async => '{"label":"payment","confidence":0.88,"evidence":["code"]}',
+        ),
+        executionPlanRunner: runner,
+      );
+      await engine.execute(
+        context: TaskExecutionContext(
+          assignment: WorkerAssignment(
+            assignmentId: 'asg3',
+            attemptId: 'att3',
+            revisionId: 'rev3',
+            leaseToken: 'lease',
+            fenceToken: 4,
+            leaseExpiresAt: DateTime.parse('2026-12-31T00:00:00Z'),
+            taskType: 'text.classify',
+            modelVersionId: 'mdv_qwen3_0_6b',
+            inputManifestUrl: 'http://example/manifest',
+            outputUploadUrl: 'http://example/output',
+            startDeadlineAt: DateTime.parse('2026-12-31T00:00:00Z'),
+            taskId: 'tsk3',
+          ),
+          manifest: {
+            'schemaVersion': '1.0',
+            'inputText': 'Your verification code is 123456',
+            'options': {'allowedLabels': ['payment', 'other']},
+          },
+          inputBytes: Uint8List.fromList(utf8.encode('Your verification code is 123456')),
+          isImageInput: false,
+        ),
+        signingKey: 'sign',
+        freeStorageMb: 8192,
+      );
+      expect(runner.boundAssignmentId, isNull);
+      expect(memory.openSessionCount, 0);
     });
   });
 }

@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-03",
+  "taskTypeId": "llm.caption_validation",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/llm-caption-validation.yaml",
+  "goldenFixture": "tests/golden/fixtures/llm.caption_validation.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

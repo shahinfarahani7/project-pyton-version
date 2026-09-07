@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-03",
+  "taskTypeId": "safety.violence_detection",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/safety-violence-detection.yaml",
+  "goldenFixture": "tests/golden/fixtures/safety.violence_detection.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

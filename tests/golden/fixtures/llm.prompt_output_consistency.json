@@ -1,0 +1,23 @@
+{
+  "taskType": "llm.prompt_output_consistency",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.prompt_output_consistency",
+  "input": {
+    "inlineText": "prompt=Return one color. output=blue",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_prompt_consistency_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "consistent": true,
+        "score": 0.96,
+        "issues": []
+      }
+    },
+    "metrics": {"llmMs": 410}
+  },
+  "minimumConfidenceMilli": 960
+}

@@ -1,0 +1,36 @@
+{
+  "taskType": "ocr.product_label",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for ocr.product_label",
+  "input": {
+    "assetRef": "file_golden_product_label_001",
+    "options": {
+      "language": "en"
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ocr_product_label",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "TOTAL 42.50 USD",
+      "ocrLines": [
+        {
+          "text": "TOTAL 42.50 USD",
+          "confidence": 0.93,
+          "box": [
+            10,
+            20,
+            400,
+            48
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "averageOcrConfidence": 0.93,
+      "ocrMs": 980
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

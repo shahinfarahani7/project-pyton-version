@@ -1,0 +1,32 @@
+{
+  "taskId": "P5-QWEN-01",
+  "taskTypeId": "text.summarize",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for text.summarize: TaskType DSL outputSchema, result validator, golden fixture, and harness PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-summarize@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/text-summarize.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_text_summarize",
+    "retryPolicy": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0 (stronger_worker)",
+    "checkpointPolicy": "chunk (checkpointEnabled: true)",
+    "goldenFixture": "tests/golden/fixtures/text.summarize.json",
+    "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#TextSummarizeHandler"
+  },
+  "artifacts": {
+    "executionPlans": [
+      "dsl/catalog/execution-plans/text-summarize-direct.yaml",
+      "dsl/catalog/execution-plans/text-summarize-map-reduce.yaml"
+    ],
+    "tests": [
+      "src/backend/tests/results/test_text_summarize_validator.py",
+      "src/backend/tests/golden/test_golden_task_harness.py"
+    ]
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_text_summarize_validator.py tests/golden/test_golden_task_harness.py -q (11 passed); run_golden_task_harness.py --task-type text.summarize exit 0",
+  "goldenRun": {
+    "status": "passed",
+    "caseCount": 1,
+    "passed": 1,
+    "failed": 0
+  }
+}

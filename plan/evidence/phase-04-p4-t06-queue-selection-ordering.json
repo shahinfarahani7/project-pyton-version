@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T06",
+  "completedAt": "2026-09-02",
+  "summary": "Queue selection ordering via fair_queue module: deficit RR, priority, deadline, submission time, task ID, with starvation override.",
+  "artifacts": {
+    "module": "src/backend/edgemint/routing/fair_queue.py",
+    "serviceHook": "src/backend/edgemint/routing/service.py#rank_task_attempts",
+    "tests": "src/backend/tests/routing/test_fair_queue_ordering.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_fair_queue_ordering.py -q (4 passed)"
+}

@@ -1,0 +1,36 @@
+{
+  "taskType": "ml.active_learning_prelabel",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for ml.active_learning_prelabel",
+  "input": {
+    "flexInput": {
+      "record": {
+        "id": "r9",
+        "text": "refund request"
+      },
+      "allowedLabels": [
+        "billing",
+        "other"
+      ]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ml_active_learning_prelabel",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "label": "billing",
+        "confidence": 0.72,
+        "needsHumanReview": true,
+        "evidence": [
+          "refund keyword"
+        ]
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

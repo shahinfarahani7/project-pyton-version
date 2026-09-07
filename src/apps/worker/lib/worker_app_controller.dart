@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,6 +13,7 @@ import 'api/worker_api_client.dart';
 import 'api/worker_assignment_models.dart';
 import 'config/worker_config.dart';
 import 'inference/llm/qwen_task_processor.dart';
+import 'inference/ocr/guarded_ocr_engine.dart';
 import 'inference/ocr/fake_ocr_engine.dart';
 import 'inference/ocr/ocr_engine.dart';
 import 'inference/ocr/paddle_ocr_engine.dart';
@@ -19,15 +21,22 @@ import 'inference/ocr/paddle_ocr_installer.dart';
 import 'models/worker_model_catalog.dart';
 import 'platform/worker_runtime_channel.dart';
 import 'runtime/assignment_coordinator.dart';
+import 'runtime/checkpoint_manager.dart';
 import 'runtime/dev_mock_inference_adapter.dart';
 import 'runtime/device_snapshot.dart';
 import 'runtime/encrypted_store.dart';
 import 'runtime/execution_status.dart';
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/gemma_inference_adapter.dart';
+import 'runtime/identity_lifecycle_tracer.dart';
+import 'runtime/model_download_verify_hook.dart';
+import 'runtime/process_lifecycle_coordinator.dart';
+import 'runtime/runtime_exclusive_group_enforcer.dart';
 import 'runtime/inference_adapter.dart';
+import 'runtime/storage_pressure_manager.dart';
 import 'runtime/switchable_inference_adapter.dart';
-import 'runtime/worker_model_installer.dart';
+import 'runtime/worker_heartbeat_service.dart';
+import 'runtime/worker_heartbeat_telemetry.dart';
 import 'tasks/task_execution_engine.dart';
 import 'tasks/task_type_mapper.dart';
 
@@ -41,45 +50,67 @@ class WorkerAppController extends ChangeNotifier {
     OcrEngine? ocrEngine,
     QwenTaskProcessor? qwenProcessor,
     TaskExecutionEngine? taskEngine,
+    StoragePressureManager? storagePressure,
   }) : _config = config ?? WorkerConfig.fromEnvironment(),
        _http = httpClient ?? http.Client(),
        _platform = platform ?? WorkerRuntimeChannel(),
-       _ocrEngineRef = OcrEngineRef(ocrEngine ?? PaddleOcrEngine()) {
-    //
-    // IMPORTANT:
-    //
-    // The actual installed model is defined by WorkerModelCatalog.
-    //
-    // After migrating WorkerModelCatalog to:
-    //
-    // Qwen2.5-0.5B-Instruct
-    // ModelType.qwen
-    // ModelFileType.task
-    //
-    // x86 Android is no longer automatically forced into mock mode.
-    //
-    _inference = SwitchableInferenceAdapter(GemmaLiteRtInferenceAdapter());
+       _storagePressure = storagePressure ?? StoragePressureManager() {
+    _exclusiveGroups = RuntimeExclusiveGroupEnforcer();
+    _ocrEngineRef = OcrEngineRef(_wrapOcrEngine(ocrEngine ?? PaddleOcrEngine()));
 
-    _qwenProcessor = qwenProcessor ?? QwenTaskProcessor();
+    _inference = SwitchableInferenceAdapter(
+      GemmaLiteRtInferenceAdapter(
+        runtimeManager: GemmaModelRuntimeManager(
+          exclusiveGroupEnforcer: _exclusiveGroups,
+        ),
+      ),
+    );
+
+    final encryptedStore = InMemoryEncryptedStore();
+    _checkpointManager = CheckpointManager(encryptedStore);
+    _qwenProcessor = qwenProcessor ??
+        QwenTaskProcessor(
+          adapter: GemmaLiteRtInferenceAdapter(
+            runtimeManager: GemmaModelRuntimeManager(
+              exclusiveGroupEnforcer: _exclusiveGroups,
+            ),
+          ),
+          checkpointManager: _checkpointManager,
+        );
 
     _taskEngine =
         taskEngine ??
         TaskExecutionEngine(
           ocrEngine: _ocrEngineRef,
           qwenProcessor: _qwenProcessor,
+          exclusiveGroupEnforcer: _exclusiveGroups,
         );
 
     _api = WorkerApiClient(config: _config, httpClient: _http);
 
+    _processLifecycle = ProcessLifecycleCoordinator(
+      onInvalidateNativeHandles: (_) => _inference.dispose(),
+    );
+
     _coordinator = AssignmentCoordinator(
       api: _api,
-      store: InMemoryEncryptedStore(),
+      store: encryptedStore,
       platform: _platform,
       inference: _inference,
       inputLoader: _loadAssignmentInput,
       taskEngine: _taskEngine,
+      storagePressure: _storagePressure,
       onStatus: _onExecutionStatus,
+      processLifecycle: _processLifecycle,
     );
+    _storagePressure.seedDefaultCatalog();
+    if (_workerId.isNotEmpty && _workerAccessToken.isNotEmpty) {
+      _heartbeat = WorkerHeartbeatService(
+        api: _api,
+        workerId: _workerId,
+        accessToken: _workerAccessToken,
+      );
+    }
   }
 
   WorkerConfig _config;
@@ -90,14 +121,29 @@ class WorkerAppController extends ChangeNotifier {
   late final WorkerApiClient _api;
   late final SwitchableInferenceAdapter _inference;
 
-  final OcrEngineRef _ocrEngineRef;
+  late final RuntimeExclusiveGroupEnforcer _exclusiveGroups;
+  late final OcrEngineRef _ocrEngineRef;
   Future<bool>? _modelReadyFuture;
 
+  late final CheckpointManager _checkpointManager;
   late final QwenTaskProcessor _qwenProcessor;
   late final TaskExecutionEngine _taskEngine;
   late final AssignmentCoordinator _coordinator;
+  late final ProcessLifecycleCoordinator _processLifecycle;
+  final StoragePressureManager _storagePressure;
+  WorkerHeartbeatService? _heartbeat;
 
   DevMockInferenceAdapter? _devMockAdapter;
+
+  OcrEngine _wrapOcrEngine(OcrEngine delegate) {
+    if (delegate is GuardedOcrEngine) {
+      return delegate;
+    }
+    return GuardedOcrEngine(
+      delegate: delegate,
+      exclusiveGroups: _exclusiveGroups,
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // Runtime state
@@ -162,6 +208,16 @@ class WorkerAppController extends ChangeNotifier {
   static const _devMockRequested = bool.fromEnvironment(
     'WORKER_USE_DEV_MOCK',
     defaultValue: false,
+  );
+
+  static const _workerId = String.fromEnvironment(
+    'EDGEMINT_WORKER_ID',
+    defaultValue: '',
+  );
+
+  static const _workerAccessToken = String.fromEnvironment(
+    'EDGEMINT_WORKER_ACCESS_TOKEN',
+    defaultValue: '',
   );
 
   int _assignmentLoopGeneration = 0;
@@ -393,7 +449,7 @@ class WorkerAppController extends ChangeNotifier {
       if (_devMockRequested) {
         _enableDevMockInference();
 
-        _ocrEngineRef.delegate = FakeOcrEngine();
+        _ocrEngineRef.delegate = _wrapOcrEngine(FakeOcrEngine());
 
         ocrModelsReady = true;
 
@@ -420,7 +476,7 @@ class WorkerAppController extends ChangeNotifier {
       //
       // Real OCR is independent from the LLM architecture.
       //
-      _ocrEngineRef.delegate = PaddleOcrEngine();
+      _ocrEngineRef.delegate = _wrapOcrEngine(PaddleOcrEngine());
 
       ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(
         log: _logTask,
@@ -528,6 +584,46 @@ class WorkerAppController extends ChangeNotifier {
     lastSync = _formatNow();
   }
 
+  Future<void> _sendHeartbeatIfConfigured() async {
+    final heartbeat = _heartbeat;
+    if (heartbeat == null) {
+      return;
+    }
+
+    try {
+      final snapshot = await _platform.readDeviceSnapshot();
+      final installedModels = isGemmaReady
+          ? [
+              {
+                'modelVersionId': WorkerModelCatalog.modelVersionId,
+                'artifactSha256': WorkerModelCatalog.pinnedDigestSha256.isNotEmpty
+                    ? WorkerModelCatalog.pinnedDigestSha256
+                    : WorkerModelCatalog.installedDigestMarker,
+              },
+            ]
+          : const <Map<String, String>>[];
+      final loadedModelIds =
+          isGemmaReady ? [WorkerModelCatalog.modelVersionId] : const <String>[];
+
+      await heartbeat.send(
+        context: _coordinator.heartbeatTelemetryContext(
+          snapshot: snapshot,
+          sequence: heartbeat.sequence,
+          runtimeExclusiveGroups: _exclusiveGroups,
+          installedModels: installedModels,
+          loadedModelIds: loadedModelIds,
+          identityLifecycleView: IdentityLifecycleTracer.instance.heartbeatView(
+            runtimeGeneration: _processLifecycle.runtimeGeneration,
+            nativeHandlesInvalidated: _processLifecycle.nativeHandlesInvalidated,
+            hasActiveAssignment: _coordinator.activeAssignmentIds().isNotEmpty,
+          ),
+        ),
+      );
+    } catch (error, stackTrace) {
+      _logError('Heartbeat failed', error, stackTrace);
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Model readiness
   // ---------------------------------------------------------------------------
@@ -543,30 +639,35 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<bool> _ensureModelReadyInternal() async {
-    try {
-      if (usesDevMockInference) {
-        _setModelReady();
-        return true;
-      }
+    return IdentityLifecycleTracer.instance.guardBootstrap(
+      caller: 'WorkerAppController.ensureModelReady',
+      body: () async {
+        try {
+          if (usesDevMockInference) {
+            _setModelReady();
+            return true;
+          }
 
-      if (await WorkerModelInstaller.verifyActive(log: _logTask)) {
-        _setModelReady();
-        return true;
-      }
+          if (await WorkerModelInstaller.verifyActive(log: _logTask)) {
+            _setModelReady();
+            return true;
+          }
 
-      final ready = await WorkerModelInstaller.ensureReady(log: _logTask);
+          final ready = await WorkerModelInstaller.ensureReady(log: _logTask);
 
-      if (ready) {
-        _setModelReady();
-        return true;
-      }
-    } catch (error, stackTrace) {
-      _logError('Model check failed', error, stackTrace);
-    } finally {
-      _modelReadyFuture = null;
-    }
+          if (ready) {
+            _setModelReady();
+            return true;
+          }
+        } catch (error, stackTrace) {
+          _logError('Model check failed', error, stackTrace);
+        } finally {
+          _modelReadyFuture = null;
+        }
 
-    return false;
+        return false;
+      },
+    );
   }
   // ---------------------------------------------------------------------------
   // Model cleanup
@@ -611,6 +712,11 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   void _setModelReady() {
+    IdentityLifecycleTracer.instance.recordMutation(
+      kind: 'setModelReady',
+      caller: 'WorkerAppController._setModelReady',
+      afterState: {'modelPhase': ModelInstallPhase.ready.name},
+    );
     modelPhase = ModelInstallPhase.ready;
 
     modelProgress = 1;
@@ -687,6 +793,8 @@ class WorkerAppController extends ChangeNotifier {
 
     try {
       await GemmaBootstrap.ensureInitialized();
+      final snapshot = await _platform.readDeviceSnapshot();
+      _storagePressure.ensureHeadroomForWork(snapshot);
       await _clearStaleDownloadTasks();
 
       final bundledAsset = WorkerModelCatalog.bundledAssetFromEnvironment();
@@ -819,6 +927,17 @@ class WorkerAppController extends ChangeNotifier {
 
       notifyListeners();
     }).install();
+
+    final signingMaterial = await _platform.signingMaterial();
+    final path = await WorkerModelInstaller.installedModelPathForVerification();
+    if (path != null) {
+      await const ModelDownloadVerifyHook().verifyInstalledFileIfPinned(
+        path: path,
+        signingKey: signingMaterial,
+        modelVersionId: WorkerModelCatalog.modelVersionId,
+      );
+      _logTask('Post-download model digest/signature verification passed');
+    }
   }
 
   Future<void> _clearStaleDownloadTasks({bool forceReinstall = false}) async {
@@ -989,6 +1108,8 @@ class WorkerAppController extends ChangeNotifier {
         return;
       }
 
+      await _sendHeartbeatIfConfigured();
+
       if (!available) {
         _logTask(
           'Assignment aborted - '
@@ -1158,15 +1279,17 @@ class WorkerAppController extends ChangeNotifier {
 
     final adapter = GemmaLiteRtInferenceAdapter();
 
+    final signingMaterial = await _platform.signingMaterial();
+
     await adapter.loadVerified(
       ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,
         digestSha256: WorkerModelCatalog.installedDigestMarker,
-        signatureSha256: WorkerModelCatalog.installedDigestMarker,
+        signatureSha256: WorkerModelCatalog.installedAttestationSignature(signingMaterial),
         backend: InferenceBackend.liteRt,
         bytes: Uint8List.fromList([0]),
       ),
-      signingKey: await _platform.signingMaterial(),
+      signingKey: signingMaterial,
     );
 
     executionStatus = executionStatus.copyWith(
@@ -1358,6 +1481,8 @@ class WorkerAppController extends ChangeNotifier {
       );
     }
 
+    final signingMaterial = await _platform.signingMaterial();
+
     return AssignmentInputBundle(
       inputBytes: inputBytes,
       compareImageBytes: compareImageBytes,
@@ -1367,7 +1492,7 @@ class WorkerAppController extends ChangeNotifier {
       modelArtifact: ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,
         digestSha256: WorkerModelCatalog.installedDigestMarker,
-        signatureSha256: WorkerModelCatalog.installedDigestMarker,
+        signatureSha256: WorkerModelCatalog.installedAttestationSignature(signingMaterial),
         backend: InferenceBackend.liteRt,
         bytes: Uint8List.fromList([0]),
       ),
@@ -1491,6 +1616,16 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+
+  void handleAppLifecycleState(AppLifecycleState state) {
+    _processLifecycle.handleAppLifecycleState(state);
+  }
+
+  Map<String, Object?> get processLifecycleTelemetry => _processLifecycle.toTelemetry();
+
+  // ---------------------------------------------------------------------------
   // Dispose
   // ---------------------------------------------------------------------------
 
@@ -1499,6 +1634,10 @@ class WorkerAppController extends ChangeNotifier {
     _disposed = true;
 
     stopAutoAssignmentLoop();
+
+    unawaited(
+      _processLifecycle.markProcessTerminated(reason: 'controller_disposed'),
+    );
 
     _api.close();
 

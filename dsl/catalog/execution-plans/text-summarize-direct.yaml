@@ -1,0 +1,33 @@
+apiVersion: edgemint.io/v1
+kind: TaskExecutionPlan
+metadata:
+  name: text-summarize-direct
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Single-pass summarize for short text inputs.
+spec:
+  taskType: text.summarize
+  inputMode: text
+  planVersion: 2026-q3-v1
+  stages:
+    - sequence: 1
+      name: llm-summarize
+      operation: llm_summarize
+      runtimeClass: mediapipe_llm
+      requiredModelIds:
+        - qwen2.5-0.5b
+      checkpointEnabled: false
+      retryPolicy: stage_with_backoff
+      validationRule: result_schema_v1
+      estimatedDurationMs: 90000
+      exclusiveGroup: llm_inference
+    - sequence: 2
+      name: submit
+      operation: submit
+      runtimeClass: network_io
+      checkpointEnabled: false
+      retryPolicy: stage_once
+      estimatedDurationMs: 3000

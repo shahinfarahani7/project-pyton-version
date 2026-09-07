@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T07",
+  "completedAt": "2026-09-02",
+  "summary": "Combined worker scoring is deterministic for fixed inputs; select_worker stable over 100 iterations with HMAC tie-break.",
+  "artifacts": {
+    "engine": "src/backend/edgemint/routing/engine.py",
+    "service": "src/backend/edgemint/routing/service.py#select_worker",
+    "tests": "src/backend/tests/routing/test_deterministic_scoring.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_deterministic_scoring.py -q (2 passed)"
+}

@@ -1,0 +1,19 @@
+{
+  "taskId": "P3-T04",
+  "completedAt": "2026-09-02",
+  "summary": "ContextBudgetManager guards Qwen prompts before native runtime; oversized input routes to chunk pipeline.",
+  "artifacts": {
+    "source": "src/apps/worker/lib/inference/llm/context_budget_manager.dart",
+    "integration": "src/apps/worker/lib/inference/llm/qwen_task_processor.dart",
+    "tests": "src/apps/worker/test/inference/llm/context_budget_manager_test.dart",
+    "oversizedFixture": "oversizedPromptFixture (~500 x 'token ')"
+  },
+  "budgetProfile": {
+    "totalContextTokens": 1280,
+    "systemTemplateTokens": 200,
+    "inputBudgetTokens": 600,
+    "outputReserveTokens": 300,
+    "safetyMarginTokens": 180
+  },
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

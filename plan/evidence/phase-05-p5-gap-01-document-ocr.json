@@ -1,0 +1,12 @@
+{
+  "taskId": "P5-GAP-01",
+  "taskTypeId": "document.ocr",
+  "completedAt": "2026-09-02",
+  "classification": "OCR/core canonical paddle_ocr runtime",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/document-ocr.yaml",
+  "goldenFixture": "tests/golden/fixtures/document.ocr.json",
+  "validatorModule": "src/backend/edgemint/results/validator.py",
+  "tests": "src/backend/tests/results/test_document_ocr_validator.py",
+  "notes": "Canonical OCR taxonomy; ocr.* catalog variants delegate to ocr.extract_text.v1 via TaskTypeMapper"
+}

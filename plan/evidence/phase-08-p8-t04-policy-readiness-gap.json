@@ -1,0 +1,267 @@
+{
+  "status": "passed",
+  "taskId": "P8-T04",
+  "architectureVersion": "2.0",
+  "sourceSection": "73",
+  "generatedAt": "2026-09-06T07:18:52.556707+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "policyReadinessRecord": {
+    "status": "MISSING",
+    "note": "No PolicyReadinessRecord schema, SQL table, or service binding exists yet.",
+    "requiredFields": [
+      "architectureVersion",
+      "policyVersionHash",
+      "runtimeProfileScope",
+      "responsibleOwner",
+      "values",
+      "evidence",
+      "compatibility",
+      "featureFlags"
+    ]
+  },
+  "summary": {
+    "totalPolicyAreas": 10,
+    "configuredAreas": 0,
+    "partialAreas": 10,
+    "missingAreas": 0,
+    "productionActivationGate": "CLOSED",
+    "reason": "partial_or_missing_policy_values_in_10_of_10_areas"
+  },
+  "policyAreas": [
+    {
+      "area": "execution_grant",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "leaseSeconds=120",
+        "leaseRenewalSeconds=30",
+        "assignmentDeliverySeconds=30",
+        "autoStartGraceSeconds=20",
+        "heartbeatSeconds=30"
+      ],
+      "missingValues": [
+        "clockLatencyAllowance",
+        "renewalRetryPolicy",
+        "replayHorizonSeconds"
+      ],
+      "sources": [
+        "dsl/policies/routing/smart-router-v2.yaml",
+        "production/AUTO-ASSIGNMENT-PROTOCOL.md",
+        "src/backend/edgemint/routing/service.py"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": "Core lease/delivery/start deadlines present in DSL; clock skew allowance not versioned."
+    },
+    {
+      "area": "cpu_and_cancellation",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "defaultContributionPercent=30",
+        "maximumContributionPercent=50",
+        "performanceModeRequiresExplicitOptIn=True",
+        "consentChangeBehavior=increaseAppliesToNewReservationsOnly,decreaseStopsNewStagesAboveLimit,revocationStopsNewWorkImmediately"
+      ],
+      "missingValues": [
+        "cpuMeasurementWindowMs",
+        "coveredProcessScope",
+        "cpuBurstBoundBps",
+        "controlStopReactionBoundMs",
+        "enforcementMechanismCertification"
+      ],
+      "sources": [
+        "dsl/policies/consent/production-resource-policy-v1.yaml",
+        "production/canonical-decisions.yaml",
+        "src/backend/edgemint/workers/resource_policy.py"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": "30/50 consent and runtime session caps exist; v2 CPU window/burst/stop certification absent."
+    },
+    {
+      "area": "memory_storage",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "resourceEnvelopeRefs=56/56 catalog bindings",
+        "storagePressureManager=worker runtime",
+        "safetyReservePercent=15 in consent DSL"
+      ],
+      "missingValues": [
+        "userProcessMemoryLimitBytes",
+        "serverProcessMemoryAttributionRules",
+        "transferTempModelCoexistenceLimits",
+        "certifiedMemoryMetricDefinition"
+      ],
+      "sources": [
+        "dsl/policies/consent/production-resource-policy-v1.yaml",
+        "src/apps/worker/lib/runtime/storage_pressure_manager.dart",
+        "dsl/catalog/resource-envelopes/"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "plan_and_context",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "executionPlans=dsl/catalog/execution-plans/",
+        "contextBudgetManager=worker",
+        "maxTokensBaseline=1280 canonical",
+        "checkpointPolicyMatrix=dsl/policies/checkpoints/"
+      ],
+      "missingValues": [
+        "verifiedTokenizerTemplateIdentityPerArtifact",
+        "maxReduceDepthCallsBoundInPolicy",
+        "stageAggregateTimeoutPolicyRecord",
+        "policyContextHashOnPlan"
+      ],
+      "sources": [
+        "dsl/catalog/execution-plans/",
+        "src/apps/worker/lib/inference/llm/context_budget_manager.dart",
+        "production/canonical-decisions.yaml"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "taskrun_retry_fallback",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "maxWorkerReassignments=2",
+        "cloudAfterSeconds=45",
+        "retryPolicyMatrix=dsl/policies/retry/task-retry-matrix-v1.yaml",
+        "starvationLimitSeconds=300"
+      ],
+      "missingValues": [
+        "taskRunMaxAttemptsExplicit",
+        "taskRunMaxCostMicros",
+        "validationWorkBudget",
+        "backoffJitterPolicyRecord",
+        "queueExpiryPolicyRecord"
+      ],
+      "sources": [
+        "dsl/policies/routing/smart-router-v2.yaml",
+        "dsl/policies/retry/task-retry-matrix-v1.yaml",
+        "src/backend/edgemint/routing/retry_classifier.py"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "queue_service_capacity",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "candidateWindowSize=200",
+        "quantumUnits=1",
+        "maximumConsecutiveAssignmentsPerWorkspace=5",
+        "idleWorkspaceCreditCapUnits=20"
+      ],
+      "missingValues": [
+        "activeQueuedTaskCapsPerWorkspace",
+        "outboxCapacityPolicy",
+        "uploadPipelineCapacityPolicy",
+        "validationBacklogCapacityPolicy",
+        "reconcilerSweeperCadence"
+      ],
+      "sources": [
+        "dsl/policies/routing/smart-router-v2.yaml",
+        "src/backend/edgemint/routing/fair_queue_metrics.py"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "calibration_compatibility",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "calibrationProfiles=dsl/catalog/calibration-profiles/",
+        "runtimeCompatibilityMatrix=dsl/catalog/runtime-compatibility/",
+        "deviceCertification=workers/calibration.py"
+      ],
+      "missingValues": [
+        "workloadSampleWindowSpecification",
+        "coldWarmComparableMetricsPolicy",
+        "profileExpiryDays",
+        "uncertaintyErrorLimits",
+        "certificationMatrixVersionHash"
+      ],
+      "sources": [
+        "dsl/catalog/calibration-profiles/",
+        "dsl/catalog/runtime-compatibility/production-v1.yaml",
+        "database/sql/016_worker_calibration_profiles.sql"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "artifact_trust_data",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "modelArtifactVerifier=worker",
+        "tenantContext=backend auth layer",
+        "signedModelDistribution=WP-090 scope"
+      ],
+      "missingValues": [
+        "signerTrustRootsVersionedRecord",
+        "destinationPermissionMatrix",
+        "credentialRetentionRevocationRules",
+        "enrollmentConnectionPolicyRecord"
+      ],
+      "sources": [
+        "src/apps/worker/lib/runtime/model_artifact_verifier.dart",
+        "production/canonical-decisions.yaml"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "validation_reward",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "verificationPolicy=dsl/policies/verification/",
+        "goldenHarness=tests/golden/",
+        "financeIdempotency=src/backend/edgemint/billing/service.py"
+      ],
+      "missingValues": [
+        "candidateValidationTimeoutPolicy",
+        "entitlementScopeCapRecord",
+        "payoutReconciliationRetentionPolicy",
+        "taskSpecificThresholdVersionBinding"
+      ],
+      "sources": [
+        "dsl/policies/verification/default-v2.yaml",
+        "src/backend/tests/billing/test_finance_service.py"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    },
+    {
+      "area": "recovery_operations",
+      "status": "PARTIAL",
+      "configuredValues": [
+        "releaseRollbackRunbook=docs/08-sre/runbooks/RB-025-release-rollback.md",
+        "productionGate=tools/production_gate.py"
+      ],
+      "missingValues": [
+        "reservationLeakSweeperCadence",
+        "renewalLagSloSeconds",
+        "outboxStallAlertThreshold",
+        "validationRewardAlertThresholds",
+        "durableRestoreRollbackProtocolEvidence"
+      ],
+      "sources": [
+        "docs/08-sre/runbooks/RB-025-release-rollback.md",
+        "tools/production_gate.py"
+      ],
+      "missingValueBehavior": "activation_blocked_per_v2_section_73",
+      "notes": ""
+    }
+  ],
+  "retainedBaselinesPresent": {
+    "section9_queueFairness": true,
+    "section16_memorySafetyReserve": true,
+    "section29_runtimePairs": true,
+    "section36_drr": true,
+    "section44_retryBudget": true,
+    "section52_cloudFallback": true,
+    "section64_contribution30_50": true
+  }
+}

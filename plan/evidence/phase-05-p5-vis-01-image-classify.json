@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-01",
+  "taskTypeId": "image.classify",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/image-classify.yaml",
+  "goldenFixture": "tests/golden/fixtures/image.classify.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

@@ -1,0 +1,11 @@
+{
+  "taskId": "P5-GAP-03",
+  "taskTypeId": "ocr.invoice",
+  "completedAt": "2026-09-02",
+  "classification": "OCR family alias → document.ocr / paddle_ocr",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/ocr-invoice.yaml",
+  "goldenFixture": "tests/golden/fixtures/ocr.invoice.json",
+  "validatorModule": "src/backend/edgemint/results/gap_validators.py",
+  "tests": "src/backend/tests/results/test_gap_validators.py"
+}

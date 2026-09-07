@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "taskId": "P8-A24",
+  "auditId": "A24",
+  "acceptanceCase": "T24",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "4",
+    "32.1",
+    "70",
+    "77"
+  ],
+  "generatedAt": "2026-09-06T09:26:19.358602+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "runtimeMaintenanceUpgradeDsl": "dsl/policies/runtime/runtime-maintenance-upgrade-v1.yaml",
+    "runtimeUpgradePolicyModule": "src/backend/edgemint/runtime/runtime_upgrade_policy.py",
+    "runtimeUpgradeCoordinator": "src/apps/worker/lib/runtime/runtime_upgrade_coordinator.dart",
+    "gemmaModelRuntimeManager": "src/apps/worker/lib/runtime/gemma_model_runtime_manager.dart",
+    "artifactInstallCoordinator": "src/apps/worker/lib/runtime/artifact_install_coordinator.dart",
+    "modelPromotionGate": "src/backend/edgemint/models/promotion.py",
+    "runtimeUpgradeSql": "database/sql/037_runtime_upgrade_evaluations.sql",
+    "runbook": "docs/08-sre/runbooks/RB-027-runtime-maintenance-upgrade-evaluation.md",
+    "backendTests": "src/backend/tests/runtime/test_runtime_upgrade_policy.py",
+    "coordinatorTests": "src/apps/worker/test/runtime/runtime_upgrade_coordinator_test.dart",
+    "p8A16Evidence": "plan/evidence/phase-08-p8-a16-artifact-install-runtime-identity.json",
+    "runtimeCompatibilityProfile": "dsl/catalog/runtime-compatibility/production-v1.yaml"
+  },
+  "t24Scenario": {
+    "title": "Candidate runtime/model upgrade compatibility and rollback",
+    "pinnedBaselineDocumented": true,
+    "upgradeEvaluationWired": true,
+    "rollbackEvidenceRequired": true,
+    "upgradeBlockedDuringOpenSessions": true,
+    "backendTests": "passed",
+    "workerTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T24 candidate runtime evaluation on device NOT_RUN",
+    "Rollback proof before forward adoption NOT_RUN",
+    "LiteRT-LM migration evaluation NOT_RUN"
+  ],
+  "errors": []
+}

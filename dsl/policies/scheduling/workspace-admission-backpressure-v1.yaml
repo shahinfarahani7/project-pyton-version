@@ -1,0 +1,63 @@
+version: "1.0.0"
+name: workspace-admission-backpressure-v1
+description: >
+  Workspace queue admission, DRR fairness and pipeline backpressure (Architecture v2 §9, §31, §36, §40, §73, A19/T19).
+
+architectureSections: ["9", "31", "36", "40", "73"]
+
+workspaceCaps:
+  maxQueuedTasksPerWorkspace: 500
+  maxActiveTasksPerWorkspace: 50
+  maxAcceptedInputCostUnits: 10000
+  queueExpirySeconds: 86400
+
+drr:
+  algorithm: workspace_deficit_round_robin
+  quantumUnits: 1
+  costUnitsDivisorMs: 1000
+  idleWorkspaceCreditCapUnits: 20
+  maximumConsecutiveAssignmentsPerWorkspace: 5
+
+pipelineBackpressure:
+  outbox:
+    maxPendingEvents: 10000
+    rejectReason: OUTBOX_BACKPRESSURE
+  uploads:
+    maxInFlight: 256
+    rejectReason: UPLOAD_BACKPRESSURE
+  validation:
+    maxBacklog: 512
+    rejectReason: VALIDATION_BACKPRESSURE
+
+distinctBlockedStates:
+  - NO_ELIGIBLE_WORKER
+  - CAPACITY_SATURATED
+  - ADMISSION_LIMIT_EXCEEDED
+  - QUEUE_BACKPRESSURE
+  - OUTBOX_BACKPRESSURE
+  - UPLOAD_BACKPRESSURE
+  - VALIDATION_BACKPRESSURE
+
+boundedRejection:
+  maxAdmissionWaitSeconds: 300
+  noSilentInfiniteWait: true
+
+operatingSignals:
+  required:
+    - queueAgeSeconds
+    - blockedReason
+    - workspaceDeficitUnits
+    - starvedTaskCount
+    - validationBacklog
+    - uploadInFlight
+    - outboxPending
+  attributableBy:
+    - taskRunId
+    - assignmentId
+    - workerId
+    - workspaceId
+
+reconciliationSlos:
+  reconcilerSweepSeconds: 60
+  queueAgeAlertSeconds: 600
+  renewalLagAlertSeconds: 30

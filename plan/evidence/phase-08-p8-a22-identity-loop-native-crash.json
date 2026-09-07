@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "taskId": "P8-A22",
+  "auditId": "A22",
+  "acceptanceCase": "T22",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "24",
+    "41",
+    "53",
+    "75",
+    "76"
+  ],
+  "generatedAt": "2026-09-06T09:26:18.142880+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "identityLifecyclePolicyDsl": "dsl/policies/worker/active-identity-native-lifecycle-v1.yaml",
+    "identityNativeLifecycleModule": "src/backend/edgemint/workers/identity_native_lifecycle.py",
+    "identityLifecycleTracer": "src/apps/worker/lib/runtime/identity_lifecycle_tracer.dart",
+    "workerModelInstaller": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+    "workerAppController": "src/apps/worker/lib/worker_app_controller.dart",
+    "gemmaModelRuntimeManager": "src/apps/worker/lib/runtime/gemma_model_runtime_manager.dart",
+    "processLifecycleCoordinator": "src/apps/worker/lib/runtime/process_lifecycle_coordinator.dart",
+    "workerHeartbeatTelemetry": "src/apps/worker/lib/runtime/worker_heartbeat_telemetry.dart",
+    "runbook": "docs/08-sre/runbooks/RB-024-identity-loop-native-crash-evidence.md",
+    "backendTests": "src/backend/tests/workers/test_identity_native_lifecycle.py",
+    "tracerTests": "src/apps/worker/test/runtime/identity_lifecycle_tracer_test.dart",
+    "p8T06Evidence": "plan/evidence/phase-08-p8-t06-identity-loop-investigation.json",
+    "p8A17Evidence": "plan/evidence/phase-08-p8-a17-physical-device-lifecycle-proof.json"
+  },
+  "t22Scenario": {
+    "title": "Idle identity loop; bootstrap paths; missing model; Native crash regression",
+    "identityTracingWired": true,
+    "nativeCrashReconciliationWired": true,
+    "heartbeatIdentityView": true,
+    "backendTests": "passed",
+    "workerTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "physicalHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T22 idle soak on physical device NOT_RUN",
+    "Native crash regression harness NOT_RUN",
+    "Historical SIGSEGV/GATHER_ND before/after repro NOT_RUN"
+  ],
+  "errors": []
+}

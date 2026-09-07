@@ -1,0 +1,6 @@
+{
+  "taskId": "P6-T03",
+  "completedAt": "2026-09-02",
+  "tests": "src/backend/tests/workers/test_calibration_feedback.py",
+  "module": "src/backend/edgemint/workers/calibration_feedback.py"
+}

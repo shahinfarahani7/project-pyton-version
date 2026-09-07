@@ -1,0 +1,52 @@
+apiVersion: edgemint.io/v1
+kind: DataPolicy
+metadata:
+  name: production-data-policy-v1
+  version: 1.0.0
+  status: active
+  description: Default tenant/data processing and Cloud destination policy (Architecture v2 §52, §61, A07).
+  owners:
+    - platform
+    - security
+spec:
+  classification: standard
+  processing:
+    allowedExecutionPolicies:
+      - edge_only
+      - edge_preferred
+      - cloud_permitted
+    regionEnforcement: true
+    prohibitedDestinations:
+      - third_party_worker_unattested
+      - cross_tenant_artifact
+      - revoked_worker_device
+    permittedCloudRegions:
+      - eu-central
+      - eu-west
+    requireDataOwnerProcessingConsent: true
+  encryption:
+    atRest: aes256_gcm
+    customerManagedKeySupported: false
+    inTransitMinimum: tls_1_2
+    workerEnvelopeEncryptionRequired: true
+  retention:
+    auditDays: 365
+    inputHours: 72
+    resultDays: 30
+    workerTemporaryMinutes: 60
+  deletion:
+    automatic: true
+    deletionEvidenceRequired: true
+    legalHoldSupported: true
+    workerSecureCleanupRequired: true
+  trustProfiles:
+    edge_worker:
+      requiresAttestation: true
+      minimumTrustMilli: 7000
+      allowedDeviceStatuses:
+        - active
+    cloud_provider:
+      requiresAttestation: false
+      permittedRegions:
+        - eu-central
+        - eu-west

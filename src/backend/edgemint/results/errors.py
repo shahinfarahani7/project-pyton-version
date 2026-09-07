@@ -23,6 +23,7 @@ def result_error(code: str, *, detail: str | None = None) -> ResultServiceError:
         "MODEL_DIGEST_MISMATCH": (409, "Model digest mismatch"),
         "RESULT_OVERSIZED": (422, "Result payload too large"),
         "RESULT_SCHEMA_INVALID": (422, "Result schema invalid"),
+        "RESULT_VALIDATION_FAILED": (422, "Result validation failed"),
         "RESULT_SIGNATURE_INVALID": (403, "Result signature invalid"),
         "TENANT_RESOURCE_NOT_FOUND": (404, "Resource not found"),
     }

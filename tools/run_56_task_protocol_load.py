@@ -22,7 +22,7 @@ def result_mac(token: str, assignment: str, fence: int, digest: str, artifact: s
 
 
 def main() -> int:
-    catalog = json.loads((ROOT / "src/shared/task-types/catalog.json").read_text())
+    catalog = json.loads((ROOT / "src/shared/task-types/catalog.json").read_text(encoding="utf-8"))
     task_types = [item["value"] for category in catalog["categories"] for item in category["types"]]
     key = AESGCM.generate_key(bit_length=256)
     cipher = AESGCM(key)

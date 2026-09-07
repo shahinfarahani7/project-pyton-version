@@ -27,12 +27,13 @@ spec:
     weightsBps:
       modelLocality: 2200
       trust: 2000
-      predictedLatency: 1700
+      predictedLatency: 1500
       batteryCharging: 800
       network: 700
       regionalCompliance: 1200
       priceEfficiency: 900
       reliability: 500
+      scarcityCost: 200
     normalization: canonical_feature_formulas_v1
     tieBreaker: hmac_sha256(taskId,workerId,routerEpoch)
     featureFormulas:
@@ -43,6 +44,7 @@ spec:
         otherwiseBps: 0
       trust: clamp(worker_trust_score_bps,0,10000)
       predictedLatency: clamp(10000 - floor(predicted_p95_ms * 10000 / max(deadline_budget_ms,1)),0,10000)
+      scarcityCost: clamp(10000 - floor(fragmentation_penalty_bps),0,10000)
       batteryCharging:
         chargingBps: 10000
         notChargingBps: 3000
@@ -69,6 +71,11 @@ spec:
     requoteRequired: false
     dailyCloudCostCapMicros: 500000000
     reassignmentLimitAction: expire_attempt_then_apply_retry_policy_or_cloud_fallback
+  taskRunBudget:
+    maxAttempts: 3
+    maxTotalAssignments: 6
+    maxCloudFallbacks: 1
+    countersResetOnNewAttempt: false
   timeouts:
     assignmentDeliverySeconds: 30
     autoStartGraceSeconds: 20

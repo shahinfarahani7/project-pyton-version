@@ -1,0 +1,23 @@
+{
+  "taskId": "P5-CROSS-05",
+  "completedAt": "2026-09-02",
+  "summary": "Catalog closure gate blocks non-executable and metadata-incomplete task types at admission; CI validates 56/56 catalog metadata sync.",
+  "artifacts": {
+    "gate": "src/backend/edgemint/tasks/catalog_closure.py",
+    "admissionHook": "src/backend/edgemint/tasks/admission.py",
+    "portalHook": "src/backend/edgemint/dev/portal_api.py",
+    "ciValidator": "tools/validate_catalog_closure.py",
+    "settings": "catalog_closure_mode=baseline|strict|warn_only",
+    "tests": "src/backend/tests/tasks/test_catalog_closure.py"
+  },
+  "counts": {
+    "catalogTaskTypes": 56,
+    "executable": 47,
+    "nonExecutableFlex": 9,
+    "metadataIncomplete": 0,
+    "dslContractComplete": 10,
+    "goldenFixtures": 1
+  },
+  "closedErrorCodes": ["TASK_TYPE_NOT_EXECUTABLE", "UNSUPPORTED_TASK_CONFIGURATION"],
+  "testRun": "py -3.13 -m pytest tests/tasks/test_catalog_closure.py -q (6 passed); validate_catalog_closure.py exit 0"
+}

@@ -15,8 +15,31 @@ from edgemint.building_blocks.eventing.transactional_outbox import OutboxEvent, 
 from edgemint.building_blocks.ids import public_id
 from edgemint.security.lease_credentials import LeaseCredentialCipher
 from edgemint.security.tokens import hash_session_token
+from edgemint.routing.resource_reservations import ResourceReservationService
 from edgemint.workers.errors import worker_error
+from edgemint.workers.checkpoint_resume import (
+    CheckpointManifestSpec,
+    CheckpointResumeService,
+    DEFAULT_RUNTIME_BACKEND,
+)
+from edgemint.workers.assignment_delivery_inbox import AssignmentDeliveryInboxService
+from edgemint.workers.calibration_feedback import apply_execution_cost_feedback_to_calibration
+from edgemint.workers.execution_cost_feedback import (
+    ExecutionCostFeedbackService,
+    parse_execution_cost_feedback,
+)
+from edgemint.workers.failure_codes import validate_worker_failure_submission
 from edgemint.workers.sessions import resolve_worker_session
+from edgemint.results.result_acceptance import ResultAcceptanceService
+from edgemint.results.validator import validate_task_result
+from edgemint.routing.checkpoint_policy_matrix import get_checkpoint_policy_matrix
+from edgemint.tasks.task_run import TaskRunService, TaskRunStatus, TERMINAL_STATUSES
+from edgemint.workers.transport_recovery import (
+    TransportEventKind,
+    TransportRecoveryService,
+    aggregate_sequence_for_transport,
+    transport_event_identity,
+)
 
 
 @dataclass(slots=True)
@@ -24,6 +47,7 @@ class AssignmentCredentialBootstrapService:
     """Return an existing automatic lease only to its attested target device."""
 
     settings: Settings = field(default_factory=get_settings)
+    delivery_inbox: AssignmentDeliveryInboxService = field(default_factory=AssignmentDeliveryInboxService)
 
     async def next_assignment(
         self,
@@ -46,6 +70,7 @@ class AssignmentCredentialBootstrapService:
                     """
                     SELECT
                         assignment.id AS assignment_id,
+                        assignment.workspace_id,
                         assignment.fence_token,
                         assignment.lease_token_hash,
                         credential.lease_token_ciphertext,
@@ -102,10 +127,18 @@ class AssignmentCredentialBootstrapService:
             )
 
         assignment_id = str(row["assignment_id"])
+        delivery_id = await self.delivery_inbox.record_poll_delivery(
+            connection,
+            workspace_id=row["workspace_id"],
+            assignment_id=row["assignment_id"],
+            worker_device_id=session.device_id,
+            fence_token=int(row["fence_token"]),
+        )
         api_base = self.settings.worker_api_public_base_url.rstrip("/")
         model_version_id = row["model_version_id"]
         return {
             "assignmentId": assignment_id,
+            "deliveryInboxId": str(delivery_id),
             "attemptId": str(row["attempt_id"]),
             "revisionId": str(row["revision_id"]),
             "taskId": str(row["task_public_id"]),
@@ -121,10 +154,44 @@ class AssignmentCredentialBootstrapService:
             "startDeadlineAt": row["start_deadline_at_utc"].isoformat(),
         }
 
+    async def inbox_bootstrap(
+        self,
+        connection: AsyncConnection,
+        *,
+        access_token: str,
+    ) -> dict[str, Any]:
+        session = await resolve_worker_session(connection, access_token=access_token)
+        records = await self.delivery_inbox.bootstrap_for_device(
+            connection,
+            worker_device_id=session.device_id,
+        )
+        return {
+            "workerDeviceId": str(session.device_id),
+            "deliveries": [
+                {
+                    "deliveryInboxId": str(record.delivery_id),
+                    "assignmentId": str(record.assignment_id),
+                    "fenceToken": record.fence_token,
+                    "deliveryChannel": record.delivery_channel,
+                    "acked": record.acked,
+                }
+                for record in records
+            ],
+        }
+
 
 @dataclass(slots=True)
 class AssignmentCommandService:
+    """Worker assignment lifecycle commands with resource reservation hooks."""
+
     settings: Settings = field(default_factory=get_settings)
+    resource_reservations: ResourceReservationService = field(default_factory=ResourceReservationService)
+    execution_cost_feedback: ExecutionCostFeedbackService = field(default_factory=ExecutionCostFeedbackService)
+    task_runs: TaskRunService = field(default_factory=TaskRunService)
+    result_acceptance: ResultAcceptanceService = field(default_factory=ResultAcceptanceService)
+    transport_recovery: TransportRecoveryService = field(default_factory=TransportRecoveryService)
+    checkpoint_resume: CheckpointResumeService = field(default_factory=CheckpointResumeService)
+    delivery_inbox: AssignmentDeliveryInboxService = field(default_factory=AssignmentDeliveryInboxService)
 
     @staticmethod
     def _assignment_uuid(value: str) -> Any:
@@ -144,6 +211,38 @@ class AssignmentCommandService:
             "operation": operation,
             "occurredAt": datetime.now(UTC).isoformat(),
         }
+
+    async def _win_task_run_terminal(
+        self,
+        connection: AsyncConnection,
+        *,
+        task_run_id: Any,
+        terminal_status: TaskRunStatus,
+        terminal_outcome: str,
+    ) -> None:
+        if task_run_id is None:
+            return
+        from uuid import UUID
+
+        run_id = UUID(str(task_run_id))
+        commit = await self.task_runs.commit_terminal(
+            connection,
+            task_run_id=run_id,
+            terminal_status=terminal_status,
+            terminal_outcome=terminal_outcome,
+        )
+        if commit.committed:
+            return
+        existing = await self.task_runs.get_status(connection, task_run_id=run_id)
+        if existing in TERMINAL_STATUSES:
+            raise worker_error(
+                "ASSIGNMENT_STALE_FENCE",
+                detail=f"task run already terminal: {existing}",
+            )
+        raise worker_error(
+            "ASSIGNMENT_STALE_FENCE",
+            detail="task run terminal commit lost race",
+        )
 
     async def start(
         self,
@@ -177,6 +276,14 @@ class AssignmentCommandService:
             return self._receipt("reportAssignmentStartedReplay")
         if str(row["status"]) != "leased":
             raise worker_error("ASSIGNMENT_STALE_FENCE")
+
+        await self.delivery_inbox.acknowledge_delivery(
+            connection,
+            assignment_id=internal_id,
+            worker_device_id=session.device_id,
+            fence_token=fence_token,
+            ack_sequence=1,
+        )
 
         heartbeat_sequence = (
             await connection.execute(
@@ -213,6 +320,12 @@ class AssignmentCommandService:
                 "health_snapshot_sequence": int(heartbeat_sequence),
             },
         )
+        if self.settings.worker_resource_reservations_enabled:
+            await self.resource_reservations.activate_for_assignment(
+                connection,
+                assignment_id=internal_id,
+                fence_token=fence_token,
+            )
         await enqueue_outbox_event(
             connection,
             OutboxEvent(
@@ -315,6 +428,244 @@ class AssignmentCommandService:
         receipt["sequence"] = sequence
         return receipt
 
+    async def progress(
+        self,
+        connection: AsyncConnection,
+        *,
+        access_token: str,
+        assignment_id: str,
+        lease_token: str,
+        fence_token: int,
+        sequence: int,
+        stage: str,
+        progress_bps: int,
+        metrics: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        session = await resolve_worker_session(connection, access_token=access_token)
+        internal_id = self._assignment_uuid(assignment_id)
+        row = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT status, workspace_id, fence_token, lease_token_hash,
+                           lease_expires_at_utc
+                    FROM public.assignments
+                    WHERE id = :assignment_id AND worker_device_id = :worker_device_id
+                    FOR UPDATE
+                    """
+                ),
+                {"assignment_id": internal_id, "worker_device_id": session.device_id},
+            )
+        ).mappings().first()
+        if row is None:
+            raise worker_error("TENANT_RESOURCE_NOT_FOUND", detail="assignment not found")
+        self._verify_active_credential(row, lease_token=lease_token, fence_token=fence_token)
+        if str(row["status"]) != "running":
+            raise worker_error("ASSIGNMENT_STALE_FENCE")
+        if sequence < 1:
+            raise worker_error("INPUT_SCHEMA_INVALID", detail="sequence must be >= 1")
+        if not 0 <= progress_bps <= 10_000:
+            raise worker_error("INPUT_SCHEMA_INVALID", detail="progressBps out of range")
+
+        progress_data: dict[str, Any] = {
+            "assignmentId": assignment_id,
+            "workerDeviceId": str(session.device_id),
+            "fenceToken": fence_token,
+            "sequence": sequence,
+            "stage": stage,
+            "progressBps": progress_bps,
+        }
+        if metrics is not None:
+            progress_data["metrics"] = metrics
+
+        transport = await self.transport_recovery.record(
+            connection,
+            workspace_id=row["workspace_id"],
+            assignment_id=internal_id,
+            event_kind=TransportEventKind.PROGRESS,
+            event_identity=transport_event_identity(
+                assignment_id=assignment_id,
+                fence_token=fence_token,
+                event_kind=TransportEventKind.PROGRESS,
+                sequence=sequence,
+            ),
+            payload=progress_data,
+            aggregate_sequence=aggregate_sequence_for_transport(
+                fence_token=fence_token,
+                event_kind=TransportEventKind.PROGRESS,
+                sequence=sequence,
+            ),
+        )
+        if not transport.is_new:
+            receipt = self._receipt("progressAssignmentReplay")
+            receipt["sequence"] = sequence
+            receipt["progressBps"] = progress_bps
+            return receipt
+
+        await enqueue_outbox_event(
+            connection,
+            OutboxEvent(
+                event_type="task_progress",
+                aggregate_type="assignment",
+                aggregate_id=assignment_id,
+                aggregate_sequence=transport.aggregate_sequence,
+                workspace_id=row["workspace_id"],
+                cloud_event=self._cloud_event(
+                    event_type="io.edgemint.task.progress.v1",
+                    assignment_id=assignment_id,
+                    data=progress_data,
+                ),
+            ),
+        )
+        receipt = self._receipt("progressAssignment")
+        receipt["sequence"] = sequence
+        receipt["progressBps"] = progress_bps
+        return receipt
+
+    async def checkpoint(
+        self,
+        connection: AsyncConnection,
+        *,
+        access_token: str,
+        assignment_id: str,
+        lease_token: str,
+        fence_token: int,
+        sequence: int,
+        model_version_id: str,
+        input_sha256: str,
+        checkpoint_sha256: str,
+        encrypted_blob_ref: str,
+        chunk_index: int | None = None,
+    ) -> dict[str, Any]:
+        session = await resolve_worker_session(connection, access_token=access_token)
+        internal_id = self._assignment_uuid(assignment_id)
+        row = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT assignment.status, assignment.workspace_id, assignment.fence_token,
+                           assignment.lease_token_hash, assignment.lease_expires_at_utc,
+                           assignment.id AS assignment_internal_id,
+                           attempt.id AS task_attempt_id,
+                           attempt.task_run_id AS task_run_id,
+                           task.task_revision_id AS task_revision_id,
+                           task.task_type AS task_type
+                    FROM public.assignments AS assignment
+                    JOIN public.task_attempts AS attempt
+                      ON attempt.id = assignment.task_attempt_id
+                     AND attempt.workspace_id = assignment.workspace_id
+                    JOIN public.tasks AS task
+                      ON task.id = attempt.task_id
+                     AND task.workspace_id = attempt.workspace_id
+                    WHERE assignment.id = :assignment_id
+                      AND assignment.worker_device_id = :worker_device_id
+                    FOR UPDATE OF assignment
+                    """
+                ),
+                {"assignment_id": internal_id, "worker_device_id": session.device_id},
+            )
+        ).mappings().first()
+        if row is None:
+            raise worker_error("TENANT_RESOURCE_NOT_FOUND", detail="assignment not found")
+        if not get_checkpoint_policy_matrix().checkpoint_enabled_for(str(row["task_type"])):
+            raise worker_error("CHECKPOINT_NOT_SUPPORTED", detail="task type does not support checkpoint")
+        self._verify_active_credential(row, lease_token=lease_token, fence_token=fence_token)
+        if str(row["status"]) != "running":
+            raise worker_error("ASSIGNMENT_STALE_FENCE")
+        if sequence < 1:
+            raise worker_error("INPUT_SCHEMA_INVALID", detail="sequence must be >= 1")
+        if len(input_sha256) != 64 or len(checkpoint_sha256) != 64:
+            raise worker_error("INPUT_SCHEMA_INVALID", detail="checkpoint digest must be sha256 hex")
+        if not encrypted_blob_ref.strip():
+            raise worker_error("INPUT_SCHEMA_INVALID", detail="encryptedBlobRef is required")
+
+        checkpoint_data: dict[str, Any] = {
+            "assignmentId": assignment_id,
+            "workerDeviceId": str(session.device_id),
+            "fenceToken": fence_token,
+            "sequence": sequence,
+            "modelVersionId": model_version_id,
+            "inputSha256": input_sha256,
+            "checkpointSha256": checkpoint_sha256,
+            "encryptedBlobRef": encrypted_blob_ref,
+        }
+        if chunk_index is not None:
+            checkpoint_data["chunkIndex"] = chunk_index
+
+        transport = await self.transport_recovery.record(
+            connection,
+            workspace_id=row["workspace_id"],
+            assignment_id=internal_id,
+            event_kind=TransportEventKind.CHECKPOINT,
+            event_identity=transport_event_identity(
+                assignment_id=assignment_id,
+                fence_token=fence_token,
+                event_kind=TransportEventKind.CHECKPOINT,
+                sequence=sequence,
+            ),
+            payload=checkpoint_data,
+            aggregate_sequence=aggregate_sequence_for_transport(
+                fence_token=fence_token,
+                event_kind=TransportEventKind.CHECKPOINT,
+                sequence=sequence,
+            ),
+        )
+        if not transport.is_new:
+            receipt = self._receipt("checkpointAssignmentReplay")
+            receipt["sequence"] = sequence
+            return receipt
+
+        await enqueue_outbox_event(
+            connection,
+            OutboxEvent(
+                event_type="task_checkpoint_saved",
+                aggregate_type="assignment",
+                aggregate_id=assignment_id,
+                aggregate_sequence=transport.aggregate_sequence,
+                workspace_id=row["workspace_id"],
+                cloud_event=self._cloud_event(
+                    event_type="io.edgemint.task.checkpoint.saved.v1",
+                    assignment_id=assignment_id,
+                    data=checkpoint_data,
+                ),
+            ),
+        )
+        if chunk_index is not None and row.get("task_run_id") is not None:
+            from edgemint.routing.execution_plan_resolver import resolve_execution_plan
+
+            plan = resolve_execution_plan(task_type=str(row["task_type"]))
+            chunk_id = f"chunk-{chunk_index}"
+            await self.checkpoint_resume.publish_manifest(
+                connection,
+                CheckpointManifestSpec(
+                    workspace_id=row["workspace_id"],
+                    task_run_id=row["task_run_id"],
+                    task_revision_id=row["task_revision_id"],
+                    task_attempt_id=row["task_attempt_id"],
+                    assignment_id=internal_id,
+                    input_digest=input_sha256,
+                    execution_plan_id=plan.plan_name,
+                    execution_plan_version=plan.plan_version,
+                    stage_id="llm-map",
+                    chunk_id=chunk_id,
+                    chunk_index=chunk_index,
+                    model_version_id=model_version_id,
+                    artifact_digest=model_version_id,
+                    runtime_version=DEFAULT_RUNTIME_BACKEND,
+                    prompt_template_version="1.0",
+                    producer_attempt_id=row["task_attempt_id"],
+                    producer_assignment_id=internal_id,
+                    producer_fence_token=fence_token,
+                    producer_worker_device_id=session.device_id,
+                    processed_ranges={"chunkIndex": chunk_index},
+                    completed_chunk_ids=[chunk_id],
+                    result_artifact_hash=checkpoint_sha256,
+                ),
+            )
+        receipt = self._receipt("checkpointAssignment")
+        receipt["sequence"] = sequence
+        return receipt
+
     async def complete(
         self,
         connection: AsyncConnection,
@@ -338,7 +689,11 @@ class AssignmentCommandService:
                     SELECT assignment.status, assignment.workspace_id,
                            assignment.task_attempt_id, assignment.fence_token,
                            assignment.lease_token_hash, assignment.lease_expires_at_utc,
-                           task.id AS task_id
+                           assignment.worker_device_id,
+                           task.id AS task_id,
+                           task.task_type AS task_type,
+                           attempt.task_run_id AS task_run_id,
+                           COALESCE(run.generation, 1) AS task_run_generation
                     FROM public.assignments AS assignment
                     JOIN public.task_attempts AS attempt
                       ON attempt.id = assignment.task_attempt_id
@@ -346,6 +701,9 @@ class AssignmentCommandService:
                     JOIN public.tasks AS task
                       ON task.id = attempt.task_id
                      AND task.workspace_id = attempt.workspace_id
+                    LEFT JOIN public.task_runs AS run
+                      ON run.id = attempt.task_run_id
+                     AND run.workspace_id = attempt.workspace_id
                     WHERE assignment.id = :assignment_id
                       AND assignment.worker_device_id = :worker_device_id
                     FOR UPDATE OF assignment
@@ -387,15 +745,61 @@ class AssignmentCommandService:
         if not hmac.compare_digest(signature, expected_signature):
             raise worker_error("INPUT_SCHEMA_INVALID", detail="result signature invalid")
 
+        validation = validate_task_result(
+            task_type=str(row["task_type"]),
+            inline_output=output_inline,
+        )
+        if not validation.valid:
+            raise worker_error(
+                validation.failure_code or "RESULT_SCHEMA_INVALID",
+                detail=validation.detail,
+            )
+
+        task_run_id = row["task_run_id"]
+        candidate_id = None
+        if task_run_id is not None:
+            pinned = await self.result_acceptance.pin_candidate(
+                connection,
+                workspace_id=row["workspace_id"],
+                task_run_id=task_run_id,
+                task_attempt_id=row["task_attempt_id"],
+                assignment_id=internal_id,
+                generation=int(row["task_run_generation"]),
+                result_sha256=result_sha256,
+                worker_device_id=row["worker_device_id"],
+                fence_token=fence_token,
+            )
+            candidate_id = pinned.candidate_id
+            await self.result_acceptance.record_validation(
+                connection,
+                workspace_id=row["workspace_id"],
+                candidate_id=candidate_id,
+                passed=True,
+            )
+            await self.result_acceptance.accept_outcome(
+                connection,
+                workspace_id=row["workspace_id"],
+                task_run_id=task_run_id,
+                candidate_id=candidate_id,
+                worker_device_id=row["worker_device_id"],
+            )
+        else:
+            await self._win_task_run_terminal(
+                connection,
+                task_run_id=task_run_id,
+                terminal_status=TaskRunStatus.SUCCEEDED,
+                terminal_outcome="assignment_complete",
+            )
+
         await connection.execute(
             text(
                 """
                 INSERT INTO public.results(
                     workspace_id, task_attempt_id, assignment_id, inline_output,
-                    result_sha256, worker_signature, status
+                    result_sha256, worker_signature, status, result_candidate_id
                 ) VALUES (
                     :workspace_id, :attempt_id, :assignment_id, :inline_output,
-                    :result_sha256, :worker_signature, 'pending_verification'
+                    :result_sha256, :worker_signature, 'pending_verification', :candidate_id
                 )
                 """
             ),
@@ -406,6 +810,7 @@ class AssignmentCommandService:
                 "inline_output": output_inline,
                 "result_sha256": result_sha256,
                 "worker_signature": base64.b64decode(signature, validate=True),
+                "candidate_id": candidate_id,
             },
         )
         mutation_params = {
@@ -418,6 +823,13 @@ class AssignmentCommandService:
             text("UPDATE public.assignments SET status = 'completed', ended_at_utc = CURRENT_TIMESTAMP WHERE id = :assignment_id"),
             mutation_params,
         )
+        if self.settings.worker_resource_reservations_enabled:
+            await self.resource_reservations.release_for_assignment(
+                connection,
+                assignment_id=internal_id,
+                fence_token=fence_token,
+                stop_reason="assignment_complete",
+            )
         await connection.execute(
             text("UPDATE public.task_attempts SET status = 'completed', completed_at_utc = CURRENT_TIMESTAMP WHERE id = :attempt_id AND workspace_id = :workspace_id"),
             mutation_params,
@@ -430,6 +842,24 @@ class AssignmentCommandService:
             text("DELETE FROM public.assignment_lease_credentials WHERE assignment_id = :assignment_id"),
             mutation_params,
         )
+        cost_feedback_raw = metrics.get("costFeedback")
+        if cost_feedback_raw is not None:
+            feedback = parse_execution_cost_feedback(cost_feedback_raw)
+            await self.execution_cost_feedback.persist_for_assignment(
+                connection,
+                workspace_id=row["workspace_id"],
+                assignment_id=internal_id,
+                task_attempt_id=row["task_attempt_id"],
+                worker_device_id=session.device_id,
+                fence_token=fence_token,
+                task_type=str(row["task_type"]),
+                payload=feedback,
+            )
+            await apply_execution_cost_feedback_to_calibration(
+                connection,
+                worker_device_id=session.device_id,
+                payload=feedback,
+            )
         await enqueue_outbox_event(
             connection,
             OutboxEvent(
@@ -452,6 +882,216 @@ class AssignmentCommandService:
             ),
         )
         return self._receipt("completeAssignment")
+
+    async def fail(
+        self,
+        connection: AsyncConnection,
+        *,
+        access_token: str,
+        assignment_id: str,
+        lease_token: str,
+        fence_token: int,
+        error_code: str,
+        retryable: bool,
+        diagnostics: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        validate_worker_failure_submission(error_code=error_code, retryable=retryable)
+        session = await resolve_worker_session(connection, access_token=access_token)
+        internal_id = self._assignment_uuid(assignment_id)
+        row = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT assignment.status, assignment.workspace_id,
+                           assignment.task_attempt_id, assignment.fence_token,
+                           assignment.lease_token_hash, assignment.lease_expires_at_utc,
+                           assignment.failure_reason_code,
+                           task.id AS task_id,
+                           task.public_id AS task_public_id,
+                           attempt.task_run_id AS task_run_id
+                    FROM public.assignments AS assignment
+                    JOIN public.task_attempts AS attempt
+                      ON attempt.id = assignment.task_attempt_id
+                     AND attempt.workspace_id = assignment.workspace_id
+                    JOIN public.tasks AS task
+                      ON task.id = attempt.task_id
+                     AND task.workspace_id = attempt.workspace_id
+                    WHERE assignment.id = :assignment_id
+                      AND assignment.worker_device_id = :worker_device_id
+                    FOR UPDATE OF assignment
+                    """
+                ),
+                {"assignment_id": internal_id, "worker_device_id": session.device_id},
+            )
+        ).mappings().first()
+        if row is None:
+            raise worker_error("TENANT_RESOURCE_NOT_FOUND", detail="assignment not found")
+
+        if str(row["status"]) == "failed":
+            if str(row["failure_reason_code"] or "") == error_code:
+                return self._receipt("failAssignmentReplay")
+            raise worker_error("ASSIGNMENT_STALE_FENCE")
+
+        self._verify_active_credential(row, lease_token=lease_token, fence_token=fence_token)
+        if str(row["status"]) not in {"running", "leased"}:
+            raise worker_error("ASSIGNMENT_STALE_FENCE")
+
+        failure_data: dict[str, Any] = {
+            "assignmentId": assignment_id,
+            "attemptId": str(row["task_attempt_id"]),
+            "workerDeviceId": str(session.device_id),
+            "fenceToken": fence_token,
+            "failureCode": error_code,
+            "retryable": retryable,
+            "observedAt": datetime.now(UTC).isoformat(),
+        }
+        if diagnostics:
+            failure_data["diagnostics"] = diagnostics
+
+        if not retryable:
+            await self._win_task_run_terminal(
+                connection,
+                task_run_id=row["task_run_id"],
+                terminal_status=TaskRunStatus.FAILED,
+                terminal_outcome=error_code,
+            )
+
+        mutation_params = {
+            "assignment_id": internal_id,
+            "attempt_id": row["task_attempt_id"],
+            "task_id": row["task_id"],
+            "workspace_id": row["workspace_id"],
+            "failure_reason_code": error_code,
+        }
+        await connection.execute(
+            text(
+                """
+                UPDATE public.assignments
+                SET status = 'failed',
+                    ended_at_utc = CURRENT_TIMESTAMP,
+                    failure_reason_code = :failure_reason_code
+                WHERE id = :assignment_id
+                """
+            ),
+            mutation_params,
+        )
+        if self.settings.worker_resource_reservations_enabled:
+            await self.resource_reservations.release_for_assignment(
+                connection,
+                assignment_id=internal_id,
+                fence_token=fence_token,
+                stop_reason="assignment_fail",
+            )
+        await connection.execute(
+            text(
+                """
+                UPDATE public.task_attempts
+                SET status = 'failed', completed_at_utc = CURRENT_TIMESTAMP
+                WHERE id = :attempt_id AND workspace_id = :workspace_id
+                """
+            ),
+            mutation_params,
+        )
+        await connection.execute(
+            text(
+                """
+                UPDATE public.tasks
+                SET lifecycle_status = 'failed', updated_at_utc = CURRENT_TIMESTAMP
+                WHERE id = :task_id AND workspace_id = :workspace_id
+                """
+            ),
+            mutation_params,
+        )
+        await connection.execute(
+            text("DELETE FROM public.assignment_lease_credentials WHERE assignment_id = :assignment_id"),
+            mutation_params,
+        )
+        await enqueue_outbox_event(
+            connection,
+            OutboxEvent(
+                event_type="task.failed",
+                aggregate_type="assignment",
+                aggregate_id=assignment_id,
+                aggregate_sequence=fence_token * 1_000_000_000 + 800_000_000,
+                workspace_id=row["workspace_id"],
+                cloud_event=self._cloud_event(
+                    event_type="io.edgemint.task.failed.v1",
+                    assignment_id=assignment_id,
+                    data={
+                        "taskId": str(row["task_public_id"]),
+                        "aggregateVersion": 1,
+                        "occurredAt": failure_data["observedAt"],
+                        "action": "failed",
+                        "workspaceId": str(row["workspace_id"]),
+                        "reasonCode": error_code,
+                        "actorType": "worker",
+                        **failure_data,
+                    },
+                ),
+            ),
+        )
+        receipt = self._receipt("failAssignment")
+        receipt["errorCode"] = error_code
+        receipt["retryable"] = retryable
+        return receipt
+
+    async def confirm_physical_stop(
+        self,
+        connection: AsyncConnection,
+        *,
+        access_token: str,
+        assignment_id: str,
+        lease_token: str,
+        fence_token: int,
+        proof: str,
+        reason: str = "worker_stop_confirmed",
+    ) -> dict[str, Any]:
+        session = await resolve_worker_session(connection, access_token=access_token)
+        internal_id = self._assignment_uuid(assignment_id)
+        row = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT status, fence_token, lease_token_hash, lease_expires_at_utc
+                    FROM public.assignments
+                    WHERE id = :assignment_id
+                      AND worker_device_id = :worker_device_id
+                    FOR UPDATE
+                    """
+                ),
+                {"assignment_id": internal_id, "worker_device_id": session.device_id},
+            )
+        ).mappings().first()
+        if row is None:
+            raise worker_error("TENANT_RESOURCE_NOT_FOUND", detail="assignment not found")
+        if str(row["status"]) in {"completed", "failed", "abandoned"}:
+            if not self.settings.worker_resource_reservations_enabled:
+                return self._receipt("confirmPhysicalStopReplay")
+            committed = await self.resource_reservations.confirm_physical_stop_for_assignment(
+                connection,
+                assignment_id=internal_id,
+                fence_token=fence_token,
+                proof=proof,
+                reason=reason,
+            )
+            receipt = self._receipt("confirmPhysicalStopReplay" if committed else "confirmPhysicalStopStale")
+            receipt["physicalReleaseCommitted"] = committed
+            return receipt
+        self._verify_active_credential(row, lease_token=lease_token, fence_token=fence_token)
+        if not self.settings.worker_resource_reservations_enabled:
+            return self._receipt("confirmPhysicalStop")
+        committed = await self.resource_reservations.confirm_physical_stop_for_assignment(
+            connection,
+            assignment_id=internal_id,
+            fence_token=fence_token,
+            proof=proof,
+            reason=reason,
+        )
+        if not committed:
+            raise worker_error("ASSIGNMENT_STALE_FENCE", detail="physical release not confirmed")
+        receipt = self._receipt("confirmPhysicalStop")
+        receipt["physicalReleaseCommitted"] = True
+        return receipt
 
     @staticmethod
     def _verify_active_credential(

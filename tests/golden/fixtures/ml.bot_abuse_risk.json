@@ -1,0 +1,23 @@
+{
+  "taskType": "ml.bot_abuse_risk",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for ml.bot_abuse_risk",
+  "input": {
+    "inlineText": "Behavior: 500 identical requests in one second.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_bot_abuse_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "risk": "high",
+        "score": 0.93,
+        "signals": ["request_burst", "identical_payloads", "automation_pattern"]
+      }
+    },
+    "metrics": {"llmMs": 560}
+  },
+  "minimumConfidenceMilli": 960
+}

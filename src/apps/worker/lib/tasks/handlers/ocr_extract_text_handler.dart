@@ -2,6 +2,7 @@ import '../../contracts/worker_error.dart';
 import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/qwen_task_processor.dart';
+import '../../runtime/checkpoint_manager.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../inference/ocr/ocr_text_normalizer.dart';
 import '../../telemetry/worker_task_metrics.dart';
@@ -19,6 +20,9 @@ class OcrExtractTextHandler implements TaskHandler {
     required String signingKey,
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
+    String? assignmentId,
+    int? fenceToken,
+    Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
   }) async {
     final ocrStart = DateTime.now();
     final ocr = await ocrEngine.recognize(

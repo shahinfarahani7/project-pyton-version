@@ -1,0 +1,74 @@
+version: "1.0.0"
+name: active-identity-native-lifecycle-v1
+description: >
+  Active model identity tracing and Native crash reconciliation (Architecture v2 §24, §41, §53, §75, §76, A22/T22).
+
+architectureSections: ["24", "41", "53", "75", "76"]
+
+identityTracing:
+  requireMutationCorrelationId: true
+  captureBeforeAfterState: true
+  redactSensitivePaths: true
+  maxRecentEvents: 8
+  trackedSymbols:
+    - ensureModelReady
+    - verifyActive
+    - ensureReady
+    - clearActiveInferenceIdentity
+    - modelLoad
+    - modelUnload
+    - sessionOpen
+    - sessionClose
+  serializeBootstrapPaths: true
+  forbidConcurrentBootstrap: true
+
+nativeHandleCounters:
+  countModelCreateSeparately: true
+  countModelCloseSeparately: true
+  countSessionCreateSeparately: true
+  countSessionCloseSeparately: true
+  countIdentityClearSeparately: true
+  reportInHeartbeat: true
+
+idleStability:
+  minIdleObservationMinutes: 15
+  maxIdentityClearsPerHour: 2
+  maxBootstrapCyclesPerHour: 4
+  churnWithoutAssignmentForbidden: true
+
+nativeCrashReconciliation:
+  inferGrantLossFromLeaseEvidence: true
+  doNotDependOnDartAfterSigsegv: true
+  requireAuthenticatedRestartMetadata: true
+  reconcileBeforeResume: true
+  failureCodes:
+    nativeCrashInferred: NATIVE_CRASH_INFERRED
+    staleGrantAfterCrash: STALE_GRANT_AFTER_CRASH
+
+t22Scenarios:
+  - id: idle_identity_loop
+    description: Idle worker must not repeatedly clear/restore active identity
+    requiresPhysicalDevice: true
+  - id: simultaneous_bootstrap
+    description: Overlapping ensureModelReady and verifyActive paths serialized
+    requiresPhysicalDevice: false
+  - id: missing_model_recovery
+    description: Missing physical file clears stale registration without deleting unknown paths
+    requiresPhysicalDevice: false
+  - id: native_crash_regression
+    description: SIGSEGV/GATHER_ND regression captured with handle counters and server reconciliation
+    requiresPhysicalDevice: true
+
+physicalDeviceMatrix:
+  emulatorAloneCannotCertifyProduction: true
+  requiredScenarios:
+    - id: idle_identity_loop
+      title: Idle soak longer than lifecycle/timer periods without identity churn
+      requiresPhysicalDevice: true
+    - id: native_crash_regression
+      title: Named build reproduces or disproves historical Native crash with counters
+      requiresPhysicalDevice: true
+    - id: missing_model_recovery
+      title: Stale registration branch with missing file bounded recovery
+      requiresPhysicalDevice: false
+      emulatorSufficient: true

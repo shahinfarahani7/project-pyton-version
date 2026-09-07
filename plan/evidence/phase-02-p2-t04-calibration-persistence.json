@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "task": "P2-T04",
+  "completedAt": "2026-09-01",
+  "summary": "Worker calibration profiles persisted on benchmark submit and served via GET API.",
+  "artifacts": {
+    "sqlMigration": "database/sql/016_worker_calibration_profiles.sql",
+    "service": "src/backend/edgemint/workers/calibration.py",
+    "routingHook": "src/backend/edgemint/routing/calibration.py",
+    "api": "GET /workers/{workerId}/calibration in worker_registry.py",
+    "openapi": "contracts/openapi/edgemint-worker-api.yaml",
+    "tests": "src/backend/tests/workers/test_worker_calibration.py"
+  },
+  "commands": {
+    "validate_sql": { "exitCode": 0, "migrations": 17 },
+    "pytest_workers": { "exitCode": 0, "passed": 25 }
+  },
+  "status": "IMPLEMENTED_DEV_ONLY"
+}

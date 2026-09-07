@@ -37,12 +37,18 @@ class Settings(BaseSettings):
     worker_heartbeat_interval_seconds: int = 20
     worker_attestation_ttl_hours: int = 24
     worker_consent_policy_version: str = "2026-q3-v1"
+    worker_resource_reservations_enabled: bool = True
+    worker_exclusive_group_enforcement_enabled: bool = True
+    worker_per_class_budget_enforcement_enabled: bool = True
+    worker_cpu_enforcement_certification_required: bool = False
+    router_bypass_hard_eligibility_filter: bool = False
     worker_registry_workspace_id: str | None = None
     model_registry_workspace_id: str | None = None
     model_signing_secret: str | None = None
     model_chunk_size_bytes: int = 4_194_304
     model_approved_licenses: str = "Apache-2.0,MIT,BSD-3-Clause"
     lease_credential_encryption_key: str | None = None
+    catalog_closure_mode: Literal["warn_only", "baseline", "strict"] = "baseline"
     worker_api_public_base_url: str = "http://worker-gateway:8080"
 
     @model_validator(mode="after")

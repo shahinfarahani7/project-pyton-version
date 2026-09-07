@@ -1,0 +1,8 @@
+{
+  "taskId": "P5-QWEN-16",
+  "taskTypeId": "llm.suspicious_output",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/llm-suspicious-output.yaml",
+  "goldenFixture": "tests/golden/fixtures/llm.suspicious_output.json",
+  "tests": "src/backend/tests/results/test_llm_validators.py"
+}

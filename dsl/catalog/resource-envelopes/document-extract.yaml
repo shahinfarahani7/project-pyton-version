@@ -1,0 +1,24 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: document-extract
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: OCR + structured extraction envelope.
+spec:
+  taskType: document.extract
+  runtimeClass: paddle_ocr
+  requiredModelIds:
+    - paddleocr-mobile
+    - qwen2.5-0.5b
+  cpuUnits: 35
+  memoryReservationBytes: 1073741824
+  storageReservationBytes: 157286400
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 240000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: document_pipeline

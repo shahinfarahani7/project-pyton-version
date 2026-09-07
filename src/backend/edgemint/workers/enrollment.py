@@ -19,14 +19,23 @@ from edgemint.files.idempotency import (
     idempotency_scope,
 )
 from edgemint.security.tokens import write_audit_event
+from edgemint.routing.memory_accounting import WorkerMemoryAccountingService
 from edgemint.workers.attestation import (
     new_challenge,
     public_key_fingerprint,
     verify_attestation,
 )
+from edgemint.workers.calibration import WorkerCalibrationProfileView, WorkerCalibrationService
+from edgemint.workers.heartbeat_telemetry import telemetry_json_from_heartbeat
 from edgemint.workers.errors import worker_error
 from edgemint.workers.lifecycle import WorkerLifecycle
 from edgemint.workers.readiness import derive_device_tier
+from edgemint.workers.consent_opt_in import (
+    record_contribution_opt_in_event,
+    validate_contribution_mode_change,
+)
+from edgemint.workers.contribution_enforcement import WorkerCpuEnforcementService
+from edgemint.workers.resource_policy import approved_percent_for_mode, default_contribution_mode_id
 from edgemint.workers.schemas import (
     CommandReceipt,
     CreateChallengeRequest,
@@ -48,6 +57,9 @@ from edgemint.workers.sessions import issue_session_token, persist_worker_sessio
 class WorkerEnrollmentService:
     settings: Settings = field(default_factory=get_settings)
     lifecycle: WorkerLifecycle = field(default_factory=WorkerLifecycle.load)
+    calibration: WorkerCalibrationService = field(default_factory=WorkerCalibrationService)
+    memory_accounting: WorkerMemoryAccountingService = field(default_factory=WorkerMemoryAccountingService)
+    cpu_enforcement: WorkerCpuEnforcementService = field(default_factory=WorkerCpuEnforcementService)
 
     def _registry_workspace_id(self) -> UUID | None:
         raw = self.settings.worker_registry_workspace_id
@@ -174,9 +186,11 @@ class WorkerEnrollmentService:
         device_id = EntityId.new().value
         device_public = public_id("dev")
         attestation_expires = datetime.now(UTC) + timedelta(hours=self.settings.worker_attestation_ttl_hours)
-        runtime_abi = str(payload.capabilities.get("runtimeAbi", "unknown"))
-        region_code = str(payload.capabilities.get("regionCode", "unknown"))
-        device_tier = str(payload.capabilities.get("deviceTier", "D"))
+        capability = payload.capabilities
+        runtime_abi = capability.runtimeAbi
+        region_code = capability.regionCode
+        device_tier = capability.deviceTier
+        capability_json = json.dumps(capability.model_dump(mode="json"))
 
         await connection.execute(
             text(
@@ -210,12 +224,12 @@ class WorkerEnrollmentService:
                 INSERT INTO public.worker_devices(
                     id, worker_id, public_id, platform, app_version, runtime_abi, region_code,
                     device_tier, attestation_status, attestation_expires_at_utc, status,
-                    installation_id, public_key_fingerprint
+                    installation_id, public_key_fingerprint, capability_snapshot_json
                 )
                 VALUES (
                     :id, :worker_id, :public_id, :platform, :app_version, :runtime_abi, :region_code,
                     :device_tier, 'verified', :attestation_expires_at_utc, 'active',
-                    :installation_id, :public_key_fingerprint
+                    :installation_id, :public_key_fingerprint, CAST(:capability_snapshot_json AS jsonb)
                 )
                 """
             ),
@@ -231,6 +245,7 @@ class WorkerEnrollmentService:
                 "attestation_expires_at_utc": attestation_expires,
                 "installation_id": payload.installationId,
                 "public_key_fingerprint": key_fingerprint,
+                "capability_snapshot_json": capability_json,
             },
         )
         await connection.execute(
@@ -251,17 +266,20 @@ class WorkerEnrollmentService:
                 """
                 INSERT INTO public.worker_preferences(
                     worker_id, availability, network_policy, charging_policy,
-                    minimum_battery_percent, schedule_json, schedule_mode
+                    minimum_battery_percent, schedule_json, schedule_mode,
+                    contribution_mode_id
                 )
                 VALUES (
                     :worker_id, 'unavailable', 'wifi_only', 'preferred',
-                    25, CAST(:schedule_json AS jsonb), 'always'
+                    25, CAST(:schedule_json AS jsonb), 'always',
+                    :contribution_mode_id
                 )
                 """
             ),
             {
                 "worker_id": worker_id,
                 "schedule_json": json.dumps({"mode": "always", "timezone": "UTC"}),
+                "contribution_mode_id": default_contribution_mode_id(),
             },
         )
         self.lifecycle.assert_transition("registered", "attesting")
@@ -396,18 +414,27 @@ class WorkerEnrollmentService:
             raise worker_error("HEARTBEAT_SEQUENCE_INVALID", detail="sequence gap")
 
         now = datetime.now(UTC)
+        capability_json = (
+            json.dumps(payload.capabilitySnapshot.model_dump(mode="json"))
+            if payload.capabilitySnapshot is not None
+            else None
+        )
+        telemetry_payload = telemetry_json_from_heartbeat(payload)
+        telemetry_json = json.dumps(telemetry_payload) if telemetry_payload is not None else None
         await connection.execute(
             text(
                 """
                 INSERT INTO public.worker_heartbeats(
                     worker_device_id, sequence_number, observed_at_utc, battery_bps, charging,
                     thermal_state, free_ram_bytes, free_storage_bytes, network_type,
-                    current_leases_json, installed_models_json, received_at_utc
+                    current_leases_json, installed_models_json, capability_snapshot_json,
+                    telemetry_json, received_at_utc
                 )
                 VALUES (
                     :worker_device_id, :sequence_number, :observed_at_utc, :battery_bps, :charging,
                     :thermal_state, :free_ram_bytes, :free_storage_bytes, :network_type,
                     CAST(:current_leases_json AS jsonb), CAST(:installed_models_json AS jsonb),
+                    CAST(:capability_snapshot_json AS jsonb), CAST(:telemetry_json AS jsonb),
                     :received_at_utc
                 )
                 """
@@ -424,19 +451,64 @@ class WorkerEnrollmentService:
                 "network_type": payload.network,
                 "current_leases_json": json.dumps(payload.currentLeases),
                 "installed_models_json": json.dumps(payload.installedModels),
+                "capability_snapshot_json": capability_json,
+                "telemetry_json": telemetry_json,
                 "received_at_utc": now,
             },
         )
-        await connection.execute(
-            text(
-                """
-                UPDATE public.worker_devices
-                SET last_seen_at_utc = :last_seen_at_utc
-                WHERE id = :device_id
-                """
-            ),
-            {"device_id": session.device_id, "last_seen_at_utc": now},
+        if payload.capabilitySnapshot is not None:
+            await connection.execute(
+                text(
+                    """
+                    UPDATE public.worker_devices
+                    SET capability_snapshot_json = CAST(:capability_snapshot_json AS jsonb),
+                        last_seen_at_utc = :last_seen_at_utc
+                    WHERE id = :device_id
+                    """
+                ),
+                {
+                    "device_id": session.device_id,
+                    "capability_snapshot_json": capability_json,
+                    "last_seen_at_utc": now,
+                },
+            )
+        else:
+            await connection.execute(
+                text(
+                    """
+                    UPDATE public.worker_devices
+                    SET last_seen_at_utc = :last_seen_at_utc
+                    WHERE id = :device_id
+                    """
+                ),
+                {"device_id": session.device_id, "last_seen_at_utc": now},
+            )
+        await self.memory_accounting.ensure_base_commitment(
+            connection,
+            worker_device_id=session.device_id,
+            snapshot_sequence=payload.sequence,
         )
+        if payload.loadedModelIds:
+            await self.memory_accounting.sync_resident_models(
+                connection,
+                worker_device_id=session.device_id,
+                loaded_model_ids=list(payload.loadedModelIds),
+                snapshot_sequence=payload.sequence,
+            )
+        contribution_mode_id = (
+            payload.consentSnapshot.contributionModeId
+            if payload.consentSnapshot is not None and payload.consentSnapshot.contributionModeId
+            else default_contribution_mode_id()
+        )
+        if payload.consentSnapshot is not None or payload.cpuUsageBps is not None:
+            await self.cpu_enforcement.sync_from_heartbeat(
+                connection,
+                worker_device_id=session.device_id,
+                contribution_mode_id=contribution_mode_id,
+                approved_percent=approved_percent_for_mode(contribution_mode_id),
+                observed_cpu_usage_bps=payload.cpuUsageBps,
+                snapshot_sequence=payload.sequence,
+            )
         receipt = CommandReceipt(
             operationId="sendHeartbeat",
             accepted=True,
@@ -490,6 +562,28 @@ class WorkerEnrollmentService:
             raise worker_error("TENANT_RESOURCE_NOT_FOUND", detail="preferences missing")
         if int(row["version"]) != payload.expectedVersion:
             raise worker_error("VERSION_CONFLICT")
+        current_mode_id = str(
+            (
+                await connection.execute(
+                    text(
+                        """
+                        SELECT contribution_mode_id
+                        FROM public.worker_preferences
+                        WHERE worker_id = :worker_id
+                        """
+                    ),
+                    {"worker_id": session.worker_id},
+                )
+            ).scalar_one()
+        )
+        try:
+            requested_mode = validate_contribution_mode_change(
+                current_mode_id=current_mode_id,
+                requested_mode_id=payload.contributionModeId,
+                performance_opt_in_confirmed=payload.performanceOptInConfirmed,
+            )
+        except ValueError as exc:
+            raise worker_error("INPUT_SCHEMA_INVALID", detail=str(exc)) from exc
 
         now = datetime.now(UTC)
         await connection.execute(
@@ -502,6 +596,7 @@ class WorkerEnrollmentService:
                     minimum_battery_percent = :minimum_battery_percent,
                     schedule_json = CAST(:schedule_json AS jsonb),
                     schedule_mode = :schedule_mode,
+                    contribution_mode_id = :contribution_mode_id,
                     updated_at_utc = :updated_at_utc,
                     version = version + 1
                 WHERE worker_id = :worker_id
@@ -515,9 +610,18 @@ class WorkerEnrollmentService:
                 "minimum_battery_percent": payload.minimumBatteryPercent,
                 "schedule_json": json.dumps(payload.schedule.model_dump(mode="json")),
                 "schedule_mode": payload.schedule.mode,
+                "contribution_mode_id": payload.contributionModeId,
                 "updated_at_utc": now,
             },
         )
+        if requested_mode.requiresExplicitOptIn and payload.contributionModeId != current_mode_id:
+            await record_contribution_opt_in_event(
+                connection,
+                worker_id=session.worker_id,
+                contribution_mode_id=payload.contributionModeId,
+                opt_in_confirmed=payload.performanceOptInConfirmed,
+                request_id=request_id,
+            )
         return CommandReceipt(
             operationId="replaceWorkerPreferences",
             accepted=True,
@@ -541,7 +645,7 @@ class WorkerEnrollmentService:
                 text(
                     """
                     SELECT version, availability, network_policy, charging_policy,
-                           minimum_battery_percent, schedule_json
+                           minimum_battery_percent, schedule_json, contribution_mode_id
                     FROM public.worker_preferences
                     WHERE worker_id = :worker_id
                     """
@@ -558,6 +662,7 @@ class WorkerEnrollmentService:
             networkPolicy=row["network_policy"],
             chargingPolicy=row["charging_policy"],
             minimumBatteryPercent=int(row["minimum_battery_percent"]),
+            contributionModeId=str(row["contribution_mode_id"]),
             schedule=schedule,
         )
 
@@ -722,6 +827,11 @@ class WorkerEnrollmentService:
                 "measured_at_utc": payload.measuredAt,
             },
         )
+        await self.calibration.upsert_from_benchmark(
+            connection,
+            worker_device_id=session.device_id,
+            payload=payload,
+        )
         await connection.execute(
             text(
                 """
@@ -751,4 +861,25 @@ class WorkerEnrollmentService:
             occurredAt=now,
             resourceId=worker_public_id,
             requestId=request_id,
+        )
+
+    async def get_worker_calibration(
+        self,
+        connection: AsyncConnection,
+        *,
+        session_token: str,
+        worker_public_id: str,
+    ) -> WorkerCalibrationProfileView:
+        from edgemint.workers.sessions import resolve_worker_session
+
+        session = await resolve_worker_session(
+            connection,
+            access_token=session_token,
+            expected_worker_public_id=worker_public_id,
+        )
+        return await self.calibration.get_profile_for_session(
+            connection,
+            worker_device_id=session.device_id,
+            worker_public_id=session.worker_public_id,
+            device_public_id=session.device_public_id,
         )

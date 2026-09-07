@@ -1,0 +1,27 @@
+{
+  "taskType": "moderation.profanity",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for moderation.profanity (Qwen profanity detection)",
+  "input": {
+    "inlineText": "This product is excellent and works as advertised.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_profanity_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "containsProfanity": false,
+        "confidence": 0.97,
+        "spans": []
+      }
+    },
+    "metrics": {
+      "llmMs": 420,
+      "inputTokens": 12,
+      "outputTokens": 10
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

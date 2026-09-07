@@ -1,0 +1,35 @@
+{
+  "taskId": "P4-T01",
+  "completedAt": "2026-09-02",
+  "summary": "Hard Eligibility Filter (Section 10) applied before scoring; ineligible workers receive score=0 and never enter the scorable bucket.",
+  "artifacts": {
+    "filter": "src/backend/edgemint/routing/hard_eligibility.py",
+    "engine": "src/backend/edgemint/routing/engine.py",
+    "service": "src/backend/edgemint/routing/service.py",
+    "settingsBypass": "src/backend/edgemint/building_blocks/settings.py (router_bypass_hard_eligibility_filter, dev/test only)",
+    "tests": "src/backend/tests/routing/test_hard_eligibility_filter.py"
+  },
+  "gates": [
+    "STALE_HEARTBEAT",
+    "WORKER_UNAVAILABLE",
+    "TRUST_TOO_LOW",
+    "ATTESTATION_REQUIRED",
+    "CONSENT_REQUIRED",
+    "BATTERY_TOO_LOW",
+    "THERMAL_BLOCK",
+    "REGION_NOT_ALLOWED",
+    "NETWORK_POLICY_BLOCKED",
+    "MODEL_DIGEST_MISMATCH",
+    "MODEL_UNAVAILABLE",
+    "RUNTIME_ABI_MISMATCH",
+    "INSUFFICIENT_STORAGE",
+    "FAILURE_COOLDOWN",
+    "ASSIGNMENT_SAFETY_BLOCKED",
+    "RUNTIME_INCOMPATIBLE",
+    "RUNTIME_CO_RUN_BLOCKED",
+    "CPU_BUDGET_EXCEEDED",
+    "MEMORY_BUDGET_EXCEEDED",
+    "STORAGE_BUDGET_EXCEEDED"
+  ],
+  "testRun": "py -3.13 -m pytest tests/routing/test_hard_eligibility_filter.py tests/routing/test_router_engine.py -q (pass)"
+}

@@ -1,0 +1,44 @@
+{
+  "taskType": "dataset.duplicate_cleanup",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for dataset.duplicate_cleanup",
+  "input": {
+    "flexInput": {
+      "records": [
+        {
+          "id": "a",
+          "text": "hello"
+        },
+        {
+          "id": "b",
+          "text": "hello"
+        }
+      ]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_dataset_duplicate_cleanup",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "duplicateGroups": [
+          [
+            "a",
+            "b"
+          ]
+        ],
+        "keepIds": [
+          "a"
+        ],
+        "removeIds": [
+          "b"
+        ]
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

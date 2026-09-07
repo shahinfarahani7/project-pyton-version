@@ -5,12 +5,84 @@
       "labelEn": "Core",
       "labelFa": "پایه",
       "types": [
-        { "value": "document.ocr", "labelEn": "Document OCR", "labelFa": "OCR سند", "inputMode": "document" },
-        { "value": "document.extract", "labelEn": "Structured document extract", "labelFa": "استخراج ساختاریافته سند", "inputMode": "document" },
-        { "value": "text.summarize", "labelEn": "Text summarize", "labelFa": "خلاصه‌سازی متن", "inputMode": "text" },
-        { "value": "text.classify", "labelEn": "Text classify", "labelFa": "طبقه‌بندی متن", "inputMode": "text" },
-        { "value": "image.classify", "labelEn": "Image classify", "labelFa": "طبقه‌بندی تصویر", "inputMode": "image" },
-        { "value": "image.remove_background", "labelEn": "Remove background", "labelFa": "حذف پس‌زمینه", "inputMode": "image" }
+        {
+          "value": "document.ocr",
+          "labelEn": "Document OCR",
+          "labelFa": "OCR سند",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "document.extract",
+          "labelEn": "Structured document extract",
+          "labelFa": "استخراج ساختاریافته سند",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "text.summarize",
+          "labelEn": "Text summarize",
+          "labelFa": "خلاصه‌سازی متن",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-summarize@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "chunk",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "text.classify",
+          "labelEn": "Text classify",
+          "labelFa": "طبقه‌بندی متن",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "image.classify",
+          "labelEn": "Image classify",
+          "labelFa": "طبقه‌بندی تصویر",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "image.remove_background",
+          "labelEn": "Remove background",
+          "labelFa": "حذف پس‌زمینه",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/image-segmentation@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -18,12 +90,84 @@
       "labelEn": "Safety & moderation (image)",
       "labelFa": "ایمنی و moderation (تصویر)",
       "types": [
-        { "value": "safety.nsfw_detection", "labelEn": "NSFW detection", "labelFa": "تشخیص NSFW", "inputMode": "image" },
-        { "value": "safety.violence_detection", "labelEn": "Violence detection", "labelFa": "تشخیص خشونت", "inputMode": "image" },
-        { "value": "safety.weapon_detection", "labelEn": "Weapon detection", "labelFa": "تشخیص سلاح", "inputMode": "image" },
-        { "value": "safety.unsafe_image", "labelEn": "Unsafe image detection", "labelFa": "تشخیص تصویر ناامن", "inputMode": "image" },
-        { "value": "moderation.profile_image", "labelEn": "Profile image moderation", "labelFa": "moderation تصویر پروفایل", "inputMode": "image" },
-        { "value": "moderation.generated_image", "labelEn": "Generated image review", "labelFa": "بازبینی تصویر تولیدشده", "inputMode": "image" }
+        {
+          "value": "safety.nsfw_detection",
+          "labelEn": "NSFW detection",
+          "labelFa": "تشخیص NSFW",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "safety.violence_detection",
+          "labelEn": "Violence detection",
+          "labelFa": "تشخیص خشونت",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "safety.weapon_detection",
+          "labelEn": "Weapon detection",
+          "labelFa": "تشخیص سلاح",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "safety.unsafe_image",
+          "labelEn": "Unsafe image detection",
+          "labelFa": "تشخیص تصویر ناامن",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "moderation.profile_image",
+          "labelEn": "Profile image moderation",
+          "labelFa": "moderation تصویر پروفایل",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "moderation.generated_image",
+          "labelEn": "Generated image review",
+          "labelFa": "بازبینی تصویر تولیدشده",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -31,10 +175,58 @@
       "labelEn": "Text moderation",
       "labelFa": "moderation متن",
       "types": [
-        { "value": "moderation.prompt_safety", "labelEn": "Prompt safety check", "labelFa": "بررسی ایمنی prompt", "inputMode": "text" },
-        { "value": "moderation.text", "labelEn": "Text moderation", "labelFa": "moderation متن", "inputMode": "text" },
-        { "value": "moderation.profanity", "labelEn": "Profanity detection", "labelFa": "تشخیص فحش", "inputMode": "text" },
-        { "value": "moderation.spam_comment", "labelEn": "Spam comment detection", "labelFa": "تشخیص اسپم نظر", "inputMode": "text" }
+        {
+          "value": "moderation.prompt_safety",
+          "labelEn": "Prompt safety check",
+          "labelFa": "بررسی ایمنی prompt",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "moderation.text",
+          "labelEn": "Text moderation",
+          "labelFa": "moderation متن",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "moderation.profanity",
+          "labelEn": "Profanity detection",
+          "labelFa": "تشخیص فحش",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "moderation.spam_comment",
+          "labelEn": "Spam comment detection",
+          "labelFa": "تشخیص اسپم نظر",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -42,10 +234,58 @@
       "labelEn": "OCR",
       "labelFa": "OCR",
       "types": [
-        { "value": "ocr.receipt", "labelEn": "OCR receipt", "labelFa": "OCR رسید", "inputMode": "document" },
-        { "value": "ocr.invoice", "labelEn": "OCR invoice", "labelFa": "OCR فاکتور", "inputMode": "document" },
-        { "value": "ocr.simple_form", "labelEn": "OCR simple form", "labelFa": "OCR فرم ساده", "inputMode": "document" },
-        { "value": "ocr.product_label", "labelEn": "OCR product label", "labelFa": "OCR برچسب محصول", "inputMode": "document" }
+        {
+          "value": "ocr.receipt",
+          "labelEn": "OCR receipt",
+          "labelFa": "OCR رسید",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "ocr.invoice",
+          "labelEn": "OCR invoice",
+          "labelFa": "OCR فاکتور",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "ocr.simple_form",
+          "labelEn": "OCR simple form",
+          "labelFa": "OCR فرم ساده",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "ocr.product_label",
+          "labelEn": "OCR product label",
+          "labelFa": "OCR برچسب محصول",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-ocr@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -53,10 +293,58 @@
       "labelEn": "Field extraction",
       "labelFa": "استخراج فیلد",
       "types": [
-        { "value": "extract.amount", "labelEn": "Extract amount", "labelFa": "استخراج مبلغ", "inputMode": "document" },
-        { "value": "extract.date", "labelEn": "Extract date", "labelFa": "استخراج تاریخ", "inputMode": "document" },
-        { "value": "extract.order_number", "labelEn": "Extract order number", "labelFa": "استخراج شماره سفارش", "inputMode": "document" },
-        { "value": "extract.document_type", "labelEn": "Document type detection", "labelFa": "تشخیص نوع سند", "inputMode": "document" }
+        {
+          "value": "extract.amount",
+          "labelEn": "Extract amount",
+          "labelFa": "استخراج مبلغ",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "extract.date",
+          "labelEn": "Extract date",
+          "labelFa": "استخراج تاریخ",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "extract.order_number",
+          "labelEn": "Extract order number",
+          "labelFa": "استخراج شماره سفارش",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "extract.document_type",
+          "labelEn": "Document type detection",
+          "labelFa": "تشخیص نوع سند",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-extract@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -64,8 +352,32 @@
       "labelEn": "Document & image quality",
       "labelFa": "کیفیت سند و تصویر",
       "types": [
-        { "value": "quality.document_image", "labelEn": "Document image quality scoring", "labelFa": "کیفیت‌سنجی تصویر سند", "inputMode": "image" },
-        { "value": "quality.blurry_image", "labelEn": "Blurry image detection", "labelFa": "تشخیص تصویر تار", "inputMode": "image" }
+        {
+          "value": "quality.document_image",
+          "labelEn": "Document image quality scoring",
+          "labelFa": "کیفیت‌سنجی تصویر سند",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "quality.blurry_image",
+          "labelEn": "Blurry image detection",
+          "labelFa": "تشخیص تصویر تار",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -73,13 +385,97 @@
       "labelEn": "Catalog & commerce",
       "labelFa": "کاتالوگ و commerce",
       "types": [
-        { "value": "catalog.image_tagging", "labelEn": "Image tagging", "labelFa": "برچسب‌گذاری تصویر", "inputMode": "image" },
-        { "value": "catalog.product_classification", "labelEn": "Product classification", "labelFa": "طبقه‌بندی محصول", "inputMode": "image" },
-        { "value": "catalog.duplicate_image", "labelEn": "Duplicate image detection", "labelFa": "تشخیص تصویر تکراری", "inputMode": "image" },
-        { "value": "catalog.product_quality_score", "labelEn": "Product quality scoring", "labelFa": "امتیازدهی کیفیت محصول", "inputMode": "image" },
-        { "value": "catalog.brand_logo", "labelEn": "Brand / logo detection", "labelFa": "تشخیص برند / لوگو", "inputMode": "image" },
-        { "value": "catalog.prohibited_product", "labelEn": "Prohibited product detection", "labelFa": "تشخیص محصول ممنوعه", "inputMode": "image" },
-        { "value": "catalog.fake_listing", "labelEn": "Fake listing detection", "labelFa": "تشخیص آگهی جعلی", "inputMode": "flex" }
+        {
+          "value": "catalog.image_tagging",
+          "labelEn": "Image tagging",
+          "labelFa": "برچسب‌گذاری تصویر",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "catalog.product_classification",
+          "labelEn": "Product classification",
+          "labelFa": "طبقه‌بندی محصول",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "catalog.duplicate_image",
+          "labelEn": "Duplicate image detection",
+          "labelFa": "تشخیص تصویر تکراری",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "catalog.product_quality_score",
+          "labelEn": "Product quality scoring",
+          "labelFa": "امتیازدهی کیفیت محصول",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "catalog.brand_logo",
+          "labelEn": "Brand / logo detection",
+          "labelFa": "تشخیص برند / لوگو",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "catalog.prohibited_product",
+          "labelEn": "Prohibited product detection",
+          "labelFa": "تشخیص محصول ممنوعه",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "catalog.fake_listing",
+          "labelEn": "Fake listing detection",
+          "labelFa": "تشخیص آگهی جعلی",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -87,9 +483,45 @@
       "labelEn": "Reviews",
       "labelFa": "نظرات",
       "types": [
-        { "value": "review.fake_detection", "labelEn": "Fake review detection", "labelFa": "تشخیص نظر جعلی", "inputMode": "text" },
-        { "value": "review.sentiment", "labelEn": "Review sentiment", "labelFa": "sentiment نظر", "inputMode": "text" },
-        { "value": "review.topic_tagging", "labelEn": "Topic tagging", "labelFa": "برچسب موضوع", "inputMode": "text" }
+        {
+          "value": "review.fake_detection",
+          "labelEn": "Fake review detection",
+          "labelFa": "تشخیص نظر جعلی",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "review.sentiment",
+          "labelEn": "Review sentiment",
+          "labelFa": "sentiment نظر",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "review.topic_tagging",
+          "labelEn": "Topic tagging",
+          "labelFa": "برچسب موضوع",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -97,16 +529,136 @@
       "labelEn": "LLM validation",
       "labelFa": "اعتبارسنجی LLM",
       "types": [
-        { "value": "llm.summary_verification", "labelEn": "Summary verification", "labelFa": "اعتبارسنجی خلاصه", "inputMode": "text" },
-        { "value": "llm.hallucination_check", "labelEn": "Hallucination check", "labelFa": "بررسی hallucination", "inputMode": "text" },
-        { "value": "llm.ocr_output_validation", "labelEn": "OCR output validation", "labelFa": "اعتبارسنجی خروجی OCR", "inputMode": "text" },
-        { "value": "llm.ai_tag_validation", "labelEn": "AI tag validation", "labelFa": "اعتبارسنجی برچسب AI", "inputMode": "flex" },
-        { "value": "llm.caption_validation", "labelEn": "Caption validation", "labelFa": "اعتبارسنجی caption", "inputMode": "flex" },
-        { "value": "llm.policy_violation", "labelEn": "Policy violation check", "labelFa": "بررسی نقض policy", "inputMode": "text" },
-        { "value": "llm.prompt_output_consistency", "labelEn": "Prompt-output consistency check", "labelFa": "بررسی سازگاری prompt و خروجی", "inputMode": "text" },
-        { "value": "llm.image_output_safety", "labelEn": "Image-output safety check", "labelFa": "بررسی ایمنی خروجی تصویر", "inputMode": "image" },
-        { "value": "llm.answer_quality_score", "labelEn": "AI answer quality scoring", "labelFa": "امتیازدهی کیفیت پاسخ AI", "inputMode": "text" },
-        { "value": "llm.suspicious_output", "labelEn": "Suspicious output flagging", "labelFa": "علامت‌گذاری خروجی مشکوک", "inputMode": "text" }
+        {
+          "value": "llm.summary_verification",
+          "labelEn": "Summary verification",
+          "labelFa": "اعتبارسنجی خلاصه",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-summarize@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "chunk",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.hallucination_check",
+          "labelEn": "Hallucination check",
+          "labelFa": "بررسی hallucination",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "chunk",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.ocr_output_validation",
+          "labelEn": "OCR output validation",
+          "labelFa": "اعتبارسنجی خروجی OCR",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "chunk",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.ai_tag_validation",
+          "labelEn": "AI tag validation",
+          "labelFa": "اعتبارسنجی برچسب AI",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.caption_validation",
+          "labelEn": "Caption validation",
+          "labelFa": "اعتبارسنجی caption",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.policy_violation",
+          "labelEn": "Policy violation check",
+          "labelFa": "بررسی نقض policy",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.prompt_output_consistency",
+          "labelEn": "Prompt-output consistency check",
+          "labelFa": "بررسی سازگاری prompt و خروجی",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "chunk",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.image_output_safety",
+          "labelEn": "Image-output safety check",
+          "labelFa": "بررسی ایمنی خروجی تصویر",
+          "inputMode": "image",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/vision-analyze@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.answer_quality_score",
+          "labelEn": "AI answer quality scoring",
+          "labelFa": "امتیازدهی کیفیت پاسخ AI",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "llm.suspicious_output",
+          "labelEn": "Suspicious output flagging",
+          "labelFa": "علامت‌گذاری خروجی مشکوک",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -114,9 +666,45 @@
       "labelEn": "Dataset operations",
       "labelFa": "عملیات dataset",
       "types": [
-        { "value": "dataset.label_verification", "labelEn": "Dataset label verification", "labelFa": "اعتبارسنجی برچسب dataset", "inputMode": "flex" },
-        { "value": "dataset.duplicate_cleanup", "labelEn": "Duplicate data cleanup", "labelFa": "پاکسازی داده تکراری", "inputMode": "flex" },
-        { "value": "dataset.low_quality_removal", "labelEn": "Low-quality data removal", "labelFa": "حذف داده کم‌کیفیت", "inputMode": "flex" }
+        {
+          "value": "dataset.label_verification",
+          "labelEn": "Dataset label verification",
+          "labelFa": "اعتبارسنجی برچسب dataset",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "dataset.duplicate_cleanup",
+          "labelEn": "Duplicate data cleanup",
+          "labelFa": "پاکسازی داده تکراری",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "dataset.low_quality_removal",
+          "labelEn": "Low-quality data removal",
+          "labelFa": "حذف داده کم‌کیفیت",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -124,9 +712,45 @@
       "labelEn": "NLP",
       "labelFa": "NLP",
       "types": [
-        { "value": "nlp.language_detection", "labelEn": "Language detection", "labelFa": "تشخیص زبان", "inputMode": "text" },
-        { "value": "nlp.text_classification", "labelEn": "Text classification", "labelFa": "طبقه‌بندی متن", "inputMode": "text" },
-        { "value": "nlp.spam_fraud_classification", "labelEn": "Spam / fraud classification", "labelFa": "طبقه‌بندی اسپم / تقلب", "inputMode": "text" }
+        {
+          "value": "nlp.language_detection",
+          "labelEn": "Language detection",
+          "labelFa": "تشخیص زبان",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "nlp.text_classification",
+          "labelEn": "Text classification",
+          "labelFa": "طبقه‌بندی متن",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "nlp.spam_fraud_classification",
+          "labelEn": "Spam / fraud classification",
+          "labelFa": "طبقه‌بندی اسپم / تقلب",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     },
     {
@@ -134,10 +758,58 @@
       "labelEn": "ML operations",
       "labelFa": "عملیات ML",
       "types": [
-        { "value": "ml.active_learning_prelabel", "labelEn": "Active learning pre-labeling", "labelFa": "پیش‌برچسب‌گذاری active learning", "inputMode": "flex" },
-        { "value": "ml.consensus_label_validation", "labelEn": "Consensus-based label validation", "labelFa": "اعتبارسنجی برچسب مبتنی بر consensus", "inputMode": "flex" },
-        { "value": "ml.human_verification_quality", "labelEn": "Human-verification quality check", "labelFa": "بررسی کیفیت human verification", "inputMode": "flex" },
-        { "value": "ml.bot_abuse_risk", "labelEn": "Bot / abuse risk signal validation", "labelFa": "اعتبارسنجی سیگنال ریسک bot / abuse", "inputMode": "text" }
+        {
+          "value": "ml.active_learning_prelabel",
+          "labelEn": "Active learning pre-labeling",
+          "labelFa": "پیش‌برچسب‌گذاری active learning",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "ml.consensus_label_validation",
+          "labelEn": "Consensus-based label validation",
+          "labelFa": "اعتبارسنجی برچسب مبتنی بر consensus",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "ml.human_verification_quality",
+          "labelEn": "Human-verification quality check",
+          "labelFa": "بررسی کیفیت human verification",
+          "inputMode": "flex",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/flex-input@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "ml.bot_abuse_risk",
+          "labelEn": "Bot / abuse risk signal validation",
+          "labelFa": "اعتبارسنجی سیگنال ریسک bot / abuse",
+          "inputMode": "text",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        }
       ]
     }
   ]

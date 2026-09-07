@@ -6,6 +6,7 @@ import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/prompt_templates.dart';
 import '../../inference/llm/qwen_task_processor.dart';
+import '../../runtime/checkpoint_manager.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../inference/ocr/ocr_text_normalizer.dart';
 import '../../telemetry/worker_task_metrics.dart';
@@ -24,6 +25,9 @@ class DocumentExtractHandler with OcrPipelineMixin implements TaskHandler {
     required String signingKey,
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
+    String? assignmentId,
+    int? fenceToken,
+    Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
   }) async {
     final ocr = await runOcr(request, ocrEngine, metrics);
     final llmStart = DateTime.now();
@@ -76,6 +80,9 @@ class DocumentClassifyHandler with OcrPipelineMixin implements TaskHandler {
     required String signingKey,
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
+    String? assignmentId,
+    int? fenceToken,
+    Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
   }) async {
     final ocr = await runOcr(request, ocrEngine, metrics);
     final labels =
@@ -116,13 +123,18 @@ class DocumentSummarizeHandler with OcrPipelineMixin implements TaskHandler {
     required String signingKey,
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
+    String? assignmentId,
+    int? fenceToken,
+    Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
   }) async {
     final ocr = await runOcr(request, ocrEngine, metrics);
     final llmStart = DateTime.now();
-    final prompt = PromptTemplates.documentSummarize(ocrText: ocr.rawText);
-    final data = await qwenProcessor.runJsonTask(
-      prompt: prompt,
+    final data = await qwenProcessor.runSummarizeJsonTask(
+      inputText: ocr.rawText,
       signingKey: signingKey,
+      assignmentId: assignmentId,
+      fenceToken: fenceToken,
+      onChunkCheckpoint: onChunkCheckpoint,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
     return WorkerTaskResult(
@@ -151,6 +163,9 @@ class TextSummarizeHandler implements TaskHandler {
     required String signingKey,
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
+    String? assignmentId,
+    int? fenceToken,
+    Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
   }) async {
     final inputText = request.input.text;
 
@@ -174,13 +189,12 @@ class TextSummarizeHandler implements TaskHandler {
 
     final llmStart = DateTime.now();
 
-    // فعلاً همان template خلاصه‌سازی موجود را reuse می‌کنیم.
-    // این template صرفاً متن می‌گیرد و نیاز واقعی به OCR ندارد.
-    final prompt = PromptTemplates.documentSummarize(ocrText: inputText);
-
-    final data = await qwenProcessor.runJsonTask(
-      prompt: prompt,
+    final data = await qwenProcessor.runSummarizeJsonTask(
+      inputText: inputText,
       signingKey: signingKey,
+      assignmentId: assignmentId,
+      fenceToken: fenceToken,
+      onChunkCheckpoint: onChunkCheckpoint,
     );
 
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
@@ -207,6 +221,9 @@ class TextClassifyHandler implements TaskHandler {
     required String signingKey,
     required WorkerTaskMetrics metrics,
     bool Function()? isCancelled,
+    String? assignmentId,
+    int? fenceToken,
+    Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
   }) async {
     final contract = TaskContractCatalog.forType(request.sourceTaskType);
     final labels = request.options.allowedLabels ?? const <String>[];

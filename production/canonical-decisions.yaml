@@ -133,7 +133,14 @@ spec:
     rtoMinutes: 60
   assignmentProtocol:
     mode: server_auto_lease
+    architectureDocument: docs/EDGE-MINT-TARGET-ARCHITECTURE-v2.md
+    architectureVersion: '2.0'
+    supersedesDocument: docs/EDGE-MINT-TARGET-ARCHITECTURE-v1.md
+    v1DocumentDigestSha256: 1f129782f6f8efc1274c14b3654b6cde5aefacfa7af82aa9da0b423ccf60abe5
     workerOptInAuthority: current_consent_and_available_status
+    defaultContributionPercent: 30
+    maximumContributionPercent: 50
+    performanceModeRequiresExplicitOptIn: true
     perTaskWorkerConfirmation: false
     perTaskAcceptRejectApiAllowed: false
     deliveryAcknowledgementMeaning: transport_receipt_only

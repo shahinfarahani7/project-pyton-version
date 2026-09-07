@@ -1,0 +1,12 @@
+{
+  "taskId": "P4-T03",
+  "completedAt": "2026-09-02",
+  "summary": "Resource envelope fit integrated: budget exceeded workers hard-filtered; headroom lowers predictedLatency feature for ranking.",
+  "artifacts": {
+    "hardFilter": "src/backend/edgemint/routing/hard_eligibility.py",
+    "scoring": "src/backend/edgemint/routing/scoring_features.py",
+    "budget": "src/backend/edgemint/routing/resource_budget.py",
+    "tests": "src/backend/tests/routing/test_resource_fit_scoring.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_resource_fit_scoring.py -q (3 passed)"
+}

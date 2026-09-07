@@ -1,0 +1,22 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: vision-analyze
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Lightweight vision classification envelope.
+spec:
+  taskType: image.classify
+  runtimeClass: image_classifier
+  requiredModelIds: []
+  cpuUnits: 20
+  memoryReservationBytes: 536870912
+  storageReservationBytes: 52428800
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 60000
+  maximumParallelPerDevice: 2
+  exclusiveGroup: vision_inference

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'encrypted_store.dart';
 import 'runtime_exceptions.dart';
+import 'model_artifact_verifier.dart';
 
 enum InferenceBackend { onnx, liteRt, stub }
 
@@ -58,14 +59,10 @@ class StubInferenceAdapter implements InferenceAdapter {
 
   @override
   Future<void> loadVerified(ModelArtifact artifact, {required String signingKey}) async {
-    final digest = sha256Hex(artifact.bytes);
-    if (digest != artifact.digestSha256) {
-      throw ModelIntegrityException('Model digest mismatch');
-    }
-    final signature = sha256HexString('${artifact.digestSha256}:$signingKey');
-    if (signature != artifact.signatureSha256) {
-      throw ModelIntegrityException('Model signature invalid');
-    }
+    const ModelArtifactVerifier().verifyOrThrow(
+      artifact: artifact,
+      signingKey: signingKey,
+    );
     _loaded = artifact;
   }
 

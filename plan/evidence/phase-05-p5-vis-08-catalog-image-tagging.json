@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-08",
+  "taskTypeId": "catalog.image_tagging",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/catalog-image-tagging.yaml",
+  "goldenFixture": "tests/golden/fixtures/catalog.image_tagging.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "taskId": "P8-A18",
+  "auditId": "A18",
+  "acceptanceCase": "T18",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "48",
+    "49",
+    "51",
+    "58"
+  ],
+  "generatedAt": "2026-09-06T08:35:40.808533+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "semanticQualityPolicyDsl": "dsl/policies/validation/semantic-quality-v1.yaml",
+    "semanticQualityModule": "src/backend/edgemint/results/semantic_quality.py",
+    "resultValidator": "src/backend/edgemint/results/validator.py",
+    "qualityEscalation": "src/backend/edgemint/routing/quality_escalation.py",
+    "backendTests": "src/backend/tests/results/test_semantic_quality_validation.py",
+    "qualityEscalationTests": "src/backend/tests/routing/test_quality_escalation.py",
+    "p5Cross01Evidence": "plan/evidence/phase-05-p5-cross-01-result-validation-framework.json"
+  },
+  "t18Scenario": {
+    "title": "Valid JSON wrong semantics; self-reported confidence; quality vs capacity escalation",
+    "schemaDistinctFromSemanticQuality": true,
+    "wrongContentRejected": true,
+    "selfReportedConfidenceNotSufficient": false,
+    "qualityEscalationDistinctFromCapacity": true,
+    "goldenHarnessExtended": "NOT_RUN"
+  },
+  "gaps": [
+    "T18 full golden harness wrong-output matrix NOT_RUN",
+    "Vision geometry golden fixtures for all families NOT_RUN",
+    "Production verification path task_input wiring NOT_RUN"
+  ],
+  "errors": []
+}

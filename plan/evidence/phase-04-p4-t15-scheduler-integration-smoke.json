@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "test": "scheduler-integration-smoke",
+  "workerCount": 3,
+  "taskTypeCount": 10,
+  "assignments": [
+    {
+      "taskType": "text.summarize",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "text.classify",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "document.extract",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "document.ocr",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "vision.analyze",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "image.segmentation",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "flex.input",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "document.summarize",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "text.summarize.map_reduce",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    },
+    {
+      "taskType": "text.summarize.direct",
+      "winnerWorkerId": "wrk_alpha",
+      "winnerScore": 10000
+    }
+  ],
+  "queueMetrics": [
+    {
+      "workspaceId": "ws_1",
+      "deficitUnits": 2,
+      "waitingTaskCount": 1,
+      "maxWaitingSeconds": 120.0,
+      "starvedTaskCount": 0
+    },
+    {
+      "workspaceId": "ws_2",
+      "deficitUnits": 1,
+      "waitingTaskCount": 1,
+      "maxWaitingSeconds": 45.0,
+      "starvedTaskCount": 0
+    }
+  ],
+  "retrySamples": {
+    "RESOURCE_PRESSURE": "immediate_other_worker",
+    "RESULT_VALIDATION_FAILED": "stronger_worker",
+    "TASK_CANCELLED": "no_retry"
+  },
+  "cloudFallback": {
+    "permitted": true,
+    "reason": "edge_wait_exceeded"
+  },
+  "verificationEscalation": "high",
+  "policyHashStable": true
+}

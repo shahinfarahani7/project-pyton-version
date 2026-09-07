@@ -1,0 +1,23 @@
+{
+  "taskId": "P2-T17",
+  "completedAt": "2026-09-02",
+  "schema": "dsl/schemas/exclusivegrouppolicy.schema.json",
+  "activePolicy": "dsl/policies/scheduling/production-exclusive-groups-v1.yaml",
+  "exclusiveGroups": [
+    "llm_inference",
+    "vlm_inference",
+    "ocr_inference",
+    "vision_inference",
+    "document_pipeline",
+    "embedding_inference",
+    "network_io",
+    "system"
+  ],
+  "keyCrossGroupRules": {
+    "llm_inference+ocr_inference": { "concurrentAllowed": false, "certificationRequired": true },
+    "llm_inference+vlm_inference": { "concurrentAllowed": false }
+  },
+  "validator": "tools/validate_dsl.py",
+  "tests": "src/backend/tests/dev/test_exclusive_group_policy_dsl.py",
+  "architectureSections": ["29", "30", "31"]
+}

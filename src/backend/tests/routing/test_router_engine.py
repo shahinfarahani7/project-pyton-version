@@ -44,7 +44,7 @@ def test_evaluate_rejects_ineligible_worker() -> None:
     )
     assert result["eligible"] is False
     assert "TRUST_TOO_LOW" in result["ineligibilityReasons"]
-    assert result["score"] == 2150
+    assert result["score"] == 0
 
 
 def test_stale_fence_rejected() -> None:

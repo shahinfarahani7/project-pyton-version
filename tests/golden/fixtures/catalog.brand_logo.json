@@ -1,0 +1,32 @@
+{
+  "taskType": "catalog.brand_logo",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for catalog.brand_logo",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_catalog_brand_logo",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "detected": true,
+        "brands": [
+          "ACME"
+        ],
+        "confidence": 0.87,
+        "evidence": [
+          "logo on packaging"
+        ]
+      },
+      "visionRuntimeClass": "catalog_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

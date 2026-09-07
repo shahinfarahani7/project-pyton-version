@@ -1,0 +1,11 @@
+{
+  "taskId": "P5-GAP-07",
+  "taskTypeId": "catalog.duplicate_image",
+  "completedAt": "2026-09-02",
+  "classification": "lightweight vision / embedding_runtime",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/catalog-duplicate-image.yaml",
+  "goldenFixture": "tests/golden/fixtures/catalog.duplicate_image.json",
+  "validatorModule": "src/backend/edgemint/results/gap_validators.py",
+  "tests": "src/backend/tests/results/test_gap_validators.py"
+}

@@ -1,0 +1,9 @@
+{
+  "taskId": "P5-QWEN-21",
+  "taskTypeId": "document.extract",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/document-extract.yaml",
+  "goldenFixture": "tests/golden/fixtures/document.extract.json",
+  "tests": "src/backend/tests/results/test_extract_validators.py",
+  "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#DocumentExtractHandler"
+}

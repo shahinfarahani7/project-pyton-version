@@ -12,6 +12,9 @@ def main() -> int:
     assignments = (ROOT / "src/backend/edgemint/workers/assignments.py").read_text()
     registry = (ROOT / "src/backend/edgemint/services/worker_registry.py").read_text()
     router = (ROOT / "src/backend/edgemint/routing/service.py").read_text()
+    atomic_assignment = (ROOT / "src/backend/edgemint/routing/atomic_assignment.py").read_text()
+    atomic_sql = (ROOT / "database/sql/019_atomic_assignment_transaction.sql").read_text()
+    reservation_sql = (ROOT / "database/sql/018_worker_resource_reservations.sql").read_text()
     sql = (ROOT / "database/sql/008_auto_assignment_protocol.sql").read_text()
     migration = (ROOT / "database/sql/012_assignment_lease_credential_bootstrap.sql").read_text()
     worker_client = (ROOT / "src/apps/worker/lib/api/worker_api_client.dart").read_text()
@@ -43,6 +46,29 @@ def main() -> int:
         "no_accept_reject": all(
             token not in (assignments + registry).lower()
             for token in ("acceptassignment", "rejectassignment", "assignmentoffer")
+        ),
+        "atomic_assignment_sql_function": (
+            "atomic_acquire_assignment_with_reservation" in atomic_sql
+            and "create_worker_resource_reservation" in atomic_sql
+            and "acquire_assignment_lease" in atomic_sql
+        ),
+        "atomic_assignment_coordinator": (
+            "ATOMIC_ASSIGNMENT_TRANSACTION_STEPS" in atomic_assignment
+            and "atomic_acquire_assignment_with_reservation" in atomic_assignment
+        ),
+        "router_uses_atomic_path_when_reservations_enabled": (
+            "worker_resource_reservations_enabled" in router
+            and "atomic_assignment.acquire_with_reservation" in router
+        ),
+        "scheduler_stack_integration": (
+            "assign_attempt_with_scheduler_stack" in router
+            and "rank_workers" in router
+            and "routing_audit.record_decision" in router
+            and "atomic_assignment.acquire_with_reservation" in router
+        ),
+        "reservation_lifecycle_sql_present": (
+            "create_worker_resource_reservation" in reservation_sql
+            and "release_worker_resource_reservation_by_assignment" in reservation_sql
         ),
     }
     failed = [name for name, passed in checks.items() if not passed]

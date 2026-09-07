@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.edgemint.io/workerexecutioncostfeedback.schema.json",
+  "title": "WorkerExecutionCostFeedback",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["predicted", "observed", "variance"],
+  "properties": {
+    "predicted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cpuUnits", "peakMemoryBytes", "durationMs", "energyClass"],
+      "properties": {
+        "cpuUnits": { "type": "integer", "minimum": 1 },
+        "peakMemoryBytes": { "type": "integer", "minimum": 1 },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "energyClass": { "type": "string", "enum": ["low", "medium", "high"] },
+        "runtimeClass": { "type": "string", "minLength": 1 },
+        "calibrationFactorBps": { "type": "integer", "minimum": 5000, "maximum": 20000 }
+      }
+    },
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cpuAverageBps", "peakMemoryBytes", "durationMs", "thermalDeltaBps"],
+      "properties": {
+        "cpuAverageBps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "peakMemoryBytes": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "thermalDeltaBps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "throughputPerSec": { "type": "number", "minimum": 0 },
+        "throughputUnit": { "type": "string", "enum": ["tokens", "pages", "inferences"] }
+      }
+    },
+    "variance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["durationMs", "peakMemoryBytes", "durationRatioMilli"],
+      "properties": {
+        "durationMs": { "type": "integer" },
+        "peakMemoryBytes": { "type": "integer" },
+        "durationRatioMilli": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

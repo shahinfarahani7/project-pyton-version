@@ -1,0 +1,27 @@
+{
+  "taskType": "document.extract",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for document.extract (Qwen OCR + extract)",
+  "input": {
+    "assetRef": "file_golden_extract_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_document_extract_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "ACME Invoice. TOTAL 99.16 EUR.",
+      "ocrLines": [
+        {"text": "ACME Invoice. TOTAL 99.16 EUR.", "confidence": 0.93, "box": [0, 0, 1, 1]}
+      ],
+      "data": {
+        "vendor": "ACME",
+        "total": 99.16,
+        "currency": "EUR"
+      }
+    },
+    "metrics": {"ocrMs": 900, "llmMs": 1100}
+  },
+  "minimumConfidenceMilli": 960
+}

@@ -1,0 +1,226 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/userresourcepolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "title": "EdgeMint UserResourcePolicy",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "UserResourcePolicy"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["name", "version", "status", "owners"],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "owners": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "evaluation", "active", "deprecated", "retired", "blocked"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "spec": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "resourcePolicy",
+        "contributionModes",
+        "runtimeLimits",
+        "assignmentLimits",
+        "consentChangeBehavior"
+      ],
+      "properties": {
+        "resourcePolicy": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "defaultApprovedPercent",
+            "maximumApprovedPercent",
+            "safetyReservePercent",
+            "heartbeatMaximumAgeSeconds",
+            "overbookingAllowed"
+          ],
+          "properties": {
+            "defaultApprovedPercent": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "maximumApprovedPercent": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "safetyReservePercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "heartbeatMaximumAgeSeconds": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "overbookingAllowed": {
+              "type": "boolean"
+            }
+          }
+        },
+        "contributionModes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["id", "label", "approvedPercent", "requiresExplicitOptIn"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approvedPercent": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "requiresExplicitOptIn": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "runtimeLimits": {
+          "type": "object",
+          "additionalProperties": {
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+              "maximumSessionsPerDevice": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "defaultMaximumSessionsPerDevice": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "certifiedMaximumSessionsPerDevice": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "exclusive": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "assignmentLimits": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": ["absoluteMaximumPerDevice"],
+          "properties": {
+            "absoluteMaximumPerDevice": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "consentChangeBehavior": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "increaseAppliesToNewReservationsOnly",
+            "decreaseStopsNewStagesAboveLimit",
+            "revocationStopsNewWorkImmediately"
+          ],
+          "properties": {
+            "increaseAppliesToNewReservationsOnly": {
+              "type": "boolean"
+            },
+            "decreaseStopsNewStagesAboveLimit": {
+              "type": "boolean"
+            },
+            "revocationStopsNewWorkImmediately": {
+              "type": "boolean"
+            }
+          }
+        },
+        "contributionRequiresExplicitOptIn": {
+          "type": "boolean"
+        },
+        "contributionEnabledByDefault": {
+          "type": "boolean"
+        },
+        "cpuEnforcement": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "measurementWindowMs",
+            "coveredProcessScope",
+            "toleratedBurstBps",
+            "controlStopReactionBoundMs",
+            "enforcementMechanism"
+          ],
+          "properties": {
+            "measurementWindowMs": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "coveredProcessScope": {
+              "type": "string",
+              "minLength": 1
+            },
+            "toleratedBurstBps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "controlStopReactionBoundMs": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "enforcementMechanism": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

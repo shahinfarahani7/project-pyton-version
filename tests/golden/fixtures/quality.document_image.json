@@ -1,0 +1,29 @@
+{
+  "taskType": "quality.document_image",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for quality.document_image",
+  "input": {
+    "assetRef": "file_golden_quality_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_quality_document_image",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "score": 0.78,
+        "brightness": 182.0,
+        "contrast": 41.2,
+        "sharpness": 210.5,
+        "clippedRatio": 0.02,
+        "acceptable": true
+      },
+      "visionRuntimeClass": "image_classifier_runtime"
+    },
+    "metrics": {
+      "visionMs": 120
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

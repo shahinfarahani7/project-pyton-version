@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "taskId": "P8-A23",
+  "auditId": "A23",
+  "acceptanceCase": "T23",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "0.1",
+    "3",
+    "65",
+    "66",
+    "67",
+    "68",
+    "69",
+    "70",
+    "73",
+    "74",
+    "75"
+  ],
+  "generatedAt": "2026-09-06T09:20:24.486631+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "policyReadinessGateDsl": "dsl/policies/governance/policy-readiness-gate-v1.yaml",
+    "policyReadinessRecordSchema": "dsl/schemas/policyreadinessrecord.schema.json",
+    "policyReadinessGateModule": "src/backend/edgemint/governance/policy_readiness_gate.py",
+    "policyReadinessSql": "database/sql/036_policy_readiness_records.sql",
+    "runbook": "docs/08-sre/runbooks/RB-026-policy-readiness-mixed-version-gate.md",
+    "backendTests": "src/backend/tests/governance/test_policy_readiness_gate.py",
+    "p8T04Evidence": "plan/evidence/phase-08-p8-t04-policy-readiness-gap.json",
+    "p8T05Evidence": "plan/evidence/phase-08-p8-t05-current-state-register.json",
+    "analyzePolicyReadinessTool": "tools/analyze_v2_policy_readiness.py",
+    "productionGateTool": "tools/production_gate.py"
+  },
+  "t23Scenario": {
+    "title": "Missing policy/evidence gate; mixed-version rollout; storage restore",
+    "activationGateWired": true,
+    "policyReadinessRecordSchema": true,
+    "mixedVersionRolloutWired": true,
+    "storageRestoreDedupWired": true,
+    "backendTests": "passed",
+    "integrationHarness": "NOT_RUN",
+    "productionActivationGate": "CLOSED"
+  },
+  "gaps": [
+    "T23 mixed-version rollout integration harness NOT_RUN",
+    "Storage restore dedup integration harness NOT_RUN",
+    "All \u00a773 policy areas remain PARTIAL per P8-T04"
+  ],
+  "errors": []
+}

@@ -1,0 +1,27 @@
+{
+  "taskId": "P3-T20",
+  "completedAt": "2026-09-02",
+  "summary": "Section 2.3 forbidden local scheduler components absent from worker lib/; only negative-test string references in test files.",
+  "grepScope": "src/apps/worker/",
+  "forbiddenComponents": [
+    "LocalTaskSelector",
+    "LocalRetryOrchestrator",
+    "LocalReassignmentManager",
+    "LocalCloudFallbackDecision"
+  ],
+  "results": {
+    "lib": {
+      "matches": 0,
+      "paths": []
+    },
+    "test": {
+      "matches": 4,
+      "paths": [
+        "src/apps/worker/test/runtime/runtime_safety_controller_test.dart"
+      ],
+      "note": "String literals in negative forbidden-component regression test only"
+    }
+  },
+  "schedulingAuthority": "Worker uses server GET /assignments:next via AssignmentCoordinator.pollAssignment; no local task selection.",
+  "auditMatrix": "plan/audit-matrix.md Section 2.3 table updated 2026-09-02"
+}

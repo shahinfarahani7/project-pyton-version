@@ -44,6 +44,17 @@ spec:
         - failed
       data:
         type: object
+        required:
+        - vendor
+        - total
+        - currency
+        properties:
+          vendor:
+            type: string
+          total:
+            type: number
+          currency:
+            type: string
       metrics:
         type: object
     additionalProperties: false

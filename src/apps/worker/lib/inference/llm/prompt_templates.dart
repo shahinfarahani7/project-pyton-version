@@ -56,6 +56,42 @@ $ocrText
 /no_think
 ''';
 
+  static String summarizeMapChunk({
+    required String chunkText,
+    required int chunkIndex,
+    required int totalChunks,
+    required String chunkId,
+  }) =>
+      '''
+Summarize only this chunk of a longer document.
+Return only valid JSON:
+{"summary":"...","keyPoints":["..."],"missingOrUnclear":["..."]}
+Do not add facts that are not present in the chunk.
+Chunk metadata: chunkIndex=$chunkIndex totalChunks=$totalChunks chunkId=$chunkId
+
+Chunk text:
+---
+$chunkText
+---
+/no_think
+''';
+
+  static String summarizeReduce({
+    required String partialSummariesJson,
+    required int chunkCount,
+  }) =>
+      '''
+Combine the partial summaries into one final summary.
+Return only valid JSON:
+{"summary":"...","keyPoints":["..."],"missingOrUnclear":["..."]}
+Merge overlapping key points, preserve factual coverage, and do not invent facts.
+Partial summaries from $chunkCount chunks:
+---
+$partialSummariesJson
+---
+/no_think
+''';
+
   static String textClassify({
     required String inputText,
     required String allowedLabelsJson,

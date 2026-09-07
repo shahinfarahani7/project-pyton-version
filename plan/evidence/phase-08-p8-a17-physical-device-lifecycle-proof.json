@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "taskId": "P8-A17",
+  "auditId": "A17",
+  "acceptanceCase": "T17",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "24",
+    "32",
+    "39",
+    "65"
+  ],
+  "generatedAt": "2026-09-06T08:34:06.518875+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "lifecyclePolicyDsl": "dsl/policies/worker/android-process-lifecycle-v1.yaml",
+    "physicalDeviceProofModule": "src/backend/edgemint/workers/physical_device_proof.py",
+    "processLifecycleCoordinator": "src/apps/worker/lib/runtime/process_lifecycle_coordinator.dart",
+    "assignmentCoordinator": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "workerAppController": "src/apps/worker/lib/worker_app_controller.dart",
+    "workerMain": "src/apps/worker/lib/main.dart",
+    "foregroundService": "src/apps/worker/android/app/src/main/kotlin/io/edgemint/edgemint_worker/ExecutionForegroundService.kt",
+    "androidManifest": "src/apps/worker/android/app/src/main/AndroidManifest.xml",
+    "runbook": "docs/08-sre/runbooks/RB-023-physical-device-lifecycle-proof.md",
+    "backendTests": "src/backend/tests/workers/test_physical_device_lifecycle.py",
+    "coordinatorTests": "src/apps/worker/test/runtime/process_lifecycle_coordinator_test.dart",
+    "p7LoadEvidence": "plan/evidence/phase-07-p7-chaos-20-workers.json"
+  },
+  "t17Scenario": {
+    "title": "Background/suspend/process death/reboot/OS pressure on physical devices",
+    "platformProfileDefined": true,
+    "freshGrantReconciliationGuard": true,
+    "foregroundServiceDeclared": true,
+    "appLifecycleObserverWired": true,
+    "workerTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "physicalDeviceHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T17 background FGS physical-device proof NOT_RUN",
+    "T17 app suspend / process death / reboot matrix NOT_RUN",
+    "T17 OS memory pressure physical-device proof NOT_RUN",
+    "Native handle counter idle soak NOT_RUN"
+  ],
+  "errors": []
+}

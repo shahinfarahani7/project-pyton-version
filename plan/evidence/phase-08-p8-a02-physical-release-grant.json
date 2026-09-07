@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "taskId": "P8-A02",
+  "auditId": "A02",
+  "acceptanceCase": "T02",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "17",
+    "18",
+    "19",
+    "20",
+    "22",
+    "23",
+    "40",
+    "47"
+  ],
+  "generatedAt": "2026-09-06T07:32:28.334504+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sql": "database/sql/026_worker_physical_release.sql",
+    "service": "src/backend/edgemint/routing/physical_release.py",
+    "reservationWiring": "src/backend/edgemint/routing/resource_reservations.py",
+    "exclusiveGroupWiring": "src/backend/edgemint/routing/exclusive_groups.py",
+    "assignmentWiring": "src/backend/edgemint/workers/assignments.py",
+    "workerEndpoint": "src/backend/edgemint/services/worker_registry.py",
+    "workerTracker": "src/apps/worker/lib/runtime/execution_stop_tracker.dart",
+    "backendTests": "src/backend/tests/routing/test_physical_release.py",
+    "workerTests": "src/apps/worker/test/runtime/execution_stop_tracker_test.dart",
+    "phase7StaleFence": "plan/evidence/phase-07-p7-chaos-stale-fence-writes.json",
+    "phase7LeaseExpiry": "plan/evidence/phase-07-p7-chaos-lease-expiry.json"
+  },
+  "upstreamEvidence": [
+    "plan/evidence/phase-07-p7-chaos-stale-fence-writes.json",
+    "plan/evidence/phase-07-p7-chaos-lease-expiry.json"
+  ],
+  "t02Scenario": {
+    "title": "Partition, lease expiry, suspended Worker, uninterruptible Native",
+    "staleFenceUnitProof": true,
+    "leaseExpiryUnitProof": true,
+    "physicalReleaseStateModel": true,
+    "workerStopTracker": false,
+    "workerStopTrackerTestExecution": "SKIPPED_NETWORK",
+    "integrationHarness": "NOT_RUN",
+    "nativeUninterruptibleProof": "NOT_RUN"
+  },
+  "gaps": [
+    "T02 full integration harness NOT_RUN",
+    "Native uninterruptible operation physical hold proof NOT_RUN",
+    "OpenAPI contract sync for :confirmStop pending"
+  ],
+  "errors": [
+    "flutter test skipped: pub.dev/network or flutter CLI unavailable; execution_stop_tracker_test.dart present but not executed"
+  ]
+}

@@ -1,0 +1,50 @@
+version: "1.0.0"
+name: semantic-quality-v1
+description: >
+  Contract-specific semantic quality validation (Architecture v2 §48–51, A18/T18).
+  Schema correctness, cryptographic integrity and semantic quality are distinct checks.
+  Self-reported model/worker confidence is never sufficient proof alone.
+
+architectureSections: ["48", "49", "51", "58"]
+
+validationLayers:
+  - schema
+  - business_rules
+  - semantic_quality
+
+semanticQuality:
+  rejectsSelfReportedConfidenceAsSoleProof: true
+  requiresTaskSpecificTruthCriteria: true
+  failureCode: SEMANTIC_QUALITY_FAILED
+
+escalation:
+  qualityFailuresBumpVerificationTier: true
+  capacityFailuresDoNotSubstituteForQuality: true
+  qualityFailureCodes:
+    - RESULT_VALIDATION_FAILED
+    - SEMANTIC_QUALITY_FAILED
+    - OCR_EMPTY_RESULT
+    - VISION_LOW_CONFIDENCE
+    - RESULT_LOW_CONFIDENCE
+    - RESULT_EMPTY
+    - GOLDEN_VALIDATION_FAILED
+  capacityFailureCodes:
+    - MODEL_UNAVAILABLE
+    - RESOURCE_EXHAUSTED
+    - WORKER_OFFLINE
+    - LEASE_EXPIRED
+
+t18Scenarios:
+  - id: valid_json_wrong_content
+    description: Schema-valid JSON with wrong amount/content vs task input ground truth
+  - id: wrong_geometry
+    description: Vision/detection output with invalid bbox or out-of-vocabulary label
+  - id: self_reported_high_confidence
+    description: High metrics.confidence rejected when semantic truth criteria fail
+  - id: faster_identical_model
+    description: Capacity/latency improvements do not bypass semantic quality gates
+
+referenceTaskTypes:
+  - extract.amount
+  - image.classify
+  - document.extract

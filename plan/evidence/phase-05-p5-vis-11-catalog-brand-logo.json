@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-11",
+  "taskTypeId": "catalog.brand_logo",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/catalog-brand-logo.yaml",
+  "goldenFixture": "tests/golden/fixtures/catalog.brand_logo.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

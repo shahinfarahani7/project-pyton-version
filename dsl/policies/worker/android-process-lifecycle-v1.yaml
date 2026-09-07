@@ -1,0 +1,73 @@
+version: "1.0.0"
+name: android-process-lifecycle-v1
+description: >
+  Android platform process lifecycle profile (Architecture v2 §24, §32, §39, A17/T17).
+  Defines foreground execution, suspension, process death/reboot reconciliation and
+  physical-device certification matrix requirements.
+
+platform: android
+architectureSections: ["24", "32", "39", "65"]
+
+foregroundExecution:
+  serviceClass: ExecutionForegroundService
+  foregroundServiceType: dataSync
+  userVisibleNotification: required
+  startOnAssignment: true
+  stopOnAssignmentCleanup: true
+
+processLifetime:
+  modelHandleValidOnlyWithinHealthyProcess: true
+  processDeathInvalidatesNativeHandles: true
+  rebootInvalidatesNativeHandles: true
+  reloadAfterFreshAuthorizedStartupExpected: true
+
+reconciliation:
+  requiresFreshServerAuthorizationAfter:
+    - process_restart
+    - process_death
+    - device_reboot
+    - runtime_generation_change
+  localCheckpointResumeBlockedUntilFreshGrant: true
+  staleNativeSessionMustNotInherit: true
+
+appLifecycleMapping:
+  resumed: foreground
+  inactive: background
+  paused: suspended
+  detached: process_terminated
+
+physicalDeviceMatrix:
+  emulatorAloneCannotCertifyProduction: true
+  representativeDevices:
+    - tier: T3
+      abi: arm64-v8a
+      minApi: 29
+    - tier: T4
+      abi: arm64-v8a
+      minApi: 33
+  requiredScenarios:
+    - id: background_fgs
+      title: Assignment runs under visible foreground service while app backgrounded
+      requiresPhysicalDevice: true
+    - id: app_suspend
+      title: Platform suspension invalidates in-flight native session; safe cleanup
+      requiresPhysicalDevice: true
+    - id: process_death
+      title: Process kill drops native handles; no stale resume without fresh grant
+      requiresPhysicalDevice: true
+    - id: device_reboot
+      title: Cold boot reconciles installed artifact vs invalidated runtime generation
+      requiresPhysicalDevice: true
+    - id: os_memory_pressure
+      title: OS memory pressure triggers lifecycle shutdown without corruption
+      requiresPhysicalDevice: true
+    - id: emulator_smoke_comparison
+      title: Emulator smoke only; records divergence from physical baseline
+      requiresPhysicalDevice: false
+      emulatorSufficient: true
+
+productionProof:
+  complementsP7LoadSim: true
+  requiresNativeHandleCounters: true
+  requiresIdleSoak: true
+  threeShortTasksIsSmokeOnly: true

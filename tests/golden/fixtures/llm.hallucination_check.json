@@ -1,0 +1,23 @@
+{
+  "taskType": "llm.hallucination_check",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.hallucination_check",
+  "input": {
+    "inlineText": "reference=Paris is in France. answer=Paris is in France and has 30 million people.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_hallucination_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "hallucinated": true,
+        "riskScore": 0.86,
+        "unsupportedClaims": ["Paris has 30 million people"]
+      }
+    },
+    "metrics": {"llmMs": 700}
+  },
+  "minimumConfidenceMilli": 960
+}

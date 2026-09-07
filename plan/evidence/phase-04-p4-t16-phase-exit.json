@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T16",
+  "completedAt": "2026-09-02",
+  "summary": "Phase 4 scheduler upgrade complete; closure checklist scheduling items updated with evidence paths.",
+  "artifacts": {
+    "closureChecklist": "plan/closure-checklist.md",
+    "phaseFile": "plan/phases/phase-04-scheduler-upgrade.md",
+    "fullRoutingSuite": "src/backend/tests/routing/ (131 passed)"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/ -q (131 passed)"
+}

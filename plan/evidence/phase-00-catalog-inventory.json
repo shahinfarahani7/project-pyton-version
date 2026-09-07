@@ -1,0 +1,394 @@
+[
+  {
+    "taskTypeId": "document.ocr",
+    "inputMode": "document",
+    "category": "core",
+    "executionPath": "worker_pipeline",
+    "detail": "ocr.extract_text.v1"
+  },
+  {
+    "taskTypeId": "document.extract",
+    "inputMode": "document",
+    "category": "core",
+    "executionPath": "worker_pipeline",
+    "detail": "document.extract.v1"
+  },
+  {
+    "taskTypeId": "text.summarize",
+    "inputMode": "text",
+    "category": "core",
+    "executionPath": "worker_pipeline",
+    "detail": "text.summarize.v1"
+  },
+  {
+    "taskTypeId": "text.classify",
+    "inputMode": "text",
+    "category": "core",
+    "executionPath": "worker_pipeline",
+    "detail": "text.classify.v1"
+  },
+  {
+    "taskTypeId": "image.classify",
+    "inputMode": "image",
+    "category": "core",
+    "executionPath": "worker_pipeline",
+    "detail": "vision.analyze.v1"
+  },
+  {
+    "taskTypeId": "image.remove_background",
+    "inputMode": "image",
+    "category": "core",
+    "executionPath": "worker_pipeline",
+    "detail": "image.remove_background.v1"
+  },
+  {
+    "taskTypeId": "safety.nsfw_detection",
+    "inputMode": "image",
+    "category": "safety",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "safety.violence_detection",
+    "inputMode": "image",
+    "category": "safety",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "safety.weapon_detection",
+    "inputMode": "image",
+    "category": "safety",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "safety.unsafe_image",
+    "inputMode": "image",
+    "category": "safety",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "moderation.profile_image",
+    "inputMode": "image",
+    "category": "safety",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "moderation.generated_image",
+    "inputMode": "image",
+    "category": "safety",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "moderation.prompt_safety",
+    "inputMode": "text",
+    "category": "textModeration",
+    "executionPath": "missing_handler",
+    "detail": "text_moderation"
+  },
+  {
+    "taskTypeId": "moderation.text",
+    "inputMode": "text",
+    "category": "textModeration",
+    "executionPath": "missing_handler",
+    "detail": "text_moderation"
+  },
+  {
+    "taskTypeId": "moderation.profanity",
+    "inputMode": "text",
+    "category": "textModeration",
+    "executionPath": "missing_handler",
+    "detail": "text_moderation"
+  },
+  {
+    "taskTypeId": "moderation.spam_comment",
+    "inputMode": "text",
+    "category": "textModeration",
+    "executionPath": "missing_handler",
+    "detail": "text_moderation"
+  },
+  {
+    "taskTypeId": "ocr.receipt",
+    "inputMode": "document",
+    "category": "ocr",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "ocr.invoice",
+    "inputMode": "document",
+    "category": "ocr",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "ocr.simple_form",
+    "inputMode": "document",
+    "category": "ocr",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "ocr.product_label",
+    "inputMode": "document",
+    "category": "ocr",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "extract.amount",
+    "inputMode": "document",
+    "category": "extract",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "extract.date",
+    "inputMode": "document",
+    "category": "extract",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "extract.order_number",
+    "inputMode": "document",
+    "category": "extract",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "extract.document_type",
+    "inputMode": "document",
+    "category": "extract",
+    "executionPath": "partial",
+    "detail": "ocr_family_no_direct_handler"
+  },
+  {
+    "taskTypeId": "quality.document_image",
+    "inputMode": "image",
+    "category": "quality",
+    "executionPath": "worker_vision",
+    "detail": "lightweight_vision"
+  },
+  {
+    "taskTypeId": "quality.blurry_image",
+    "inputMode": "image",
+    "category": "quality",
+    "executionPath": "worker_vision",
+    "detail": "lightweight_vision"
+  },
+  {
+    "taskTypeId": "catalog.image_tagging",
+    "inputMode": "image",
+    "category": "catalog",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "catalog.product_classification",
+    "inputMode": "image",
+    "category": "catalog",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "catalog.duplicate_image",
+    "inputMode": "image",
+    "category": "catalog",
+    "executionPath": "worker_vision",
+    "detail": "lightweight_vision"
+  },
+  {
+    "taskTypeId": "catalog.product_quality_score",
+    "inputMode": "image",
+    "category": "catalog",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "catalog.brand_logo",
+    "inputMode": "image",
+    "category": "catalog",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "catalog.prohibited_product",
+    "inputMode": "image",
+    "category": "catalog",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "catalog.fake_listing",
+    "inputMode": "flex",
+    "category": "catalog",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "review.fake_detection",
+    "inputMode": "text",
+    "category": "reviews",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "review.sentiment",
+    "inputMode": "text",
+    "category": "reviews",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "review.topic_tagging",
+    "inputMode": "text",
+    "category": "reviews",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.summary_verification",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.hallucination_check",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.ocr_output_validation",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.ai_tag_validation",
+    "inputMode": "flex",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "llm.caption_validation",
+    "inputMode": "flex",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "llm.policy_violation",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.prompt_output_consistency",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.image_output_safety",
+    "inputMode": "image",
+    "category": "llmValidation",
+    "executionPath": "worker_vision",
+    "detail": "vision_analyze"
+  },
+  {
+    "taskTypeId": "llm.answer_quality_score",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "llm.suspicious_output",
+    "inputMode": "text",
+    "category": "llmValidation",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "dataset.label_verification",
+    "inputMode": "flex",
+    "category": "dataset",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "dataset.duplicate_cleanup",
+    "inputMode": "flex",
+    "category": "dataset",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "dataset.low_quality_removal",
+    "inputMode": "flex",
+    "category": "dataset",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "nlp.language_detection",
+    "inputMode": "text",
+    "category": "nlp",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "nlp.text_classification",
+    "inputMode": "text",
+    "category": "nlp",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "nlp.spam_fraud_classification",
+    "inputMode": "text",
+    "category": "nlp",
+    "executionPath": "missing_handler",
+    "detail": "unmapped"
+  },
+  {
+    "taskTypeId": "ml.active_learning_prelabel",
+    "inputMode": "flex",
+    "category": "mlOps",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "ml.consensus_label_validation",
+    "inputMode": "flex",
+    "category": "mlOps",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "ml.human_verification_quality",
+    "inputMode": "flex",
+    "category": "mlOps",
+    "executionPath": "missing_handler",
+    "detail": "flex_no_contract"
+  },
+  {
+    "taskTypeId": "ml.bot_abuse_risk",
+    "inputMode": "text",
+    "category": "mlOps",
+    "executionPath": "missing_handler",
+    "detail": "ml_flex_family"
+  }
+]

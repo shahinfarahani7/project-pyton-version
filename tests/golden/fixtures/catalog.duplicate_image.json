@@ -1,0 +1,28 @@
+{
+  "taskType": "catalog.duplicate_image",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for catalog.duplicate_image",
+  "input": {
+    "assetRef": "file_golden_dup_primary",
+    "compareAssetRef": "file_golden_dup_compare",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_catalog_duplicate_image",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "hammingDistance": 3,
+        "similarity": 0.953125,
+        "duplicate": true,
+        "algorithm": "dHash-64"
+      },
+      "visionRuntimeClass": "embedding_runtime"
+    },
+    "metrics": {
+      "visionMs": 85
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

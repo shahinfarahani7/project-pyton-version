@@ -1,0 +1,60 @@
+{
+  "status": "passed",
+  "taskId": "P8-A06",
+  "auditId": "A06",
+  "acceptanceCase": "T06",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "2",
+    "15",
+    "16.1",
+    "17",
+    "18",
+    "64",
+    "73"
+  ],
+  "generatedAt": "2026-09-06T07:50:44.315835+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "policyDsl": "dsl/policies/consent/production-resource-policy-v1.yaml",
+    "policySchema": "dsl/schemas/userresourcepolicy.schema.json",
+    "resourcePolicy": "src/backend/edgemint/workers/resource_policy.py",
+    "contributionEnforcement": "src/backend/edgemint/workers/contribution_enforcement.py",
+    "consentTransitions": "src/backend/edgemint/workers/consent_transitions.py",
+    "consentOptIn": "src/backend/edgemint/workers/consent_opt_in.py",
+    "enrollmentWiring": "src/backend/edgemint/workers/enrollment.py",
+    "hardEligibility": "src/backend/edgemint/routing/hard_eligibility.py",
+    "sqlCertification": "database/sql/030_worker_cpu_enforcement_certification.sql",
+    "sqlContributionMode": "database/sql/017_worker_contribution_mode.sql",
+    "sqlOptInEvents": "database/sql/024_worker_contribution_opt_in_events.sql",
+    "workerModule": "src/apps/worker/lib/runtime/contribution_enforcement.dart",
+    "workerEnforcer": "src/apps/worker/lib/runtime/worker_resource_enforcer.dart",
+    "backendTests": "src/backend/tests/workers/test_contribution_enforcement.py",
+    "consentOptInTests": "src/backend/tests/workers/test_consent_opt_in.py",
+    "resourcePolicyTests": "src/backend/tests/workers/test_resource_policy.py",
+    "p6Evidence30": "plan/evidence/phase-06-p6-t08-consent-increase-30-to-50.json",
+    "p7EvidenceRevoke": "plan/evidence/phase-07-p7-chaos-consent-revoke.json"
+  },
+  "t06Scenario": {
+    "title": "No opt-in; 30\u219250, 50\u219230, revocation during inference",
+    "explicitOptInRequiredForPerformance": true,
+    "cpuWindowBurstStopProfileVersioned": true,
+    "consentTransitionStopBoundMs": 3000,
+    "upstreamChaosEvidence": [
+      "plan/evidence/phase-06-p6-t08-consent-increase-30-to-50.json",
+      "plan/evidence/phase-06-p6-t09-consent-decrease-50-to-30.json",
+      "plan/evidence/phase-06-p6-t10-consent-revocation.json",
+      "plan/evidence/phase-07-p7-chaos-consent-30-to-50.json",
+      "plan/evidence/phase-07-p7-chaos-consent-50-to-30.json",
+      "plan/evidence/phase-07-p7-chaos-consent-revoke.json"
+    ],
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T06 live inference revocation/stop-bound integration harness NOT_RUN",
+    "Native stop/reaction certification on physical device NOT_RUN",
+    "worker_cpu_enforcement_certification_required defaults false until rollout"
+  ],
+  "errors": []
+}

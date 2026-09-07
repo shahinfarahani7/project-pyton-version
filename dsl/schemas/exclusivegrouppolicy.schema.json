@@ -1,0 +1,120 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/exclusivegrouppolicy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "title": "EdgeMint ExclusiveGroupPolicy",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "edgemint.io/v1" },
+    "kind": { "const": "ExclusiveGroupPolicy" },
+    "metadata": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["name", "version", "status", "owners"],
+      "properties": {
+        "description": { "type": "string" },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "owners": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "evaluation", "active", "deprecated", "retired", "blocked"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "spec": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["groups", "crossGroupRules", "lightWorkGroups"],
+      "properties": {
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "id",
+              "displayName",
+              "executionClass",
+              "maximumConcurrentReservationsPerDevice",
+              "runtimeClasses"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "displayName": { "type": "string", "minLength": 1 },
+              "executionClass": {
+                "type": "string",
+                "enum": [
+                  "HEAVY_COMPUTE",
+                  "MEDIUM_COMPUTE",
+                  "LIGHT_CPU",
+                  "NETWORK_IO",
+                  "SYSTEM"
+                ]
+              },
+              "maximumConcurrentReservationsPerDevice": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "certifiedMaximumConcurrentReservationsPerDevice": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "runtimeClasses": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "type": "string", "minLength": 1 }
+              },
+              "deviceExclusive": { "type": "boolean" }
+            }
+          }
+        },
+        "crossGroupRules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": ["groupA", "groupB", "concurrentAllowed", "reason"],
+            "properties": {
+              "groupA": { "type": "string", "minLength": 1 },
+              "groupB": { "type": "string", "minLength": 1 },
+              "concurrentAllowed": { "type": "boolean" },
+              "reason": { "type": "string", "minLength": 1 },
+              "certificationRequired": { "type": "boolean" }
+            }
+          }
+        },
+        "lightWorkGroups": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

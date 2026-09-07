@@ -1,0 +1,51 @@
+version: "1.0.0"
+name: versioned-prediction-v1
+description: >
+  Certified, versioned calibration and prediction policy (Architecture v2 §13, §33, §34, §73, A20/T20).
+
+architectureSections: ["13", "33", "34", "73"]
+
+estimator:
+  version: envelope-v1
+  recordsRequiredFields:
+    - estimatorVersion
+    - calibrationProfileVersion
+    - suiteVersion
+    - predictionPhase
+    - uncertaintyMarginBps
+    - measuredAtUtc
+
+calibrationProfile:
+  maxAgeDays: 30
+  expiredBehavior: conservative_fallback
+  conservativeFallbackFactorBps: 15000
+  missingProfileBehavior: conservative_fallback
+  invalidateOnArtifactChange: true
+  invalidateOnRuntimeChange: true
+
+predictionPhases:
+  cold:
+    includesWarmupMs: true
+    comparableTo: cold
+  warm:
+    includesWarmupMs: false
+    comparableTo: warm
+
+comparability:
+  neverCompareWarmDecodeAverageToColdEndToEnd: true
+  requireSamePhaseForFeedback: true
+
+feedback:
+  updatesFuturePredictionsOnly: true
+  retroactiveGrantIncreaseForbidden: true
+  underestimateThresholdRatioMilli: 1100
+
+t20Scenarios:
+  - id: cold_warm_distinction
+    description: Cold predictions include warmup; warm excludes it; not cross-compared
+  - id: aged_profile_expiry
+    description: Profiles older than maxAgeDays fall back to conservative multiplier
+  - id: artifact_runtime_change
+    description: Changed artifact or runtime invalidates stale profile identity
+  - id: underestimated_peak
+    description: Observed overrun adjusts future factor only; frozen grants unchanged

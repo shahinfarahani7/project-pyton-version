@@ -13,6 +13,7 @@ from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
 from edgemint.workers.assignments import AssignmentCommandService, AssignmentCredentialBootstrapService
 from edgemint.workers.errors import WorkerServiceError
+from edgemint.workers.resource_policy import build_contribution_policy_view
 from edgemint.workers.schemas import (
     CreateChallengeRequest,
     DeviceRegistrationRequest,
@@ -115,6 +116,31 @@ async def submit_benchmark(
     return response
 
 
+@app.get("/workers/{worker_id}/calibration", tags=["registration"])
+async def get_worker_calibration(
+    request: Request,
+    worker_id: str,
+    token: WorkerBearerToken,
+) -> JSONResponse:
+    async with transaction(isolation="READ COMMITTED") as connection:
+        body = await enrollment.get_worker_calibration(
+            connection,
+            session_token=token,
+            worker_public_id=worker_id,
+        )
+    response = JSONResponse(body.model_dump(mode="json"), status_code=200)
+    response.headers["X-Request-Id"] = request_trace_id(request)
+    return response
+
+
+@app.get("/policy/resource-contribution", tags=["policy"])
+async def get_resource_contribution_policy(request: Request) -> JSONResponse:
+    body = build_contribution_policy_view()
+    response = JSONResponse(body.model_dump(mode="json"), status_code=200)
+    response.headers["X-Request-Id"] = request_trace_id(request)
+    return response
+
+
 @app.post("/workers/{worker_id}/heartbeat", tags=["health"])
 async def send_heartbeat(
     request: Request,
@@ -186,6 +212,37 @@ if not _dev_worker_assignments_enabled():
         outputInline: str = Field(min_length=1, max_length=2 * 1024 * 1024)
         signature: str = Field(min_length=16, max_length=512)
         metrics: dict = Field(default_factory=dict)
+
+    class ProgressAssignmentRequest(StartAssignmentRequest):
+        sequence: int = Field(ge=1)
+        stage: str = Field(min_length=1, max_length=128)
+        progressBps: int = Field(ge=0, le=10_000)
+        metrics: dict | None = None
+
+    class CheckpointAssignmentRequest(StartAssignmentRequest):
+        sequence: int = Field(ge=1)
+        modelVersionId: str = Field(min_length=1, max_length=128)
+        inputSha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+        checkpointSha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+        encryptedBlobRef: str = Field(min_length=1, max_length=512)
+        chunkIndex: int | None = Field(default=None, ge=0)
+
+    class FailAssignmentRequest(StartAssignmentRequest):
+        errorCode: str = Field(min_length=1, max_length=64)
+        retryable: bool
+        diagnostics: dict | None = None
+
+    class ConfirmPhysicalStopRequest(StartAssignmentRequest):
+        proof: str = Field(min_length=8, max_length=512)
+        reason: str = Field(default="worker_stop_confirmed", min_length=1, max_length=128)
+
+    @app.get("/assignments:inboxBootstrap", tags=["assignments"])
+    async def assignment_inbox_bootstrap(token: WorkerBearerToken) -> JSONResponse:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            body = await assignment_bootstrap.inbox_bootstrap(connection, access_token=token)
+        response = JSONResponse(body, status_code=200)
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.get("/assignments:next", tags=["assignments"])
     async def next_automatic_assignment(token: WorkerBearerToken) -> JSONResponse:
@@ -260,6 +317,93 @@ if not _dev_worker_assignments_enabled():
                 metrics=payload.metrics,
             )
         return JSONResponse(receipt, status_code=202)
+
+    @app.post("/assignments/{assignment_id}:progress", tags=["assignments"])
+    async def progress_automatic_assignment(
+        assignment_id: str,
+        payload: ProgressAssignmentRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.progress(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+                sequence=payload.sequence,
+                stage=payload.stage,
+                progress_bps=payload.progressBps,
+                metrics=payload.metrics,
+            )
+        return JSONResponse(receipt, status_code=200)
+
+    @app.post("/assignments/{assignment_id}:checkpoint", tags=["assignments"])
+    async def checkpoint_automatic_assignment(
+        assignment_id: str,
+        payload: CheckpointAssignmentRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.checkpoint(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+                sequence=payload.sequence,
+                model_version_id=payload.modelVersionId,
+                input_sha256=payload.inputSha256,
+                checkpoint_sha256=payload.checkpointSha256,
+                encrypted_blob_ref=payload.encryptedBlobRef,
+                chunk_index=payload.chunkIndex,
+            )
+        return JSONResponse(receipt, status_code=200)
+
+    @app.post("/assignments/{assignment_id}:fail", tags=["assignments"], status_code=202)
+    async def fail_automatic_assignment(
+        assignment_id: str,
+        payload: FailAssignmentRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.fail(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+                error_code=payload.errorCode,
+                retryable=payload.retryable,
+                diagnostics=payload.diagnostics,
+            )
+        return JSONResponse(receipt, status_code=202)
+
+    @app.post("/assignments/{assignment_id}:confirmStop", tags=["assignments"], status_code=200)
+    async def confirm_assignment_physical_stop(
+        assignment_id: str,
+        payload: ConfirmPhysicalStopRequest,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = idempotency_key
+        async with transaction(isolation="SERIALIZABLE") as connection:
+            receipt = await assignment_commands.confirm_physical_stop(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                lease_token=payload.leaseToken,
+                fence_token=payload.fenceToken,
+                proof=payload.proof,
+                reason=payload.reason,
+            )
+        return JSONResponse(receipt, status_code=200)
 
 
 if _dev_worker_assignments_enabled():
@@ -376,4 +520,16 @@ if _dev_worker_assignments_enabled():
         return JSONResponse(
             dev_worker_assignments.command_receipt("devAssignmentAbandon"),
             status_code=200,
+        )
+
+    @app.post("/assignments/{assignment_id}:fail", tags=["dev-assignments"])
+    async def dev_assignment_fail(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (assignment_id, token, idempotency_key)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentFail"),
+            status_code=202,
         )

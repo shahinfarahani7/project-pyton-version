@@ -22,10 +22,12 @@ def task_error(code: str, *, detail: str | None = None) -> TaskServiceError:
         "TASK_NOT_CANCELLABLE": (409, "Task cannot be cancelled"),
         "TASK_REVISION_IMMUTABLE": (409, "Task revision is immutable"),
         "TASK_TYPE_NOT_ACTIVE": (422, "Task type not active"),
+        "TASK_TYPE_NOT_EXECUTABLE": (422, "Task type is not executable"),
         "TENANT_RESOURCE_NOT_FOUND": (404, "Resource not found"),
         "UNSUPPORTED_TASK_CONFIGURATION": (422, "Unsupported task configuration"),
         "VERSION_CONFLICT": (412, "Version conflict"),
         "ADMISSION_LIMIT_EXCEEDED": (429, "Workspace admission limit exceeded"),
+        "DATA_PROCESSING_DENIED": (403, "Data processing not permitted"),
     }
     status, title = catalog.get(code, (500, "Task operation failed"))
     return TaskServiceError(code=code, status=status, title=title, detail=detail)

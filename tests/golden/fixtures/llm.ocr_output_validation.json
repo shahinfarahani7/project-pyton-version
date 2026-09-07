@@ -1,0 +1,24 @@
+{
+  "taskType": "llm.ocr_output_validation",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.ocr_output_validation",
+  "input": {
+    "inlineText": "OCR text: INVOICE 42 TOTAL 19.90 EUR",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ocr_validation_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "valid": true,
+        "qualityScore": 0.94,
+        "issues": [],
+        "correctedText": "INVOICE 42 TOTAL 19.90 EUR"
+      }
+    },
+    "metrics": {"llmMs": 540}
+  },
+  "minimumConfidenceMilli": 960
+}

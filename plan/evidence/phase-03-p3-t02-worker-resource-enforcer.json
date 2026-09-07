@@ -1,0 +1,16 @@
+{
+  "taskId": "P3-T02",
+  "completedAt": "2026-09-02",
+  "summary": "WorkerResourceEnforcer enforces 30%/50% contribution caps per resource class with telemetry-only violations.",
+  "artifacts": {
+    "source": "src/apps/worker/lib/runtime/worker_resource_enforcer.dart",
+    "budgetMath": "src/apps/worker/lib/runtime/worker_resource_budget.dart",
+    "integration": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "tests": "src/apps/worker/test/runtime/worker_resource_enforcer_test.dart"
+  },
+  "contributionModes": {
+    "balanced": 30,
+    "performance": 50
+  },
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

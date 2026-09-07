@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "taskId": "P8-A11",
+  "auditId": "A11",
+  "acceptanceCase": "T11",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "14",
+    "26",
+    "27",
+    "48"
+  ],
+  "generatedAt": "2026-09-06T08:18:49.974457+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "executionPlanDsl": "dsl/catalog/execution-plans/text-summarize-map-reduce.yaml",
+    "reducePolicy": "src/backend/edgemint/routing/hierarchical_reduce_policy.py",
+    "workerPipeline": "src/apps/worker/lib/inference/llm/hierarchical_summarize_pipeline.dart",
+    "workerBounds": "src/apps/worker/lib/inference/llm/hierarchical_reduce_bounds.dart",
+    "semanticMerge": "src/apps/worker/lib/inference/llm/semantic_merge_validator.dart",
+    "failureEvidence": "src/apps/worker/lib/runtime/failure_evidence.dart",
+    "backendTests": "src/backend/tests/routing/test_hierarchical_reduce_bounds.py",
+    "workerTests": "src/apps/worker/test/inference/llm/hierarchical_reduce_bounds_test.dart",
+    "legacyPipelineTests": "src/apps/worker/test/inference/llm/hierarchical_summarize_pipeline_test.dart"
+  },
+  "t11Scenario": {
+    "title": "Reduce fan-in; very long document; non-shrinking Reduce",
+    "boundedDepthAndCalls": true,
+    "nonShrinkingReduceDetected": true,
+    "workerBoundsTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T11 very-long-document end-to-end integration harness NOT_RUN",
+    "Physical-device reduce fan-in certification NOT_RUN"
+  ],
+  "errors": []
+}

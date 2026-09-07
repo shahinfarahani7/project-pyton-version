@@ -6,7 +6,10 @@ import 'package:flutter_gemma/core/di/service_registry.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 
 import '../models/worker_model_catalog.dart';
+import 'artifact_install_coordinator.dart';
 import 'gemma_bootstrap.dart';
+import 'identity_lifecycle_tracer.dart';
+import 'model_download_verify_hook.dart';
 
 /// Installs, restores, and registers the EdgeMint on-device model.
 ///
@@ -42,6 +45,12 @@ abstract final class WorkerModelInstaller {
 
   static Future<bool> ensureReady({void Function(String message)? log}) async {
     await GemmaBootstrap.ensureInitialized();
+
+    IdentityLifecycleTracer.instance.recordMutation(
+      kind: 'ensureReady',
+      caller: 'WorkerModelInstaller.ensureReady',
+      beforeState: {'hasActiveModel': FlutterGemma.hasActiveModel()},
+    );
 
     log?.call('Checking ${WorkerModelCatalog.displayName} installation');
 
@@ -173,6 +182,12 @@ abstract final class WorkerModelInstaller {
   static Future<bool> verifyActive({void Function(String message)? log}) async {
     await GemmaBootstrap.ensureInitialized();
 
+    IdentityLifecycleTracer.instance.recordMutation(
+      kind: 'verifyActive',
+      caller: 'WorkerModelInstaller.verifyActive',
+      beforeState: {'hasActiveModel': FlutterGemma.hasActiveModel()},
+    );
+
     final registered = await FlutterGemma.isModelInstalled(
       WorkerModelCatalog.fileName,
     );
@@ -219,6 +234,9 @@ abstract final class WorkerModelInstaller {
   // ---------------------------------------------------------------------------
   // Resolve installed model path
   // ---------------------------------------------------------------------------
+
+  static Future<String?> installedModelPathForVerification() =>
+      _installedModelPath(WorkerModelCatalog.fileName);
 
   static Future<String?> _installedModelPath(String modelId) async {
     try {
@@ -299,6 +317,10 @@ abstract final class WorkerModelInstaller {
     String modelId, {
     void Function(String message)? log,
   }) async {
+    IdentityLifecycleTracer.instance.recordIdentityClear(
+      caller: 'WorkerModelInstaller._removeMissingFileRegistration',
+      reason: 'physical_model_file_missing',
+    );
     try {
       await FlutterGemma.clearActiveInferenceIdentity();
     } catch (_) {
@@ -469,49 +491,66 @@ abstract final class WorkerModelInstaller {
     required String downloadUrl,
     required void Function(int progress) onProgress,
     void Function(String message)? log,
+    String? signingKey,
+    ModelDownloadVerifyHook? verifyHook,
   }) async {
-    await GemmaBootstrap.ensureInitialized();
+    await ArtifactInstallCoordinator.instance.runExclusiveInstall<void>(
+      modelVersionId: WorkerModelCatalog.modelVersionId,
+      operation: (installGeneration) async {
+        await GemmaBootstrap.ensureInitialized();
 
-    log?.call('Starting network install: $downloadUrl');
+        log?.call('Starting network install: $downloadUrl (generation=$installGeneration)');
 
-    await WorkerModelCatalog.installBuilder()
-        .fromNetwork(downloadUrl, foreground: true)
-        .withProgress(onProgress)
-        .install();
+        await WorkerModelCatalog.installBuilder()
+            .fromNetwork(downloadUrl, foreground: true)
+            .withProgress(onProgress)
+            .install();
 
-    log?.call(
-      '${WorkerModelCatalog.displayName} '
-      'download/install completed',
-    );
+        log?.call(
+          '${WorkerModelCatalog.displayName} '
+          'download/install completed',
+        );
 
-    // IMPORTANT:
-    // Do NOT call getActiveModel() here.
-    //
-    // Installer only verifies registration/identity.
-    // Actual native runtime creation happens exactly once
-    // inside GemmaLiteRtInferenceAdapter.
+        final registered = await FlutterGemma.isModelInstalled(
+          WorkerModelCatalog.fileName,
+        );
 
-    final registered = await FlutterGemma.isModelInstalled(
-      WorkerModelCatalog.fileName,
-    );
+        if (!registered) {
+          throw StateError(
+            '${WorkerModelCatalog.displayName} '
+            'download completed but registration is missing',
+          );
+        }
 
-    if (!registered) {
-      throw StateError(
-        '${WorkerModelCatalog.displayName} '
-        'download completed but registration is missing',
-      );
-    }
+        if (!FlutterGemma.hasActiveModel()) {
+          throw StateError(
+            '${WorkerModelCatalog.displayName} '
+            'download completed but active identity is missing',
+          );
+        }
 
-    if (!FlutterGemma.hasActiveModel()) {
-      throw StateError(
-        '${WorkerModelCatalog.displayName} '
-        'download completed but active identity is missing',
-      );
-    }
+        if (signingKey != null) {
+          ArtifactInstallCoordinator.instance.markVerifying();
+          final path = await _installedModelPath(WorkerModelCatalog.fileName);
+          if (path != null) {
+            await (verifyHook ?? const ModelDownloadVerifyHook()).verifyInstalledFileIfPinned(
+              path: path,
+              signingKey: signingKey,
+              modelVersionId: WorkerModelCatalog.modelVersionId,
+            );
+            log?.call(
+              '${WorkerModelCatalog.displayName} '
+              'post-download digest/signature verification passed',
+            );
+          }
+        }
 
-    log?.call(
-      '${WorkerModelCatalog.displayName} '
-      'installed and active identity is ready',
+        ArtifactInstallCoordinator.instance.markActivating();
+        log?.call(
+          '${WorkerModelCatalog.displayName} '
+          'installed and active identity is ready',
+        );
+      },
     );
   }
 }

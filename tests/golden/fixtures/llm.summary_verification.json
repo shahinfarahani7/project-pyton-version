@@ -1,0 +1,24 @@
+{
+  "taskType": "llm.summary_verification",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.summary_verification",
+  "input": {
+    "inlineText": "source=The plan costs 10 EUR. summary=The plan costs 10 EUR.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_summary_verification_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "valid": true,
+        "coverageScore": 0.98,
+        "unsupportedClaims": [],
+        "missingPoints": []
+      }
+    },
+    "metrics": {"llmMs": 620}
+  },
+  "minimumConfidenceMilli": 960
+}

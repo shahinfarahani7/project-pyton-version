@@ -1,0 +1,25 @@
+{
+  "taskType": "extract.date",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for extract.date",
+  "input": {
+    "assetRef": "file_golden_date_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_extract_date_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "Invoice date: 2026-08-03",
+      "ocrLines": [],
+      "data": {
+        "date": "2026-08-03",
+        "original": "2026-08-03",
+        "confidence": 0.94
+      }
+    },
+    "metrics": {"ocrMs": 750, "llmMs": 650}
+  },
+  "minimumConfidenceMilli": 960
+}

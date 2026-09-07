@@ -1,0 +1,31 @@
+{
+  "taskType": "catalog.product_quality_score",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for catalog.product_quality_score",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_catalog_product_quality_score",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "score": 0.84,
+        "issues": [
+          "slight glare"
+        ],
+        "recommendations": [
+          "retake with softer lighting"
+        ]
+      },
+      "visionRuntimeClass": "catalog_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

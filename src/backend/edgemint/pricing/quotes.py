@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from edgemint.building_blocks.ids import public_id
 from edgemint.pricing.engine import PriceInput, PricingEngine, PricingRejectedError
 from edgemint.pricing.policy import load_price_policy
+from edgemint.routing.cost_estimator import TaskCostEstimatorInputs, estimate_execution_cost_micros
 
 TASK_TYPE_ALIASES = {
     "document-ocr": "document.ocr",
@@ -99,6 +100,33 @@ class QuoteService:
             request.configuration.verificationLevel,
         )
         priority = PRIORITY_MAP.get(request.configuration.priority, request.configuration.priority)
+        expected_cost = request.expectedCostMicros
+        stressed_cost = request.stressedCostMicros
+        if expected_cost is None:
+            page_count = int(request.input.get("pageCount") or request.input.get("pages") or 1)
+            token_estimate = int(
+                request.input.get("estimatedInputTokens")
+                or request.input.get("tokenEstimate")
+                or max(len(str(request.input.get("text") or "")), 1)
+            )
+            input_bytes = int(request.input.get("inputBytes") or request.input.get("bytes") or 0)
+            image = request.input.get("image") if isinstance(request.input.get("image"), dict) else {}
+            cost_inputs = TaskCostEstimatorInputs(
+                taskType=canonical_task_type,
+                inputBytes=input_bytes,
+                estimatedInputTokens=token_estimate,
+                pageCount=page_count,
+                imageWidth=int(image.get("width") or 0),
+                imageHeight=int(image.get("height") or 0),
+                chunkCountEstimate=int(request.input.get("chunkCountEstimate") or 1),
+                runtimeClass=str(request.input.get("runtimeClass") or ""),
+                modelVersionId=str(request.input.get("modelVersionId") or ""),
+                verificationTier=verification,
+                quantity=request.quantity,
+            )
+            expected_cost, derived_stressed = estimate_execution_cost_micros(cost_inputs)
+            if stressed_cost is None:
+                stressed_cost = derived_stressed
         return PriceInput(
             task_type=canonical_task_type,
             quantity=request.quantity,
@@ -110,8 +138,8 @@ class QuoteService:
             retention=request.retention,
             contract_discount_bps=request.contractDiscountBps,
             promotion_discount_bps=request.promotionDiscountBps,
-            expected_cost_micros=request.expectedCostMicros,
-            stressed_cost_micros=request.stressedCostMicros,
+            expected_cost_micros=expected_cost,
+            stressed_cost_micros=stressed_cost,
             subsidy_reserved=request.subsidyReserved,
         )
 

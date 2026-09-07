@@ -1,0 +1,37 @@
+{
+  "taskType": "llm.ai_tag_validation",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.ai_tag_validation",
+  "input": {
+    "flexInput": {
+      "content": "Red sports car photo",
+      "candidateTags": [
+        "vehicle",
+        "food"
+      ]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_llm_ai_tag_validation",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "validTags": [
+          "vehicle"
+        ],
+        "rejectedTags": [
+          "food"
+        ],
+        "score": 0.93,
+        "reasons": [
+          "visible car"
+        ]
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

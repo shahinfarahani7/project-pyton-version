@@ -1,0 +1,42 @@
+{
+  "status": "passed",
+  "taskId": "P8-A09",
+  "auditId": "A09",
+  "acceptanceCase": "T09",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "2.4",
+    "8",
+    "14",
+    "21",
+    "43"
+  ],
+  "generatedAt": "2026-09-06T07:57:46.505553+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "policyDsl": "dsl/policies/worker/transport-recovery-boundary-v1.yaml",
+    "sqlMigration": "database/sql/033_assignment_transport_receipts.sql",
+    "transportRecovery": "src/backend/edgemint/workers/transport_recovery.py",
+    "assignmentsWiring": "src/backend/edgemint/workers/assignments.py",
+    "workerJournal": "src/apps/worker/lib/runtime/transport_recovery_journal.dart",
+    "eventReporter": "src/apps/worker/lib/runtime/assignment_event_reporter.dart",
+    "backendTests": "src/backend/tests/workers/test_transport_recovery.py",
+    "workerTests": "src/apps/worker/test/runtime/transport_recovery_journal_test.dart",
+    "forbiddenAuditBaseline": "plan/evidence/phase-03-p3-t20-forbidden-scheduler-audit.json"
+  },
+  "t09Scenario": {
+    "title": "Lost ACK/result retransmission vs unauthorized task retry",
+    "transportReceiptDedup": true,
+    "workerTransportJournal": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "forbiddenSchedulerAbsentInLib": true,
+    "boundedPlanPolicyDocumented": true,
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T09 lost-result-ACK end-to-end integration harness NOT_RUN",
+    "Unauthorized local retry attempt negative E2E NOT_RUN",
+    "Server-authorized plan stage cap enforcement on device NOT_RUN"
+  ],
+  "errors": []
+}

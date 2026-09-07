@@ -1,0 +1,6 @@
+{
+  "taskId": "P6-T13",
+  "completedAt": "2026-09-02",
+  "tests": "src/apps/worker/test/runtime/runtime_exclusive_group_enforcer_test.dart",
+  "module": "src/apps/worker/lib/runtime/runtime_exclusive_group_enforcer.dart"
+}

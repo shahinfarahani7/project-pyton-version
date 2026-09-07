@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: text-summarize
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Resource envelope for text.summarize / Qwen path (architecture §12).
+spec:
+  taskType: text.summarize
+  runtimeClass: mediapipe_llm
+  requiredModelIds:
+    - qwen2.5-0.5b
+  cpuUnits: 40
+  memoryReservationBytes: 1610612736
+  storageReservationBytes: 104857600
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 180000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: llm_inference

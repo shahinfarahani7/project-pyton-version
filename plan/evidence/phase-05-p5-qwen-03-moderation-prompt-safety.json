@@ -1,0 +1,16 @@
+{
+  "taskId": "P5-QWEN-03",
+  "taskTypeId": "moderation.prompt_safety",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for moderation.prompt_safety: TaskType DSL, validator, golden fixture PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/moderation-prompt-safety.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_moderation_prompt_safety",
+    "retryPolicy": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0 (stronger_worker)",
+    "checkpointPolicy": "none (checkpointEnabled: false)",
+    "goldenFixture": "tests/golden/fixtures/moderation.prompt_safety.json",
+    "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#TextClassifyHandler (via text.classify.v1)"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_moderation_prompt_safety_validator.py tests/golden/test_golden_task_harness.py -q; run_golden_task_harness.py --task-type moderation.prompt_safety exit 0"
+}

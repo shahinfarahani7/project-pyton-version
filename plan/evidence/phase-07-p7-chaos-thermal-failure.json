@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "taskId": "P7-CHAOS-thermal-failure",
+  "test": "test_p7_chaos_thermal_failure_closed_code",
+  "harness": "tools/run_production_chaos_harness.py",
+  "generatedAt": "2026-09-02T10:04:22.524500+00:00",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "notes": "Dev/staging invariant proof via pytest + source verify; live chaos deferred to staging deploy."
+}

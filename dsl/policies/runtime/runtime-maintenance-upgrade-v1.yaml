@@ -1,0 +1,55 @@
+version: "1.0.0"
+name: runtime-maintenance-upgrade-v1
+description: >
+  Pinned runtime maintenance status and evaluated upgrade/rollback policy (Architecture v2 §4, §32.1, §70, §77, A24/T24).
+
+architectureSections: ["4", "32.1", "70", "77"]
+
+maintenanceStatus:
+  pinnedRuntimeClass: mediapipe_llm
+  upstreamStatus: maintenance_only
+  migrationPath: litert_lm
+  silentUpgradeForbidden: true
+  globalModelReplacementForbidden: true
+  policyOwner: mobile-platform
+  lastReviewedAt: "2026-09-05"
+
+pinnedBaseline:
+  architectureVersion: "2.0"
+  runtimeCompatibilityProfile: production-runtime-compatibility-v1
+  modelProfile: qwen2.5-0.5b-artifact-v1
+  contextLimitTokens: 1280
+  nativeBackend: cpu
+  flutterPackagePath: flutter_gemma
+
+upgradeEvaluation:
+  requireRollbackVersionBeforeAdoption: true
+  requireBenchmarkEvidence: true
+  requireCompatibilityMatrixPass: true
+  blockUpgradeDuringOpenSessions: true
+  blockConcurrentInstall: true
+  evaluationDimensions:
+    - artifact_conversion
+    - lifecycle
+    - context
+    - memory
+    - quality
+    - cancellation
+  minimumEvidenceArtifacts:
+    - rollback_version_id
+    - benchmark_evidence_path
+    - compatibility_profile_id
+
+rollbackPolicy:
+  rollbackBeforeForwardAdoption: true
+  preserveInstalledArtifactOnFailure: true
+  recordEvaluationOutcome: true
+  storageTable: public.runtime_upgrade_evaluations
+
+t24Scenarios:
+  - id: candidate_runtime_upgrade
+    description: Candidate runtime/model passes compatibility dimensions before adoption
+  - id: rollback_proven
+    description: Rollback to pinned baseline proven before forward adoption
+  - id: upgrade_blocked_during_session
+    description: Upgrade rejected while inference sessions are open

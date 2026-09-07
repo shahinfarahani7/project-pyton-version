@@ -1,0 +1,32 @@
+{
+  "taskType": "document.ocr",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for document.ocr production validation path",
+  "input": {
+    "assetRef": "file_golden_ocr_001",
+    "options": {
+      "minOcrConfidence": 0.5,
+      "language": "en"
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ocr_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "INVOICE 42 TOTAL 19.90 EUR",
+      "ocrLines": [
+        {
+          "text": "INVOICE 42 TOTAL 19.90 EUR",
+          "confidence": 0.94,
+          "box": [12, 18, 420, 44]
+        }
+      ]
+    },
+    "metrics": {
+      "averageOcrConfidence": 0.94,
+      "ocrMs": 1100
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

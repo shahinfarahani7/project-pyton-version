@@ -1,0 +1,29 @@
+{
+  "taskId": "P3-T16",
+  "completedAt": "2026-09-02",
+  "summary": "Central model artifact verifier enforces SHA256 + signature before load; unsigned bare markers rejected; post-download verify hook wired after network install.",
+  "artifacts": {
+    "verifier": "src/apps/worker/lib/runtime/model_artifact_verifier.dart",
+    "downloadHook": "src/apps/worker/lib/runtime/model_download_verify_hook.dart",
+    "catalogAttestation": "src/apps/worker/lib/models/worker_model_catalog.dart",
+    "runtimeWiring": [
+      "src/apps/worker/lib/runtime/inference_adapter.dart",
+      "src/apps/worker/lib/runtime/model_runtime_manager.dart",
+      "src/apps/worker/lib/runtime/gemma_model_runtime_manager.dart",
+      "src/apps/worker/lib/runtime/worker_model_installer.dart",
+      "src/apps/worker/lib/worker_app_controller.dart"
+    ],
+    "tests": [
+      "src/apps/worker/test/runtime/model_artifact_verifier_test.dart",
+      "src/apps/worker/test/runtime/model_runtime_manager_test.dart"
+    ]
+  },
+  "verificationRules": {
+    "unsignedRejected": "empty signature or bare installedDigestMarker signature",
+    "corruption": "digest mismatch -> ModelIntegrityException -> MODEL_EXECUTION_FAILED evidence",
+    "installedAttestation": "sha256(installed-on-device:signingKey)"
+  },
+  "testRun": {
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

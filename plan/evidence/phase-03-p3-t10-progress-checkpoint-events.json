@@ -1,0 +1,34 @@
+{
+  "taskId": "P3-T10",
+  "completedAt": "2026-09-02",
+  "summary": "Production progress and checkpoint assignment commands emit fence-aware CloudEvents; worker streams plan progress and chunk checkpoints to server.",
+  "artifacts": {
+    "backendService": "src/backend/edgemint/workers/assignments.py",
+    "backendRoutes": "src/backend/edgemint/services/worker_registry.py",
+    "workerReporter": "src/apps/worker/lib/runtime/assignment_event_reporter.dart",
+    "engineWiring": "src/apps/worker/lib/tasks/task_execution_engine.dart",
+    "coordinatorWiring": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "contracts": [
+      "contracts/openapi/edgemint-worker-api.yaml",
+      "contracts/cloudevents/task.progress.json",
+      "contracts/cloudevents/task.checkpoint.saved.json"
+    ],
+    "tests": [
+      "src/backend/tests/workers/test_assignment_progress_checkpoint.py",
+      "src/apps/worker/test/runtime/assignment_event_reporter_test.dart"
+    ]
+  },
+  "ordering": {
+    "progressAggregateBand": "fenceToken * 1e9 + 2_000_000 + sequence",
+    "checkpointAggregateBand": "fenceToken * 1e9 + 3_000_000 + sequence",
+    "workerSequence": "monotonic per assignment attempt for progress and checkpoint counters independently",
+    "cloudEventTypes": [
+      "io.edgemint.task.progress.v1",
+      "io.edgemint.task.checkpoint.saved.v1"
+    ]
+  },
+  "testRun": {
+    "backend": "py -3.13 -m pytest tests/workers/test_assignment_progress_checkpoint.py -q (4 passed)",
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

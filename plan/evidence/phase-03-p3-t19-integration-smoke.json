@@ -1,0 +1,28 @@
+{
+  "taskId": "P3-T19",
+  "completedAt": "2026-09-02",
+  "summary": "Automated Phase 3 integration smoke verifies document.ocr and text.summarize complete through TaskExecutionEngine + ExecutionPlanRunner shell with session lifecycle cleanup.",
+  "artifacts": {
+    "smokeTest": "src/apps/worker/test/integration/phase_03_runtime_smoke_test.dart",
+    "runtimeShell": "src/apps/worker/lib/runtime/execution_plan_runner.dart",
+    "taskEngine": "src/apps/worker/lib/tasks/task_execution_engine.dart"
+  },
+  "scenarios": [
+    {
+      "taskType": "document.ocr",
+      "assignmentId": "asg_ocr_smoke",
+      "path": "OCR stage via FakeOcrEngine under runtime shell",
+      "expected": "taskStatus=succeeded; plan binding cleared; openSessionCount=0"
+    },
+    {
+      "taskType": "text.summarize",
+      "assignmentId": "asg_qwen_smoke",
+      "path": "Map-reduce ExecutionPlanRunner with QwenTaskProcessor mock",
+      "expected": "summary output; sessions opened and closed; plan binding cleared"
+    }
+  ],
+  "testRun": {
+    "worker": "flutter pub get blocked (pub.dev socket error); smoke tests authored at test/integration/phase_03_runtime_smoke_test.dart",
+    "device": "Manual device/emulator run deferred until pub.dev + dev stack available"
+  }
+}

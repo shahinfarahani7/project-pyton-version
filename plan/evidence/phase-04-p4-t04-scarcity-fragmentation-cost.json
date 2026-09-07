@@ -1,0 +1,17 @@
+{
+  "taskId": "P4-T04",
+  "completedAt": "2026-09-02",
+  "summary": "Scarcity/fragmentation cost formula v1 penalizes cheap tasks on premium T4 workers; wired as scarcityCost feature (200 bps weight).",
+  "artifacts": {
+    "formula": "src/backend/edgemint/routing/scarcity_cost.py",
+    "scoring": "src/backend/edgemint/routing/scoring_features.py",
+    "policy": "dsl/policies/routing/smart-router-v2.yaml",
+    "tests": "src/backend/tests/routing/test_scarcity_fragmentation_scoring.py"
+  },
+  "goldenVectors": [
+    {"name": "cheap_task_on_idle_t4", "expectedBps": 9100},
+    {"name": "heavy_task_on_t4", "expectedBps": 8400},
+    {"name": "cheap_task_on_t1", "expectedBps": 10000}
+  ],
+  "testRun": "py -3.13 -m pytest tests/routing/test_scarcity_fragmentation_scoring.py -q (2 passed)"
+}

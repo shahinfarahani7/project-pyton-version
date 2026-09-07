@@ -1,0 +1,66 @@
+apiVersion: edgemint.io/v1
+kind: TaskExecutionPlan
+metadata:
+  name: text-summarize-map-reduce
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Map/reduce execution plan for long-context text.summarize.
+spec:
+  taskType: text.summarize
+  inputMode: text
+  planVersion: 2026-q3-v1
+  reduceBounds:
+    maxChunks: 64
+    maxReduceDepth: 8
+    maxInferenceCalls: 128
+    maxOutputTokensPerStage: 300
+    minTokenMassReductionRatioMilli: 50
+    progressRule: groups_or_token_mass_must_decrease
+  stages:
+    - sequence: 1
+      name: chunk
+      operation: chunk
+      runtimeClass: system
+      checkpointEnabled: true
+      retryPolicy: none
+      estimatedDurationMs: 8000
+    - sequence: 2
+      name: llm-map
+      operation: llm_map
+      runtimeClass: mediapipe_llm
+      requiredModelIds:
+        - qwen2.5-0.5b
+      checkpointEnabled: true
+      retryPolicy: stage_with_backoff
+      validationRule: map_output_schema_v1
+      estimatedDurationMs: 120000
+      exclusiveGroup: llm_inference
+    - sequence: 3
+      name: llm-reduce
+      operation: llm_reduce
+      runtimeClass: mediapipe_llm
+      requiredModelIds:
+        - qwen2.5-0.5b
+      checkpointEnabled: true
+      retryPolicy: stage_with_backoff
+      validationRule: reduce_output_schema_v1
+      estimatedDurationMs: 90000
+      exclusiveGroup: llm_inference
+    - sequence: 4
+      name: validate
+      operation: validate
+      runtimeClass: system
+      checkpointEnabled: false
+      retryPolicy: none
+      validationRule: result_schema_v1
+      estimatedDurationMs: 5000
+    - sequence: 5
+      name: submit
+      operation: submit
+      runtimeClass: network_io
+      checkpointEnabled: false
+      retryPolicy: stage_once
+      estimatedDurationMs: 3000

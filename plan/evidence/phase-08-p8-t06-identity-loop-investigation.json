@@ -1,0 +1,205 @@
+{
+  "status": "passed",
+  "taskId": "P8-T06",
+  "architectureVersion": "2.0",
+  "sourceSection": "76",
+  "generatedAt": "2026-09-06T07:18:53.203874+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "investigationPhase": "SOURCE_STATIC_ONLY",
+  "deviceReproduction": "NOT_RUN",
+  "nativeHandleCounters": "NOT_COLLECTED",
+  "symbolReferences": {
+    "ensureModelReady": [
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 294,
+        "text": "await ensureModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 617,
+        "text": "Future<bool> ensureModelReady() {"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 622,
+        "text": "_modelReadyFuture = _ensureModelReadyInternal();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 627,
+        "text": "Future<bool> _ensureModelReadyInternal() async {"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 704,
+        "text": "await ensureModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 1099,
+        "text": "await ensureModelReady();"
+      }
+    ],
+    "_ensureModelReadyInternal": [
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 622,
+        "text": "_modelReadyFuture = _ensureModelReadyInternal();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 627,
+        "text": "Future<bool> _ensureModelReadyInternal() async {"
+      }
+    ],
+    "WorkerModelInstaller.ensureReady": [
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 639,
+        "text": "final ready = await WorkerModelInstaller.ensureReady(log: _logTask);"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 715,
+        "text": "if (await WorkerModelInstaller.ensureReady(log: _logTask)) {"
+      },
+      {
+        "file": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+        "line": 44,
+        "text": "static Future<bool> ensureReady({void Function(String message)? log}) async {"
+      }
+    ],
+    "WorkerModelInstaller.verifyActive": [
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 634,
+        "text": "if (await WorkerModelInstaller.verifyActive(log: _logTask)) {"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 709,
+        "text": "if (await WorkerModelInstaller.verifyActive(log: _logTask)) {"
+      },
+      {
+        "file": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+        "line": 174,
+        "text": "static Future<bool> verifyActive({void Function(String message)? log}) async {"
+      }
+    ],
+    "clearActiveInferenceIdentity": [
+      {
+        "file": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+        "line": 307,
+        "text": "await FlutterGemma.clearActiveInferenceIdentity();"
+      }
+    ],
+    "_clearBrokenModelInstall": [
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 657,
+        "text": "Future<void> _clearBrokenModelInstall() async {"
+      }
+    ],
+    "_removeMissingFileRegistration": [
+      {
+        "file": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+        "line": 102,
+        "text": "await _removeMissingFileRegistration("
+      },
+      {
+        "file": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+        "line": 302,
+        "text": "static Future<void> _removeMissingFileRegistration("
+      }
+    ],
+    "_setModelReady": [
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 630,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 635,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 642,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 672,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 683,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 695,
+        "text": "void _setModelReady() {"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 710,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 716,
+        "text": "_setModelReady();"
+      },
+      {
+        "file": "src/apps/worker/lib/worker_app_controller.dart",
+        "line": 738,
+        "text": "_setModelReady();"
+      }
+    ],
+    "FlutterGemma.clearActiveInferenceIdentity": [
+      {
+        "file": "src/apps/worker/lib/runtime/worker_model_installer.dart",
+        "line": 307,
+        "text": "await FlutterGemma.clearActiveInferenceIdentity();"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "summary": "clearActiveInferenceIdentity invoked on stale missing-file cleanup only",
+      "severity": "info",
+      "path": "src/apps/worker/lib/runtime/worker_model_installer.dart:_removeMissingFileRegistration"
+    },
+    {
+      "id": "F2",
+      "summary": "_clearBrokenModelInstall explicitly skips identity clear (preserves registration)",
+      "severity": "info",
+      "path": "src/apps/worker/lib/worker_app_controller.dart"
+    },
+    {
+      "id": "F3",
+      "summary": "ensureModelReady deduplicates concurrent calls via _modelReadyFuture",
+      "severity": "info",
+      "path": "src/apps/worker/lib/worker_app_controller.dart"
+    },
+    {
+      "id": "F4",
+      "summary": "No direct caller of _clearBrokenModelInstall located in lib/ (private, potentially dead)",
+      "severity": "hypothesis",
+      "path": "src/apps/worker/lib/worker_app_controller.dart"
+    }
+  ],
+  "recommendedNextSteps": [
+    "Instrument before/after state on ensureModelReady and clearActiveInferenceIdentity with correlation IDs",
+    "Run idle soak on physical device with Native session/model counters",
+    "Capture repro from assignment poll + model verify overlap"
+  ],
+  "closureCriteriaMet": false,
+  "notes": "v2 \u00a776 closure requires physical-device repro and Native handle stability evidence."
+}

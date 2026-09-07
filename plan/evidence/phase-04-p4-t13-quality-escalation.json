@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T13",
+  "completedAt": "2026-09-02",
+  "summary": "Quality validation failures escalate verification tier standard→high→premium via server hook.",
+  "artifacts": {
+    "module": "src/backend/edgemint/routing/quality_escalation.py",
+    "serviceHook": "src/backend/edgemint/routing/service.py#escalated_verification_tier_for_failure",
+    "tests": "src/backend/tests/routing/test_quality_escalation.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_quality_escalation.py -q (3 passed)"
+}

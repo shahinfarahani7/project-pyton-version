@@ -1,0 +1,9 @@
+{
+  "taskId": "P5-QWEN-24",
+  "taskTypeId": "extract.order_number",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/extract-order-number.yaml",
+  "goldenFixture": "tests/golden/fixtures/extract.order_number.json",
+  "tests": "src/backend/tests/results/test_extract_validators.py",
+  "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#DocumentExtractHandler"
+}

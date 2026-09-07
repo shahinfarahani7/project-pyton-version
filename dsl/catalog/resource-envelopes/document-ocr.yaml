@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: document-ocr
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Resource envelope for document.ocr (architecture §12).
+spec:
+  taskType: document.ocr
+  runtimeClass: paddle_ocr
+  requiredModelIds:
+    - paddleocr-mobile
+  cpuUnits: 25
+  memoryReservationBytes: 536870912
+  storageReservationBytes: 104857600
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 120000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: ocr_inference

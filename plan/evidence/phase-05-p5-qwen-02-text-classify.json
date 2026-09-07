@@ -1,0 +1,16 @@
+{
+  "taskId": "P5-QWEN-02",
+  "taskTypeId": "text.classify",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for text.classify: TaskType DSL, validator, golden fixture PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/text-classify.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_text_classify",
+    "retryPolicy": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0 (stronger_worker)",
+    "checkpointPolicy": "none (checkpointEnabled: false)",
+    "goldenFixture": "tests/golden/fixtures/text.classify.json",
+    "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#TextClassifyHandler"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_text_classify_validator.py tests/golden/test_golden_task_harness.py -q; run_golden_task_harness.py --task-type text.classify exit 0"
+}

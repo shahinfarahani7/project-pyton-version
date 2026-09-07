@@ -50,6 +50,7 @@ class FinanceService:
     ledger_postings: list[dict[str, Any]] = field(default_factory=list)
     reward_accruals: list[dict[str, Any]] = field(default_factory=list)
     processed_idempotency: set[str] = field(default_factory=set)
+    idempotency_receipts: dict[str, dict[str, Any]] = field(default_factory=dict)
     reconciliation_runs: list[dict[str, Any]] = field(default_factory=list)
 
     def capture_reservation(
@@ -97,8 +98,11 @@ class FinanceService:
         price_input: dict[str, Any],
         reward_input: dict[str, Any],
         refund_micros: int = 0,
+        replay_on_duplicate: bool = False,
     ) -> dict[str, Any]:
         if idempotency_key in self.processed_idempotency:
+            if replay_on_duplicate and idempotency_key in self.idempotency_receipts:
+                return self.idempotency_receipts[idempotency_key]
             raise finance_error("IDEMPOTENCY_CONFLICT")
         price = self.pricing_engine.quote(PriceInput.from_vector(price_input))
         reward = compute_reward(reward_input)
@@ -168,7 +172,7 @@ class FinanceService:
         }
         self.reward_accruals.append(accrual)
         self.processed_idempotency.add(idempotency_key)
-        return {
+        receipt = {
             "usage": usage,
             "invoiceLine": line,
             "posting": posting,
@@ -176,7 +180,10 @@ class FinanceService:
             "reservedMicros": reserved,
             "chargedMicros": charged,
             "releasedMicros": released,
+            "idempotencyKey": idempotency_key,
         }
+        self.idempotency_receipts[idempotency_key] = receipt
+        return receipt
 
     def reverse_reward(self, *, accrual_id: str, reason: str) -> dict[str, Any]:
         for accrual in self.reward_accruals:

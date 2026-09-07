@@ -1,0 +1,29 @@
+{
+  "taskType": "text.classify",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for text.classify (Qwen JSON) production validation path",
+  "input": {
+    "inlineText": "Your verification code is 123456. Do not share it.",
+    "options": {
+      "allowedLabels": ["security", "marketing", "other"]
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_classify_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "label": "security",
+        "confidence": 0.94,
+        "evidence": ["verification code", "do not share"]
+      }
+    },
+    "metrics": {
+      "llmMs": 820,
+      "inputTokens": 18,
+      "outputTokens": 12
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

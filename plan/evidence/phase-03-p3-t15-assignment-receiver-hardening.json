@@ -1,0 +1,25 @@
+{
+  "taskId": "P3-T15",
+  "completedAt": "2026-09-02",
+  "summary": "AssignmentReceiver validates contract, fence, and consent before ExecutionPlanRunner; invalid assignments fail locally with closed failure evidence and no execution commands.",
+  "artifacts": {
+    "receiver": "src/apps/worker/lib/runtime/assignment_receiver.dart",
+    "coordinatorWiring": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "assignmentModel": "src/apps/worker/lib/api/worker_assignment_models.dart",
+    "backendPreStartFail": "src/backend/edgemint/workers/assignments.py",
+    "tests": [
+      "src/apps/worker/test/runtime/assignment_receiver_test.dart",
+      "src/apps/worker/test/runtime/assignment_coordinator_test.dart",
+      "src/backend/tests/workers/test_assignment_fail.py"
+    ]
+  },
+  "validationSteps": [
+    "contract: required fields, auto mode, supported taskType, lease/start deadlines",
+    "fence: checkpoint fence must match assignment fence",
+    "consent: ExecutionPolicy.requiredConsents must be granted"
+  ],
+  "testRun": {
+    "backend": "py -3.13 -m pytest tests/workers/test_assignment_fail.py -q (6 passed)",
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

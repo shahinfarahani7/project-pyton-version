@@ -1,0 +1,34 @@
+{
+  "taskId": "P3-T13",
+  "completedAt": "2026-09-02",
+  "summary": "Worker maps local runtime exceptions to closed architecture failure codes and submits structured failure evidence via production :fail assignment command; backend validates closed codes and emits task.failed CloudEvent.",
+  "artifacts": {
+    "backendRegistry": "src/backend/edgemint/workers/failure_codes.py",
+    "backendService": "src/backend/edgemint/workers/assignments.py",
+    "backendRoutes": "src/backend/edgemint/services/worker_registry.py",
+    "workerMapper": "src/apps/worker/lib/runtime/failure_evidence.dart",
+    "coordinatorWiring": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "contracts": [
+      "contracts/openapi/edgemint-worker-api.yaml",
+      "contracts/cloudevents/task.failed.json",
+      "dsl/operation-contracts/failAssignment.yaml"
+    ],
+    "tests": [
+      "src/backend/tests/workers/test_assignment_fail.py",
+      "src/apps/worker/test/runtime/failure_evidence_mapper_test.dart"
+    ]
+  },
+  "failureCodeMatrix": {
+    "THERMAL_BLOCK": ["RuntimeSafetyException thermalCritical/thermalThrottled", "ConstraintViolation.thermalCritical"],
+    "RUNTIME_OUT_OF_MEMORY": ["RuntimeSafetyException memoryPressure", "WorkerError.outOfMemoryRisk"],
+    "RUNTIME_CRASH": ["RuntimeSafetyException runtimeCorrupted", "StateError", "WorkerError.internalError"],
+    "INSUFFICIENT_MEMORY": ["WorkerResourceEnforcementException memoryBudgetExceeded"],
+    "OCR_EMPTY_RESULT": ["WorkerError.ocrNoText"],
+    "CONTEXT_BUDGET_EXCEEDED": ["ContextBudgetRequiresChunkException"],
+    "CONSENT_MISMATCH": ["ConstraintViolation.missingConsent"]
+  },
+  "testRun": {
+    "backend": "py -3.13 -m pytest tests/workers/test_assignment_fail.py -q (5 passed)",
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

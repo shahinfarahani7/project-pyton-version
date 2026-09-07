@@ -1,0 +1,27 @@
+{
+  "taskType": "review.sentiment",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for review.sentiment (Qwen review sentiment)",
+  "input": {
+    "inlineText": "Great battery but slow delivery.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_review_sentiment_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "sentiment": "mixed",
+        "confidence": 0.88,
+        "aspects": ["battery:positive", "delivery:negative"]
+      }
+    },
+    "metrics": {
+      "llmMs": 540,
+      "inputTokens": 10,
+      "outputTokens": 14
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

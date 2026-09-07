@@ -72,6 +72,125 @@ for p,d in docs:
         if not art.get('sha256') or not art.get('signature') or not art.get('sizeBytes'): errors.append(f'{rel}: active model missing release artifact evidence')
     if k=='TokenPolicy' and s.get('claimEnabled') and d['metadata']['status']=='active':
         errors.append(f'{rel}: claim-enabled token policy cannot be active in baseline')
-print(json.dumps({'documents':len(docs),'kinds':len(names),'errors':len(errors)},indent=2))
+    if k=='UserResourcePolicy':
+        rp=s['resourcePolicy']; modes=s['contributionModes']
+        if rp['defaultApprovedPercent']>rp['maximumApprovedPercent']: errors.append(f'{rel}: defaultApprovedPercent exceeds maximumApprovedPercent')
+        approved={m['approvedPercent'] for m in modes}
+        if rp['defaultApprovedPercent'] not in approved: errors.append(f'{rel}: defaultApprovedPercent missing from contributionModes')
+        if rp['maximumApprovedPercent'] not in approved: errors.append(f'{rel}: maximumApprovedPercent missing from contributionModes')
+        ids=[m['id'] for m in modes]
+        if len(set(ids))!=len(ids): errors.append(f'{rel}: duplicate contribution mode ids')
+        default_modes=[m for m in modes if m['approvedPercent']==rp['defaultApprovedPercent']]
+        if len(default_modes)!=1 or default_modes[0].get('requiresExplicitOptIn'): errors.append(f'{rel}: default mode must exist without explicit opt-in')
+        max_modes=[m for m in modes if m['approvedPercent']==rp['maximumApprovedPercent']]
+        if len(max_modes)!=1 or not max_modes[0].get('requiresExplicitOptIn'): errors.append(f'{rel}: maximum mode must require explicit opt-in')
+    if k=='RuntimeCompatibilityProfile':
+        recommended=set(s['recommendedRuntimeClasses'])
+        class_ids={rc['id'] for rc in s['runtimeClasses']}
+        if recommended!=class_ids: errors.append(f'{rel}: runtimeClasses ids must match recommendedRuntimeClasses')
+        if len(class_ids)!=len(s['runtimeClasses']): errors.append(f'{rel}: duplicate runtime class ids')
+        req_ids={tr['taskRuntimeClass'] for tr in s['taskRequirements']}
+        if recommended!=req_ids: errors.append(f'{rel}: taskRequirements must cover all recommended runtime classes')
+        pairs=set()
+        for rule in s['coRunRules']:
+            a,b=rule['runtimeA'],rule['runtimeB']
+            if a not in class_ids or b not in class_ids: errors.append(f'{rel}: coRunRule references unknown runtime class')
+            if a==b: errors.append(f'{rel}: coRunRule runtimeA and runtimeB must differ')
+            key=tuple(sorted((a,b)))
+            if key in pairs: errors.append(f'{rel}: duplicate coRunRule pair {key}')
+            pairs.add(key)
+            for req in s['taskRequirements']:
+                for worker_class in req['requiredWorkerRuntimeClasses']:
+                    if worker_class not in class_ids: errors.append(f'{rel}: taskRequirement references unknown runtime class {worker_class}')
+    if k=='ExclusiveGroupPolicy':
+        group_ids={g['id'] for g in s['groups']}
+        if len(group_ids)!=len(s['groups']): errors.append(f'{rel}: duplicate exclusive group ids')
+        light=set(s['lightWorkGroups'])
+        if not light.issubset(group_ids): errors.append(f'{rel}: lightWorkGroups must reference defined groups')
+        pairs=set()
+        for rule in s['crossGroupRules']:
+            a,b=rule['groupA'],rule['groupB']
+            if a not in group_ids or b not in group_ids: errors.append(f'{rel}: crossGroupRule references unknown group')
+            if a==b: errors.append(f'{rel}: crossGroupRule groupA and groupB must differ')
+            key=tuple(sorted((a,b)))
+            if key in pairs: errors.append(f'{rel}: duplicate crossGroupRule pair {key}')
+            pairs.add(key)
+        llm_ocr=[rule for rule in s['crossGroupRules'] if {rule['groupA'],rule['groupB']}=={'llm_inference','ocr_inference'}]
+        if len(llm_ocr)!=1 or llm_ocr[0].get('concurrentAllowed') is not False:
+            errors.append(f'{rel}: llm_inference + ocr_inference must disallow concurrent reservations by default')
+    if k=='RetryPolicyMatrix':
+        import json as _json
+        catalog_path=ROOT/'src/shared/task-types/catalog.json'
+        catalog_types=set()
+        flex_violations: list[str] = []
+        if catalog_path.exists():
+            try:
+                from edgemint.tasks.catalog_reconciliation import list_flex_dispatch_violations
+
+                flex_violations = list_flex_dispatch_violations()
+            except Exception:
+                flex_non_executable=set()
+                catalog=_json.loads(catalog_path.read_text(encoding='utf-8'))
+                for category in catalog['categories']:
+                    for item in category['types']:
+                        catalog_types.add(str(item['value']))
+                        if str(item.get('inputMode'))=='flex' and item.get('executable') is not False:
+                            flex_non_executable.add(str(item['value']))
+                for tt in flex_non_executable:
+                    errors.append(f'{rel}: flex task {tt} must remain non-executable')
+        else:
+            flex_violations = []
+        if flex_violations:
+            for violation in flex_violations:
+                errors.append(f'{rel}: flex dispatch gate violation: {violation}')
+        if catalog_path.exists() and not flex_violations:
+            catalog=_json.loads(catalog_path.read_text(encoding='utf-8'))
+            for category in catalog['categories']:
+                for item in category['types']:
+                    catalog_types.add(str(item['value']))
+        matrix_types=set()
+        for row in s.get('entries',[]):
+            tt=str(row['taskType'])
+            if tt in matrix_types: errors.append(f'{rel}: duplicate taskType {tt}')
+            matrix_types.add(tt)
+            if not row.get('executable') and row.get('retryClass')!='no_retry':
+                errors.append(f'{rel}: non-executable task {tt} must use retryClass no_retry')
+        if catalog_types and matrix_types!=catalog_types:
+            missing=sorted(catalog_types-matrix_types)
+            extra=sorted(matrix_types-catalog_types)
+            if missing: errors.append(f'{rel}: missing catalog task types: {", ".join(missing[:5])}')
+            if extra: errors.append(f'{rel}: unknown task types: {", ".join(extra[:5])}')
+    if k=='CheckpointPolicyMatrix':
+        import json as _json
+        catalog_path=ROOT/'src/shared/task-types/catalog.json'
+        catalog_types=set()
+        if catalog_path.exists():
+            catalog=_json.loads(catalog_path.read_text(encoding='utf-8'))
+            for category in catalog['categories']:
+                for item in category['types']:
+                    catalog_types.add(str(item['value']))
+        matrix_types=set()
+        for row in s.get('entries',[]):
+            tt=str(row['taskType'])
+            if tt in matrix_types: errors.append(f'{rel}: duplicate taskType {tt}')
+            matrix_types.add(tt)
+            if row.get('checkpointEnabled') and row.get('checkpointStrategy')=='none':
+                errors.append(f'{rel}: enabled task {tt} must not use strategy none')
+            if not row.get('checkpointEnabled') and row.get('checkpointStrategy')!='none':
+                errors.append(f'{rel}: disabled task {tt} must use strategy none')
+        if catalog_types and matrix_types!=catalog_types:
+            missing=sorted(catalog_types-matrix_types)
+            extra=sorted(matrix_types-catalog_types)
+            if missing: errors.append(f'{rel}: missing catalog task types: {", ".join(missing[:5])}')
+            if extra: errors.append(f'{rel}: unknown task types: {", ".join(extra[:5])}')
+active_exclusive_groups=set()
+for p,d in docs:
+    if d['kind']=='ExclusiveGroupPolicy' and d['metadata'].get('status')=='active':
+        active_exclusive_groups={g['id'] for g in d['spec']['groups']}
+for p,d in docs:
+    if d['kind']=='TaskResourceEnvelope' and active_exclusive_groups:
+        eg=d['spec'].get('exclusiveGroup')
+        if eg and eg not in active_exclusive_groups:
+            errors.append(f'{p.relative_to(ROOT)}: exclusiveGroup {eg} missing from active ExclusiveGroupPolicy')
 if errors:
     print('\n'.join(errors[:500]));sys.exit(1)

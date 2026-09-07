@@ -1,0 +1,12 @@
+{
+  "taskId": "P4-T02",
+  "completedAt": "2026-09-02",
+  "summary": "Model locality scoring prefers loaded required model (10000 bps) over installed (8500) over cold (0) per smart-router-v2 feature formulas.",
+  "artifacts": {
+    "scoring": "src/backend/edgemint/routing/scoring_features.py",
+    "policy": "dsl/policies/routing/smart-router-v2.yaml",
+    "tests": "src/backend/tests/routing/test_model_locality_scoring.py"
+  },
+  "tieBreak": "hmac_sha256(taskId, workerId, routerEpoch) when scores match",
+  "testRun": "py -3.13 -m pytest tests/routing/test_model_locality_scoring.py -q (3 passed)"
+}

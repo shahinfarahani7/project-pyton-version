@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T09",
+  "completedAt": "2026-09-02",
+  "summary": "Scheduler stack ranks workers, records audit, and atomically assigns via reservation path with transient-failure fallback to next eligible worker.",
+  "artifacts": {
+    "service": "src/backend/edgemint/routing/service.py#assign_attempt_with_scheduler_stack",
+    "verifyScript": "tools/verify_production_auto_assignment_source.py",
+    "tests": "src/backend/tests/routing/test_scheduler_stack.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_scheduler_stack.py -q (5 passed); verify_production_auto_assignment_source.py exit 0"
+}

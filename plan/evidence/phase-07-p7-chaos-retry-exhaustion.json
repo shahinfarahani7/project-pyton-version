@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "taskId": "P7-CHAOS-retry-exhaustion",
+  "test": "test_p7_chaos_retry_exhaustion_terminal",
+  "harness": "tools/run_production_chaos_harness.py",
+  "generatedAt": "2026-09-02T10:04:22.524771+00:00",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "notes": "Dev/staging invariant proof via pytest + source verify; live chaos deferred to staging deploy."
+}

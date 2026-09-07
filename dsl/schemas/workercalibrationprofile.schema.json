@@ -1,0 +1,94 @@
+{
+  "$id": "https://schemas.edgemint.example/v1/workercalibrationprofile.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "title": "EdgeMint WorkerCalibrationProfile",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {
+      "const": "edgemint.io/v1"
+    },
+    "kind": {
+      "const": "WorkerCalibrationProfile"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["name", "version", "status", "owners"],
+      "properties": {
+        "description": { "type": "string" },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "owners": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "evaluation", "active", "deprecated", "retired", "blocked"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "spec": {
+      "additionalProperties": false,
+      "type": "object",
+      "required": ["deviceRef", "suiteVersion", "measuredAt", "metrics"],
+      "properties": {
+        "deviceRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "worker device public id or installation id"
+        },
+        "suiteVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "measuredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "llmWarmupMs",
+            "llmPrefillTokensPerSec",
+            "llmDecodeTokensPerSec",
+            "llmPeakMemoryBytes",
+            "ocrPageLatencyMs",
+            "ocrPagesPerMinute",
+            "cpuAverageBps",
+            "thermalDeltaBps",
+            "runtimeStabilityScoreMilli"
+          ],
+          "properties": {
+            "llmWarmupMs": { "type": "integer", "minimum": 0 },
+            "llmPrefillTokensPerSec": { "type": "integer", "minimum": 0 },
+            "llmDecodeTokensPerSec": { "type": "integer", "minimum": 0 },
+            "llmPeakMemoryBytes": { "type": "integer", "minimum": 0 },
+            "ocrPageLatencyMs": { "type": "integer", "minimum": 0 },
+            "ocrPagesPerMinute": { "type": "integer", "minimum": 0 },
+            "cpuAverageBps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+            "thermalDeltaBps": { "type": "integer", "minimum": 0, "maximum": 10000 },
+            "runtimeStabilityScoreMilli": { "type": "integer", "minimum": 0, "maximum": 1000 }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

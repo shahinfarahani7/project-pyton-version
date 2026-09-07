@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "taskId": "P8-A07",
+  "auditId": "A07",
+  "acceptanceCase": "T07",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "10",
+    "17",
+    "52",
+    "61"
+  ],
+  "generatedAt": "2026-09-06T07:53:01.249976+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "dataPolicyDsl": "dsl/policies/data/production-data-policy-v1.yaml",
+    "dataPolicySchema": "dsl/schemas/datapolicy.schema.json",
+    "dataPolicyRegistry": "src/backend/edgemint/security/data_policy_registry.py",
+    "tenantDataTrust": "src/backend/edgemint/security/tenant_data_trust.py",
+    "workspaceDataTrust": "src/backend/edgemint/security/workspace_data_trust.py",
+    "cloudFallback": "src/backend/edgemint/routing/cloud_fallback.py",
+    "admissionWiring": "src/backend/edgemint/tasks/admission.py",
+    "sessionWiring": "src/backend/edgemint/workers/sessions.py",
+    "sqlBindings": "database/sql/031_workspace_data_trust.sql",
+    "backendTests": "src/backend/tests/security/test_tenant_data_trust.py",
+    "cloudFallbackTests": "src/backend/tests/routing/test_cloud_fallback.py"
+  },
+  "t07Scenario": {
+    "title": "Wrong tenant, revoked credentials, prohibited destination, Cloud threshold",
+    "crossTenantArtifactDenied": true,
+    "revokedWorkerDeviceDenied": true,
+    "prohibitedCloudRegionDenied": true,
+    "cloudTimerNeverCreatesPermissionAlone": true,
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T07 end-to-end wrong-tenant artifact integration harness NOT_RUN",
+    "Workspace data-policy binding seed/migration for production tenants pending",
+    "Attestation trust verification on physical device NOT_RUN"
+  ],
+  "errors": []
+}

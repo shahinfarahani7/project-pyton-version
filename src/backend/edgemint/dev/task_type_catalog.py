@@ -29,6 +29,13 @@ class TaskTypeEntry:
     category_id: str
     category_label_en: str
     category_label_fa: str
+    resource_envelope_ref: str | None = None
+    retry_class: str | None = None
+    retry_policy_ref: str | None = None
+    executable: bool = True
+    checkpoint_enabled: bool | None = None
+    checkpoint_strategy: str | None = None
+    checkpoint_policy_ref: str | None = None
 
 
 def _catalog_path() -> Path:
@@ -59,6 +66,19 @@ def _load_index() -> dict[str, TaskTypeEntry]:
                 category_id=category_id,
                 category_label_en=category_label_en,
                 category_label_fa=category_label_fa,
+                resource_envelope_ref=str(item["resourceEnvelopeRef"])
+                if item.get("resourceEnvelopeRef")
+                else None,
+                retry_class=str(item["retryClass"]) if item.get("retryClass") else None,
+                retry_policy_ref=str(item["retryPolicyRef"]) if item.get("retryPolicyRef") else None,
+                executable=bool(item.get("executable", True)),
+                checkpoint_enabled=bool(item["checkpointEnabled"]) if "checkpointEnabled" in item else None,
+                checkpoint_strategy=str(item["checkpointStrategy"])
+                if item.get("checkpointStrategy")
+                else None,
+                checkpoint_policy_ref=str(item["checkpointPolicyRef"])
+                if item.get("checkpointPolicyRef")
+                else None,
             )
             index[entry.value] = entry
     return index
@@ -148,6 +168,7 @@ def task_type_meta(task_type: str) -> dict[str, Any]:
             "pipelineFamily": pipeline_family(task_type),
             "accept": "*/*",
             "supported": False,
+            "resourceEnvelopeRef": None,
         }
     return {
         "value": entry.value,
@@ -160,6 +181,7 @@ def task_type_meta(task_type: str) -> dict[str, Any]:
         "pipelineFamily": pipeline_family(entry.value),
         "accept": accept_for(entry.value),
         "supported": True,
+        "resourceEnvelopeRef": entry.resource_envelope_ref,
     }
 
 
@@ -229,6 +251,7 @@ def list_catalog(*, query: str | None = None, locale: str = "en") -> dict[str, A
                 "inputMode": entry.input_mode,
                 "accept": accept_for(entry.value),
                 "pipelineFamily": pipeline_family(entry.value),
+                "resourceEnvelopeRef": entry.resource_envelope_ref,
             }
             category_types.append(type_payload)
             flat_items.append(

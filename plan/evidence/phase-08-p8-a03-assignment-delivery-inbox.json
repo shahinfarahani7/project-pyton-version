@@ -1,0 +1,53 @@
+{
+  "status": "passed",
+  "taskId": "P8-A03",
+  "auditId": "A03",
+  "acceptanceCase": "T03",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "7",
+    "20",
+    "21",
+    "22",
+    "39",
+    "40"
+  ],
+  "generatedAt": "2026-09-06T07:37:53.037029+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sql": "database/sql/027_worker_assignment_delivery_inbox.sql",
+    "serverService": "src/backend/edgemint/workers/assignment_delivery_inbox.py",
+    "serverWiring": "src/backend/edgemint/workers/assignments.py",
+    "serverEndpoint": "src/backend/edgemint/services/worker_registry.py",
+    "transactionalInbox": "src/backend/edgemint/building_blocks/eventing/transactional_inbox.py",
+    "durableWsClient": "src/backend/edgemint/building_blocks/eventing/durable_websocket_client.py",
+    "workerInbox": "src/apps/worker/lib/runtime/assignment_inbox.dart",
+    "workerCoordinator": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "backendTests": "src/backend/tests/workers/test_assignment_delivery_inbox.py",
+    "eventRelayTests": "src/backend/tests/event_relay/test_eventing_contracts.py",
+    "workerTests": "src/apps/worker/test/runtime/assignment_inbox_test.dart",
+    "wsReplayVerifier": "tools/verify_websocket_replay_source.py"
+  },
+  "upstreamEvidence": [
+    "plan/evidence/phase-07-p7-chaos-websocket-replay.json",
+    "plan/evidence/phase-07-p7-chaos-duplicate-delivery.json",
+    "tools/verify_websocket_replay_source.py"
+  ],
+  "t03Scenario": {
+    "title": "Crash before send; ACK loss; duplicate delivery; reconnect bootstrap",
+    "pollDeliveryInbox": true,
+    "websocketReplayVerifier": true,
+    "eventingContracts": true,
+    "workerLocalInboxTest": "SKIPPED_NO_FLUTTER",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T03 live crash/ACK-loss integration harness NOT_RUN",
+    "OpenAPI contract sync for :inboxBootstrap pending",
+    "WebSocket assignment push path not production-proven"
+  ],
+  "errors": [
+    "flutter CLI unavailable; assignment_inbox_test.dart not executed"
+  ]
+}

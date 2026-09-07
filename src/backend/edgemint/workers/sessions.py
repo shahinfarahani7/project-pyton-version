@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 
 from edgemint.building_blocks.settings import Settings, get_settings
 from edgemint.security.tokens import hash_session_token
+from edgemint.security.tenant_data_trust import evaluate_worker_device_trust
 from edgemint.workers.errors import worker_error
 
 
@@ -74,6 +75,7 @@ async def resolve_worker_session(
                 SELECT
                     session.id AS session_id,
                     session.expires_at_utc,
+                    session.revoked_at_utc,
                     device.id AS device_id,
                     device.public_id AS device_public_id,
                     device.status AS device_status,
@@ -99,8 +101,17 @@ async def resolve_worker_session(
     now = datetime.now(UTC)
     if row["expires_at_utc"] < now:
         raise worker_error("AUTH_INVALID_CREDENTIAL", detail="session expired")
+    if row["revoked_at_utc"] is not None:
+        raise worker_error("AUTH_INVALID_CREDENTIAL", detail="session revoked")
     if expected_worker_public_id and row["worker_public_id"] != expected_worker_public_id:
         raise worker_error("TENANT_RESOURCE_NOT_FOUND", detail="worker mismatch")
+    trust = evaluate_worker_device_trust(
+        worker_status=str(row["worker_status"]),
+        device_status=str(row["device_status"]),
+        attestation_status=str(row["attestation_status"]),
+    )
+    if not trust.permitted:
+        raise worker_error("AUTH_INVALID_CREDENTIAL", detail=trust.reason)
     if row["worker_status"] in {"banned", "quarantined"}:
         raise worker_error("WORKER_QUARANTINED")
     return WorkerSessionContext(

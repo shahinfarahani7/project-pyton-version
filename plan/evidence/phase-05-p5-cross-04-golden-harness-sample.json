@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "test": "golden-task-harness",
+  "fixtureTaskTypes": [
+    "document.ocr",
+    "moderation.profanity",
+    "moderation.prompt_safety",
+    "moderation.spam_comment",
+    "moderation.text",
+    "review.fake_detection",
+    "review.sentiment",
+    "review.topic_tagging",
+    "text.classify",
+    "text.summarize"
+  ],
+  "caseCount": 1,
+  "passed": 1,
+  "failed": 0,
+  "results": [
+    {
+      "taskType": "review.topic_tagging",
+      "passed": true,
+      "resultSha256": "8e83d405eda85d18d279f8e611c464bfddb4541222d707ee300996d3cb0cabdb",
+      "validationValid": true,
+      "goldenStatus": "passed",
+      "failureReason": null,
+      "fixturePath": "D:\\shakhsi\\Edgemint\\edgemint-integration\\tests\\golden\\fixtures\\review.topic_tagging.json"
+    }
+  ]
+}

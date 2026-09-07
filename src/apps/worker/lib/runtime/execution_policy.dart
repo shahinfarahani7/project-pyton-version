@@ -6,6 +6,7 @@ abstract final class ExecutionPolicy {
 
   static const minimumBatteryPercent = 20;
   static const minimumStorageMb = 512;
+  static const maxAiStorageMb = 2048;
   static const checkpointIntervalSeconds = 60;
   static const minimumProgressDeltaMilli = 100;
   static const checkpointRetentionMinutes = 60;

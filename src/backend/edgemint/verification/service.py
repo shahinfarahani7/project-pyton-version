@@ -11,6 +11,7 @@ from edgemint.results.intake import (
     encrypted_storage_reference,
     validate_submission_bindings,
 )
+from edgemint.results.validator import validate_task_result
 from edgemint.verification.consensus import ConsensusVote, evaluate_consensus
 from edgemint.verification.engine import VerificationEvidence, evaluate_automatic_verification
 from edgemint.verification.evidence import record_decision_evidence
@@ -52,14 +53,19 @@ class VerificationService:
         storage_ref = encrypted_storage_reference(workspace_id=binding.workspace_id, result_id=result_id)
         existing.add(submission.result_sha256)
 
+        validation = validate_task_result(
+            task_type=binding.task_type,
+            inline_output=inline_output or submission.output_inline,
+        )
+
         evidence = VerificationEvidence(
             task_type=binding.task_type,
             verification_level=binding.verification_level,
             result_sha256=submission.result_sha256,
-            schema_valid=True,
+            schema_valid=validation.schema_valid,
             artifact_checksum_valid=True,
             worker_signature_valid=True,
-            business_rules_valid=True,
+            business_rules_valid=validation.business_rules_valid,
             is_golden_task=binding.is_golden_task,
             policy_version=self.policy.path.name,
         )

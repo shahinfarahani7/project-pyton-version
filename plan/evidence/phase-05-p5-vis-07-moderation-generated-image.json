@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-07",
+  "taskTypeId": "moderation.generated_image",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/moderation-generated-image.yaml",
+  "goldenFixture": "tests/golden/fixtures/moderation.generated_image.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-02",
+  "taskTypeId": "llm.ai_tag_validation",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/llm-ai-tag-validation.yaml",
+  "goldenFixture": "tests/golden/fixtures/llm.ai_tag_validation.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

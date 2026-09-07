@@ -1,0 +1,25 @@
+{
+  "taskType": "extract.order_number",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for extract.order_number",
+  "input": {
+    "assetRef": "file_golden_order_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_extract_order_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "Purchase order PO-EM-441",
+      "ocrLines": [],
+      "data": {
+        "orderNumber": "PO-EM-441",
+        "confidence": 0.92,
+        "evidence": "Purchase order PO-EM-441"
+      }
+    },
+    "metrics": {"ocrMs": 720, "llmMs": 680}
+  },
+  "minimumConfidenceMilli": 960
+}

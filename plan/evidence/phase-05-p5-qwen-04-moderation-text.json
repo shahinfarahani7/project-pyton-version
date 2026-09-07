@@ -1,0 +1,16 @@
+{
+  "taskId": "P5-QWEN-04",
+  "taskTypeId": "moderation.text",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for moderation.text: TaskType DSL, validator, golden fixture PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/moderation-text.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_moderation_text",
+    "retryPolicy": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0 (stronger_worker)",
+    "checkpointPolicy": "none (checkpointEnabled: false)",
+    "goldenFixture": "tests/golden/fixtures/moderation.text.json",
+    "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#TextClassifyHandler (via text.classify.v1)"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_moderation_text_validator.py tests/golden/test_golden_task_harness.py -q; run_golden_task_harness.py --task-type moderation.text exit 0"
+}

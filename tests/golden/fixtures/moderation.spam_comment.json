@@ -1,0 +1,27 @@
+{
+  "taskType": "moderation.spam_comment",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for moderation.spam_comment (Qwen spam detection)",
+  "input": {
+    "inlineText": "Buy now! click.example repeated 10 times.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_spam_comment_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "spam": true,
+        "confidence": 0.93,
+        "signals": ["promotional_cta", "repeated_link", "unsolicited_pitch"]
+      }
+    },
+    "metrics": {
+      "llmMs": 510,
+      "inputTokens": 14,
+      "outputTokens": 16
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

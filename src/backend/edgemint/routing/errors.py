@@ -24,6 +24,11 @@ def router_error(code: str, *, detail: str | None = None) -> RouterServiceError:
         "TENANT_RESOURCE_NOT_FOUND": (404, "Resource not found"),
         "WORKER_CAPACITY_EXHAUSTED": (409, "Worker capacity exhausted"),
         "WORKER_NOT_ELIGIBLE": (409, "Worker not eligible"),
+        "RESOURCE_RESERVATION_FAILED": (409, "Resource reservation failed"),
+        "EXCLUSIVE_GROUP_SATURATED": (409, "Exclusive group capacity exhausted"),
+        "CPU_BUDGET_EXCEEDED": (409, "CPU budget exhausted"),
+        "MEMORY_BUDGET_EXCEEDED": (409, "Memory budget exhausted"),
+        "STORAGE_BUDGET_EXCEEDED": (409, "Storage budget exhausted"),
     }
     status, title = catalog.get(code, (500, "Router operation failed"))
     return RouterServiceError(code=code, status=status, title=title, detail=detail)

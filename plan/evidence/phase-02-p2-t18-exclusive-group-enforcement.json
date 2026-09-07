@@ -1,0 +1,8 @@
+{
+  "taskId": "P2-T18",
+  "completedAt": "2026-09-02",
+  "module": "src/backend/edgemint/routing/exclusive_groups.py",
+  "enforcementHook": "ResourceReservationService.assert_exclusive_group_available before create_worker_resource_reservation",
+  "featureFlag": "EDGEMINT_WORKER_EXCLUSIVE_GROUP_ENFORCEMENT_ENABLED",
+  "tests": "src/backend/tests/routing/test_exclusive_group_enforcement.py"
+}

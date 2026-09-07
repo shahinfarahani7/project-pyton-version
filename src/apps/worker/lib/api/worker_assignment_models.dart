@@ -12,6 +12,9 @@ class WorkerAssignment {
     required this.outputUploadUrl,
     required this.startDeadlineAt,
     this.taskId,
+    this.deliveryInboxId,
+    this.assignmentMode = 'auto',
+    this.executionStartsAutomatically = true,
   });
 
   factory WorkerAssignment.fromJson(Map<String, dynamic> json) => WorkerAssignment(
@@ -27,6 +30,9 @@ class WorkerAssignment {
         outputUploadUrl: json['outputUploadUrl'] as String,
         startDeadlineAt: DateTime.parse(json['startDeadlineAt'] as String),
         taskId: json['taskId'] as String?,
+        deliveryInboxId: json['deliveryInboxId'] as String?,
+        assignmentMode: json['assignmentMode'] as String? ?? 'auto',
+        executionStartsAutomatically: json['executionStartsAutomatically'] as bool? ?? true,
       );
 
   final String assignmentId;
@@ -41,9 +47,9 @@ class WorkerAssignment {
   final String outputUploadUrl;
   final DateTime startDeadlineAt;
   final String? taskId;
-
-  bool get executionStartsAutomatically => true;
-  String get assignmentMode => 'auto';
+  final String? deliveryInboxId;
+  final String assignmentMode;
+  final bool executionStartsAutomatically;
 }
 
 class CommandReceipt {

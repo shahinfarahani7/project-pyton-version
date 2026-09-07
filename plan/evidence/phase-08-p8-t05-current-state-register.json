@@ -1,0 +1,127 @@
+{
+  "status": "passed",
+  "taskId": "P8-T05",
+  "architectureVersion": "2.0",
+  "sourceSection": "75",
+  "generatedAt": "2026-09-06T07:18:52.823407+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "claims": [
+    {
+      "claim": "Repository paths and production routing in section 3",
+      "v2Status": "VERIFIED_AT_CHECKOUT",
+      "evidence": {
+        "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+        "routingService": true,
+        "workerGateway": true,
+        "workerRegistry": true,
+        "workerApp": true
+      }
+    },
+    {
+      "claim": "Qwen profile/model/artifact ~547 MB",
+      "v2Status": "REPORTED_UNVERIFIED",
+      "evidence": {
+        "modelCatalog": false,
+        "artifactFileNameReferenced": "Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+        "exactBytesHashProof": false
+      }
+    },
+    {
+      "claim": "Converted artifact capacity 1280; 4096 unsuitable",
+      "v2Status": "REPORTED_BASELINE",
+      "evidence": {
+        "contextBudgetManager": true,
+        "nativeBoundaryTestEvidence": false
+      }
+    },
+    {
+      "claim": "CPU and Flutter\u2192MediaPipe package path",
+      "v2Status": "BUILD_PROOF_REQUIRED",
+      "evidence": {
+        "pubspec": true,
+        "pubspecLock": true,
+        "gemmaAdapter": false,
+        "resolvedNativeBuildEvidence": false
+      }
+    },
+    {
+      "claim": "56 total; 25 Qwen / 9 Flex / 14 Vision historical counts",
+      "v2Status": "RECONCILIATION_REQUIRED",
+      "evidence": {
+        "catalogSnapshot": {
+          "total": 56,
+          "uniqueIds": 56,
+          "duplicateIds": 0,
+          "flexCount": 9,
+          "visionHeuristicCount": 22,
+          "qwenHeuristicCount": 25,
+          "executableCount": 56
+        },
+        "note": "Heuristic axis counts overlap; unique ID count is authoritative at 56.",
+        "flexWithDslYaml": 0,
+        "flexTotal": 9
+      }
+    },
+    {
+      "claim": "Nine Flex Tasks lack Input Contracts",
+      "v2Status": "HISTORICAL_REPORT_REFUTED_AT_CHECKOUT",
+      "evidence": {
+        "flexTypes": [
+          "catalog.fake_listing",
+          "llm.ai_tag_validation",
+          "llm.caption_validation",
+          "dataset.label_verification",
+          "dataset.duplicate_cleanup",
+          "dataset.low_quality_removal",
+          "ml.active_learning_prelabel",
+          "ml.consensus_label_validation",
+          "ml.human_verification_quality"
+        ],
+        "flexWithDslYaml": [],
+        "allFlexHaveDsl": false
+      }
+    },
+    {
+      "claim": "Active model identity cleared/reset while idle",
+      "v2Status": "HISTORICAL_BUG_NOT_REPRODUCED",
+      "evidence": {
+        "clearActiveInferenceIdentityCallSites": 1,
+        "ensureModelReadyCallSites": 6,
+        "physicalDeviceReproEvidence": false
+      }
+    },
+    {
+      "claim": "GATHER_ND / decode failure / SIGSEGV resolved",
+      "v2Status": "NOT_PROVEN",
+      "evidence": {
+        "nativeRegressionTestEvidence": false
+      }
+    },
+    {
+      "claim": "Assignment/resource/validation/reward in production path",
+      "v2Status": "DEV_TEST_ONLY",
+      "evidence": {
+        "assignmentsModule": true,
+        "reservationSql": true,
+        "validationEngine": true,
+        "billingService": true,
+        "productionE2eBlocked": "EDGEMINT_DATABASE_URL required for live E2E"
+      }
+    },
+    {
+      "claim": "Smoke/20-worker tests imply full readiness",
+      "v2Status": "NOT_SUFFICIENT",
+      "evidence": {
+        "phase7ChaosHarness": true,
+        "acceptanceCasesT01T24Status": "NOT_RUN",
+        "physicalDeviceMatrix": false
+      }
+    }
+  ],
+  "summary": {
+    "verifiedAtCheckout": 1,
+    "requiresFurtherEvidence": 9,
+    "catalogUniqueIds": 56
+  }
+}

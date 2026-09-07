@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T10",
+  "completedAt": "2026-09-02",
+  "summary": "Server-only cloud fallback decision when edge wait exceeds policy threshold; worker never decides fallback.",
+  "artifacts": {
+    "module": "src/backend/edgemint/routing/cloud_fallback.py",
+    "schedulerHook": "src/backend/edgemint/routing/service.py#assign_attempt_with_scheduler_stack",
+    "tests": "src/backend/tests/routing/test_cloud_fallback.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_cloud_fallback.py -q (3 passed)"
+}

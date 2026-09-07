@@ -1,0 +1,94 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: safety-nsfw-detection
+  version: 2.0.0
+  status: active
+  description: Production vision contract for safety.nsfw_detection
+  labels:
+    domain: vision
+    family: internvl
+    visionCategory: safety
+  owners:
+  - product
+  - platform
+spec:
+  code: safety.nsfw_detection
+  lifecycle: commercial-candidate
+  billing:
+    measure: image
+    quantum: 1
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    additionalProperties: false
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    additionalProperties: false
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        required:
+        - nsfw
+        - riskScore
+        - categories
+        - reason
+        properties:
+          nsfw:
+            type: boolean
+          riskScore:
+            type: number
+            minimum: 0
+            maximum: 1
+          categories:
+            type: array
+            items:
+              type: string
+          reason:
+            type: string
+      metrics:
+        type: object
+  inputLimits:
+    maximumBytes: 20971520
+    allowedContentTypes:
+    - image/jpeg
+    - image/png
+    - image/webp
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 180
+  modelCandidates:
+  - modelRef: ModelProfile/minicpm-v-4.6-q4@2.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

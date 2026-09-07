@@ -1,0 +1,31 @@
+{
+  "taskType": "text.summarize",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for text.summarize (Qwen map/reduce) production validation path",
+  "input": {
+    "inlineText": "EdgeMint routes document tasks to enrolled workers. Workers report device capabilities at enrollment and receive assignments with fence tokens. Summarization uses hierarchical map-reduce when input exceeds the context budget.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_summarize_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "summary": "EdgeMint assigns document work to enrolled workers using capability reports and fence tokens; long text is summarized via hierarchical map-reduce.",
+        "keyPoints": [
+          "Workers enroll with device capability reports",
+          "Assignments carry fence tokens for safe execution",
+          "Summarization scales via map-reduce beyond context limits"
+        ],
+        "missingOrUnclear": []
+      }
+    },
+    "metrics": {
+      "llmMs": 4200,
+      "inputTokens": 48,
+      "outputTokens": 62
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

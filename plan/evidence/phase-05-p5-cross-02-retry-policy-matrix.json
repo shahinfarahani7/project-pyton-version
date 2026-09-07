@@ -1,0 +1,24 @@
+{
+  "taskId": "P5-CROSS-02",
+  "completedAt": "2026-09-02",
+  "summary": "RetryPolicyMatrix DSL assigns retryClass to all 56 catalog task types; 9 flex tasks remain non-executable with no_retry.",
+  "artifacts": {
+    "matrix": "dsl/policies/retry/task-retry-matrix-v1.yaml",
+    "schema": "dsl/schemas/retrypolicymatrix.schema.json",
+    "catalog": "src/shared/task-types/catalog.json",
+    "loader": "src/backend/edgemint/routing/retry_policy_matrix.py",
+    "routerHook": "src/backend/edgemint/routing/service.py#classify_retry",
+    "generator": "tools/generate_retry_policy_matrix.py",
+    "export": "tools/export_retry_policy_matrix.py",
+    "tests": "src/backend/tests/routing/test_retry_policy_matrix.py"
+  },
+  "counts": {
+    "catalogTaskTypes": 56,
+    "matrixEntries": 56,
+    "flexNonExecutable": 9,
+    "strongerWorker": 20,
+    "immediateOtherWorker": 27,
+    "noRetry": 9
+  },
+  "testRun": "py -3.13 tools/validate_dsl.py exit 0; py -3.13 -m pytest tests/routing/test_retry_policy_matrix.py -q (8 passed)"
+}

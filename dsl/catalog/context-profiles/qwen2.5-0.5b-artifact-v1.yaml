@@ -1,0 +1,30 @@
+apiVersion: edgemint.io/v1
+kind: ContextProfile
+metadata:
+  name: qwen2.5-0.5b-artifact
+  version: 1.0.0
+  status: active
+  owners:
+    - mobile
+    - platform
+  description: Artifact-bound Qwen context limits (Architecture v2 §25, A10).
+spec:
+  modelVersionId: mdv_qwen2_5_0_5b
+  verifiedArtifactContextLimit: 1280
+  artifactEvidence: LiteRT task filename suffix ekv1280
+  configuredRuntimeContextLimit: 1280
+  budgetSplit:
+    systemTemplateTokens: 200
+    inputBudgetTokens: 600
+    outputReserveTokens: 300
+    safetyMarginTokens: 180
+  tokenizerPolicy: conservative_char_estimate
+  charactersPerToken: 3.5
+  requiresFormattedPromptCount: true
+  enforceMaxOutputTokens: true
+  formattedPromptIncludes:
+    - systemInstruction
+    - taskTemplate
+    - separators
+    - sourceMarkers
+    - noThinkSuffix

@@ -1,0 +1,46 @@
+version: "1.0.0"
+name: input-decode-privacy-v1
+description: >
+  Bounded input decode, temporary artifact lifecycle and privacy cleanup (Architecture v2 §28, §31, §54, §55, §61, A21/T21).
+
+architectureSections: ["28", "31", "54", "55", "61"]
+
+decodeBounds:
+  maxDecodedBytes: 536870912
+  maxPdfPages: 500
+  maxImagePixels: 50000000
+  pdfExpansionFactor: 10
+  imageExpansionFactor: 4
+  defaultExpansionFactor: 3
+  rejectBeforeDecode: true
+  failureCode: DECODE_BOUNDS_EXCEEDED
+
+uploadArtifacts:
+  acceptOnlyCompleteUploads: true
+  partialUploadRejected: true
+  digestVerificationRequired: true
+  incompleteArtifactFailureCode: UPLOAD_INCOMPLETE
+
+retention:
+  workerTemporaryMinutes: 60
+  checkpointRetainUntilServerRevoke: true
+  legalHoldBlocksCleanup: true
+
+privacyCleanup:
+  resetTaskBuffersBetweenAssignments: true
+  tempBlobScope: assignment
+  crossTaskLeakageForbidden: true
+  idempotentCleanup: true
+  preserveCheckpointWhen:
+    - resume_grant_active
+    - cancel_before_server_revoke
+
+t21Scenarios:
+  - id: huge_decoded_input
+    description: Oversized decoded PDF/image rejected before allocation/decode
+  - id: partial_upload
+    description: Incomplete upload never accepted as task input artifact
+  - id: cancel_retention_race
+    description: Required checkpoint retained; temp decode buffers cleaned
+  - id: unrelated_subsequent_task
+    description: Next task cannot inherit prior conversation/output buffers

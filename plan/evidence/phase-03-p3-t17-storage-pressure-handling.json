@@ -1,0 +1,22 @@
+{
+  "taskId": "P3-T17",
+  "completedAt": "2026-09-02",
+  "summary": "StoragePressureManager applies MaxAIStorage/MinimumFreeStorage policy with LRU cache eviction while active fence assignments protect assigned models and checkpoint blobs.",
+  "artifacts": {
+    "policy": "src/apps/worker/lib/runtime/model_storage_policy.dart",
+    "manager": "src/apps/worker/lib/runtime/storage_pressure_manager.dart",
+    "coordinatorWiring": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "downloadWiring": "src/apps/worker/lib/worker_app_controller.dart",
+    "tests": [
+      "src/apps/worker/test/runtime/storage_pressure_manager_test.dart"
+    ]
+  },
+  "evictionRules": {
+    "permanentPinned": "never evicted",
+    "cache": "LRU eligible",
+    "activeFence": "protected model ids and checkpoint blob refs blocked from eviction"
+  },
+  "testRun": {
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

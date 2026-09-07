@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "taskId": "P8-A12",
+  "auditId": "A12",
+  "acceptanceCase": "T12",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "28",
+    "46",
+    "49",
+    "61"
+  ],
+  "generatedAt": "2026-09-06T08:22:17.975953+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sqlMigration": "database/sql/034_checkpoint_resume_grants.sql",
+    "checkpointResumeService": "src/backend/edgemint/workers/checkpoint_resume.py",
+    "assignmentsWiring": "src/backend/edgemint/workers/assignments.py",
+    "workerResumeGrant": "src/apps/worker/lib/runtime/resume_grant.dart",
+    "workerCheckpointManager": "src/apps/worker/lib/runtime/checkpoint_manager.dart",
+    "failureEvidence": "src/apps/worker/lib/runtime/failure_evidence.dart",
+    "backendTests": "src/backend/tests/workers/test_checkpoint_resume.py",
+    "workerTests": "src/apps/worker/test/runtime/resume_grant_test.dart",
+    "checkpointManagerTests": "src/apps/worker/test/runtime/checkpoint_manager_test.dart"
+  },
+  "t12Scenario": {
+    "title": "Cross-Worker Resume; incompatible checkpoint/model space",
+    "manifestPublishOnCheckpoint": true,
+    "compatibilityEvaluator": true,
+    "workerResumeGrantValidator": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "producerFenceProvenanceOnly": true,
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T12 cross-Worker reassignment end-to-end integration harness NOT_RUN",
+    "Incomplete checkpoint rejection on device NOT_RUN",
+    "Model-space / execution-plan mismatch negative E2E NOT_RUN"
+  ],
+  "errors": []
+}

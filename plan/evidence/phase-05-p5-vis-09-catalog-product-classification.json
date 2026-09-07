@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-09",
+  "taskTypeId": "catalog.product_classification",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/catalog-product-classification.yaml",
+  "goldenFixture": "tests/golden/fixtures/catalog.product_classification.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

@@ -1,0 +1,13 @@
+{
+  "taskId": "P5-QWEN-08",
+  "taskTypeId": "review.sentiment",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for review.sentiment: TaskType DSL, validator, golden fixture PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/review-sentiment.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_review_sentiment",
+    "goldenFixture": "tests/golden/fixtures/review.sentiment.json"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_review_sentiment_validator.py tests/golden/test_golden_task_harness.py -q; run_golden_task_harness.py --task-type review.sentiment exit 0"
+}

@@ -1,0 +1,13 @@
+{
+  "taskId": "P5-QWEN-07",
+  "taskTypeId": "review.fake_detection",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for review.fake_detection: TaskType DSL, validator, golden fixture PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/review-fake-detection.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_review_fake_detection",
+    "goldenFixture": "tests/golden/fixtures/review.fake_detection.json"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_review_fake_detection_validator.py tests/golden/test_golden_task_harness.py -q; run_golden_task_harness.py --task-type review.fake_detection exit 0"
+}

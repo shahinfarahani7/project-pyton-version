@@ -1,0 +1,12 @@
+{
+  "taskId": "P2-T12",
+  "completedAt": "2026-09-02",
+  "configReference": {
+    "balancedMultiplierBps": 3000,
+    "performanceMultiplierBps": 5000,
+    "module": "src/backend/edgemint/routing/resource_budget.py"
+  },
+  "sql": "database/sql/017_worker_contribution_mode.sql",
+  "schedulerHooks": "RouterService.contribution_budget_multiplier_bps_for_worker, RouterService.effective_cpu_budget_units",
+  "tests": "src/backend/tests/routing/test_resource_budget.py"
+}

@@ -1,0 +1,91 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: catalog-product-classification
+  version: 2.0.0
+  status: active
+  description: Production vision contract for catalog.product_classification
+  labels:
+    domain: vision
+    family: internvl
+    visionCategory: catalog
+  owners:
+  - product
+  - platform
+spec:
+  code: catalog.product_classification
+  lifecycle: commercial-candidate
+  billing:
+    measure: image
+    quantum: 1
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    additionalProperties: false
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    additionalProperties: false
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        required:
+        - category
+        - confidence
+        - alternatives
+        properties:
+          category:
+            type: string
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+          alternatives:
+            type: array
+            items:
+              type: string
+      metrics:
+        type: object
+  inputLimits:
+    maximumBytes: 20971520
+    allowedContentTypes:
+    - image/jpeg
+    - image/png
+    - image/webp
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 180
+  modelCandidates:
+  - modelRef: ModelProfile/minicpm-v-4.6-q4@2.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

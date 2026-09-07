@@ -1,0 +1,96 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: catalog-duplicate-image
+  version: 2.0.0
+  status: active
+  description: Duplicate image detection via lightweight dHash similarity
+  labels:
+    domain: vision
+    family: lightweight
+    visionCategory: embedding
+    runtimeClass: embedding_runtime
+  owners:
+  - product
+  - platform
+spec:
+  code: catalog.duplicate_image
+  lifecycle: commercial-candidate
+  billing:
+    measure: image
+    quantum: 2
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - assetRef
+    - compareAssetRef
+    additionalProperties: false
+    properties:
+      assetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      compareAssetRef:
+        type: string
+        pattern: ^file_[A-Za-z0-9]+$
+      options:
+        type: object
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    additionalProperties: false
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        required:
+        - hammingDistance
+        - similarity
+        - duplicate
+        - algorithm
+        properties:
+          hammingDistance:
+            type: integer
+            minimum: 0
+          similarity:
+            type: number
+            minimum: 0
+            maximum: 1
+          duplicate:
+            type: boolean
+          algorithm:
+            type: string
+      metrics:
+        type: object
+  inputLimits:
+    maximumBytes: 20971520
+    allowedContentTypes:
+    - image/jpeg
+    - image/png
+    - image/webp
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 60
+  modelCandidates: []
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

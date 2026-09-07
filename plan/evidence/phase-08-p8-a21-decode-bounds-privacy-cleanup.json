@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "taskId": "P8-A21",
+  "auditId": "A21",
+  "acceptanceCase": "T21",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "28",
+    "31",
+    "54",
+    "55",
+    "61"
+  ],
+  "generatedAt": "2026-09-06T09:26:18.896750+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "inputDecodePrivacyPolicyDsl": "dsl/policies/data/input-decode-privacy-v1.yaml",
+    "inputDecodeBoundsModule": "src/backend/edgemint/files/input_decode_bounds.py",
+    "artifactPrivacyModule": "src/backend/edgemint/files/artifact_privacy.py",
+    "taskAdmission": "src/backend/edgemint/tasks/admission.py",
+    "fileLifecycle": "src/backend/edgemint/files/lifecycle.py",
+    "storagePressureManager": "src/apps/worker/lib/runtime/storage_pressure_manager.dart",
+    "privacyCleanupCoordinator": "src/apps/worker/lib/runtime/privacy_cleanup_coordinator.dart",
+    "assignmentCoordinator": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "backendTests": "src/backend/tests/files/test_input_decode_privacy.py",
+    "privacyCleanupTests": "src/apps/worker/test/runtime/privacy_cleanup_coordinator_test.dart",
+    "p3T17Evidence": "plan/evidence/phase-03-p3-t17-storage-pressure-handling.json",
+    "productionDataPolicy": "dsl/policies/data/production-data-policy-v1.yaml"
+  },
+  "t21Scenario": {
+    "title": "Huge decoded input; partial upload; cancel/retention race; no leakage",
+    "decodeBoundsBeforeAdmission": true,
+    "partialUploadRejected": true,
+    "privacyCleanupWired": true,
+    "workerTests": "SKIPPED_FLUTTER_UNAVAILABLE",
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T21 huge PDF/image decode E2E on device NOT_RUN",
+    "Cancel/retention race integration harness NOT_RUN",
+    "Production retention sweeper proof NOT_RUN"
+  ],
+  "errors": []
+}

@@ -18,6 +18,7 @@ from edgemint.files.idempotency import (
     idempotency_scope,
 )
 from edgemint.files.malware import MalwareScanner, PassThroughMalwareScanner
+from edgemint.files.artifact_privacy import UploadArtifactState, evaluate_upload_acceptance
 from edgemint.files.policies import validate_upload_request, workspace_bound_object_key
 from edgemint.files.schemas import (
     CompleteFileUploadResponse,
@@ -239,6 +240,14 @@ class FileLifecycleService:
             raise file_error("FILE_DIGEST_MISMATCH")
         if head.size_bytes != int(record["size_bytes"]) and head.size_bytes > 0:
             raise file_error("UPLOAD_INCOMPLETE", detail="uploaded size mismatch")
+
+        acceptance = evaluate_upload_acceptance(
+            upload_state=UploadArtifactState.COMPLETE,
+            sha256_verified=head.sha256 == str(record["sha256"]).lower(),
+            size_matches=head.size_bytes == int(record["size_bytes"]) or head.size_bytes == 0,
+        )
+        if not acceptance.accepted:
+            raise file_error(acceptance.reason_code, detail=acceptance.detail)
 
         scan = await self.scanner.scan(
             object_key=str(record["object_key"]),

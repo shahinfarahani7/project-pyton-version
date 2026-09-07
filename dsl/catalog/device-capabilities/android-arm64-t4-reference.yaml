@@ -1,0 +1,45 @@
+apiVersion: edgemint.io/v1
+kind: DeviceCapability
+metadata:
+  name: android-arm64-t4-reference
+  version: 1.0.0
+  status: active
+  owners:
+    - mobile
+    - platform
+  description: Reference WorkerCapabilitySnapshot for Android arm64 T4 (architecture §10, §60).
+spec:
+  platform:
+    os: android
+    abi: arm64-v8a
+    apiLevel: 34
+    pageSizeKb: 16
+  deviceTier: T4
+  regionCode: US
+  runtimeAbi: mediapipe-llm-v1
+  resourceVector:
+    cpuUnits: 100
+    memoryBytes: 12884901888
+    storageBytes: 21474836480
+    acceleratorUnits: 0
+    modelSessionUnits: 2
+  runtimeClasses:
+    - mediapipe_llm
+    - paddle_ocr
+    - image_classifier
+    - object_detector
+  storage:
+    availableBytes: 21474836480
+    minimumFreeBytes: 1073741824
+    maxAiStorageBytes: 5368709120
+  memory:
+    totalRamBytes: 12884901888
+    availableBytes: 8589934592
+    safetyReserveBytes: 536870912
+  thermal:
+    state: nominal
+  battery:
+    levelBps: 7800
+    charging: true
+  network:
+    type: wifi

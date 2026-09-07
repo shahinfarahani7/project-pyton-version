@@ -1,0 +1,96 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: ml-consensus-label-validation
+  version: 2.0.0
+  status: active
+  description: Production flex contract for ml.consensus_label_validation
+  labels:
+    domain: flex
+    family: qwen_flex
+  owners:
+  - product
+  - platform
+spec:
+  code: ml.consensus_label_validation
+  lifecycle: commercial-candidate
+  billing:
+    measure: total_token
+    quantum: 1000
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required:
+    - flexInput
+    additionalProperties: false
+    properties:
+      flexInput:
+        type: object
+        required:
+        - record
+        - votes
+        properties:
+          record:
+            type: object
+          votes:
+            type: array
+      options:
+        type: object
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    - metrics
+    additionalProperties: false
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        required:
+        - consensusLabel
+        - agreementScore
+        - disputed
+        - reason
+        properties:
+          consensusLabel:
+            type: string
+          agreementScore:
+            type: number
+            minimum: 0
+            maximum: 1
+          disputed:
+            type: boolean
+          reason:
+            type: string
+      metrics:
+        type: object
+  inputLimits:
+    maximumBytes: 1048576
+    allowedContentTypes:
+    - application/json
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: true
+    secureNetworkRequired: true
+    maximumExecutionSeconds: 300
+  modelCandidates:
+  - modelRef: ModelProfile/qwen2.5-0.5b@2.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultDays: 30
+    workerTemporaryMinutes: 15
+  idempotencyScope: workspace+operation+key
+  editableAfterSubmit: false
+  safety:
+    contentPolicy: customer-acceptable-use-v1
+    humanReviewAllowed: true

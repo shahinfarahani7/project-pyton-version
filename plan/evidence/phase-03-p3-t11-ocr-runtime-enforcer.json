@@ -1,0 +1,21 @@
+{
+  "taskId": "P3-T11",
+  "completedAt": "2026-09-02",
+  "summary": "OCR runs as a light/medium workload under local exclusive-group enforcement; default v1 blocks OCR while heavy LLM is active unless certified for concurrent mediapipe_llm + paddle_ocr.",
+  "artifacts": {
+    "enforcer": "src/apps/worker/lib/runtime/runtime_exclusive_group_enforcer.dart",
+    "guardedOcr": "src/apps/worker/lib/inference/ocr/guarded_ocr_engine.dart",
+    "llmHook": "src/apps/worker/lib/runtime/gemma_model_runtime_manager.dart",
+    "planHook": "src/apps/worker/lib/runtime/execution_plan_runner.dart",
+    "wiring": "src/apps/worker/lib/worker_app_controller.dart",
+    "policy": "dsl/policies/scheduling/production-exclusive-groups-v1.yaml",
+    "tests": "src/apps/worker/test/runtime/runtime_exclusive_group_enforcer_test.dart"
+  },
+  "behaviors": [
+    "heavy LLM sessions acquire llm_inference exclusive slot",
+    "OCR acquires paddle_ocr slot and waits when heavy active (default)",
+    "certified profile enables concurrent OCR during heavy LLM",
+    "GuardedOcrEngine wraps Paddle/Fake OCR delegates in production wiring"
+  ],
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

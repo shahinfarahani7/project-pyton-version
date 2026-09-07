@@ -7,6 +7,7 @@ import 'package:edgemint_worker/api/worker_routes.dart';
 import 'package:edgemint_worker/config/worker_config.dart';
 import 'package:edgemint_worker/platform/worker_runtime_channel.dart';
 import 'package:edgemint_worker/runtime/assignment_coordinator.dart';
+import 'package:edgemint_worker/runtime/assignment_receiver.dart';
 import 'package:edgemint_worker/runtime/checkpoint_store.dart';
 import 'package:edgemint_worker/runtime/device_constraints.dart';
 import 'package:edgemint_worker/runtime/device_snapshot.dart';
@@ -17,24 +18,26 @@ import 'package:edgemint_worker/runtime/result_signer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-WorkerAssignment sampleAssignment({int fenceToken = 3}) => WorkerAssignment(
+WorkerAssignment sampleAssignment({int fenceToken = 3, String leaseToken = 'lease-token-1234567890'}) => WorkerAssignment(
       assignmentId: 'asg_test',
       attemptId: 'att_test',
       revisionId: 'rev_test',
-      leaseToken: 'lease_test',
+      leaseToken: leaseToken,
       fenceToken: fenceToken,
-      leaseExpiresAt: DateTime.parse('2026-07-26T14:00:00Z'),
+      leaseExpiresAt: DateTime.parse('2026-12-26T14:00:00Z'),
       taskType: 'document.ocr',
       modelVersionId: 'mdv_test',
       inputManifestUrl: 'https://example/input',
       outputUploadUrl: 'https://example/output',
-      startDeadlineAt: DateTime.parse('2026-07-26T13:30:00Z'),
+      startDeadlineAt: DateTime.parse('2026-12-26T13:30:00Z'),
     );
 
 class _ExecutionMockClient extends http.BaseClient {
   final Map<int, int> progressCalls = {};
   int checkpointCalls = 0;
   int completeCalls = 0;
+  int startedCalls = 0;
+  int failCalls = 0;
   bool abandonCalled = false;
 
   @override
@@ -44,6 +47,7 @@ class _ExecutionMockClient extends http.BaseClient {
       return _json(200, sampleAssignment().toJson());
     }
     if (path.endsWith(':started')) {
+      startedCalls += 1;
       return _receipt('reportAssignmentStarted');
     }
     if (path.endsWith(':progress')) {
@@ -59,6 +63,10 @@ class _ExecutionMockClient extends http.BaseClient {
     if (path.endsWith(':complete')) {
       completeCalls += 1;
       return _receipt('completeAssignment');
+    }
+    if (path.endsWith(':fail')) {
+      failCalls += 1;
+      return _receipt('failAssignment');
     }
     if (path.endsWith(':abandon')) {
       abandonCalled = true;
@@ -325,6 +333,64 @@ void main() {
     expect(decision.discardedStaleCheckpoint, isTrue);
   });
 
+  test('assignment receiver rejects invalid contract before execution', () async {
+    final mockHttp = _ExecutionMockClient();
+    final api = WorkerApiClient(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+      httpClient: mockHttp,
+    );
+    final coordinator = AssignmentCoordinator(
+      api: api,
+      store: InMemoryEncryptedStore(),
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: StubInferenceAdapter(),
+    );
+
+    await expectLater(
+      coordinator.executeAssignment(sampleAssignment(leaseToken: 'short')),
+      throwsA(isA<AssignmentRejectedException>()),
+    );
+
+    expect(mockHttp.startedCalls, 0);
+    expect(mockHttp.completeCalls, 0);
+    expect(mockHttp.failCalls, 1);
+    expect(coordinator.status.phase, ExecutionPhase.failed);
+  });
+
+  test('assignment receiver rejects missing consent before execution', () async {
+    final mockHttp = _ExecutionMockClient();
+    final api = WorkerApiClient(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+      httpClient: mockHttp,
+    );
+    final coordinator = AssignmentCoordinator(
+      api: api,
+      store: InMemoryEncryptedStore(),
+      platform: NoopWorkerRuntimeChannel(
+        material: 'test-signing-material',
+        snapshot: const DeviceSnapshot(
+          available: true,
+          batteryPercent: 100,
+          isCharging: true,
+          thermalState: ThermalState.normal,
+          network: NetworkKind.wifi,
+          freeStorageMb: 8192,
+          withinSchedule: true,
+          consentsGranted: ['terms'],
+        ),
+      ),
+      inference: StubInferenceAdapter(),
+    );
+
+    await expectLater(
+      coordinator.executeAssignment(sampleAssignment()),
+      throwsA(isA<AssignmentRejectedException>()),
+    );
+
+    expect(mockHttp.startedCalls, 0);
+    expect(mockHttp.failCalls, 1);
+  });
+
   test('lease revocation abandons safely', () async {
     final mockHttp = _ExecutionMockClient();
     final api = WorkerApiClient(
@@ -344,6 +410,6 @@ void main() {
   test('execution routes match worker API contract', () {
     expect(WorkerRoutes.nextAssignment, '/assignments:next');
     expect(WorkerRoutes.completeAssignment('asg_test'), '/assignments/asg_test:complete');
-    expect(WorkerRoutes.executionRoutes.length, 7);
+    expect(WorkerRoutes.executionRoutes.length, 9);
   });
 }

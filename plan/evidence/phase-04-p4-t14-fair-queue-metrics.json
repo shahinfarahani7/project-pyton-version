@@ -1,0 +1,11 @@
+{
+  "taskId": "P4-T14",
+  "completedAt": "2026-09-02",
+  "summary": "Workspace deficit metrics aggregate waiting tasks, max wait, and starvation counts for ops monitoring.",
+  "artifacts": {
+    "module": "src/backend/edgemint/routing/fair_queue_metrics.py",
+    "serviceHook": "src/backend/edgemint/routing/service.py#workspace_fair_queue_metrics",
+    "tests": "src/backend/tests/routing/test_fair_queue_metrics.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_fair_queue_metrics.py -q (2 passed)"
+}

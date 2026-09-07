@@ -1,0 +1,12 @@
+{
+  "taskId": "P4-T08",
+  "completedAt": "2026-09-02",
+  "summary": "Routing decision audit persists candidates, scores, winner, and policy hash for each scheduler decision.",
+  "artifacts": {
+    "sqlMigration": "database/sql/023_routing_decision_audit.sql",
+    "service": "src/backend/edgemint/routing/routing_audit.py",
+    "routerHook": "src/backend/edgemint/routing/service.py#rank_workers_with_audit",
+    "tests": "src/backend/tests/routing/test_routing_audit.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_routing_audit.py -q (2 passed)"
+}

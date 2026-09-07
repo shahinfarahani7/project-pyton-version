@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "taskId": "P8-A08",
+  "auditId": "A08",
+  "acceptanceCase": "T08",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "22",
+    "23",
+    "48",
+    "50",
+    "51"
+  ],
+  "generatedAt": "2026-09-06T07:55:51.738407+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "sqlMigration": "database/sql/032_result_candidates_reward_entitlements.sql",
+    "resultAcceptance": "src/backend/edgemint/results/result_acceptance.py",
+    "entitlementKeys": "src/backend/edgemint/results/entitlement_keys.py",
+    "externalEffects": "src/backend/edgemint/results/external_effects.py",
+    "assignmentsWiring": "src/backend/edgemint/workers/assignments.py",
+    "billingReplay": "src/backend/edgemint/billing/service.py",
+    "backendTests": "src/backend/tests/results/test_result_acceptance.py",
+    "chaosReward": "src/backend/tests/chaos/test_production_proof_scenarios.py"
+  },
+  "t08Scenario": {
+    "title": "Validation gate, entitlement uniqueness, external-effect dedup",
+    "immutableCandidatePinned": "sql+service",
+    "entitlementUniquePerTaskRun": true,
+    "financeIdempotencyReplay": true,
+    "externalEffectDedupSql": true,
+    "p7RewardRegression": true,
+    "integrationHarness": "NOT_RUN",
+    "crashBoundaryHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T08 crash between validation, terminal commit, entitlement and payout NOT_RUN",
+    "External payout provider reconciliation harness NOT_RUN",
+    "Partial-reward component deduplication integration NOT_RUN"
+  ],
+  "errors": []
+}

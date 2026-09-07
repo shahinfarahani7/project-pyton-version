@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "taskId": "P7-CHAOS-reward-exactly-once",
+  "test": "test_p7_chaos_reward_exactly_once",
+  "harness": "tools/run_production_chaos_harness.py",
+  "generatedAt": "2026-09-02T10:04:22.525401+00:00",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "notes": "Dev/staging invariant proof via pytest + source verify; live chaos deferred to staging deploy."
+}

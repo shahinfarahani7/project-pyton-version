@@ -1,0 +1,21 @@
+{
+  "taskId": "P3-T08",
+  "completedAt": "2026-09-02",
+  "summary": "Fence-aware chunk checkpoint manager for map/reduce summarization resume after crash.",
+  "artifacts": {
+    "checkpointManager": "src/apps/worker/lib/runtime/checkpoint_manager.dart",
+    "pipeline": "src/apps/worker/lib/inference/llm/hierarchical_summarize_pipeline.dart",
+    "processor": "src/apps/worker/lib/inference/llm/qwen_task_processor.dart",
+    "wiring": "src/apps/worker/lib/worker_app_controller.dart",
+    "handlers": "src/apps/worker/lib/tasks/handlers/document_handlers.dart",
+    "tests": "src/apps/worker/test/runtime/checkpoint_manager_test.dart"
+  },
+  "behaviors": [
+    "save chunk checkpoint after each map stage",
+    "resume from contiguous chunk checkpoints with matching fence/input/model/prompt/runtime",
+    "purge stale or gap checkpoints and reject mismatched fence on resume",
+    "purge assignment checkpoints after successful reduce"
+  ],
+  "serverSide": "P1-T08 stale fence credential verification applies to assignment commands; chunk checkpoints are worker-local until P3-T10 progress/checkpoint events",
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

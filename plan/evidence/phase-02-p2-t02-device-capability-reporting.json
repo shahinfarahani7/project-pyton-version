@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "task": "P2-T02",
+  "completedAt": "2026-09-01",
+  "summary": "Structured DeviceCapability reporting on worker register/heartbeat with server validation and JSON persistence.",
+  "artifacts": {
+    "dslSchema": "dsl/schemas/devicecapability.schema.json",
+    "sqlMigration": "database/sql/015_worker_capability_snapshots.sql",
+    "backendModels": "src/backend/edgemint/workers/device_capability.py",
+    "backendEnrollment": "src/backend/edgemint/workers/enrollment.py",
+    "workerBuilder": "src/apps/worker/lib/runtime/device_capability_report.dart",
+    "workerPayload": "src/apps/worker/lib/runtime/worker_enrollment_payload.dart",
+    "openapi": "contracts/openapi/edgemint-worker-api.yaml",
+    "tests": [
+      "src/backend/tests/workers/test_device_capability.py",
+      "src/apps/worker/test/device_capability_report_test.dart"
+    ]
+  },
+  "commands": {
+    "validate_sql": { "exitCode": 0, "migrations": 16 },
+    "pytest_device_capability": { "exitCode": 0, "passed": 5 }
+  },
+  "status": "IMPLEMENTED_DEV_ONLY"
+}

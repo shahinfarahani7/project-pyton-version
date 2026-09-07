@@ -1,0 +1,28 @@
+{
+  "taskType": "llm.image_output_safety",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.image_output_safety",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_llm_image_output_safety",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "safe": true,
+        "riskScore": 0.05,
+        "categories": [],
+        "reason": "Generated output is policy compliant."
+      },
+      "visionRuntimeClass": "safety_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

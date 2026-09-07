@@ -22,6 +22,7 @@ from edgemint.pricing.policy import load_price_policy
 from edgemint.pricing.quotes import CreateQuoteRequest, QuoteService
 from edgemint.security.context import AuthorizationContext
 from edgemint.security.tokens import write_audit_event
+from edgemint.tasks.catalog_closure import validate_queue_admission
 from edgemint.tasks.errors import task_error
 from edgemint.tasks.lifecycle import (
     CANCELLABLE_DB_STATUSES,
@@ -31,6 +32,7 @@ from edgemint.tasks.lifecycle import (
     map_db_lifecycle_to_api,
     priority_mapping,
     task_type_to_api_code,
+    task_type_to_catalog_code,
 )
 from edgemint.tasks.reservation import (
     count_active_draft_tasks,
@@ -38,7 +40,16 @@ from edgemint.tasks.reservation import (
     reserve_credit,
 )
 from edgemint.tasks.schemas import CreateRevisionRequest, CreateTaskRequest, TaskResponse
-from edgemint.tasks.validation import validate_configuration_parameters, validate_task_submission
+from edgemint.routing.execution_allocation import ExecutionAllocationService, input_hints_from_task_input
+from edgemint.security.workspace_data_trust import WorkspaceDataTrustService
+from edgemint.tasks.task_run import TaskRunService, compute_input_digest
+from edgemint.files.input_decode_bounds import evaluate_decode_admission
+from edgemint.tasks.validation import (
+    TaskTypeContract,
+    load_task_type_contracts,
+    validate_configuration_parameters,
+    validate_task_submission,
+)
 
 
 @dataclass
@@ -47,6 +58,9 @@ class TaskAdmissionService:
     lifecycle: TaskLifecycle = field(default_factory=TaskLifecycle.load)
     pricing: PricingEngine = field(default_factory=lambda: PricingEngine(load_price_policy()))
     quotes: QuoteService = field(default_factory=QuoteService.default)
+    task_runs: TaskRunService = field(default_factory=TaskRunService)
+    execution_allocations: ExecutionAllocationService = field(default_factory=ExecutionAllocationService)
+    data_trust: WorkspaceDataTrustService = field(default_factory=WorkspaceDataTrustService)
 
     async def create_task(
         self,
@@ -62,11 +76,34 @@ class TaskAdmissionService:
             raise task_error("INPUT_SCHEMA_INVALID", detail="input.fileId or input.inlineText required")
         if payload.input.fileId and not payload.input.contentType:
             raise task_error("INPUT_SCHEMA_INVALID", detail="input.contentType required for file tasks")
-        contract = validate_task_submission(
-            api_task_type=payload.taskType,
-            content_type=payload.input.contentType or "text/plain",
+
+        catalog_code = task_type_to_catalog_code(payload.taskType)
+        validate_queue_admission(
+            catalog_code=catalog_code,
+            mode=self.settings.catalog_closure_mode,  # type: ignore[arg-type]
         )
+
+        contract_catalog = load_task_type_contracts()
+        if payload.taskType in contract_catalog:
+            contract = validate_task_submission(
+                api_task_type=payload.taskType,
+                content_type=payload.input.contentType or "text/plain",
+                contracts=contract_catalog,
+            )
+        else:
+            contract = TaskTypeContract(
+                code=catalog_code,
+                status="active",
+                allowed_content_types=frozenset(),
+                maximum_bytes=self.settings.file_max_upload_bytes,
+            )
         validate_configuration_parameters(payload.taskType, payload.configuration.parameters)
+        trust = await self.data_trust.assert_task_admission_permitted(
+            connection,
+            workspace_id=auth.workspace_id,
+        )
+        if not trust.permitted:
+            raise task_error("DATA_PROCESSING_DENIED", detail=trust.reason)
         draft_count = await count_active_draft_tasks(connection, workspace_id=auth.workspace_id)
         if draft_count >= self.settings.task_admission_max_drafts:
             raise task_error("ADMISSION_LIMIT_EXCEEDED")
@@ -99,6 +136,11 @@ class TaskAdmissionService:
                 raise task_error("TENANT_RESOURCE_NOT_FOUND", detail="file not found")
             if str(file_row["status"]) != "ready":
                 raise task_error("FILE_NOT_READY")
+            self._assert_file_decode_bounds(
+                file_row=file_row,
+                payload=payload,
+                contract=contract,
+            )
             input_file_id = UUID(str(file_row["id"]))
 
         task_entity = EntityId.new()
@@ -107,6 +149,19 @@ class TaskAdmissionService:
         revision_public = public_id("rev")
         priority_class, priority_bps = priority_mapping(payload.configuration.priority)
         created_at = datetime.now(UTC)
+        parameters_json = json.dumps(
+            {
+                "configuration": payload.configuration.model_dump(mode="json"),
+                "metadata": payload.metadata,
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+        input_digest = compute_input_digest(
+            inline_text=payload.input.inlineText,
+            parameters_json=parameters_json,
+            input_file_id=input_file_id,
+        )
 
         await connection.execute(
             text(
@@ -152,14 +207,7 @@ class TaskAdmissionService:
                 "task_id": task_entity.value,
                 "input_file_id": input_file_id,
                 "inline_text": payload.input.inlineText,
-                "parameters_json": json.dumps(
-                    {
-                        "configuration": payload.configuration.model_dump(mode="json"),
-                        "metadata": payload.metadata,
-                    },
-                    separators=(",", ":"),
-                    sort_keys=True,
-                ),
+                "parameters_json": parameters_json,
                 "submitted_at_utc": created_at,
             },
         )
@@ -179,6 +227,26 @@ class TaskAdmissionService:
                 "workspace_id": auth.workspace_id,
                 "updated_at_utc": created_at,
             },
+        )
+        task_run_id = await self.task_runs.create_for_admitted_task(
+            connection,
+            workspace_id=auth.workspace_id,
+            task_id=task_entity.value,
+            task_revision_id=revision_entity.value,
+            client_request_key=idempotency_key,
+            input_digest=input_digest,
+        )
+        await self.execution_allocations.create_for_task_run(
+            connection,
+            workspace_id=auth.workspace_id,
+            task_run_id=task_run_id,
+            task_revision_id=revision_entity.value,
+            input_digest=input_digest,
+            task_type=contract.code,
+            hints=input_hints_from_task_input(
+                inline_text=payload.input.inlineText,
+                input_payload=payload.input.model_dump(mode="json"),
+            ),
         )
 
         quote_id, quote_amount, quote_expires = await self._resolve_quote(
@@ -296,10 +364,24 @@ class TaskAdmissionService:
             return TaskResponse.model_validate(replay.body)
 
         api_task_type = task_type_to_api_code(str(task["task_type"]))
-        validate_task_submission(
-            api_task_type=api_task_type,
-            content_type=payload.input.contentType or "text/plain",
+        validate_queue_admission(
+            catalog_code=str(task["task_type"]),
+            mode=self.settings.catalog_closure_mode,  # type: ignore[arg-type]
         )
+        contract_catalog = load_task_type_contracts()
+        if api_task_type in contract_catalog:
+            contract = validate_task_submission(
+                api_task_type=api_task_type,
+                content_type=payload.input.contentType or "text/plain",
+                contracts=contract_catalog,
+            )
+        else:
+            contract = TaskTypeContract(
+                code=str(task["task_type"]),
+                status="active",
+                allowed_content_types=frozenset(),
+                maximum_bytes=self.settings.file_max_upload_bytes,
+            )
         validate_configuration_parameters(api_task_type, payload.configuration.parameters)
 
         input_file_id: UUID | None = None
@@ -313,6 +395,11 @@ class TaskAdmissionService:
                 raise task_error("TENANT_RESOURCE_NOT_FOUND", detail="file not found")
             if str(file_row["status"]) != "ready":
                 raise task_error("FILE_NOT_READY")
+            self._assert_file_decode_bounds(
+                file_row=file_row,
+                payload=payload,
+                contract=contract,
+            )
             input_file_id = UUID(str(file_row["id"]))
 
         revision_number = int(task["revision_count"]) + 1
@@ -460,6 +547,11 @@ class TaskAdmissionService:
             return TaskResponse.model_validate(replay.body)
 
         updated_at = datetime.now(UTC)
+        await self.task_runs.cancel_open_runs_for_task(
+            connection,
+            workspace_id=auth.workspace_id,
+            task_id=UUID(str(task["id"])),
+        )
         await connection.execute(
             text(
                 """
@@ -691,7 +783,7 @@ class TaskAdmissionService:
             await connection.execute(
                 text(
                     """
-                    SELECT id, status
+                    SELECT id, status, content_type, size_bytes
                     FROM public.files
                     WHERE workspace_id = :workspace_id AND public_id = :public_id
                     LIMIT 1
@@ -701,6 +793,28 @@ class TaskAdmissionService:
             )
         ).mappings().first()
         return dict(row) if row is not None else None
+
+    def _assert_file_decode_bounds(
+        self,
+        *,
+        file_row: dict[str, Any],
+        payload: CreateTaskRequest | CreateRevisionRequest,
+        contract: TaskTypeContract,
+    ) -> None:
+        content_type = payload.input.contentType or str(file_row.get("content_type") or "application/octet-stream")
+        page_count = int(payload.configuration.parameters.get("pageCount") or 1)
+        image_meta = payload.configuration.parameters.get("image")
+        image_width = int(image_meta.get("width") or 0) if isinstance(image_meta, dict) else 0
+        image_height = int(image_meta.get("height") or 0) if isinstance(image_meta, dict) else 0
+        decode = evaluate_decode_admission(
+            content_type=content_type,
+            compressed_bytes=int(file_row.get("size_bytes") or contract.maximum_bytes),
+            page_count=page_count,
+            image_width=image_width,
+            image_height=image_height,
+        )
+        if not decode.permitted:
+            raise task_error(decode.reason_code.value, detail=decode.detail)
 
     async def _load_quote(
         self,

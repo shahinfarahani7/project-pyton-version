@@ -241,6 +241,9 @@
                 "reliability": {
                   "type": "integer"
                 },
+                "scarcityCost": {
+                  "type": "integer"
+                },
                 "trust": {
                   "type": "integer"
                 }
@@ -253,6 +256,7 @@
                 "priceEfficiency",
                 "regionalCompliance",
                 "reliability",
+                "scarcityCost",
                 "trust"
               ],
               "type": "object"

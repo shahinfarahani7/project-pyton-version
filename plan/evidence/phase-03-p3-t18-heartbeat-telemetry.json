@@ -1,0 +1,51 @@
+{
+  "taskId": "P3-T18",
+  "completedAt": "2026-09-02",
+  "summary": "Heartbeat carries Section 39 telemetry — capability snapshot, consent, calibration view, runtime sessions, loaded models, and local resource reservations view — persisted in worker_heartbeats.telemetry_json for Phase 2 Section 40 reconciliation prep.",
+  "artifacts": {
+    "sqlMigration": "database/sql/021_worker_heartbeat_telemetry.sql",
+    "schema": "dsl/schemas/workerheartbeattelemetry.schema.json",
+    "backendModels": "src/backend/edgemint/workers/heartbeat_telemetry.py",
+    "backendSchema": "src/backend/edgemint/workers/schemas.py",
+    "backendPersistence": "src/backend/edgemint/workers/enrollment.py",
+    "workerTelemetryBuilder": "src/apps/worker/lib/runtime/worker_heartbeat_telemetry.dart",
+    "workerHeartbeatService": "src/apps/worker/lib/runtime/worker_heartbeat_service.dart",
+    "coordinatorWiring": "src/apps/worker/lib/runtime/assignment_coordinator.dart",
+    "controllerWiring": "src/apps/worker/lib/worker_app_controller.dart",
+    "openapi": "contracts/openapi/edgemint-worker-api.yaml",
+    "tests": [
+      "src/backend/tests/workers/test_heartbeat_telemetry.py",
+      "src/apps/worker/test/runtime/worker_heartbeat_telemetry_test.dart"
+    ]
+  },
+  "sampleTelemetry": {
+    "sequence": 1842,
+    "cpuUsageBps": 2100,
+    "loadedModelIds": ["mdv_qwen2_5_0_5b"],
+    "runtimeSessions": {"mediapipe_llm": 1, "paddle_ocr": 0},
+    "consentSnapshot": {
+      "grantedConsents": ["terms", "privacy", "resource_use", "reward_disclosure"],
+      "contributionModeId": "balanced"
+    },
+    "resourceReservationsView": {
+      "active": [
+        {
+          "assignmentId": "asg-1",
+          "runtimeClass": "mediapipe_llm",
+          "cpuUnits": 40,
+          "memoryBytes": 1610612736,
+          "storageBytes": 0
+        }
+      ],
+      "totals": {
+        "cpuUnits": 40,
+        "memoryBytes": 1610612736,
+        "storageBytes": 0
+      }
+    }
+  },
+  "testRun": {
+    "backend": "py -3.13 -m pytest tests/workers/test_heartbeat_telemetry.py tests/workers/test_device_capability.py -q (8 passed)",
+    "worker": "flutter pub get blocked (pub.dev socket error); tests authored"
+  }
+}

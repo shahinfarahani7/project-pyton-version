@@ -1,0 +1,36 @@
+{
+  "taskType": "ocr.simple_form",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for ocr.simple_form",
+  "input": {
+    "assetRef": "file_golden_simple_form_001",
+    "options": {
+      "language": "en"
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_ocr_simple_form",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "TOTAL 42.50 USD",
+      "ocrLines": [
+        {
+          "text": "TOTAL 42.50 USD",
+          "confidence": 0.93,
+          "box": [
+            10,
+            20,
+            400,
+            48
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "averageOcrConfidence": 0.93,
+      "ocrMs": 980
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

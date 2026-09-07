@@ -1,0 +1,13 @@
+{
+  "taskId": "P4-T05",
+  "completedAt": "2026-09-02",
+  "summary": "Failure affinity stores attempt_worker_failures, blocks workers in cooldown, and deprioritizes recent failures via reliability feature.",
+  "artifacts": {
+    "sqlMigration": "database/sql/022_attempt_worker_failures.sql",
+    "service": "src/backend/edgemint/routing/failure_affinity.py",
+    "scoring": "src/backend/edgemint/routing/scarcity_cost.py",
+    "hardFilter": "src/backend/edgemint/routing/hard_eligibility.py",
+    "tests": "src/backend/tests/routing/test_failure_affinity.py"
+  },
+  "testRun": "py -3.13 -m pytest tests/routing/test_failure_affinity.py -q (2 passed)"
+}

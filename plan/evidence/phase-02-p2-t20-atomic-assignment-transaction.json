@@ -1,0 +1,31 @@
+{
+  "taskId": "P2-T20",
+  "completedAt": "2026-09-02",
+  "summary": "Atomic assignment lease + resource reservation in one database transaction (Architecture Section 20).",
+  "artifacts": {
+    "sql": "database/sql/019_atomic_assignment_transaction.sql",
+    "python": "src/backend/edgemint/routing/atomic_assignment.py",
+    "routerIntegration": "src/backend/edgemint/routing/service.py",
+    "tests": [
+      "src/backend/tests/routing/test_atomic_assignment_transaction.py",
+      "tests/database/test_atomic_assignment_transaction_sql.py"
+    ]
+  },
+  "transactionSteps": [
+    "lock_task_attempt",
+    "lock_worker_capacity",
+    "recheck_heartbeat_freshness",
+    "recheck_consent",
+    "recheck_worker_availability",
+    "recheck_model_runtime_compatibility",
+    "recalculate_remaining_capacity",
+    "recheck_exclusive_groups",
+    "create_resource_reservation",
+    "create_assignment",
+    "generate_fence_token",
+    "persist_lease_token_material",
+    "create_outbox_event",
+    "commit"
+  ],
+  "rollbackBehavior": "Caller-owned AsyncConnection transaction; SQL function failure before credential insert prevents partial assignment+reservation commit."
+}

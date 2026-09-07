@@ -1,0 +1,8 @@
+{
+  "taskId": "P5-QWEN-17",
+  "taskTypeId": "nlp.language_detection",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/nlp-language-detection.yaml",
+  "goldenFixture": "tests/golden/fixtures/nlp.language_detection.json",
+  "tests": "src/backend/tests/results/test_nlp_ml_validators.py"
+}

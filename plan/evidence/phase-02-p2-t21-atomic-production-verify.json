@@ -1,0 +1,13 @@
+{
+  "taskId": "P2-T21",
+  "completedAt": "2026-09-02",
+  "summary": "Production source-path verification for atomic assignment + reservation wiring.",
+  "verifyScript": "tools/verify_production_auto_assignment_source.py",
+  "exitCode": 0,
+  "checksAdded": [
+    "atomic_assignment_sql_function",
+    "atomic_assignment_coordinator",
+    "router_uses_atomic_path_when_reservations_enabled",
+    "reservation_lifecycle_sql_present"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "taskType": "llm.caption_validation",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.caption_validation",
+  "input": {
+    "flexInput": {
+      "caption": "A red car parked on the street."
+    }
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_llm_caption_validation",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "valid": true,
+        "score": 0.91,
+        "issues": [],
+        "suggestedCaption": "A red car parked on the street."
+      }
+    },
+    "metrics": {
+      "llmMs": 500
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

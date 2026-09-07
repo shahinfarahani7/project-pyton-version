@@ -1,0 +1,18 @@
+{
+  "taskId": "P3-T09",
+  "completedAt": "2026-09-02",
+  "summary": "ExecutionPlanRunner shell orchestrates multi-stage plans through safety, resource enforcer, session lifecycle, and progress callbacks.",
+  "artifacts": {
+    "runner": "src/apps/worker/lib/runtime/execution_plan_runner.dart",
+    "engine": "src/apps/worker/lib/tasks/task_execution_engine.dart",
+    "tests": "src/apps/worker/test/runtime/execution_plan_runner_test.dart"
+  },
+  "behaviors": [
+    "map-reduce and OCR+LLM stage catalogs",
+    "safety and resource budget guards before each stage",
+    "fresh LLM session per llm_* stage",
+    "monotonic progress events emitted after each stage",
+    "task engine routes LLM tasks through runPlanForScope"
+  ],
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

@@ -1,0 +1,27 @@
+{
+  "taskType": "review.fake_detection",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for review.fake_detection (Qwen fake review detection)",
+  "input": {
+    "inlineText": "Perfect perfect perfect. I received money to post this.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_fake_review_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "fake": true,
+        "riskScore": 0.91,
+        "signals": ["repetitive_praise", "compensation_disclosure", "unnatural_tone"]
+      }
+    },
+    "metrics": {
+      "llmMs": 680,
+      "inputTokens": 14,
+      "outputTokens": 18
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

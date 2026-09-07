@@ -13,6 +13,11 @@ import '../models/worker_model_catalog.dart';
 import '../models/worker_vision_model_catalog.dart';
 import '../runtime/device_tier_policy.dart';
 import '../runtime/inference_adapter.dart';
+import '../runtime/assignment_event_reporter.dart';
+import '../runtime/execution_plan_runner.dart';
+import '../runtime/runtime_exclusive_group_enforcer.dart';
+import '../runtime/vision_runtime_catalog.dart';
+import '../runtime/runtime_exceptions.dart';
 import '../tasks/idempotency_store.dart';
 import '../tasks/task_type_mapper.dart';
 import '../telemetry/worker_task_metrics.dart';
@@ -41,15 +46,21 @@ class TaskExecutionEngine {
     required QwenTaskProcessor qwenProcessor,
     MobileTaskDispatcher? dispatcher,
     IdempotencyStore? idempotencyStore,
+    ExecutionPlanRunner? executionPlanRunner,
+    RuntimeExclusiveGroupEnforcer? exclusiveGroupEnforcer,
   }) : _ocrEngine = ocrEngine,
        _qwenProcessor = qwenProcessor,
        _dispatcher = dispatcher ?? MobileTaskDispatcher(),
-       _idempotency = idempotencyStore ?? IdempotencyStore();
+       _idempotency = idempotencyStore ?? IdempotencyStore(),
+       _executionPlanRunner = executionPlanRunner,
+       _exclusiveGroupEnforcer = exclusiveGroupEnforcer;
 
   final OcrEngine _ocrEngine;
   final QwenTaskProcessor _qwenProcessor;
   final MobileTaskDispatcher _dispatcher;
   final IdempotencyStore _idempotency;
+  final ExecutionPlanRunner? _executionPlanRunner;
+  final RuntimeExclusiveGroupEnforcer? _exclusiveGroupEnforcer;
 
   WorkerTaskResult? _lastResult;
   bool _running = false;
@@ -57,6 +68,13 @@ class TaskExecutionEngine {
   Future<bool>? _modelReadyFuture;
 
   WorkerTaskResult? get lastResult => _lastResult;
+
+  ExecutionPlanRunner get executionPlanRunner =>
+      _executionPlanRunner ??
+      ExecutionPlanRunner(
+        modelRuntime: _qwenProcessor.modelRuntimeManager,
+        exclusiveGroupEnforcer: _exclusiveGroupEnforcer,
+      );
 
   Future<List<String>> advertisedCapabilities({
     required bool qwenReady,
@@ -84,6 +102,7 @@ class TaskExecutionEngine {
     required String signingKey,
     required int freeStorageMb,
     bool Function()? isCancelled,
+    AssignmentEventReporter? eventReporter,
   }) async {
     if (_running) {
       throw StateError('Concurrent task execution is not allowed');
@@ -157,6 +176,8 @@ class TaskExecutionEngine {
         v1Type,
         ocrOnly: request.options.ocrOnly,
       );
+      final usesExecutionPlan =
+          requiresLlm || VisionRuntimeCatalog.isVisionCapability(v1Type);
 
       if (requiresOcr &&
           requiresLlm &&
@@ -285,14 +306,50 @@ class TaskExecutionEngine {
           name: 'EdgeMintTaskEngine',
         );
 
-        final result = await handler.handle(
-          request: request,
-          ocrEngine: _ocrEngine,
-          qwenProcessor: _qwenProcessor,
-          signingKey: signingKey,
-          metrics: metrics,
-          isCancelled: isCancelled,
-        );
+        Future<WorkerTaskResult> invokeHandler() => handler.handle(
+              request: request,
+              ocrEngine: _ocrEngine,
+              qwenProcessor: _qwenProcessor,
+              signingKey: signingKey,
+              metrics: metrics,
+              isCancelled: isCancelled,
+              assignmentId: context.assignment.assignmentId,
+              fenceToken: context.assignment.fenceToken,
+              onChunkCheckpoint: eventReporter?.reportChunkCheckpoint,
+            );
+
+        final planRunner = executionPlanRunner;
+        WorkerTaskResult result;
+        if (usesExecutionPlan) {
+          final plan = ExecutionPlanCatalog.forTaskType(
+            v1Type,
+            ocrOnly: request.options.ocrOnly,
+          );
+          result = await planRunner.runPlanForScope(
+            plan: plan,
+            assignmentId: context.assignment.assignmentId,
+            fenceToken: context.assignment.fenceToken,
+            executeStage: (_) => invokeHandler(),
+            context: ExecutionPlanRunContext(
+              onProgress: (event) async {
+                developer.log(
+                  '[PLAN PROGRESS] '
+                  'taskId=${request.taskId} '
+                  'stage=${event.stage.name} '
+                  'progress=${event.progressMilli}',
+                  name: 'EdgeMintTaskEngine',
+                );
+                await eventReporter?.reportPlanProgress(event);
+              },
+            ),
+          );
+        } else {
+          try {
+            result = await invokeHandler();
+          } on StaleFenceException {
+            rethrow;
+          }
+        }
 
         final enriched = WorkerTaskResult(
           schemaVersion: result.schemaVersion,
@@ -330,6 +387,28 @@ class TaskExecutionEngine {
         );
 
         return _toInferenceOutput(enriched);
+      } on StaleFenceException catch (error, stackTrace) {
+        developer.log(
+          '[TASK FENCE REJECTED] '
+          'taskId=${request.taskId} '
+          'error=$error',
+          name: 'EdgeMintTaskEngine',
+          error: error,
+          stackTrace: stackTrace,
+        );
+
+        final result = _failedResult(
+          request,
+          WorkerError(
+            code: WorkerErrorCode.invalidTask,
+            message: '$error',
+            retryable: false,
+            stage: WorkerTaskStage.validation,
+          ),
+        );
+
+        _lastResult = result;
+        return _toInferenceOutput(result);
       } on WorkerError catch (error, stackTrace) {
         developer.log(
           '[TASK EXECUTION ERROR] '

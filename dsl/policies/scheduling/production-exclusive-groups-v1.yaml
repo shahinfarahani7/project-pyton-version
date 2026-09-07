@@ -1,0 +1,95 @@
+apiVersion: edgemint.io/v1
+kind: ExclusiveGroupPolicy
+metadata:
+  name: production-exclusive-groups-v1
+  version: 1.0.0
+  status: active
+  description: Production exclusive resource groups (Architecture Sections 29, 30, 31).
+  owners:
+  - routing
+  - mobile
+spec:
+  groups:
+  - id: llm_inference
+    displayName: LLM Heavy Compute
+    executionClass: HEAVY_COMPUTE
+    maximumConcurrentReservationsPerDevice: 1
+    runtimeClasses:
+    - mediapipe_llm
+    deviceExclusive: true
+  - id: vlm_inference
+    displayName: VLM Heavy Compute
+    executionClass: HEAVY_COMPUTE
+    maximumConcurrentReservationsPerDevice: 1
+    runtimeClasses:
+    - vlm_runtime
+    deviceExclusive: true
+  - id: ocr_inference
+    displayName: OCR Inference
+    executionClass: MEDIUM_COMPUTE
+    maximumConcurrentReservationsPerDevice: 1
+    certifiedMaximumConcurrentReservationsPerDevice: 2
+    runtimeClasses:
+    - paddle_ocr
+  - id: vision_inference
+    displayName: Vision Inference
+    executionClass: MEDIUM_COMPUTE
+    maximumConcurrentReservationsPerDevice: 1
+    runtimeClasses:
+    - image_classifier
+    - object_detector
+    - segmentation_runtime
+  - id: document_pipeline
+    displayName: Document Pipeline Staging
+    executionClass: MEDIUM_COMPUTE
+    maximumConcurrentReservationsPerDevice: 1
+    runtimeClasses:
+    - paddle_ocr
+    - system
+  - id: embedding_inference
+    displayName: Embedding Inference
+    executionClass: LIGHT_CPU
+    maximumConcurrentReservationsPerDevice: 2
+    runtimeClasses:
+    - embedding_runtime
+  - id: network_io
+    displayName: Network I/O
+    executionClass: NETWORK_IO
+    maximumConcurrentReservationsPerDevice: 8
+    runtimeClasses:
+    - network_io
+  - id: system
+    displayName: System Stage
+    executionClass: SYSTEM
+    maximumConcurrentReservationsPerDevice: 16
+    runtimeClasses:
+    - system
+  crossGroupRules:
+  - groupA: llm_inference
+    groupB: vlm_inference
+    concurrentAllowed: false
+    reason: qwen_plus_vlm_blocked_v1
+  - groupA: llm_inference
+    groupB: ocr_inference
+    concurrentAllowed: false
+    reason: qwen_ocr_default_sequential_v1
+    certificationRequired: true
+  - groupA: llm_inference
+    groupB: document_pipeline
+    concurrentAllowed: false
+    reason: llm_blocks_document_pipeline_v1
+  - groupA: vlm_inference
+    groupB: vision_inference
+    concurrentAllowed: false
+    reason: heavy_vision_exclusive_v1
+  - groupA: network_io
+    groupB: llm_inference
+    concurrentAllowed: true
+    reason: light_work_during_heavy_inference
+  - groupA: system
+    groupB: llm_inference
+    concurrentAllowed: true
+    reason: light_system_work_during_heavy_inference
+  lightWorkGroups:
+  - network_io
+  - system

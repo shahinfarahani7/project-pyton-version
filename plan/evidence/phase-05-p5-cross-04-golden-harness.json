@@ -1,0 +1,15 @@
+{
+  "taskId": "P5-CROSS-04",
+  "completedAt": "2026-09-02",
+  "summary": "Reusable golden I/O harness loads JSON fixtures, validates worker output via result validator, and checks golden SHA256 trap semantics.",
+  "artifacts": {
+    "harness": "src/backend/edgemint/golden/harness.py",
+    "fixtureSchema": "tests/golden/schema/golden-fixture.schema.json",
+    "referenceFixture": "tests/golden/fixtures/document.ocr.json",
+    "cli": "tools/run_golden_task_harness.py",
+    "tests": "src/backend/tests/golden/test_golden_task_harness.py",
+    "sampleRun": "plan/evidence/phase-05-p5-cross-04-golden-harness-sample.json"
+  },
+  "usage": "py -3.13 tools/run_golden_task_harness.py --task-type document.ocr",
+  "testRun": "py -3.13 -m pytest tests/golden/test_golden_task_harness.py -q (5 passed); run_golden_task_harness.py exit 0"
+}

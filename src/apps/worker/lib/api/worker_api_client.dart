@@ -113,6 +113,23 @@ class WorkerApiClient {
     return WorkerRegistration.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
+  Future<CommandReceipt> sendHeartbeat({
+    required String workerId,
+    required String accessToken,
+    required Map<String, dynamic> body,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.workerHeartbeat(workerId),
+      body: body,
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
   Future<ModelManifestView> getModelManifest({
     required String modelVersionId,
     required String accessToken,
@@ -164,6 +181,20 @@ class WorkerApiClient {
     }
     _ensureSuccess(response);
     return WorkerAssignment.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> getAssignmentInboxBootstrap({
+    required String accessToken,
+    String? requestId,
+  }) async {
+    final response = await _http
+        .get(
+          _config.resolve(WorkerRoutes.assignmentInboxBootstrap),
+          headers: _headers(accessToken: accessToken, requestId: requestId),
+        )
+        .timeout(_config.requestTimeout);
+    _ensureSuccess(response);
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   Future<CommandReceipt> reportAssignmentStarted({
@@ -251,6 +282,48 @@ class WorkerApiClient {
     final response = await _post(
       WorkerRoutes.completeAssignment(assignmentId),
       body: body,
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<CommandReceipt> failAssignment({
+    required String assignmentId,
+    required String accessToken,
+    required Map<String, dynamic> body,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.failAssignment(assignmentId),
+      body: body,
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<CommandReceipt> confirmPhysicalStop({
+    required String assignmentId,
+    required String accessToken,
+    required String leaseToken,
+    required int fenceToken,
+    required String proof,
+    required String idempotencyKey,
+    String reason = 'worker_stop_confirmed',
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.confirmPhysicalStop(assignmentId),
+      body: {
+        'leaseToken': leaseToken,
+        'fenceToken': fenceToken,
+        'proof': proof,
+        'reason': reason,
+      },
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
       requestId: requestId,

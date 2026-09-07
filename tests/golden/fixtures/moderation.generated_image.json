@@ -1,0 +1,28 @@
+{
+  "taskType": "moderation.generated_image",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for moderation.generated_image",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_moderation_generated_image",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "allowed": true,
+        "riskScore": 0.07,
+        "categories": [],
+        "reason": "Generated image passes policy."
+      },
+      "visionRuntimeClass": "safety_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

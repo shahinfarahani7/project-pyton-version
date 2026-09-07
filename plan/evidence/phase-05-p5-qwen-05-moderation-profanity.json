@@ -1,0 +1,16 @@
+{
+  "taskId": "P5-QWEN-05",
+  "taskTypeId": "moderation.profanity",
+  "completedAt": "2026-09-02",
+  "summary": "Full catalog closure for moderation.profanity: TaskType DSL, validator, golden fixture PASS.",
+  "closureChecklist": {
+    "resourceEnvelopeRef": "TaskResourceEnvelope/text-classify@1.0.0",
+    "taskTypeDsl": "dsl/catalog/task-types/moderation-profanity.yaml",
+    "resultValidation": "src/backend/edgemint/results/validator.py#_validate_moderation_profanity",
+    "retryPolicy": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0 (stronger_worker)",
+    "checkpointPolicy": "none (checkpointEnabled: false)",
+    "goldenFixture": "tests/golden/fixtures/moderation.profanity.json",
+    "workerHandler": "src/apps/worker/lib/tasks/handlers/document_handlers.dart#TextClassifyHandler (via text.classify.v1)"
+  },
+  "testRun": "py -3.13 -m pytest tests/results/test_moderation_profanity_validator.py tests/golden/test_golden_task_harness.py -q; run_golden_task_harness.py --task-type moderation.profanity exit 0"
+}

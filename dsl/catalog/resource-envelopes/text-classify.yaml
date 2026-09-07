@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: text-classify
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Text classification and moderation envelope.
+spec:
+  taskType: text.classify
+  runtimeClass: mediapipe_llm
+  requiredModelIds:
+    - qwen2.5-0.5b
+  cpuUnits: 30
+  memoryReservationBytes: 1073741824
+  storageReservationBytes: 52428800
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 90000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: llm_inference

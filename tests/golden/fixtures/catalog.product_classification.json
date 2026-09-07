@@ -1,0 +1,29 @@
+{
+  "taskType": "catalog.product_classification",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for catalog.product_classification",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_catalog_product_classification",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "category": "footwear",
+        "confidence": 0.92,
+        "alternatives": [
+          "apparel"
+        ]
+      },
+      "visionRuntimeClass": "catalog_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

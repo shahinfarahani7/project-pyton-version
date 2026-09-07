@@ -1,0 +1,24 @@
+{
+  "taskType": "llm.policy_violation",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for llm.policy_violation",
+  "input": {
+    "inlineText": "Policy=no personal phone numbers. Content=Call me at +1 555 0100.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_policy_violation_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "violates": true,
+        "severity": "high",
+        "policies": ["no_personal_phone_numbers"],
+        "reason": "Content includes a personal phone number."
+      }
+    },
+    "metrics": {"llmMs": 580}
+  },
+  "minimumConfidenceMilli": 960
+}

@@ -1,0 +1,34 @@
+{
+  "taskType": "catalog.image_tagging",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for catalog.image_tagging",
+  "input": {
+    "assetRef": "file_golden_vision_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_catalog_image_tagging",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "tags": [
+          "red",
+          "sneaker",
+          "studio"
+        ],
+        "confidence": 0.89,
+        "evidence": [
+          "red upper",
+          "white sole"
+        ]
+      },
+      "visionRuntimeClass": "catalog_runtime"
+    },
+    "metrics": {
+      "llmMs": 900,
+      "visionMs": 900
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

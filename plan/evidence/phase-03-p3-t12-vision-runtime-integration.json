@@ -1,0 +1,23 @@
+{
+  "taskId": "P3-T12",
+  "completedAt": "2026-09-02",
+  "summary": "Vision handlers route through VisionRuntimeManager with distinct Section 59 runtime classes for VLM, segmentation, and lightweight classification.",
+  "artifacts": {
+    "catalog": "src/apps/worker/lib/runtime/vision_runtime_catalog.dart",
+    "manager": "src/apps/worker/lib/runtime/vision_runtime_manager.dart",
+    "handlers": [
+      "src/apps/worker/lib/tasks/handlers/vision_handlers.dart",
+      "src/apps/worker/lib/tasks/handlers/lightweight_vision_handlers.dart"
+    ],
+    "adapter": "src/apps/worker/lib/runtime/vision_litert_adapter.dart",
+    "runtimeClasses": "src/apps/worker/lib/runtime/runtime_class_catalog.dart",
+    "executionPlans": "src/apps/worker/lib/runtime/execution_plan_runner.dart",
+    "tests": "src/apps/worker/test/runtime/vision_runtime_routing_test.dart"
+  },
+  "runtimePaths": {
+    "vision.analyze.v1": "vlm_runtime via VisionLiteRtAdapter",
+    "image.remove_background.v1": "segmentation_runtime via MediaPipe channel",
+    "quality.* / catalog.duplicate_image": "image_classifier via LightweightVision"
+  },
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

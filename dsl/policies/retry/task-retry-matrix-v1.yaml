@@ -1,0 +1,293 @@
+apiVersion: edgemint.io/v1
+kind: RetryPolicyMatrix
+metadata:
+  name: task-retry-matrix-v1
+  version: 1.0.0
+  status: active
+  description: Section 43/55 retry routing defaults for all 56 catalog task types
+  owners:
+  - platform
+  - ml
+spec:
+  defaultMaxAutomaticRetries: 2
+  entries:
+  - taskType: catalog.brand_logo
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: catalog.duplicate_image
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: catalog.fake_listing
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: catalog.image_tagging
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: catalog.product_classification
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: catalog.product_quality_score
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: catalog.prohibited_product
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: dataset.duplicate_cleanup
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: dataset.label_verification
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: dataset.low_quality_removal
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: document.extract
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: document.ocr
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: extract.amount
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: extract.date
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: extract.document_type
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: extract.order_number
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: image.classify
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: image.remove_background
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.ai_tag_validation
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.answer_quality_score
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.caption_validation
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.hallucination_check
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.image_output_safety
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.ocr_output_validation
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.policy_violation
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.prompt_output_consistency
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.summary_verification
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: llm.suspicious_output
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ml.active_learning_prelabel
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ml.bot_abuse_risk
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ml.consensus_label_validation
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ml.human_verification_quality
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: moderation.generated_image
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: moderation.profanity
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: moderation.profile_image
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: moderation.prompt_safety
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: moderation.spam_comment
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: moderation.text
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: nlp.language_detection
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: nlp.spam_fraud_classification
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: nlp.text_classification
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ocr.invoice
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ocr.product_label
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ocr.receipt
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: ocr.simple_form
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: quality.blurry_image
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: quality.document_image
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: review.fake_detection
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: review.sentiment
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: review.topic_tagging
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: safety.nsfw_detection
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: safety.unsafe_image
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: safety.violence_detection
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: safety.weapon_detection
+    retryClass: immediate_other_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: text.classify
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2
+  - taskType: text.summarize
+    retryClass: stronger_worker
+    executable: true
+    qualityFailureRetryClass: stronger_worker
+    maxAutomaticRetries: 2

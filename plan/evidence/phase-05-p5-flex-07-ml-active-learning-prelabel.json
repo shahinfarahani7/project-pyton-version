@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-07",
+  "taskTypeId": "ml.active_learning_prelabel",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/ml-active-learning-prelabel.yaml",
+  "goldenFixture": "tests/golden/fixtures/ml.active_learning_prelabel.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

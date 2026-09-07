@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0",
-  "releaseId": "EM-20260727-WP250GA",
-  "commitSha": "c322b08bd101efb88db8304d378480d2d81eaed1",
   "subject": "chaos",
   "status": "passed",
   "verified": true,
-  "generatedAt": "2026-07-27T03:25:09Z",
-  "producer": "ci/tests",
-  "result": "passed"
+  "generatedAt": "2026-09-02T10:04:22.530111+00:00",
+  "producer": "tools/run_production_chaos_harness.py",
+  "scenariosPassed": 26,
+  "scenariosTotal": 26,
+  "classification": "IMPLEMENTED_DEV_ONLY"
 }

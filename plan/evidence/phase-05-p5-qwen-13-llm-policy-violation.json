@@ -1,0 +1,8 @@
+{
+  "taskId": "P5-QWEN-13",
+  "taskTypeId": "llm.policy_violation",
+  "completedAt": "2026-09-02",
+  "taskTypeDsl": "dsl/catalog/task-types/llm-policy-violation.yaml",
+  "goldenFixture": "tests/golden/fixtures/llm.policy_violation.json",
+  "tests": "src/backend/tests/results/test_llm_validators.py"
+}

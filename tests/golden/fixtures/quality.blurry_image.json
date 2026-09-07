@@ -1,0 +1,26 @@
+{
+  "taskType": "quality.blurry_image",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for quality.blurry_image",
+  "input": {
+    "assetRef": "file_golden_quality_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_quality_blurry_image",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "laplacianVariance": 245.6,
+        "blurry": false,
+        "threshold": 100
+      },
+      "visionRuntimeClass": "image_classifier_runtime"
+    },
+    "metrics": {
+      "visionMs": 120
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

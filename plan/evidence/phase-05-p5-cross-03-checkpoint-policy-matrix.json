@@ -1,0 +1,22 @@
+{
+  "taskId": "P5-CROSS-03",
+  "completedAt": "2026-09-02",
+  "summary": "CheckpointPolicyMatrix assigns checkpointEnabled/strategy to all 56 catalog tasks; long-running document/LLM tasks enabled, short tasks explicitly disabled.",
+  "artifacts": {
+    "matrix": "dsl/policies/checkpoints/task-checkpoint-matrix-v1.yaml",
+    "schema": "dsl/schemas/checkpointpolicymatrix.schema.json",
+    "catalog": "src/shared/task-types/catalog.json",
+    "loader": "src/backend/edgemint/routing/checkpoint_policy_matrix.py",
+    "executionPlanResolver": "src/backend/edgemint/routing/execution_plan_resolver.py",
+    "assignmentGate": "src/backend/edgemint/workers/assignments.py#checkpoint",
+    "generator": "tools/generate_checkpoint_policy_matrix.py",
+    "export": "tools/export_checkpoint_policy_matrix.py",
+    "tests": "src/backend/tests/routing/test_checkpoint_policy_matrix.py"
+  },
+  "counts": {
+    "catalogTaskTypes": 56,
+    "checkpointEnabled": 15,
+    "checkpointDisabled": 41
+  },
+  "testRun": "py -3.13 tools/validate_dsl.py exit 0; py -3.13 -m pytest tests/routing/test_checkpoint_policy_matrix.py tests/routing/test_execution_plan_resolver.py -q (10 passed)"
+}

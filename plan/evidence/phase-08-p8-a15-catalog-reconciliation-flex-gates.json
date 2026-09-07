@@ -1,0 +1,92 @@
+{
+  "status": "passed",
+  "taskId": "P8-A15",
+  "auditId": "A15",
+  "acceptanceCase": "T15",
+  "architectureVersion": "2.0",
+  "sourceSections": [
+    "55",
+    "56",
+    "57",
+    "58",
+    "59",
+    "65",
+    "75"
+  ],
+  "generatedAt": "2026-09-06T08:28:18.274994+00:00",
+  "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "artifacts": {
+    "catalogJson": "src/shared/task-types/catalog.json",
+    "catalogClosure": "src/backend/edgemint/tasks/catalog_closure.py",
+    "catalogReconciliation": "src/backend/edgemint/tasks/catalog_reconciliation.py",
+    "flexEnvelopeDsl": "dsl/catalog/resource-envelopes/flex-input.yaml",
+    "workerFlexContracts": "src/apps/worker/lib/contracts/task_contract_catalog.dart",
+    "catalogClosureValidator": "tools/validate_catalog_closure.py",
+    "catalogInfraVerifier": "tools/verify_task_catalog_infrastructure.py",
+    "backendTests": "src/backend/tests/tasks/test_catalog_reconciliation.py",
+    "p5Gap08Evidence": "plan/evidence/phase-05-p5-gap-08-catalog-signoff.json"
+  },
+  "catalogSnapshot": {
+    "commitSha": "e47a3406653b152e306db1e326e262297cc1a3e4",
+    "uniqueTaskCount": 56,
+    "duplicateCatalogIds": [],
+    "duplicateDslCodes": [],
+    "unmappedCatalogIds": [],
+    "orphanDslCodes": [
+      "audio.transcribe",
+      "document.verify",
+      "image.detect",
+      "text.embedding",
+      "text.generate",
+      "text.translate",
+      "vision.analyze"
+    ],
+    "historicalExpectedTotal": 56,
+    "reconciledWithHistorical": true,
+    "reconciliationDelta": 0,
+    "flexTaskIds": [
+      "catalog.fake_listing",
+      "dataset.duplicate_cleanup",
+      "dataset.label_verification",
+      "dataset.low_quality_removal",
+      "llm.ai_tag_validation",
+      "llm.caption_validation",
+      "ml.active_learning_prelabel",
+      "ml.consensus_label_validation",
+      "ml.human_verification_quality"
+    ],
+    "flexDispatchableIds": [
+      "catalog.fake_listing",
+      "dataset.duplicate_cleanup",
+      "dataset.label_verification",
+      "dataset.low_quality_removal",
+      "llm.ai_tag_validation",
+      "llm.caption_validation",
+      "ml.active_learning_prelabel",
+      "ml.consensus_label_validation",
+      "ml.human_verification_quality"
+    ],
+    "flexBlockedIds": [],
+    "taxonomyAxes": {
+      "uniqueTotal": 56,
+      "flexAxis": 9,
+      "visionAxis": 22,
+      "qwenAxis": 35
+    },
+    "taxonomyAxisOverlapNote": "Historical axis sum 48 exceeds unique total because Qwen/Vision/Flex axes overlap (v2 \u00a756)."
+  },
+  "t15Scenario": {
+    "title": "Catalog overlap/duplicate IDs; snapshot total differs; Flex contract absent",
+    "uniqueIdsReconciledTo56": true,
+    "noDuplicateIds": true,
+    "flexDispatchGate": true,
+    "catalogClosureSync": true,
+    "integrationHarness": "NOT_RUN"
+  },
+  "gaps": [
+    "T15 intentional duplicate-ID negative injection harness NOT_RUN",
+    "Cross-repo catalog export diff automation NOT_RUN"
+  ],
+  "errors": []
+}

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edgemint.dev/schemas/workerheartbeattelemetry.schema.json",
+  "title": "WorkerHeartbeatTelemetry",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cpuUsageBps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "loadedModelIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "runtimeSessions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "consentSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grantedConsents"],
+      "properties": {
+        "grantedConsents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "contributionModeId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "calibrationView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileVersion", "suiteVersion"],
+      "properties": {
+        "profileVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "suiteVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "measuredAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "resourceReservationsView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "totals"],
+      "properties": {
+        "active": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "assignmentId",
+              "runtimeClass",
+              "cpuUnits",
+              "memoryBytes",
+              "storageBytes"
+            ],
+            "properties": {
+              "assignmentId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "runtimeClass": {
+                "type": "string",
+                "minLength": 1
+              },
+              "cpuUnits": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "memoryBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "storageBytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "totals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cpuUnits", "memoryBytes", "storageBytes"],
+          "properties": {
+            "cpuUnits": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "memoryBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "storageBytes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "identityLifecycleView": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "eventSequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bootstrapInFlight": {
+          "type": "boolean"
+        },
+        "runtimeGeneration": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nativeHandlesInvalidated": {
+          "type": "boolean"
+        },
+        "idleChurnDetected": {
+          "type": "boolean"
+        },
+        "nativeHandleCounters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "modelCreate": { "type": "integer", "minimum": 0 },
+            "modelClose": { "type": "integer", "minimum": 0 },
+            "sessionCreate": { "type": "integer", "minimum": 0 },
+            "sessionClose": { "type": "integer", "minimum": 0 },
+            "identityClear": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "recentMutations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sequence", "kind", "caller"],
+            "properties": {
+              "sequence": { "type": "integer", "minimum": 1 },
+              "kind": { "type": "string", "minLength": 1 },
+              "caller": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string" },
+              "before": { "type": "object" },
+              "after": { "type": "object" },
+              "observedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

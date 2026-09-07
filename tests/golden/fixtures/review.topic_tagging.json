@@ -1,0 +1,26 @@
+{
+  "taskType": "review.topic_tagging",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for review.topic_tagging (Qwen topic tags)",
+  "input": {
+    "inlineText": "Battery lasts two days; camera is sharp.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_topic_tagging_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "tags": ["battery_life", "camera_quality"],
+        "confidence": 0.92
+      }
+    },
+    "metrics": {
+      "llmMs": 460,
+      "inputTokens": 11,
+      "outputTokens": 12
+    }
+  },
+  "minimumConfidenceMilli": 960
+}

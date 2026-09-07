@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-FLEX-08",
+  "taskTypeId": "ml.consensus_label_validation",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/ml-consensus-label-validation.yaml",
+  "goldenFixture": "tests/golden/fixtures/ml.consensus_label_validation.json",
+  "validatorModule": "src/backend/edgemint/results/flex_validators.py",
+  "tests": "src/backend/tests/results/test_flex_validators.py"
+}

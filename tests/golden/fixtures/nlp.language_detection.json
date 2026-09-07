@@ -1,0 +1,23 @@
+{
+  "taskType": "nlp.language_detection",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for nlp.language_detection",
+  "input": {
+    "inlineText": "Hello, the weather is nice today.",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_language_detection_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "data": {
+        "language": "en",
+        "confidence": 0.97,
+        "alternatives": []
+      }
+    },
+    "metrics": {"llmMs": 380}
+  },
+  "minimumConfidenceMilli": 960
+}

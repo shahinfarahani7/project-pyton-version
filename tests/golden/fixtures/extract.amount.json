@@ -1,0 +1,25 @@
+{
+  "taskType": "extract.amount",
+  "fixtureVersion": "1",
+  "description": "Reference golden I/O for extract.amount",
+  "input": {
+    "assetRef": "file_golden_amount_001",
+    "options": {}
+  },
+  "workerResult": {
+    "schemaVersion": "1",
+    "taskId": "tsk_golden_extract_amount_001",
+    "status": "SUCCEEDED",
+    "output": {
+      "rawText": "Amount due: EUR 49.90",
+      "ocrLines": [],
+      "data": {
+        "amount": 49.9,
+        "currency": "EUR",
+        "evidence": "Amount due: EUR 49.90"
+      }
+    },
+    "metrics": {"ocrMs": 800, "llmMs": 700}
+  },
+  "minimumConfidenceMilli": 960
+}

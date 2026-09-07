@@ -1,0 +1,14 @@
+{
+  "taskId": "P2-T11",
+  "completedAt": "2026-09-02",
+  "schema": "dsl/schemas/userresourcepolicy.schema.json",
+  "activePolicy": "dsl/policies/consent/production-resource-policy-v1.yaml",
+  "backendModule": "src/backend/edgemint/workers/resource_policy.py",
+  "apiDraft": "GET /policy/resource-contribution in contracts/openapi/edgemint-worker-api.yaml",
+  "tests": "src/backend/tests/workers/test_resource_policy.py",
+  "contributionModes": {
+    "balanced": { "approvedPercent": 30, "requiresExplicitOptIn": false },
+    "performance": { "approvedPercent": 50, "requiresExplicitOptIn": true }
+  },
+  "architectureSections": ["15", "17", "64"]
+}

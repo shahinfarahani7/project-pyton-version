@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "task": "post-plan-calibration-router-wiring",
+  "generatedAt": "2026-09-02",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "changes": [
+    "src/backend/edgemint/routing/scoring_features.py — calibrationFactorBps adjusts predictedLatency",
+    "src/backend/edgemint/routing/service.py — scheduler stack loads device calibration before ranking",
+    "contracts/openapi/edgemint-worker-api.yaml — performanceOptInConfirmed on ReplaceWorkerPreferencesRequest",
+    "src/backend/tests/routing/test_adaptive_execution.py — calibration scoring test"
+  ],
+  "tests": [
+    "src/backend/tests/routing/test_adaptive_execution.py::test_calibration_factor_lowers_predicted_latency_score",
+    "src/backend/tests/routing/test_scheduler_stack.py"
+  ]
+}

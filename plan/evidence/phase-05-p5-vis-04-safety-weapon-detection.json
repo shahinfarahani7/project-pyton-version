@@ -1,0 +1,10 @@
+{
+  "taskId": "P5-VIS-04",
+  "taskTypeId": "safety.weapon_detection",
+  "completedAt": "2026-09-02",
+  "executable": true,
+  "taskTypeDsl": "dsl/catalog/task-types/safety-weapon-detection.yaml",
+  "goldenFixture": "tests/golden/fixtures/safety.weapon_detection.json",
+  "validatorModule": "src/backend/edgemint/results/vision_validators.py",
+  "tests": "src/backend/tests/results/test_vision_validators.py"
+}

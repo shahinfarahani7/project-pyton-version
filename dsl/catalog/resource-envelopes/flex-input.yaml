@@ -1,0 +1,23 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: flex-input
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: Flexible-input tasks with schema-driven payloads.
+spec:
+  taskType: catalog.fake_listing
+  runtimeClass: mediapipe_llm
+  requiredModelIds:
+    - qwen2.5-0.5b
+  cpuUnits: 25
+  memoryReservationBytes: 805306368
+  storageReservationBytes: 52428800
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 120000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: llm_inference

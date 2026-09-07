@@ -1,0 +1,19 @@
+{
+  "taskId": "P3-T07",
+  "completedAt": "2026-09-02",
+  "summary": "Hierarchical map/reduce summarization with fresh session per map chunk and recursive reduce when needed.",
+  "artifacts": {
+    "pipeline": "src/apps/worker/lib/inference/llm/hierarchical_summarize_pipeline.dart",
+    "prompts": "src/apps/worker/lib/inference/llm/prompt_templates.dart",
+    "processor": "src/apps/worker/lib/inference/llm/qwen_task_processor.dart",
+    "handlers": "src/apps/worker/lib/tasks/handlers/document_handlers.dart",
+    "tests": "src/apps/worker/test/inference/llm/hierarchical_summarize_pipeline_test.dart"
+  },
+  "stages": [
+    "direct summarize when input fits budget",
+    "map per chunk",
+    "reduce partial summaries",
+    "recursive reduce when reduce prompt exceeds budget"
+  ],
+  "testRun": "flutter pub get blocked (pub.dev socket error); tests authored"
+}

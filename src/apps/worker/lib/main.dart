@@ -37,13 +37,14 @@ class WorkerHomePage extends StatefulWidget {
   State<WorkerHomePage> createState() => _WorkerHomePageState();
 }
 
-class _WorkerHomePageState extends State<WorkerHomePage> {
+class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObserver {
   late final WorkerAppController _controller;
   int _selectedNavIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = WorkerAppController();
     _controller.addListener(_onControllerChanged);
     _controller.bootstrap();
@@ -75,7 +76,13 @@ class _WorkerHomePageState extends State<WorkerHomePage> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _controller.handleAppLifecycleState(state);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.removeListener(_onControllerChanged);
     _controller.dispose();
     super.dispose();

@@ -1,0 +1,195 @@
+apiVersion: edgemint.io/v1
+kind: RuntimeCompatibilityProfile
+metadata:
+  name: production-runtime-compatibility-v1
+  version: 1.0.0
+  status: active
+  description: Production runtime compatibility matrix (Architecture Sections 32, 59).
+  owners:
+  - mobile
+  - routing
+spec:
+  recommendedRuntimeClasses:
+  - paddle_ocr
+  - mediapipe_llm
+  - image_classifier
+  - object_detector
+  - embedding_runtime
+  - vlm_runtime
+  - segmentation_runtime
+  - network_io
+  - system
+  runtimeClasses:
+  - id: paddle_ocr
+    displayName: Paddle OCR Mobile
+    nativePluginId: paddle_ocr_mobile
+    supportedAbis:
+    - arm64-v8a
+    - armeabi-v7a
+    minimumAndroidApi: 28
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 1
+    certifiedMaximumSessionsPerDevice: 2
+  - id: mediapipe_llm
+    displayName: MediaPipe LLM Inference
+    nativePluginId: mediapipe_llm
+    supportedAbis:
+    - arm64-v8a
+    minimumAndroidApi: 31
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 1
+    exclusive: true
+  - id: image_classifier
+    displayName: Image Classifier
+    nativePluginId: tflite_image_classifier
+    supportedAbis:
+    - arm64-v8a
+    - armeabi-v7a
+    minimumAndroidApi: 28
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 2
+  - id: object_detector
+    displayName: Object Detector
+    nativePluginId: tflite_object_detector
+    supportedAbis:
+    - arm64-v8a
+    - armeabi-v7a
+    minimumAndroidApi: 28
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 2
+  - id: embedding_runtime
+    displayName: Embedding Runtime
+    nativePluginId: onnx_embedding_runtime
+    supportedAbis:
+    - arm64-v8a
+    minimumAndroidApi: 28
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 2
+  - id: vlm_runtime
+    displayName: Vision-Language Model Runtime
+    nativePluginId: mediapipe_vlm
+    supportedAbis:
+    - arm64-v8a
+    minimumAndroidApi: 31
+    supportedPageSizeKb:
+    - 16
+    maximumSessionsPerDevice: 1
+    exclusive: true
+  - id: segmentation_runtime
+    displayName: Image Segmentation Runtime
+    nativePluginId: mediapipe_segmentation
+    supportedAbis:
+    - arm64-v8a
+    minimumAndroidApi: 28
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 1
+    exclusive: true
+  - id: network_io
+    displayName: Network I/O Stage
+    nativePluginId: system_network_io
+    supportedAbis:
+    - arm64-v8a
+    - armeabi-v7a
+    - x86_64
+    minimumAndroidApi: 26
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 8
+  - id: system
+    displayName: System Stage
+    nativePluginId: system_builtin
+    supportedAbis:
+    - arm64-v8a
+    - armeabi-v7a
+    - x86_64
+    minimumAndroidApi: 26
+    supportedPageSizeKb:
+    - 4
+    - 16
+    maximumSessionsPerDevice: 16
+  coRunRules:
+  - runtimeA: mediapipe_llm
+    runtimeB: paddle_ocr
+    coRunAllowed: false
+    exclusiveGroup: heavy_compute
+    reason: single_heavy_model_resident
+  - runtimeA: mediapipe_llm
+    runtimeB: vlm_runtime
+    coRunAllowed: false
+    exclusiveGroup: heavy_compute
+    reason: llm_and_vlm_exclusive
+  - runtimeA: mediapipe_llm
+    runtimeB: segmentation_runtime
+    coRunAllowed: false
+    exclusiveGroup: heavy_vision
+    reason: llm_and_heavy_vision_exclusive
+  - runtimeA: paddle_ocr
+    runtimeB: vlm_runtime
+    coRunAllowed: false
+    exclusiveGroup: heavy_vision
+    reason: ocr_and_vlm_exclusive
+  - runtimeA: image_classifier
+    runtimeB: mediapipe_llm
+    coRunAllowed: false
+    exclusiveGroup: heavy_compute
+    reason: classifier_deferred_during_llm
+  - runtimeA: network_io
+    runtimeB: system
+    coRunAllowed: true
+    reason: orchestration_stages
+  - runtimeA: network_io
+    runtimeB: mediapipe_llm
+    coRunAllowed: true
+    reason: submit_stage_after_inference
+  - runtimeA: system
+    runtimeB: paddle_ocr
+    coRunAllowed: true
+    reason: preprocess_before_ocr
+  taskRequirements:
+  - taskRuntimeClass: paddle_ocr
+    requiredWorkerRuntimeClasses:
+    - paddle_ocr
+    minimumDeviceTier: T2
+  - taskRuntimeClass: mediapipe_llm
+    requiredWorkerRuntimeClasses:
+    - mediapipe_llm
+    minimumDeviceTier: T3
+  - taskRuntimeClass: image_classifier
+    requiredWorkerRuntimeClasses:
+    - image_classifier
+    minimumDeviceTier: T2
+  - taskRuntimeClass: object_detector
+    requiredWorkerRuntimeClasses:
+    - object_detector
+    minimumDeviceTier: T2
+  - taskRuntimeClass: embedding_runtime
+    requiredWorkerRuntimeClasses:
+    - embedding_runtime
+    minimumDeviceTier: T2
+  - taskRuntimeClass: vlm_runtime
+    requiredWorkerRuntimeClasses:
+    - vlm_runtime
+    minimumDeviceTier: T4
+  - taskRuntimeClass: segmentation_runtime
+    requiredWorkerRuntimeClasses:
+    - segmentation_runtime
+    minimumDeviceTier: T3
+  - taskRuntimeClass: network_io
+    requiredWorkerRuntimeClasses:
+    - network_io
+  - taskRuntimeClass: system
+    requiredWorkerRuntimeClasses:
+    - system
