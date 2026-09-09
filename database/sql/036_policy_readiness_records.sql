@@ -1,5 +1,7 @@
 -- Policy readiness records for v2 §73 activation gate (A23 / T23).
 
+
+BEGIN;
 CREATE TABLE IF NOT EXISTS public.policy_readiness_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   architecture_version text NOT NULL,
@@ -20,3 +22,5 @@ CREATE TABLE IF NOT EXISTS public.policy_readiness_records (
 
 CREATE INDEX IF NOT EXISTS IX_policy_readiness_architecture_version
   ON public.policy_readiness_records (architecture_version, activation_status);
+
+COMMIT;

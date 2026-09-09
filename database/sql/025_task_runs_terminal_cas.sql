@@ -1,5 +1,7 @@
 -- TaskRun identity and terminal transition CAS (Architecture v2 §20, A01, T01).
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.task_runs (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   workspace_id uuid NOT NULL,
@@ -80,3 +82,5 @@ COMMENT ON TABLE public.task_runs IS
 
 COMMENT ON FUNCTION public.commit_task_run_terminal IS
   'Atomic terminal transition: first valid commit wins; later commits return false.';
+
+COMMIT;

@@ -11,7 +11,6 @@ from edgemint.building_blocks.database import transaction
 from edgemint.security.problems import request_trace_id
 from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
-from edgemint.workers.assignments import AssignmentCommandService, AssignmentCredentialBootstrapService
 from edgemint.workers.errors import WorkerServiceError
 from edgemint.workers.resource_policy import build_contribution_policy_view
 from edgemint.workers.schemas import (
@@ -25,8 +24,6 @@ from edgemint.workers.schemas import (
 
 app = create_service_app("worker-registry")
 enrollment = WorkerEnrollmentService()
-assignment_bootstrap = AssignmentCredentialBootstrapService()
-assignment_commands = AssignmentCommandService()
 
 
 @app.exception_handler(WorkerServiceError)
@@ -197,7 +194,14 @@ def _dev_worker_assignments_enabled() -> bool:
 
 
 if not _dev_worker_assignments_enabled():
+    from edgemint.workers.assignments import (
+        AssignmentCommandService,
+        AssignmentCredentialBootstrapService,
+    )
     from pydantic import BaseModel, Field
+
+    assignment_bootstrap = AssignmentCredentialBootstrapService()
+    assignment_commands = AssignmentCommandService()
 
     class StartAssignmentRequest(BaseModel):
         leaseToken: str = Field(min_length=16, max_length=512)

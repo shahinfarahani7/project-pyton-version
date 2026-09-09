@@ -1,5 +1,7 @@
 -- Immutable checkpoint manifests and authenticated ResumeGrants (v2 §28, §46, A12, T12).
 
+
+BEGIN;
 CREATE TABLE IF NOT EXISTS public.checkpoint_manifests (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   workspace_id uuid NOT NULL,
@@ -154,3 +156,5 @@ COMMENT ON TABLE public.resume_grants IS
 
 COMMENT ON FUNCTION public.issue_resume_grant IS
   'Issue or refresh ResumeGrant after compatibility checks; producer fence never authorizes writes alone.';
+
+COMMIT;

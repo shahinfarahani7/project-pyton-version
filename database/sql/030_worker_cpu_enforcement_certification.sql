@@ -1,5 +1,7 @@
 -- CPU contribution enforcement certification (Architecture v2 §16.1, §17, A06, T06).
 
+
+BEGIN;
 CREATE TABLE IF NOT EXISTS public.worker_cpu_enforcement_certifications (
   worker_device_id uuid NOT NULL PRIMARY KEY,
   policy_ref varchar(128) NOT NULL,
@@ -97,3 +99,5 @@ COMMENT ON TABLE public.worker_cpu_enforcement_certifications IS
 
 COMMENT ON FUNCTION public.upsert_worker_cpu_enforcement_certification IS
   'Upsert active CPU enforcement certification from heartbeat/policy sync.';
+
+COMMIT;

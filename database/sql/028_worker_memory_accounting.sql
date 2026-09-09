@@ -1,5 +1,7 @@
 -- Worker memory commitments: base/resident/task_peak/transfer (Architecture v2 §16, §19, A04, T04).
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.worker_memory_commitments (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   worker_device_id uuid NOT NULL,
@@ -117,3 +119,5 @@ COMMENT ON TABLE public.worker_memory_commitments IS
 
 COMMENT ON FUNCTION public.upsert_worker_memory_commitment IS
   'Upsert active memory commitment; resident identity deduped by commitment_key.';
+
+COMMIT;

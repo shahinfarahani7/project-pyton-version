@@ -1,5 +1,7 @@
 -- Physical release state independent of logical reservation (Architecture v2 §19, §47, A02, T02).
 
+BEGIN;
+
 ALTER TABLE public.worker_resource_reservations
   ADD COLUMN IF NOT EXISTS physical_release_state varchar(16) NOT NULL DEFAULT 'held'
     CONSTRAINT CK_worker_resource_reservations_physical_release_state
@@ -229,3 +231,5 @@ COMMENT ON COLUMN public.worker_resource_reservations.physical_release_state IS
 
 COMMENT ON FUNCTION public.confirm_worker_physical_release IS
   'Worker-reported stop confirmation; first valid proof wins (v2 §47).';
+
+COMMIT;

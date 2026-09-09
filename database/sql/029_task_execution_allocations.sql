@@ -1,5 +1,7 @@
 -- Immutable per-input ExecutionAllocation distinct from static ResourceEnvelope (v2 §12.1, A05, T05).
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.task_execution_allocations (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   workspace_id uuid NOT NULL,
@@ -73,3 +75,5 @@ END $$;
 
 COMMENT ON TABLE public.task_execution_allocations IS
   'Immutable per TaskRun/input/plan resource decision; distinct from static revision envelope (v2 §12.1).';
+
+COMMIT;

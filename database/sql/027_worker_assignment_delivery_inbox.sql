@@ -1,5 +1,7 @@
 -- Assignment delivery inbox for poll/ACK/bootstrap path (Architecture v2 §7, §39, A03, T03).
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.worker_assignment_deliveries (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   workspace_id uuid NOT NULL,
@@ -120,3 +122,5 @@ COMMENT ON FUNCTION public.record_worker_assignment_delivery IS
 
 COMMENT ON FUNCTION public.acknowledge_worker_assignment_delivery IS
   'Transport receipt ACK; duplicate ACK returns true without side effects.';
+
+COMMIT;

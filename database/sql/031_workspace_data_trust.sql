@@ -1,5 +1,7 @@
 -- Workspace data-policy bindings and worker session revocation (v2 §52, §61, A07, T07).
 
+
+BEGIN;
 CREATE TABLE IF NOT EXISTS public.workspace_data_policy_bindings (
   workspace_id uuid NOT NULL PRIMARY KEY,
   data_policy_ref varchar(128) NOT NULL,
@@ -43,3 +45,5 @@ COMMENT ON TABLE public.workspace_data_policy_bindings IS
 
 COMMENT ON FUNCTION public.revoke_worker_session IS
   'Revoke worker bearer session; revoked credentials must fail closed on access.';
+
+COMMIT;

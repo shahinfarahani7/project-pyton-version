@@ -1,5 +1,7 @@
 -- Assignment transport recovery receipts (v2 §2.4, A09, T09).
 
+
+BEGIN;
 CREATE TABLE IF NOT EXISTS public.assignment_transport_receipts (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   workspace_id uuid NOT NULL,
@@ -80,3 +82,5 @@ COMMENT ON TABLE public.assignment_transport_receipts IS
 
 COMMENT ON FUNCTION public.record_assignment_transport_receipt IS
   'Record transport event identity; replay same digest, conflict on digest mismatch.';
+
+COMMIT;

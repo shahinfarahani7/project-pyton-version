@@ -1,5 +1,7 @@
 -- TaskRun aggregate budgets (v2 §9, §41–45, A14, T14).
 
+
+BEGIN;
 ALTER TABLE public.task_runs
   ADD COLUMN IF NOT EXISTS max_attempts int NOT NULL DEFAULT 3
     CONSTRAINT CK_task_runs_max_attempts CHECK (max_attempts > 0),
@@ -80,3 +82,5 @@ $$;
 
 COMMENT ON FUNCTION public.reserve_task_run_budget IS
   'Reserve TaskRun-wide assignment/attempt/cloud budget; counters never reset on new Attempt (v2 §1436).';
+
+COMMIT;

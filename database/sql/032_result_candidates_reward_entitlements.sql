@@ -1,5 +1,7 @@
 -- ResultCandidate, RewardEntitlement, and external-effect deduplication (v2 §22–23, §50–51, A08, T08).
 
+
+BEGIN;
 CREATE TABLE IF NOT EXISTS public.result_candidates (
   id uuid NOT NULL DEFAULT uuidv7() PRIMARY KEY,
   workspace_id uuid NOT NULL,
@@ -318,3 +320,5 @@ COMMENT ON TABLE public.external_effect_receipts IS
 
 COMMENT ON FUNCTION public.accept_task_run_with_entitlement IS
   'CAS terminal TaskRun outcome and record reward entitlement atomically after validation passed.';
+
+COMMIT;

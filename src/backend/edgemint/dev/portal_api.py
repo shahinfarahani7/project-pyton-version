@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -14,7 +14,6 @@ from edgemint.dev import task_events
 from edgemint.dev import task_type_catalog
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
-from edgemint.tasks.catalog_closure import validate_queue_admission
 from edgemint.tasks.errors import TaskServiceError
 
 router = APIRouter()
@@ -52,10 +51,6 @@ async def _create_task_from_form(
     if not task_type.strip():
         raise HTTPException(422, "TASK_TYPE_REQUIRED")
     try:
-        validate_queue_admission(
-            catalog_code=task_type.strip(),
-            mode=get_settings().catalog_closure_mode,  # type: ignore[arg-type]
-        )
         task_type_catalog.validate_task_submission(
             task_type=task_type,
             input_text=input_text,
@@ -186,29 +181,7 @@ async def create_task(
     session: BrowserSessionRecord = Depends(require_dev_portal_session),
 ) -> dict:
     _ensure_workspace_access(session, workspace_id)
-    content_type = request.headers.get("content-type", "")
     try:
-        if "multipart/form-data" in content_type:
-            form = await request.form()
-            task_type = str(form.get("taskType", "")).strip()
-            raw_text = form.get("inputText")
-            input_text = raw_text.strip() if isinstance(raw_text, str) and raw_text.strip() else None
-            raw_instructions = form.get("instructions")
-            instructions = (
-                raw_instructions.strip()
-                if isinstance(raw_instructions, str) and raw_instructions.strip()
-                else None
-            )
-            file_name, file_mime, file_bytes = await _read_uploaded_file(form.get("inputFile"))
-            return await _create_task_from_form(
-                workspace_id,
-                task_type=task_type,
-                input_text=input_text,
-                instructions=instructions,
-                file_name=file_name,
-                file_mime=file_mime,
-                file_bytes=file_bytes,
-            )
         payload = DevCreateTaskRequest.model_validate(await request.json())
         return await _create_task_from_form(
             workspace_id,
@@ -232,36 +205,6 @@ async def create_task(
         }:
             raise HTTPException(422, str(exc)) from exc
         raise HTTPException(500, "TASK_CREATE_FAILED") from exc
-
-
-@router.post("/v1/workspaces/{workspace_id}/tasks/upload", status_code=201)
-async def create_task_multipart(
-    workspace_id: UUID,
-    task_type: str = Form(..., alias="taskType"),
-    session: BrowserSessionRecord = Depends(require_dev_portal_session),
-    input_text: str | None = Form(default=None, alias="inputText"),
-    instructions: str | None = Form(default=None, alias="instructions"),
-    input_file: UploadFile | None = Form(default=None, alias="inputFile"),
-) -> dict:
-    """Explicit multipart route — reliable file upload from browser FormData."""
-    _ensure_workspace_access(session, workspace_id)
-    try:
-        file_name, file_mime, file_bytes = await _read_uploaded_file(input_file)
-        normalized_text = input_text.strip() if input_text and input_text.strip() else None
-        normalized_instructions = instructions.strip() if instructions and instructions.strip() else None
-        return await _create_task_from_form(
-            workspace_id,
-            task_type=task_type,
-            input_text=normalized_text,
-            instructions=normalized_instructions,
-            file_name=file_name,
-            file_mime=file_mime,
-            file_bytes=file_bytes,
-        )
-    except ValueError as exc:
-        if str(exc) == "INPUT_FILE_TOO_LARGE":
-            raise HTTPException(413, "INPUT_FILE_TOO_LARGE") from exc
-        raise
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}")
