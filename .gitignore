@@ -32,6 +32,7 @@ tmp_cookies.txt
 
 # Android Gradle build reports
 src/apps/worker/android/build/
+src/apps/worker/assets/models/
 src/apps/worker/android/.gradle/
 src/apps/worker/android/local.properties
 src/apps/worker/**/ephemeral/
