@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:edgemint_worker/runtime/checkpoint_store.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/privacy_cleanup_coordinator.dart';
+import 'dart:typed_data';
 
 CheckpointRecord _record(String assignmentId) {
   return CheckpointRecord(
@@ -32,7 +33,7 @@ void main() {
         blobRef: 'runtime/decode/asg_1',
       );
       coordinator.bindActiveBuffers(assignmentId: 'asg_1');
-      await checkpoints.save(_record('asg_1'), [1, 2, 3]);
+      await checkpoints.save(_record('asg_1'), Uint8List.fromList([1, 2, 3]));
 
       final result = await coordinator.cleanupAfterAssignment(
         assignmentId: 'asg_1',
@@ -50,7 +51,7 @@ void main() {
       final checkpoints = CheckpointStore(store);
       final coordinator = PrivacyCleanupCoordinator()..markResumeGrantActive(assignmentId: 'asg_2');
 
-      await checkpoints.save(_record('asg_2'), [4, 5]);
+      await checkpoints.save(_record('asg_2'), Uint8List.fromList([4, 5]));
 
       final result = await coordinator.cleanupAfterAssignment(
         assignmentId: 'asg_2',

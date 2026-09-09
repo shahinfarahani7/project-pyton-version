@@ -17,8 +17,8 @@ import 'semantic_chunk_engine.dart';
 
 class QwenInferenceConfig {
   const QwenInferenceConfig({
-    this.contextSize = ContextBudgetProfile.qwenBaseline.totalContextTokens,
-    this.maxOutputTokens = ContextBudgetProfile.qwenBaseline.outputReserveTokens,
+    this.contextSize = ContextBudgetProfile.qwenBaselineTotalContextTokens,
+    this.maxOutputTokens = ContextBudgetProfile.qwenBaselineOutputReserveTokens,
     this.temperature = 0.1,
     this.topP = 0.8,
     this.topK = 20,

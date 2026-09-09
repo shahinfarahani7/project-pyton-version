@@ -74,12 +74,15 @@ void main() {
   test('maps resource enforcer memory violation to INSUFFICIENT_MEMORY', () {
     final enforcer = WorkerResourceEnforcer(
       capacity: const DeviceResourceCapacity(
-        cpuUnits: 1000,
-        totalRamBytes: 4 * 1024 * 1024 * 1024,
-        availableRamBytes: 2 * 1024 * 1024 * 1024,
-        freeStorageBytes: 8 * 1024 * 1024 * 1024,
-      ),
-    );
+      cpuUnits: 1000,
+      totalRamBytes: 4 * 1024 * 1024 * 1024,
+      availableRamBytes: 2 * 1024 * 1024 * 1024,
+      safetyReserveBytes: 512 * 1024 * 1024,
+      storageAvailableBytes: 8 * 1024 * 1024 * 1024,
+      storageMinimumFreeBytes: 512 * 1024 * 1024,
+      maxAiStorageBytes: 2 * 1024 * 1024 * 1024,
+    ),
+  );
     final verdict = enforcer.evaluateRequest(
       reserved: const ResourceClassTotals(cpuUnits: 0, memoryBytes: 0, storageBytes: 0),
       requested: ResourceClassTotals(

@@ -27,7 +27,7 @@ class RuntimeExclusiveGroupEnforcer {
 
   int get activeOcrSessions => _ocrSessions;
 
-  ThermalState _thermalState = ThermalState.nominal;
+  ThermalState _thermalState = ThermalState.normal;
 
   static int adaptiveMaxOcrSessions({
     required int baseMaxOcrSessions,

@@ -11,6 +11,7 @@ import 'package:edgemint_worker/runtime/worker_resource_enforcer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:edgemint_worker/api/worker_assignment_models.dart';
+import 'dart:typed_data';
 
 WorkerAssignment _assignment({int fenceToken = 3}) => WorkerAssignment(
       assignmentId: 'asg_test',
@@ -39,12 +40,12 @@ const _healthySnapshot = DeviceSnapshot(
 
 Future<void> _loadModel(InMemoryModelRuntimeManager memory) {
   return memory.ensureResident(
-    artifact: const ModelArtifact(
+    artifact:  ModelArtifact(
       modelVersionId: 'mdv-qwen',
       digestSha256: 'digest',
       signatureSha256: 'sig',
       backend: InferenceBackend.liteRt,
-      bytes: [1],
+      bytes: Uint8List.fromList([1]),
     ),
     signingKey: 'sign',
   );

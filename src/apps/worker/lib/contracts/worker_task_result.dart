@@ -1,4 +1,6 @@
 import 'worker_error.dart';
+import 'worker_error.dart';
+export 'worker_error.dart' show WorkerResultStatus;
 
 class OcrLineResult {
   const OcrLineResult({

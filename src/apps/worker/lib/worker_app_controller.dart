@@ -39,6 +39,8 @@ import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_heartbeat_telemetry.dart';
 import 'tasks/task_execution_engine.dart';
 import 'tasks/task_type_mapper.dart';
+import 'runtime/gemma_model_runtime_manager.dart';
+import 'runtime/worker_model_installer.dart';
 
 enum ModelInstallPhase { idle, downloading, ready, failed }
 

@@ -35,12 +35,12 @@ void main() {
 
     test('rejects unsigned artifacts when verification is enabled', () async {
       final manager = InMemoryModelRuntimeManager(verifyArtifact: true);
-      const artifact = ModelArtifact(
+      final artifact = ModelArtifact(
         modelVersionId: 'mdv-qwen',
         digestSha256: 'digest',
         signatureSha256: '',
         backend: InferenceBackend.liteRt,
-        bytes: [1],
+        bytes: Uint8List.fromList([1]),
       );
 
       await expectLater(
@@ -49,13 +49,14 @@ void main() {
       );
     });
 
-    test('opens and closes a fresh session per inference stage', () async {      final manager = InMemoryModelRuntimeManager(verifyArtifact: false);
-      const artifact = ModelArtifact(
+    test('opens and closes a fresh session per inference stage', () async {
+      final manager = InMemoryModelRuntimeManager(verifyArtifact: false);
+      final artifact = ModelArtifact(
         modelVersionId: 'mdv-qwen',
         digestSha256: 'digest',
         signatureSha256: 'sig',
         backend: InferenceBackend.liteRt,
-        bytes: [1],
+        bytes: Uint8List.fromList([1]),
       );
       await manager.ensureResident(artifact: artifact, signingKey: 'key');
 
@@ -72,12 +73,12 @@ void main() {
 
     test('rejects unload while a session is still open', () async {
       final manager = InMemoryModelRuntimeManager(verifyArtifact: false);
-      const artifact = ModelArtifact(
+      final artifact = ModelArtifact(
         modelVersionId: 'mdv-qwen',
         digestSha256: 'digest',
         signatureSha256: 'sig',
         backend: InferenceBackend.liteRt,
-        bytes: [1],
+        bytes: Uint8List.fromList([1]),
       );
       await manager.ensureResident(artifact: artifact, signingKey: 'key');
 
@@ -98,12 +99,12 @@ void main() {
 
     test('unloads on lifecycle shutdown after sessions close', () async {
       final manager = InMemoryModelRuntimeManager(verifyArtifact: false);
-      const artifact = ModelArtifact(
+      final artifact = ModelArtifact(
         modelVersionId: 'mdv-qwen',
         digestSha256: 'digest',
         signatureSha256: 'sig',
         backend: InferenceBackend.liteRt,
-        bytes: [1],
+        bytes: Uint8List.fromList([1]),
       );
       await manager.ensureResident(artifact: artifact, signingKey: 'key');
       await manager.withFreshSession(stageId: 'inference', body: () async {});

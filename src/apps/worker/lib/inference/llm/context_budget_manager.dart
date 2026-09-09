@@ -13,16 +13,8 @@ class ContextBudgetProfile {
     required this.configuredRuntimeContextLimit,
   });
 
-  static const qwenBaseline = ContextBudgetProfile(
-    totalContextTokens: 1280,
-    systemTemplateTokens: 200,
-    inputBudgetTokens: 600,
-    outputReserveTokens: 300,
-    safetyMarginTokens: 180,
-    verifiedArtifactContextLimit: WorkerModelCatalog.verifiedArtifactContextLimit,
-    configuredRuntimeContextLimit: 1280,
-  );
-
+  static const int qwenBaselineTotalContextTokens = 1280;
+  static const int qwenBaselineOutputReserveTokens = 256;
   final int totalContextTokens;
   final int systemTemplateTokens;
   final int inputBudgetTokens;
@@ -30,8 +22,18 @@ class ContextBudgetProfile {
   final int safetyMarginTokens;
   final int verifiedArtifactContextLimit;
   final int configuredRuntimeContextLimit;
-}
 
+  /// Conservative Qwen baseline (Architecture Section 25).
+ static const ContextBudgetProfile qwenBaseline = ContextBudgetProfile(
+   totalContextTokens: 1280,
+   systemTemplateTokens: 96,
+   inputBudgetTokens: 900,       // فضای باقی‌مونده برای پرامپت کاربر
+   outputReserveTokens: 256,      // فضای رزرو خروجی
+   safetyMarginTokens: 32,
+   verifiedArtifactContextLimit: 1280,   // = WorkerModelCatalog.verifiedArtifactContextLimit
+   configuredRuntimeContextLimit: 1280,
+ );
+}
 /// Deterministic token estimate before native runtime (Architecture Section 25).
 class TokenEstimator {
   const TokenEstimator({this.charactersPerToken = 3.5});

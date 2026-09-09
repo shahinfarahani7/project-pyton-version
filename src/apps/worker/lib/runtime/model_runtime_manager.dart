@@ -53,6 +53,8 @@ class InMemoryModelRuntimeManager implements ModelRuntimeManager {
   final bool verifyArtifact;
   final RuntimeExclusiveGroupEnforcer? _exclusiveGroupEnforcer;
   final ModelArtifactVerifier _artifactVerifier;
+  @override
+  bool get allowsOnlyOnePrimaryHeavyModel => true;
 
   ModelResidencyState _state = ModelResidencyState.unloaded;
   String? _modelVersionId;

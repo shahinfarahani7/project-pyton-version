@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:edgemint_worker/runtime/artifact_install_coordinator.dart';
 import 'package:edgemint_worker/runtime/inference_adapter.dart';
 import 'package:edgemint_worker/runtime/model_runtime_manager.dart';
@@ -18,12 +20,10 @@ void main() {
           await Future<void>.delayed(const Duration(milliseconds: 30));
         },
       );
-
       expect(
         () => coordinator.assertNoConcurrentInstall(),
         throwsA(isA<ModelIntegrityException>()),
       );
-
       await first;
       expect(coordinator.generation, 1);
       expect(coordinator.activeModelVersionId, 'mdv_a');
@@ -41,22 +41,21 @@ void main() {
   group('InMemoryModelRuntimeManager upgrade guard', () {
     test('rejects model replacement while session is open', () async {
       final manager = InMemoryModelRuntimeManager(verifyArtifact: false);
-      const first = ModelArtifact(
+      final first = ModelArtifact(
         modelVersionId: 'mdv-a',
         digestSha256: 'digest-a',
         signatureSha256: 'sig-a',
         backend: InferenceBackend.liteRt,
-        bytes: [1],
+        bytes: Uint8List.fromList([1]),
       );
-      const second = ModelArtifact(
+      final second = ModelArtifact(
         modelVersionId: 'mdv-b',
         digestSha256: 'digest-b',
         signatureSha256: 'sig-b',
         backend: InferenceBackend.liteRt,
-        bytes: [2],
+        bytes: Uint8List.fromList([2]),
       );
       await manager.ensureResident(artifact: first, signingKey: 'key');
-
       await expectLater(
         manager.withFreshSession(
           stageId: 'inference',

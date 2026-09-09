@@ -24,13 +24,14 @@ void main() {
 
       await heavyEntered.future;
 
+      var ocrCompleted = false;
       final ocrFuture = enforcer.withOcrInference(() async {
         ocrStartedWhileHeavy = enforcer.heavyLlmActive;
         return 'ocr';
-      });
+      })..then((_) => ocrCompleted = true);
 
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(ocrFuture.isCompleted, isFalse);
+      expect(ocrCompleted, isFalse);
 
       releaseHeavy.complete();
       await Future.wait([heavyFuture, ocrFuture]);

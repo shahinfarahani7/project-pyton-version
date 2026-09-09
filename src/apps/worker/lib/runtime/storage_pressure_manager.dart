@@ -159,13 +159,13 @@ class StoragePressureManager {
   bool canEvictModelId(String modelId) {
     final entry = _entries.firstWhere(
       (candidate) => candidate.modelId == modelId,
-      orElse: () => const ModelCacheEntry(
-        modelId: '',
-        tier: ModelStorageTier.permanent,
-        sizeBytes: 0,
-        lastUsedAt: _epoch,
-        pinned: true,
-      ),
+     orElse: () => ModelCacheEntry(
+       modelId: '',
+       tier: ModelStorageTier.permanent,
+       sizeBytes: 0,
+       lastUsedAt: _epoch,
+       pinned: true,
+     ),
     );
     if (entry.modelId.isEmpty) {
       return false;

@@ -21,6 +21,8 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
 
   final RuntimeExclusiveGroupEnforcer? _exclusiveGroupEnforcer;
   final ModelArtifactVerifier _artifactVerifier;
+  @override
+  bool get allowsOnlyOnePrimaryHeavyModel => true;
   InferenceModel? _model;
   ModelResidencyState _state = ModelResidencyState.unloaded;
   String? _modelVersionId;

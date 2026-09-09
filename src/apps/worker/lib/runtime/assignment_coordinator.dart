@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import '../api/worker_api_client.dart';
 import '../api/worker_assignment_models.dart';
 import '../platform/worker_runtime_channel.dart';
+import 'runtime_exclusive_group_enforcer.dart';
 import 'assignment_event_reporter.dart';
 import 'assignment_inbox.dart';
 import 'assignment_receiver.dart';

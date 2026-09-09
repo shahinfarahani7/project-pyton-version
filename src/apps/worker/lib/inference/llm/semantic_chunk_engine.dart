@@ -106,7 +106,7 @@ class _SemanticSegment {
 
 /// Deterministic semantic chunker (Architecture Section 27).
 class SemanticChunkEngine {
-  SemanticChunkEngine({
+  const SemanticChunkEngine({
     this.profile = ContextBudgetProfile.qwenBaseline,
     this.estimator = const TokenEstimator(),
     this.overlapTokens = 40,
