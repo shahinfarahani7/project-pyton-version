@@ -69,7 +69,7 @@ def _run_flutter_tests() -> dict[str, object]:
         raise RuntimeError("Flutter SDK not found; run tools/flutter_env.ps1 first")
 
     env = dict(**{k: v for k, v in __import__("os").environ.items()})
-    env.setdefault("PUB_HOSTED_URL", "https://pub.myket.ir")
+    env.setdefault("PUB_HOSTED_URL", "https://pub.flutter-io.cn")
     env.setdefault("FLUTTER_STORAGE_BASE_URL", "https://storage.flutter-io.cn")
 
     commands = [

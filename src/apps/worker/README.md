@@ -26,10 +26,26 @@ python ../../../tests/mobile/run_device_matrix.py --platform android --profile g
 
 Environment variables set by `tools/flutter_env.ps1`:
 
-- `PUB_HOSTED_URL=https://pub.myket.ir`
-- `FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn`
+- With git/http proxy: `PUB_HOSTED_URL=https://pub.dev`, `FLUTTER_STORAGE_BASE_URL=https://storage.googleapis.com`
+- Without proxy: `PUB_HOSTED_URL=https://pub.flutter-io.cn`, `FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn`
 
-Android Gradle is configured with `https://maven.myket.ir` for dependency resolution.
+If `pub get` fails on a mirror, set proxy explicitly then rerun:
+
+```powershell
+$env:HTTP_PROXY = "http://YOUR_PROXY:3128"
+$env:HTTPS_PROXY = $env:HTTP_PROXY
+. ..\..\..\tools\flutter_env.ps1
+flutter pub get
+```
+
+Android Gradle uses mirrors via `tools/setup_gradle_mirror.ps1` (required once per machine).
+
+If you see `no repositories are defined` on project `:gradle`, rerun:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\setup_gradle_mirror.ps1
+. tools\flutter_env.ps1
+```
 
 ## Layout
 
