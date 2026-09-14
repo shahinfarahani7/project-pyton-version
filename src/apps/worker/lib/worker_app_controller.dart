@@ -108,6 +108,7 @@ class WorkerAppController extends ChangeNotifier {
       taskEngine: _taskEngine,
       storagePressure: _storagePressure,
       accessTokenProvider: _accessTokenProvider,
+      accessToken: _workerAccessToken,
       onStatus: _onExecutionStatus,
       processLifecycle: _processLifecycle,
     );

@@ -40,10 +40,14 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
                 result.success(context.filesDir.absolutePath)
             }
             "setConsentsGranted" -> {
-                val consents = call.argument<List<String>>() ?: emptyList()
+                val consents = (call.arguments as? List<*>)
+                    ?.filterIsInstance<String>()
+                    ?: emptyList()
+
                 consentPrefs(context).edit()
                     .putStringSet(CONSENT_KEY, consents.toSet())
                     .apply()
+
                 result.success(null)
             }
             "signingMaterial" -> {
