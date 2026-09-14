@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 
 import 'api/worker_api_client.dart';
 import 'api/worker_assignment_models.dart';
+import 'api/worker_routes.dart';
 import 'config/worker_config.dart';
 import 'inference/llm/qwen_task_processor.dart';
 import 'inference/ocr/guarded_ocr_engine.dart';
@@ -92,7 +93,13 @@ class WorkerAppController extends ChangeNotifier {
           exclusiveGroupEnforcer: _exclusiveGroups,
         );
 
-    _api = WorkerApiClient(config: _config, httpClient: _http);
+    _api = WorkerApiClient(
+      config: _config,
+      httpClient: _http,
+      onAudit: ({required method, required path, required status}) {
+        _logTask('Worker API $method $path -> $status');
+      },
+    );
 
     _processLifecycle = ProcessLifecycleCoordinator(
       onInvalidateNativeHandles: (_) async {
@@ -262,6 +269,11 @@ class WorkerAppController extends ChangeNotifier {
   DateTime? _runtimeTokenExpiresAt;
   bool workerEnrolled = false;
   String? enrollmentMessage;
+  bool _enrollmentPermanentlyBlocked = false;
+  DateTime? _nextEnrollmentAttemptAt;
+  int _enrollmentAttempts = 0;
+
+  static const _maxEnrollmentRetries = 5;
 
   int _assignmentLoopGeneration = 0;
 
@@ -616,31 +628,48 @@ class WorkerAppController extends ChangeNotifier {
   Future<void> _resolveBackendUrl() async {
     for (final candidate in WorkerConfig.connectionCandidates()) {
       try {
-        final probe = await _http
-            .get(WorkerConfig(baseUrl: candidate).resolve('/health/live'))
+        final config = WorkerConfig(baseUrl: candidate);
+        final health = await _http
+            .get(config.resolve('/health/live'))
             .timeout(const Duration(seconds: 5));
-
-        if (probe.statusCode == 200) {
-          if (_config.baseUrl != candidate) {
-            _logTask(
-              'Backend reachable at $candidate '
-              '(was ${_config.baseUrl})',
-            );
-
-            _config.baseUrl = candidate;
-
-            _api.reconfigure(_config);
-          }
-
-          return;
+        if (health.statusCode != 200) {
+          continue;
         }
+
+        final workerProbe = await _http
+            .post(
+              config.resolve(WorkerRoutes.createChallenge),
+              headers: const {
+                'Content-Type': 'application/json',
+                'Idempotency-Key': 'worker-api-probe',
+              },
+              body: jsonEncode({'installationId': 'worker-api-probe'}),
+            )
+            .timeout(const Duration(seconds: 5));
+        if (!WorkerConfig.workerApiProbeStatusAcceptable(workerProbe.statusCode)) {
+          _logTask(
+            'Skipping $candidate — worker enrollment route missing '
+            '(HTTP ${workerProbe.statusCode})',
+          );
+          continue;
+        }
+
+        if (_config.baseUrl != candidate) {
+          _logTask(
+            'Backend reachable at $candidate '
+            '(was ${_config.baseUrl})',
+          );
+          _config.baseUrl = candidate;
+          _api.reconfigure(_config);
+        }
+        return;
       } catch (_) {
         continue;
       }
     }
 
     _logTask(
-      'No backend candidate responded - tried '
+      'No worker-gateway candidate responded - tried '
       '${WorkerConfig.connectionCandidates().join(", ")}',
     );
   }
@@ -652,19 +681,53 @@ class WorkerAppController extends ChangeNotifier {
       _refreshHeartbeat();
       return;
     }
+    if (_enrollmentPermanentlyBlocked) {
+      return;
+    }
+    final nextAttempt = _nextEnrollmentAttemptAt;
+    if (nextAttempt != null && DateTime.now().isBefore(nextAttempt)) {
+      return;
+    }
 
     try {
+      _logTask('Enrollment started');
       final snapshot = await _platform.readDeviceSnapshot();
       final session = await _sessionLifecycle.ensureSession(snapshotOverride: snapshot);
       _applyWorkerSession(session);
+      _enrollmentAttempts = 0;
+      _nextEnrollmentAttemptAt = null;
       _logTask('Worker enrolled: ${session.workerId}');
+      _logTask('Heartbeat started');
     } on WorkerApiException catch (error) {
       workerEnrolled = false;
-      enrollmentMessage = 'Enrollment failed (${error.code})';
+      _enrollmentAttempts += 1;
+      if (error.isNotFound) {
+        _enrollmentPermanentlyBlocked = true;
+        enrollmentMessage =
+            'Enrollment endpoint unavailable: ${error.method} ${error.path}';
+      } else {
+        enrollmentMessage =
+            'Enrollment failed (${error.method} ${error.path}: ${error.code})';
+        if (_enrollmentAttempts >= _maxEnrollmentRetries) {
+          _enrollmentPermanentlyBlocked = true;
+        } else {
+          _nextEnrollmentAttemptAt = DateTime.now().add(
+            Duration(seconds: 15 * _enrollmentAttempts),
+          );
+        }
+      }
       _logError('Worker enrollment failed', error);
     } catch (error, stackTrace) {
       workerEnrolled = false;
+      _enrollmentAttempts += 1;
       enrollmentMessage = 'Enrollment failed';
+      if (_enrollmentAttempts >= _maxEnrollmentRetries) {
+        _enrollmentPermanentlyBlocked = true;
+      } else {
+        _nextEnrollmentAttemptAt = DateTime.now().add(
+          Duration(seconds: 15 * _enrollmentAttempts),
+        );
+      }
       _logError('Worker enrollment failed', error, stackTrace);
     }
 

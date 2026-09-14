@@ -44,6 +44,11 @@ class WorkerConfig {
     final normalized = path.startsWith('/') ? path : '/$path';
     final basePath =
         baseUrl.path.endsWith('/') ? baseUrl.path.substring(0, baseUrl.path.length - 1) : baseUrl.path;
-    return baseUrl.replace(path: '$basePath$normalized');
+    return baseUrl.replace(path: '$basePath$normalized', query: null, fragment: null);
+  }
+
+  /// True when [candidate] exposes worker enrollment routes (not just /health/live).
+  static bool workerApiProbeStatusAcceptable(int statusCode) {
+    return statusCode != 404;
   }
 }

@@ -6,15 +6,41 @@ import 'worker_assignment_models.dart';
 import '../config/worker_config.dart';
 import 'worker_routes.dart';
 
-class WorkerApiException implements Exception {
-  WorkerApiException(this.statusCode, this.code, [this.detail]);
+typedef WorkerApiAuditCallback = void Function({
+  required String method,
+  required String path,
+  required int status,
+});
 
+class WorkerApiException implements Exception {
+  WorkerApiException({
+    required this.method,
+    required this.path,
+    required this.statusCode,
+    required this.code,
+    this.detail,
+  });
+
+  final String method;
+  final String path;
   final int statusCode;
   final String code;
   final String? detail;
 
+  bool get isNotFound => statusCode == 404;
+
   @override
-  String toString() => 'WorkerApiException($statusCode, $code, $detail)';
+  String toString() {
+    final detailSuffix =
+        detail != null && detail!.isNotEmpty ? ', detail=$detail' : '';
+    return 'WorkerApiException('
+        'method=$method, '
+        'path=$path, '
+        'status=$statusCode, '
+        'code=$code'
+        '$detailSuffix'
+        ')';
+  }
 }
 
 class DeviceChallenge {
@@ -74,12 +100,17 @@ class ModelManifestView {
 }
 
 class WorkerApiClient {
-  WorkerApiClient({WorkerConfig? config, http.Client? httpClient})
-      : _config = config ?? WorkerConfig.fromEnvironment(),
-        _http = httpClient ?? http.Client();
+  WorkerApiClient({
+    WorkerConfig? config,
+    http.Client? httpClient,
+    WorkerApiAuditCallback? onAudit,
+  })  : _config = config ?? WorkerConfig.fromEnvironment(),
+        _http = httpClient ?? http.Client(),
+        _onAudit = onAudit;
 
   final WorkerConfig _config;
   final http.Client _http;
+  final WorkerApiAuditCallback? _onAudit;
 
   void reconfigure(WorkerConfig config) {
     _config.baseUrl = config.baseUrl;
@@ -90,8 +121,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    const path = WorkerRoutes.createChallenge;
     final response = await _post(
-      WorkerRoutes.createChallenge,
+      path,
       body: {'installationId': installationId},
       idempotencyKey: idempotencyKey,
       requestId: requestId,
@@ -104,8 +136,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    const path = WorkerRoutes.registerDevice;
     final response = await _post(
-      WorkerRoutes.registerDevice,
+      path,
       body: payload,
       idempotencyKey: idempotencyKey,
       requestId: requestId,
@@ -118,8 +151,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    const path = WorkerRoutes.refreshSession;
     final response = await _post(
-      WorkerRoutes.refreshSession,
+      path,
       body: {'refreshToken': refreshToken},
       idempotencyKey: idempotencyKey,
       requestId: requestId,
@@ -134,8 +168,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.workerBenchmark(workerId);
     final response = await _post(
-      WorkerRoutes.workerBenchmark(workerId),
+      path,
       body: body,
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -148,8 +183,9 @@ class WorkerApiClient {
     required String accessToken,
     String? requestId,
   }) async {
+    const path = WorkerRoutes.workerPreferences;
     final response = await _get(
-      WorkerRoutes.workerPreferences,
+      path,
       accessToken: accessToken,
       requestId: requestId,
     );
@@ -162,19 +198,14 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
-    final response = await _http
-        .put(
-          _config.resolve(WorkerRoutes.workerPreferences),
-          headers: _headers(
-            accessToken: accessToken,
-            idempotencyKey: idempotencyKey,
-            requestId: requestId,
-            json: true,
-          ),
-          body: jsonEncode(body),
-        )
-        .timeout(_config.requestTimeout);
-    _ensureSuccess(response);
+    const path = WorkerRoutes.workerPreferences;
+    final response = await _put(
+      path,
+      body: body,
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
     return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
@@ -185,8 +216,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.workerHeartbeat(workerId);
     final response = await _post(
-      WorkerRoutes.workerHeartbeat(workerId),
+      path,
       body: body,
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -200,8 +232,9 @@ class WorkerApiClient {
     required String accessToken,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.modelManifest(modelVersionId);
     final response = await _get(
-      WorkerRoutes.modelManifest(modelVersionId),
+      path,
       accessToken: accessToken,
       requestId: requestId,
     );
@@ -216,8 +249,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.reportModelInstall(modelVersionId);
     await _post(
-      WorkerRoutes.reportModelInstall(modelVersionId),
+      path,
       body: {'artifactSha256': artifactSha256, 'status': status},
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -230,21 +264,23 @@ class WorkerApiClient {
     int waitSeconds = 0,
     String? requestId,
   }) async {
+    const path = WorkerRoutes.nextAssignment;
     final timeout = waitSeconds > 0
         ? Duration(seconds: waitSeconds + 15)
         : _config.requestTimeout;
     final response = await _http
         .get(
-          _config.resolve(WorkerRoutes.nextAssignment).replace(queryParameters: {
+          _config.resolve(path).replace(queryParameters: {
             if (waitSeconds > 0) 'waitSeconds': '$waitSeconds',
           }),
           headers: _headers(accessToken: accessToken, requestId: requestId),
         )
         .timeout(timeout);
+    _audit('GET', path, response.statusCode);
     if (response.statusCode == 204) {
       return null;
     }
-    _ensureSuccess(response);
+    _ensureSuccess(response, method: 'GET', path: path);
     return WorkerAssignment.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
@@ -252,13 +288,12 @@ class WorkerApiClient {
     required String accessToken,
     String? requestId,
   }) async {
-    final response = await _http
-        .get(
-          _config.resolve(WorkerRoutes.assignmentInboxBootstrap),
-          headers: _headers(accessToken: accessToken, requestId: requestId),
-        )
-        .timeout(_config.requestTimeout);
-    _ensureSuccess(response);
+    const path = WorkerRoutes.assignmentInboxBootstrap;
+    final response = await _get(
+      path,
+      accessToken: accessToken,
+      requestId: requestId,
+    );
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
@@ -270,8 +305,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.reportAssignmentStarted(assignmentId);
     final response = await _post(
-      WorkerRoutes.reportAssignmentStarted(assignmentId),
+      path,
       body: {'leaseToken': leaseToken, 'fenceToken': fenceToken},
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -289,8 +325,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.renewAssignment(assignmentId);
     final response = await _post(
-      WorkerRoutes.renewAssignment(assignmentId),
+      path,
       body: {
         'leaseToken': leaseToken,
         'fenceToken': fenceToken,
@@ -310,8 +347,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.progressAssignment(assignmentId);
     final response = await _post(
-      WorkerRoutes.progressAssignment(assignmentId),
+      path,
       body: body,
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -327,8 +365,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.checkpointAssignment(assignmentId);
     final response = await _post(
-      WorkerRoutes.checkpointAssignment(assignmentId),
+      path,
       body: body,
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -344,8 +383,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.completeAssignment(assignmentId);
     final response = await _post(
-      WorkerRoutes.completeAssignment(assignmentId),
+      path,
       body: body,
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -361,8 +401,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.failAssignment(assignmentId);
     final response = await _post(
-      WorkerRoutes.failAssignment(assignmentId),
+      path,
       body: body,
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -381,8 +422,9 @@ class WorkerApiClient {
     String reason = 'worker_stop_confirmed',
     String? requestId,
   }) async {
+    final path = WorkerRoutes.confirmPhysicalStop(assignmentId);
     final response = await _post(
-      WorkerRoutes.confirmPhysicalStop(assignmentId),
+      path,
       body: {
         'leaseToken': leaseToken,
         'fenceToken': fenceToken,
@@ -405,8 +447,9 @@ class WorkerApiClient {
     required String idempotencyKey,
     String? requestId,
   }) async {
+    final path = WorkerRoutes.abandonAssignment(assignmentId);
     final response = await _post(
-      WorkerRoutes.abandonAssignment(assignmentId),
+      path,
       body: {'leaseToken': leaseToken, 'fenceToken': fenceToken, 'reason': reason},
       accessToken: accessToken,
       idempotencyKey: idempotencyKey,
@@ -426,7 +469,8 @@ class WorkerApiClient {
           headers: _headers(accessToken: accessToken, requestId: requestId),
         )
         .timeout(_config.requestTimeout);
-    _ensureSuccess(response);
+    _audit('GET', path, response.statusCode);
+    _ensureSuccess(response, method: 'GET', path: path);
     return response;
   }
 
@@ -449,7 +493,32 @@ class WorkerApiClient {
           body: jsonEncode(body),
         )
         .timeout(_config.requestTimeout);
-    _ensureSuccess(response);
+    _audit('POST', path, response.statusCode);
+    _ensureSuccess(response, method: 'POST', path: path);
+    return response;
+  }
+
+  Future<http.Response> _put(
+    String path, {
+    required Map<String, dynamic> body,
+    String? accessToken,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _http
+        .put(
+          _config.resolve(path),
+          headers: _headers(
+            accessToken: accessToken,
+            idempotencyKey: idempotencyKey,
+            requestId: requestId,
+            json: true,
+          ),
+          body: jsonEncode(body),
+        )
+        .timeout(_config.requestTimeout);
+    _audit('PUT', path, response.statusCode);
+    _ensureSuccess(response, method: 'PUT', path: path);
     return response;
   }
 
@@ -467,18 +536,41 @@ class WorkerApiClient {
     };
   }
 
-  void _ensureSuccess(http.Response response) {
+  void _audit(String method, String path, int status) {
+    _onAudit?.call(method: method, path: path, status: status);
+  }
+
+  void _ensureSuccess(
+    http.Response response, {
+    required String method,
+    required String path,
+  }) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return;
     }
     String code = 'HTTP_${response.statusCode}';
     String? detail;
     try {
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      code = body['code'] as String? ?? code;
-      detail = body['detail'] as String?;
-    } catch (_) {}
-    throw WorkerApiException(response.statusCode, code, detail);
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) {
+        code = body['code'] as String? ?? code;
+        detail = body['detail'] as String? ?? body['title'] as String?;
+        if (detail == null && body['detail'] is List) {
+          detail = 'validation failed';
+        }
+      }
+    } catch (_) {
+      if (response.reasonPhrase != null && response.reasonPhrase!.isNotEmpty) {
+        detail = response.reasonPhrase;
+      }
+    }
+    throw WorkerApiException(
+      method: method,
+      path: path,
+      statusCode: response.statusCode,
+      code: code,
+      detail: detail,
+    );
   }
 
   void close() => _http.close();

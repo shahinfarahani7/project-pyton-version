@@ -524,6 +524,22 @@ if _dev_worker_assignments_enabled():
         except httpx.HTTPError:
             pass
 
+    @app.get("/assignments:inboxBootstrap", tags=["dev-assignments"])
+    async def dev_assignment_inbox_bootstrap(token: WorkerBearerToken) -> JSONResponse:
+        from edgemint.workers.sessions import resolve_worker_session
+
+        async with transaction(isolation="READ COMMITTED") as connection:
+            session = await resolve_worker_session(connection, access_token=token)
+        response = JSONResponse(
+            {
+                "workerDeviceId": str(session.device_id),
+                "deliveries": [],
+            },
+            status_code=200,
+        )
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
     @app.get("/assignments:next", tags=["dev-assignments"])
     async def dev_next_assignment(token: WorkerBearerToken) -> JSONResponse:
         _ = token

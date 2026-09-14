@@ -22,8 +22,19 @@ void main() {
     expect(WorkerRoutes.executionRoutes.length, 9);
   });
 
-  test('WorkerApiException preserves problem code', () {
-    final error = WorkerApiException(409, 'CHALLENGE_EXPIRED', 'nonce expired');
-    expect(error.toString(), contains('CHALLENGE_EXPIRED'));
+  test('WorkerApiException preserves sanitized request context', () {
+    const error = WorkerApiException(
+      method: 'POST',
+      path: '/auth/challenges',
+      statusCode: 404,
+      code: 'HTTP_404',
+      detail: 'Not Found',
+    );
+    expect(error.toString(), contains('method=POST'));
+    expect(error.toString(), contains('path=/auth/challenges'));
+    expect(error.toString(), contains('status=404'));
+    expect(error.toString(), contains('code=HTTP_404'));
+    expect(error.toString(), contains('detail=Not Found'));
+    expect(error.isNotFound, isTrue);
   });
 }

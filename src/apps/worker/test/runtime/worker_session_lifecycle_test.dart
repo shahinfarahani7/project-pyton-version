@@ -98,6 +98,7 @@ void main() {
     final api = WorkerApiClient(
       config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
       httpClient: mock,
+      onAudit: ({required method, required path, required status}) {},
     );
     final store = WorkerSessionStore(InMemoryEncryptedStore());
     final lifecycle = WorkerSessionLifecycle(
