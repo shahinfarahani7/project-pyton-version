@@ -23,7 +23,7 @@ void main() {
   });
 
   test('WorkerApiException preserves sanitized request context', () {
-    const error = WorkerApiException(
+    final error = WorkerApiException(
       method: 'POST',
       path: '/auth/challenges',
       statusCode: 404,
