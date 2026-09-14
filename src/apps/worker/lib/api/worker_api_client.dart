@@ -113,6 +113,71 @@ class WorkerApiClient {
     return WorkerRegistration.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
+  Future<WorkerRegistration> refreshWorkerSession({
+    required String refreshToken,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.refreshSession,
+      body: {'refreshToken': refreshToken},
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return WorkerRegistration.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<CommandReceipt> submitBenchmark({
+    required String workerId,
+    required String accessToken,
+    required Map<String, dynamic> body,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.workerBenchmark(workerId),
+      body: body,
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<Map<String, dynamic>> getWorkerPreferences({
+    required String accessToken,
+    String? requestId,
+  }) async {
+    final response = await _get(
+      WorkerRoutes.workerPreferences,
+      accessToken: accessToken,
+      requestId: requestId,
+    );
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<CommandReceipt> replaceWorkerPreferences({
+    required String accessToken,
+    required Map<String, dynamic> body,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _http
+        .put(
+          _config.resolve(WorkerRoutes.workerPreferences),
+          headers: _headers(
+            accessToken: accessToken,
+            idempotencyKey: idempotencyKey,
+            requestId: requestId,
+            json: true,
+          ),
+          body: jsonEncode(body),
+        )
+        .timeout(_config.requestTimeout);
+    _ensureSuccess(response);
+    return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
   Future<CommandReceipt> sendHeartbeat({
     required String workerId,
     required String accessToken,

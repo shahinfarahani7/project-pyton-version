@@ -16,11 +16,16 @@ class WorkerHeartbeatService {
         _sequence = initialSequence;
 
   final WorkerApiClient _api;
-  final String _workerId;
-  final String _accessToken;
+  String _workerId;
+  String _accessToken;
   int _sequence;
 
   int get sequence => _sequence;
+
+  void updateCredentials({required String workerId, required String accessToken}) {
+    _workerId = workerId;
+    _accessToken = accessToken;
+  }
 
   Future<void> send({
     required WorkerHeartbeatTelemetryContext context,

@@ -38,6 +38,8 @@ import 'runtime/switchable_inference_adapter.dart';
 import 'runtime/worker_access_token_provider.dart';
 import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_heartbeat_telemetry.dart';
+import 'runtime/worker_session_lifecycle.dart';
+import 'runtime/worker_session_store.dart';
 import 'tasks/task_execution_engine.dart';
 import 'tasks/task_type_mapper.dart';
 import 'runtime/gemma_model_runtime_manager.dart';
@@ -99,6 +101,13 @@ class WorkerAppController extends ChangeNotifier {
       },
     );
 
+    _sessionStore = WorkerSessionStore(_encryptedStore);
+    _sessionLifecycle = WorkerSessionLifecycle(
+      api: _api,
+      store: _sessionStore,
+      platform: _platform,
+    );
+
     _coordinator = AssignmentCoordinator(
       api: _api,
       store: _encryptedStore,
@@ -108,7 +117,7 @@ class WorkerAppController extends ChangeNotifier {
       taskEngine: _taskEngine,
       storagePressure: _storagePressure,
       accessTokenProvider: _accessTokenProvider,
-      accessToken: _workerAccessToken,
+      accessToken: _runtimeAccessToken,
       onStatus: _onExecutionStatus,
       processLifecycle: _processLifecycle,
     );
@@ -156,6 +165,8 @@ class WorkerAppController extends ChangeNotifier {
   late final TaskExecutionEngine _taskEngine;
   late final AssignmentCoordinator _coordinator;
   late final ProcessLifecycleCoordinator _processLifecycle;
+  late final WorkerSessionStore _sessionStore;
+  late final WorkerSessionLifecycle _sessionLifecycle;
   final StoragePressureManager _storagePressure;
   WorkerHeartbeatService? _heartbeat;
 
@@ -246,9 +257,28 @@ class WorkerAppController extends ChangeNotifier {
     defaultValue: '',
   );
 
+  String _runtimeWorkerId = _workerId;
   String _runtimeAccessToken = _workerAccessToken;
+  DateTime? _runtimeTokenExpiresAt;
+  bool workerEnrolled = false;
+  String? enrollmentMessage;
 
   int _assignmentLoopGeneration = 0;
+
+  String get workerId => _runtimeWorkerId;
+
+  bool get hasManualCredentials =>
+      _workerId.isNotEmpty && _workerAccessToken.isNotEmpty;
+
+  void _applyWorkerSession(WorkerSessionRecord session) {
+    _runtimeWorkerId = session.workerId;
+    _runtimeAccessToken = session.accessToken;
+    _runtimeTokenExpiresAt = session.expiresAt;
+    _accessTokenProvider.update(session.accessToken);
+    workerEnrolled = true;
+    enrollmentMessage = null;
+    _refreshHeartbeat();
+  }
 
   void updateWorkerAccessToken(String token) {
     _runtimeAccessToken = token;
@@ -259,12 +289,13 @@ class WorkerAppController extends ChangeNotifier {
 
   void _refreshHeartbeat() {
     final token = _accessTokenProvider.current;
-    if (_workerId.isNotEmpty && token.isNotEmpty) {
-      _heartbeat = WorkerHeartbeatService(
+    if (_runtimeWorkerId.isNotEmpty && token.isNotEmpty) {
+      _heartbeat ??= WorkerHeartbeatService(
         api: _api,
-        workerId: _workerId,
+        workerId: _runtimeWorkerId,
         accessToken: token,
       );
+      _heartbeat!.updateCredentials(workerId: _runtimeWorkerId, accessToken: token);
       return;
     }
     _heartbeat = null;
@@ -287,7 +318,10 @@ class WorkerAppController extends ChangeNotifier {
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
 
   bool get canAcceptAssignments =>
-      backendOnline && !isGemmaDownloading && available;
+      backendOnline &&
+      !isGemmaDownloading &&
+      available &&
+      (hasManualCredentials || workerEnrolled);
 
   bool get canPollAssignments => canAcceptAssignments;
 
@@ -351,6 +385,10 @@ class WorkerAppController extends ChangeNotifier {
     await _resolveBackendUrl();
 
     await _refreshBackendHealth();
+
+    if (backendOnline) {
+      await _ensureWorkerSession();
+    }
 
     await _refreshDeviceReadiness();
 
@@ -605,6 +643,48 @@ class WorkerAppController extends ChangeNotifier {
       'No backend candidate responded - tried '
       '${WorkerConfig.connectionCandidates().join(", ")}',
     );
+  }
+
+  Future<void> _ensureWorkerSession() async {
+    if (hasManualCredentials) {
+      workerEnrolled = true;
+      enrollmentMessage = null;
+      _refreshHeartbeat();
+      return;
+    }
+
+    try {
+      final snapshot = await _platform.readDeviceSnapshot();
+      final session = await _sessionLifecycle.ensureSession(snapshotOverride: snapshot);
+      _applyWorkerSession(session);
+      _logTask('Worker enrolled: ${session.workerId}');
+    } on WorkerApiException catch (error) {
+      workerEnrolled = false;
+      enrollmentMessage = 'Enrollment failed (${error.code})';
+      _logError('Worker enrollment failed', error);
+    } catch (error, stackTrace) {
+      workerEnrolled = false;
+      enrollmentMessage = 'Enrollment failed';
+      _logError('Worker enrollment failed', error, stackTrace);
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> _refreshSessionIfNeeded() async {
+    if (hasManualCredentials) {
+      return;
+    }
+    final expiresAt = _runtimeTokenExpiresAt;
+    if (expiresAt == null || !expiresAt.isBefore(DateTime.now().toUtc().add(const Duration(hours: 1)))) {
+      return;
+    }
+    try {
+      final session = await _sessionLifecycle.ensureSession();
+      _applyWorkerSession(session);
+    } catch (error, stackTrace) {
+      _logError('Worker session refresh failed', error, stackTrace);
+    }
   }
 
   Future<void> _refreshBackendHealth() async {
@@ -1162,6 +1242,19 @@ class WorkerAppController extends ChangeNotifier {
 
         return;
       }
+
+      if (!hasManualCredentials && !workerEnrolled) {
+        await _ensureWorkerSession();
+        if (!workerEnrolled) {
+          _logTask(
+            'Assignment aborted - '
+            'worker not enrolled (${enrollmentMessage ?? "unknown"})',
+          );
+          return;
+        }
+      }
+
+      await _refreshSessionIfNeeded();
 
       await _sendHeartbeatIfConfigured();
 
