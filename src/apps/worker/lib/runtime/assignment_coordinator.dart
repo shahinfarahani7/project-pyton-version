@@ -624,12 +624,10 @@ class AssignmentCoordinator {
         await _api.renewAssignment(
           assignmentId: assignment.assignmentId,
           accessToken: _accessToken,
+          leaseToken: assignment.leaseToken,
+          fenceToken: assignment.fenceToken,
+          sequence: _leaseRenewSequence,
           idempotencyKey: 'renew-${assignment.attemptId}-$_leaseRenewSequence',
-          body: {
-            'leaseToken': assignment.leaseToken,
-            'fenceToken': assignment.fenceToken,
-            'sequence': _leaseRenewSequence,
-          },
         );
       } catch (_) {
         _cancelRequested = true;

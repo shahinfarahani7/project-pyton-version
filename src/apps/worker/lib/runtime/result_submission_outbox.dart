@@ -5,7 +5,8 @@ import 'encrypted_store.dart';
 
 /// Durable outbox for assignment complete payloads awaiting server ACK.
 class ResultSubmissionOutbox {
-  ResultSubmissionOutbox({required EncryptedStore store, this.storageKey = 'result_outbox_v1'});
+  ResultSubmissionOutbox({required EncryptedStore store, this.storageKey = 'result_outbox_v1'})
+      : _store = store;
 
   final EncryptedStore _store;
   final String storageKey;

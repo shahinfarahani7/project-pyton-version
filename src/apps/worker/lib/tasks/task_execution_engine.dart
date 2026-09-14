@@ -563,9 +563,11 @@ class TaskExecutionEngine {
     if (serverPlan == null) {
       return;
     }
-    final localPlan = ExecutionPlanCatalog.forTaskType(
-      TaskTypeMapper.toV1(assignment.taskType),
-    );
+    final v1Type = TaskTypeMapper.toV1(assignment.taskType);
+    if (v1Type == null) {
+      return;
+    }
+    final localPlan = ExecutionPlanCatalog.forTaskType(v1Type);
     final localHash = sha256.convert(
       utf8.encode('${localPlan.taskType}:${localPlan.stages.length}'),
     ).toString();

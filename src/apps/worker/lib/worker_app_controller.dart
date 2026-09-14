@@ -93,9 +93,9 @@ class WorkerAppController extends ChangeNotifier {
     _api = WorkerApiClient(config: _config, httpClient: _http);
 
     _processLifecycle = ProcessLifecycleCoordinator(
-      onInvalidateNativeHandles: (_) {
+      onInvalidateNativeHandles: (_) async {
         _inference.dispose();
-        unawaited(_qwenProcessor.dispose());
+        await _qwenProcessor.dispose();
       },
     );
 
