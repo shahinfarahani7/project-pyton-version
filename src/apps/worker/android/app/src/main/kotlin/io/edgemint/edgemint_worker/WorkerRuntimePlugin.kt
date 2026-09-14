@@ -3,9 +3,12 @@ package io.edgemint.edgemint_worker
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Environment
+import android.os.PowerManager
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -32,6 +35,16 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
             }
             "readDeviceSnapshot" -> {
                 result.success(readDeviceSnapshot())
+            }
+            "localStorePath" -> {
+                result.success(context.filesDir.absolutePath)
+            }
+            "setConsentsGranted" -> {
+                val consents = call.argument<List<String>>() ?: emptyList()
+                consentPrefs(context).edit()
+                    .putStringSet(CONSENT_KEY, consents.toSet())
+                    .apply()
+                result.success(null)
             }
             "signingMaterial" -> {
                 result.success("android-keystore-derived-material")
@@ -104,28 +117,67 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
     private fun readDeviceSnapshot(): Map<String, Any?> {
         var emulator = isEmulator()
         var (percent, charging) = readBattery(emulator)
-        if (!emulator && isLikelyVirtualRuntime()) {
-            emulator = true
-            percent = 100
-            charging = true
-        } else if (!emulator && percent in 0..19) {
-            // MEmu/LDPlayer often report 0-19% without identifying as an emulator.
+        if (BuildConfig.DEBUG && !emulator && isLikelyVirtualRuntime()) {
             emulator = true
             percent = 100
             charging = true
         }
+        val consents = readConsents()
+        val network = readNetworkState()
+        val thermal = readThermalState()
+        val withinSchedule = true
+        val available = consents.containsAll(REQUIRED_CONSENTS) && network != "offline"
         return mapOf(
-            "available" to true,
+            "available" to available,
             "batteryPercent" to percent,
             "isCharging" to charging,
             "isEmulator" to emulator,
             "isX86Android" to isX86Android(),
-            "thermalState" to "normal",
-            "network" to "wifi",
+            "thermalState" to thermal,
+            "network" to network,
             "freeStorageMb" to (context.filesDir.usableSpace / (1024 * 1024)).toInt(),
-            "withinSchedule" to true,
-            "consentsGranted" to listOf("terms", "privacy", "resource_use", "reward_disclosure"),
+            "withinSchedule" to withinSchedule,
+            "consentsGranted" to consents,
         )
+    }
+
+    private fun readConsents(): List<String> {
+        val stored = consentPrefs(context).getStringSet(CONSENT_KEY, null)
+        if (stored.isNullOrEmpty()) {
+            return emptyList()
+        }
+        return stored.toList().sorted()
+    }
+
+    private fun readNetworkState(): String {
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            ?: return "unknown"
+        val network = manager.activeNetwork ?: return "offline"
+        val caps = manager.getNetworkCapabilities(network) ?: return "unknown"
+        return when {
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "cellular"
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "ethernet"
+            else -> "unknown"
+        }
+    }
+
+    private fun readThermalState(): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return "unknown"
+        }
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            ?: return "unknown"
+        return when (powerManager.currentThermalStatus) {
+            PowerManager.THERMAL_STATUS_NONE,
+            PowerManager.THERMAL_STATUS_LIGHT,
+            PowerManager.THERMAL_STATUS_MODERATE -> "normal"
+            PowerManager.THERMAL_STATUS_SEVERE -> "serious"
+            PowerManager.THERMAL_STATUS_CRITICAL,
+            PowerManager.THERMAL_STATUS_EMERGENCY,
+            PowerManager.THERMAL_STATUS_SHUTDOWN -> "critical"
+            else -> "unknown"
+        }
     }
 
     private fun isX86Android(): Boolean {
@@ -167,15 +219,14 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
     }
 
     private fun readBattery(emulator: Boolean): Pair<Int, Boolean> {
-        if (emulator) {
-            // Virtual device: treat as plugged into AC so dev tasks are not blocked.
+        if (emulator && BuildConfig.DEBUG) {
             return 100 to true
         }
         val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
         val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
         val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-        val percent = if (level >= 0 && scale > 0) ((level * 100f) / scale).toInt() else 100
+        val percent = if (level >= 0 && scale > 0) ((level * 100f) / scale).toInt() else -1
         val charging =
             status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
@@ -186,6 +237,17 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
         const val CHANNEL = "io.edgemint/worker_runtime"
         private const val MODEL_FILE_NAME = "Qwen3-0.6B.litertlm"
         private const val MIN_MODEL_BYTES = 100_000_000L
+        private const val CONSENT_PREFS = "edgemint_worker_consent"
+        private const val CONSENT_KEY = "granted_consents"
+        private val REQUIRED_CONSENTS = listOf(
+            "terms",
+            "privacy",
+            "resource_use",
+            "reward_disclosure",
+        )
+
+        private fun consentPrefs(context: Context) =
+            context.getSharedPreferences(CONSENT_PREFS, Context.MODE_PRIVATE)
 
         fun registerWith(engine: FlutterEngine, context: Context) {
             MethodChannel(engine.dartExecutor.binaryMessenger, CHANNEL)

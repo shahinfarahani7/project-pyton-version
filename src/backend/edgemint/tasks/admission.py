@@ -44,6 +44,7 @@ from edgemint.routing.execution_allocation import ExecutionAllocationService, in
 from edgemint.security.workspace_data_trust import WorkspaceDataTrustService
 from edgemint.tasks.task_run import TaskRunService, compute_input_digest
 from edgemint.files.input_decode_bounds import evaluate_decode_admission
+from edgemint.governance.runtime_activation import assert_admission_activation_gate_open
 from edgemint.tasks.validation import (
     TaskTypeContract,
     load_task_type_contracts,
@@ -104,6 +105,7 @@ class TaskAdmissionService:
         )
         if not trust.permitted:
             raise task_error("DATA_PROCESSING_DENIED", detail=trust.reason)
+        await assert_admission_activation_gate_open(connection, settings=self.settings)
         draft_count = await count_active_draft_tasks(connection, workspace_id=auth.workspace_id)
         if draft_count >= self.settings.task_admission_max_drafts:
             raise task_error("ADMISSION_LIMIT_EXCEEDED")

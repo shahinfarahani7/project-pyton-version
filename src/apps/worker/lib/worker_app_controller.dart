@@ -35,6 +35,7 @@ import 'runtime/runtime_exclusive_group_enforcer.dart';
 import 'runtime/inference_adapter.dart';
 import 'runtime/storage_pressure_manager.dart';
 import 'runtime/switchable_inference_adapter.dart';
+import 'runtime/worker_access_token_provider.dart';
 import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_heartbeat_telemetry.dart';
 import 'tasks/task_execution_engine.dart';
@@ -53,32 +54,33 @@ class WorkerAppController extends ChangeNotifier {
     QwenTaskProcessor? qwenProcessor,
     TaskExecutionEngine? taskEngine,
     StoragePressureManager? storagePressure,
+    EncryptedStore? encryptedStore,
   }) : _config = config ?? WorkerConfig.fromEnvironment(),
        _http = httpClient ?? http.Client(),
        _platform = platform ?? WorkerRuntimeChannel(),
-       _storagePressure = storagePressure ?? StoragePressureManager() {
+       _storagePressure = storagePressure ?? StoragePressureManager(),
+       _encryptedStore = encryptedStore ?? InMemoryEncryptedStore() {
     _exclusiveGroups = RuntimeExclusiveGroupEnforcer();
     _ocrEngineRef = OcrEngineRef(_wrapOcrEngine(ocrEngine ?? PaddleOcrEngine()));
 
-    _inference = SwitchableInferenceAdapter(
-      GemmaLiteRtInferenceAdapter(
-        runtimeManager: GemmaModelRuntimeManager(
-          exclusiveGroupEnforcer: _exclusiveGroups,
-        ),
-      ),
+    _runtimeManager = GemmaModelRuntimeManager(
+      exclusiveGroupEnforcer: _exclusiveGroups,
     );
+    _primaryInferenceAdapter = GemmaLiteRtInferenceAdapter(
+      runtimeManager: _runtimeManager,
+    );
+    _inference = SwitchableInferenceAdapter(_primaryInferenceAdapter);
 
-    final encryptedStore = InMemoryEncryptedStore();
-    _checkpointManager = CheckpointManager(encryptedStore);
+    _checkpointManager = CheckpointManager(_encryptedStore);
     _qwenProcessor = qwenProcessor ??
         QwenTaskProcessor(
-          adapter: GemmaLiteRtInferenceAdapter(
-            runtimeManager: GemmaModelRuntimeManager(
-              exclusiveGroupEnforcer: _exclusiveGroups,
-            ),
-          ),
+          adapter: _primaryInferenceAdapter,
           checkpointManager: _checkpointManager,
         );
+    _accessTokenProvider = WorkerAccessTokenProvider(
+      initialToken: _workerAccessToken,
+      readToken: () => _runtimeAccessToken,
+    );
 
     _taskEngine =
         taskEngine ??
@@ -91,37 +93,58 @@ class WorkerAppController extends ChangeNotifier {
     _api = WorkerApiClient(config: _config, httpClient: _http);
 
     _processLifecycle = ProcessLifecycleCoordinator(
-      onInvalidateNativeHandles: (_) => _inference.dispose(),
+      onInvalidateNativeHandles: (_) {
+        _inference.dispose();
+        unawaited(_qwenProcessor.dispose());
+      },
     );
 
     _coordinator = AssignmentCoordinator(
       api: _api,
-      store: encryptedStore,
+      store: _encryptedStore,
       platform: _platform,
       inference: _inference,
       inputLoader: _loadAssignmentInput,
       taskEngine: _taskEngine,
       storagePressure: _storagePressure,
+      accessTokenProvider: _accessTokenProvider,
       onStatus: _onExecutionStatus,
       processLifecycle: _processLifecycle,
     );
     _storagePressure.seedDefaultCatalog();
-    if (_workerId.isNotEmpty && _workerAccessToken.isNotEmpty) {
-      _heartbeat = WorkerHeartbeatService(
-        api: _api,
-        workerId: _workerId,
-        accessToken: _workerAccessToken,
+    _refreshHeartbeat();
+  }
+
+  static Future<WorkerAppController> create() async {
+    final platform = WorkerRuntimeChannel();
+    EncryptedStore store = InMemoryEncryptedStore();
+    try {
+      final path = await platform.localStorePath();
+      if (path != null && path.isNotEmpty) {
+        store = await PersistentEncryptedStore.open(path);
+      }
+    } catch (error, stackTrace) {
+      developer.log(
+        'Persistent store unavailable; using in-memory store',
+        name: 'EdgeMintWorker',
+        error: error,
+        stackTrace: stackTrace,
       );
     }
+    return WorkerAppController(platform: platform, encryptedStore: store);
   }
 
   WorkerConfig _config;
 
   final http.Client _http;
   final WorkerRuntimeChannel _platform;
+  final EncryptedStore _encryptedStore;
 
   late final WorkerApiClient _api;
   late final SwitchableInferenceAdapter _inference;
+  late final GemmaModelRuntimeManager _runtimeManager;
+  late final GemmaLiteRtInferenceAdapter _primaryInferenceAdapter;
+  late final WorkerAccessTokenProvider _accessTokenProvider;
 
   late final RuntimeExclusiveGroupEnforcer _exclusiveGroups;
   late final OcrEngineRef _ocrEngineRef;
@@ -222,7 +245,29 @@ class WorkerAppController extends ChangeNotifier {
     defaultValue: '',
   );
 
+  String _runtimeAccessToken = _workerAccessToken;
+
   int _assignmentLoopGeneration = 0;
+
+  void updateWorkerAccessToken(String token) {
+    _runtimeAccessToken = token;
+    _accessTokenProvider.update(token);
+    _refreshHeartbeat();
+    notifyListeners();
+  }
+
+  void _refreshHeartbeat() {
+    final token = _accessTokenProvider.current;
+    if (_workerId.isNotEmpty && token.isNotEmpty) {
+      _heartbeat = WorkerHeartbeatService(
+        api: _api,
+        workerId: _workerId,
+        accessToken: token,
+      );
+      return;
+    }
+    _heartbeat = null;
+  }
 
   bool _disposed = false;
 
@@ -294,6 +339,13 @@ class WorkerAppController extends ChangeNotifier {
 
   Future<void> bootstrap() async {
     _logTask('Worker bootstrap started');
+
+    await _platform.setConsentsGranted(const [
+      'terms',
+      'privacy',
+      'resource_use',
+      'reward_disclosure',
+    ]);
 
     await _resolveBackendUrl();
 
@@ -1222,7 +1274,13 @@ class WorkerAppController extends ChangeNotifier {
 
       _devMockAdapter?.setTaskTypeHint(assignment.taskType);
 
-      await _coordinator.executeAssignment(assignment);
+      final accepted = await _coordinator.acceptPolledAssignment(assignment);
+      if (accepted == null) {
+        _logTask('Duplicate assignment delivery ignored');
+        return;
+      }
+
+      await _coordinator.executeAssignment(accepted);
 
       await _uploadAssignmentOutput(assignment);
 
@@ -1381,8 +1439,14 @@ class WorkerAppController extends ChangeNotifier {
       'url=$manifestUrl',
     );
 
+    final headers = <String, String>{};
+    final token = _accessTokenProvider.current;
+    if (token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
     final response = await _http
-        .get(manifestUrl)
+        .get(manifestUrl, headers: headers)
         .timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200) {

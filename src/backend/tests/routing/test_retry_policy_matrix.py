@@ -15,7 +15,7 @@ def test_matrix_covers_all_catalog_task_types() -> None:
     assert set(matrix.entries.keys()) == catalog
 
 
-def test_flex_tasks_are_non_executable_with_no_retry() -> None:
+def test_flex_tasks_are_executable_with_retry_policy() -> None:
     matrix = RetryPolicyMatrix.load()
     flex_types = [
         task_type
@@ -26,8 +26,8 @@ def test_flex_tasks_are_non_executable_with_no_retry() -> None:
     for task_type in flex_types:
         policy = matrix.entry(task_type)
         assert policy is not None
-        assert policy.executable is False
-        assert policy.retry_class == RetryClass.NO_RETRY
+        assert policy.executable is True
+        assert policy.retry_class != RetryClass.NO_RETRY
 
 
 def test_text_summarize_prefers_stronger_worker() -> None:
@@ -46,10 +46,10 @@ def test_document_ocr_quality_failure_routes_stronger() -> None:
     assert resolved == RetryClass.STRONGER_WORKER
 
 
-def test_flex_task_retry_blocked_even_for_retryable_failure() -> None:
+def test_flex_task_retry_permitted_for_retryable_failure() -> None:
     matrix = RetryPolicyMatrix.load()
     resolved = matrix.resolve_retry_class(task_type="catalog.fake_listing", failure_code="RESOURCE_PRESSURE")
-    assert resolved == RetryClass.NO_RETRY
+    assert resolved == RetryClass.STRONGER_WORKER
 
 
 def test_catalog_json_has_retry_class_on_every_type() -> None:
@@ -62,18 +62,16 @@ def test_catalog_json_has_retry_class_on_every_type() -> None:
             RetryClass.NO_RETRY.value,
         }
         assert entry.retry_policy_ref == "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0"
-        if entry.input_mode == "flex":
-            assert entry.executable is False
-        else:
-            assert entry.executable is True
+        assert entry.executable is True
 
 
 def test_router_service_uses_task_retry_matrix() -> None:
     router = RouterService()
     payload = router.classify_retry("RESOURCE_PRESSURE", task_type="text.summarize")
     assert payload["retryClass"] == RetryClass.STRONGER_WORKER.value
-    blocked = router.classify_retry("RESOURCE_PRESSURE", task_type="dataset.label_verification")
-    assert blocked["retryPermitted"] is False
+    permitted = router.classify_retry("RESOURCE_PRESSURE", task_type="dataset.label_verification")
+    assert permitted["retryPermitted"] is True
+    assert permitted["retryClass"] == RetryClass.STRONGER_WORKER.value
 
 
 def test_export_snapshot_matches_matrix() -> None:
@@ -87,4 +85,5 @@ def test_export_snapshot_matches_matrix() -> None:
         for row in sorted(matrix.entries.values(), key=lambda item: item.task_type)
     }
     assert len(export) == 56
-    assert export["catalog.fake_listing"]["executable"] is False
+    assert export["catalog.fake_listing"]["executable"] is True
+    assert export["catalog.fake_listing"]["retryClass"] == RetryClass.STRONGER_WORKER.value

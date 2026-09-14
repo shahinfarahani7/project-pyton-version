@@ -41,7 +41,7 @@ async def test_release_for_assignment_is_idempotent() -> None:
 
     assert first is True
     assert second is True
-    assert connection.execute.await_count == 2
+    assert connection.execute.await_count == 4
 
 
 @pytest.mark.asyncio

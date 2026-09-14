@@ -44,7 +44,13 @@ async def test_acquire_with_reservation_propagates_sql_failure_before_credential
     reservations = AsyncMock()
     reservations.assert_exclusive_group_available = AsyncMock()
     reservations.assert_per_class_resource_budget_available = AsyncMock()
-    service = AtomicAssignmentTransaction(resource_reservations=reservations)
+    execution_allocations = AsyncMock()
+    execution_allocations.load_vector_for_attempt = AsyncMock(return_value=None)
+    execution_allocations.load_allocation_id_for_attempt = AsyncMock(return_value=None)
+    service = AtomicAssignmentTransaction(
+        resource_reservations=reservations,
+        execution_allocations=execution_allocations,
+    )
     connection = AsyncMock()
     connection.execute.side_effect = RouterServiceError(
         code="WORKER_NOT_ELIGIBLE",
@@ -82,7 +88,14 @@ async def test_acquire_with_reservation_returns_reservation_id_and_persists_cred
     reservations = AsyncMock()
     reservations.assert_exclusive_group_available = AsyncMock()
     reservations.assert_per_class_resource_budget_available = AsyncMock()
-    service = AtomicAssignmentTransaction(settings=settings, resource_reservations=reservations)
+    execution_allocations = AsyncMock()
+    execution_allocations.load_vector_for_attempt = AsyncMock(return_value=None)
+    execution_allocations.load_allocation_id_for_attempt = AsyncMock(return_value=None)
+    service = AtomicAssignmentTransaction(
+        settings=settings,
+        resource_reservations=reservations,
+        execution_allocations=execution_allocations,
+    )
     connection = AsyncMock()
     assignment_id = uuid4()
     reservation_id = uuid4()

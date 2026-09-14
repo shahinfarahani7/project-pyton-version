@@ -36,6 +36,26 @@ function Get-LanIp {
     )
 }
 
+function Update-LanDockerEnv {
+    param([string]$LanIp)
+    if (-not (Test-Path '.env.docker')) { return }
+    $lines = Get-Content '.env.docker'
+    $lines = $lines | ForEach-Object {
+        if ($_ -match '^EDGEMINT_WORKER_API_PUBLIC_BASE_URL=') { "EDGEMINT_WORKER_API_PUBLIC_BASE_URL=http://${LanIp}:8081"; return }
+        if ($_ -match '^EDGEMINT_DEV_API_PUBLIC_URL=') { "EDGEMINT_DEV_API_PUBLIC_URL=http://${LanIp}:8080"; return }
+        if ($_ -match '^EDGEMINT_WORKER_PUBLIC_URL=') { "EDGEMINT_WORKER_PUBLIC_URL=http://${LanIp}:8081"; return }
+        $_
+    }
+    $lines | Set-Content '.env.docker'
+    Write-Host "   .env.docker LAN URLs -> $LanIp"
+}
+
+function Test-FirewallRuleExists {
+    param([string]$Name)
+    netsh advfirewall firewall show rule name="$Name" 2>$null | Out-Null
+    return $LASTEXITCODE -eq 0
+}
+
 function Wait-Docker {
     $deadline = (Get-Date).AddMinutes(4)
     while ((Get-Date) -lt $deadline) {
@@ -143,7 +163,7 @@ function Start-MarketingSite {
 }
 
 Write-Host '=========================================='
-Write-Host ' EdgeMint LAN dev — one-shot startup'
+Write-Host ' EdgeMint LAN dev - one-shot startup'
 Write-Host '=========================================='
 
 Write-Step '1/5 Docker'
@@ -163,6 +183,9 @@ Write-Host '   Docker OK'
 
 $lanIp = Get-LanIp
 if (-not $lanIp) { $lanIp = '127.0.0.1' }
+Update-LanDockerEnv -LanIp $lanIp
+
+Invoke-Quiet { powershell -ExecutionPolicy Bypass -File (Join-Path $Root 'tools\setup_gradle_mirror.ps1') 2>$null | Out-Null }
 
 Write-Step '2/5 Backend (Docker Compose)'
 if (-not (Test-Path '.env.docker')) {
@@ -227,6 +250,19 @@ if ($IncludeMarketing) {
 Write-Host ''
 Write-Host " Remote worker app URL:  http://${lanIp}:8081"
 Write-Host " Remote browser portal:  http://${lanIp}:5173  (Dev login)"
+$missingFirewall = @(
+    'EdgeMint api-gateway 8080',
+    'EdgeMint worker-gateway 8081',
+    'EdgeMint customer-portal 5173'
+) | Where-Object { -not (Test-FirewallRuleExists $_) }
+
+Write-Host ''
+if ($missingFirewall.Count -gt 0) {
+    Write-Host ' FIREWALL: ports blocked for remote PCs. Run as Administrator:' -ForegroundColor Yellow
+    Write-Host '   powershell -ExecutionPolicy Bypass -File tools\open_lan_firewall.ps1' -ForegroundColor Yellow
+}
+Write-Host ''
+Write-Host ' Remote portal: Dev login required before bottom menu appears.'
 Write-Host ''
 Write-Host ' Re-run anytime:'
 Write-Host '   powershell -ExecutionPolicy Bypass -File tools\start_lan_dev.ps1'

@@ -38,16 +38,25 @@ class WorkerHomePage extends StatefulWidget {
 }
 
 class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObserver {
-  late final WorkerAppController _controller;
+  WorkerAppController? _controller;
   int _selectedNavIndex = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller = WorkerAppController();
-    _controller.addListener(_onControllerChanged);
-    _controller.bootstrap();
+    _initController();
+  }
+
+  Future<void> _initController() async {
+    final controller = await WorkerAppController.create();
+    controller.addListener(_onControllerChanged);
+    await controller.bootstrap();
+    if (!mounted) {
+      controller.dispose();
+      return;
+    }
+    setState(() => _controller = controller);
   }
 
   void _onControllerChanged() {
@@ -56,8 +65,19 @@ class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObse
     }
   }
 
+  WorkerAppController get _activeController {
+    final controller = _controller;
+    if (controller == null) {
+      throw StateError('Worker controller is not ready');
+    }
+    return controller;
+  }
+
   Future<void> _startGemmaDownload() async {
-    if (!_controller.canStartGemmaDownload || _controller.isGemmaReady) {
+    final controller = _controller;
+    if (controller == null ||
+        !controller.canStartGemmaDownload ||
+        controller.isGemmaReady) {
       return;
     }
 
@@ -66,30 +86,30 @@ class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObse
       return;
     }
 
-    await _controller.downloadGemmaModel();
-    if (!mounted || _controller.modelPhase != ModelInstallPhase.failed) {
+    await controller.downloadGemmaModel();
+    if (!mounted || controller.modelPhase != ModelInstallPhase.failed) {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_controller.modelError ?? 'Model download failed')),
+      SnackBar(content: Text(controller.modelError ?? 'Model download failed')),
     );
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _controller.handleAppLifecycleState(state);
+    _controller?.handleAppLifecycleState(state);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller.removeListener(_onControllerChanged);
-    _controller.dispose();
+    _controller?.removeListener(_onControllerChanged);
+    _controller?.dispose();
     super.dispose();
   }
 
   void _setAvailability(bool value) {
-    _controller.setAvailable(value);
+    _activeController.setAvailable(value);
   }
 
   void _navigateTo(int index) {
@@ -98,29 +118,36 @@ class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObse
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return WorkerShell(
       selectedIndex: _selectedNavIndex,
       onNavChanged: _navigateTo,
-      onRefresh: _controller.bootstrap,
-      available: _controller.available,
+      onRefresh: controller.bootstrap,
+      available: controller.available,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: switch (_selectedNavIndex) {
             0 => WorkerHomeTab(
                 key: const ValueKey('home'),
-                controller: _controller,
+                controller: controller,
                 onDownloadModel: _startGemmaDownload,
                 onAvailabilityChanged: _setAvailability,
                 onNavigate: _navigateTo,
               ),
             1 => WorkerMissionsTab(
                 key: const ValueKey('missions'),
-                controller: _controller,
+                controller: controller,
               ),
             2 => WorkerModelsTab(
                 key: const ValueKey('models'),
-                controller: _controller,
+                controller: controller,
                 onDownload: _startGemmaDownload,
               ),
             3 => const WorkerEarningsTab(key: ValueKey('earnings')),

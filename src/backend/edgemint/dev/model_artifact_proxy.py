@@ -19,6 +19,11 @@ class _ArtifactSpec:
 
 
 _SUPPORTED_ARTIFACTS: dict[str, _ArtifactSpec] = {
+    "mdv_qwen2_5_0_5b": _ArtifactSpec(
+        hf_repo="litert-community/Qwen2.5-0.5B-Instruct",
+        file_name="Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+        requires_auth=False,
+    ),
     "mdv_qwen3_0_6b": _ArtifactSpec(
         hf_repo="litert-community/Qwen3-0.6B",
         file_name="Qwen3-0.6B.litertlm",

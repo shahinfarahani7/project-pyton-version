@@ -64,6 +64,7 @@ async def test_bootstrap_returns_same_raw_credential_on_replay_without_rotation(
     now = datetime.now(UTC)
     row = {
         "assignment_id": assignment_id,
+        "workspace_id": uuid4(),
         "fence_token": 9,
         "lease_token_hash": hash_session_token(lease_token),
         "lease_token_ciphertext": encrypted,
@@ -84,6 +85,8 @@ async def test_bootstrap_returns_same_raw_credential_on_replay_without_rotation(
         attestation_expires_at=now + timedelta(hours=1),
     )
     service = AssignmentCredentialBootstrapService(settings=settings)
+    service.delivery_inbox.record_poll_delivery = AsyncMock(return_value=uuid4())
+    service.execution_allocations.load_bootstrap_grant_for_attempt = AsyncMock(return_value=None)
 
     with patch(
         "edgemint.workers.assignments.resolve_worker_session",

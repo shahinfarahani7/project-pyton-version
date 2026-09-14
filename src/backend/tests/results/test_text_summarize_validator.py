@@ -38,6 +38,21 @@ def test_text_summarize_valid_worker_envelope_passes() -> None:
     assert outcome.business_rules_valid is True
 
 
+def test_text_summarize_failed_status_is_not_acceptance_eligible() -> None:
+    payload = json.dumps(
+        {
+            "status": "failed",
+            "data": {"summary": "x", "keyPoints": ["x"]},
+            "metrics": {},
+        }
+    )
+    outcome = validate_task_result(task_type="text.summarize", inline_output=payload)
+    assert outcome.valid is False
+    assert outcome.worker_status == "failed"
+    assert outcome.acceptance_eligible is False
+    assert outcome.failure_code == "RESULT_WORKER_FAILED"
+
+
 def test_text_summarize_empty_summary_rejected() -> None:
     payload = _worker_summarize_envelope(summary="   ")
     outcome = validate_task_result(task_type="text.summarize", inline_output=payload)

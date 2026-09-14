@@ -36,6 +36,7 @@ def _running_row(*, fence: int = 7) -> dict[str, object]:
         "task_attempt_id": uuid4(),
         "task_id": uuid4(),
         "task_public_id": "task_01TEST",
+        "task_run_id": uuid4(),
         "fence_token": fence,
         "lease_token_hash": hash_session_token("lease-token"),
         "lease_expires_at_utc": datetime.now(UTC) + timedelta(minutes=2),

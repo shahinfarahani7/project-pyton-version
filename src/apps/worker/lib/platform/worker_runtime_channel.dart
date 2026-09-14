@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../runtime/device_snapshot.dart';
@@ -42,9 +43,17 @@ class WorkerRuntimeChannel {
       network: _network(raw['network'] as String?),
       freeStorageMb: raw['freeStorageMb'] as int? ?? 4096,
       withinSchedule: raw['withinSchedule'] as bool? ?? true,
-      consentsGranted: (raw['consentsGranted'] as List<Object?>?)?.cast<String>() ??
-          const ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
+      consentsGranted:
+          (raw['consentsGranted'] as List<Object?>?)?.cast<String>() ?? const [],
     );
+  }
+
+  Future<void> setConsentsGranted(List<String> consents) async {
+    await _channel.invokeMethod<void>('setConsentsGranted', consents);
+  }
+
+  Future<String?> localStorePath() async {
+    return _channel.invokeMethod<String>('localStorePath');
   }
 
   DeviceSnapshot _normalizeSnapshot({
@@ -62,9 +71,8 @@ class WorkerRuntimeChannel {
     var emulator = isEmulator;
     var percent = batteryPercent;
     var charging = isCharging;
-    if (emulator || percent <= 0) {
-      emulator = true;
-      percent = 100;
+    if (kDebugMode && emulator) {
+      percent = percent <= 0 ? 100 : percent;
       charging = true;
     }
     return DeviceSnapshot(

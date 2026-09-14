@@ -164,7 +164,11 @@ class ResultAcceptanceService:
                 },
             )
         ).mappings().first()
-        if row is None or row["entitlement_id"] is None:
+        if row is None:
+            raise result_error("RESULT_VALIDATION_FAILED", detail="acceptance commit failed")
+        if not bool(row["terminal_committed"]):
+            raise result_error("RESULT_TERMINAL_LOST", detail="task run terminal race lost")
+        if row["entitlement_id"] is None:
             raise result_error("RESULT_VALIDATION_FAILED", detail="acceptance commit failed")
         return AcceptanceOutcome(
             terminal_committed=bool(row["terminal_committed"]),

@@ -1,7 +1,7 @@
 # EdgeMint Architecture Implementation TODO
 
 > **Authority:** [docs/EDGE-MINT-TARGET-ARCHITECTURE-v2.md](../docs/EDGE-MINT-TARGET-ARCHITECTURE-v2.md) (supersedes v1)
-> **Last updated:** 2026-09-06
+> **Last updated:** 2026-09-13
 > **Rule:** After completing any task, update this file and the matching phase file in the same session (see .cursor/rules/architecture-plan-todo.mdc).
 
 ## Summary
@@ -17,8 +17,9 @@
 | 6 — Adaptive Execution | 14 | 14 | 0 | 0 |
 | 7 — Production Proof | 28 | 28 | 0 | 0 |
 | 8 — v2 Audit Integration | 31 | 31 | 0 | 0 |
+| 9 — Audit Remediation | 7 | 7 | 0 | 0 |
 | **Total (Phase 0–7)** | **187** | **187** | **0** | **0** |
-| **Total (incl. Phase 8)** | **218** | **218** | **0** | **0** |
+| **Total (incl. Phase 8–9)** | **225** | **225** | **0** | **0** |
 
 ## Dependency notes
 
@@ -265,3 +266,13 @@
 - [x] **P8-A22** — Identity loop and Native crash evidence (A22 / T22) — evidence: `plan/evidence/phase-08-p8-a22-identity-loop-native-crash.json` (IMPLEMENTED_DEV_ONLY; T22 physical harness NOT_RUN)
 - [x] **P8-A23** — Policy gates and mixed-version rollout (A23 / T23) — evidence: `plan/evidence/phase-08-p8-a23-policy-readiness-gates.json` (IMPLEMENTED_DEV_ONLY; gate CLOSED; T23 harness NOT_RUN)
 - [x] **P8-A24** — Runtime upgrade compatibility (A24 / T24) — evidence: `plan/evidence/phase-08-p8-a24-runtime-upgrade-compatibility.json` (IMPLEMENTED_DEV_ONLY; T24 device eval NOT_RUN)
+
+## Phase 9 — Audit Remediation (F01–F19)
+
+- [x] **P9-AUDIT-01** — Baseline: token, manifest/output, multipart, model fetch, cold-start — evidence: `plan/evidence/audit-remediation-p9-phase1.json`
+- [x] **P9-AUDIT-02** — Device safety and lease renewal — evidence: `plan/evidence/audit-remediation-p9-phase2.json`
+- [x] **P9-AUDIT-03** — Acceptance terminal guard and failed/partial — evidence: `database/sql/038_acceptance_terminal_guard.sql`
+- [x] **P9-AUDIT-04** — Durable inbox/outbox and SQL 039/040 — evidence: `database/sql/039_atomic_reservation_recheck.sql`, `database/sql/040_task_run_fence_budget.sql`
+- [x] **P9-AUDIT-05** — Scheduler consumer and bootstrap plan/allocation — evidence: `src/backend/edgemint/routing/scheduler_consumer.py`
+- [x] **P9-AUDIT-06** — Test/catalog/verifier hygiene — evidence: backend test updates, `tools/verify_production_auto_assignment_source.py`
+- [x] **P9-AUDIT-07** — Final runtime gates (Flutter E2E, physical, load) — evidence: `plan/evidence/audit-remediation-p9-phase7.json` (source complete; runtime NOT_RUN)

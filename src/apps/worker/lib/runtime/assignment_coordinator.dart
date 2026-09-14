@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 
 import '../api/worker_api_client.dart';
 import '../api/worker_assignment_models.dart';
@@ -27,10 +30,12 @@ import 'inference_adapter.dart';
 import '../telemetry/execution_cost_feedback.dart';
 import '../telemetry/worker_task_metrics.dart';
 import 'result_signer.dart';
+import 'result_submission_outbox.dart';
 import '../tasks/task_execution_engine.dart';
 import '../tasks/task_type_mapper.dart';
 import 'runtime_exceptions.dart';
 import 'sandbox_limits.dart';
+import 'worker_access_token_provider.dart';
 
 typedef StatusListener = void Function(ExecutionStatus status);
 
@@ -67,6 +72,7 @@ class AssignmentCoordinator {
     InputLoader? inputLoader,
     TaskExecutionEngine? taskEngine,
     String? accessToken,
+    WorkerAccessTokenProvider? accessTokenProvider,
     StatusListener? onStatus,
     AssignmentReceiver? assignmentReceiver,
     StoragePressureManager? storagePressure,
@@ -75,6 +81,7 @@ class AssignmentCoordinator {
     PrivacyCleanupCoordinator? privacyCleanup,
   })  : _api = api,
         _checkpointStore = CheckpointStore(store),
+        _resultOutbox = ResultSubmissionOutbox(store: store),
         _platform = platform,
         _inference = inference,
         _constraints = constraints ?? const DeviceConstraints(),
@@ -83,7 +90,10 @@ class AssignmentCoordinator {
         _sandbox = sandbox ?? const SandboxLimits(),
         _inputLoader = inputLoader ?? _defaultInputLoader,
         _taskEngine = taskEngine,
-        _accessToken = accessToken ?? 'token',
+        _accessTokens = accessTokenProvider ??
+            WorkerAccessTokenProvider(
+              initialToken: accessToken ?? (kDebugMode ? 'token' : ''),
+            ),
         _onStatus = onStatus,
         _receiver = assignmentReceiver ?? AssignmentReceiver(),
         _storagePressure = storagePressure ?? StoragePressureManager(),
@@ -93,6 +103,7 @@ class AssignmentCoordinator {
 
   final WorkerApiClient _api;
   final CheckpointStore _checkpointStore;
+  final ResultSubmissionOutbox _resultOutbox;
   final WorkerRuntimeChannel _platform;
   final InferenceAdapter _inference;
   final DeviceConstraints _constraints;
@@ -101,7 +112,9 @@ class AssignmentCoordinator {
   final SandboxLimits _sandbox;
   final InputLoader _inputLoader;
   final TaskExecutionEngine? _taskEngine;
-  final String _accessToken;
+  final WorkerAccessTokenProvider _accessTokens;
+
+  String get _accessToken => _accessTokens.requireToken();
   final StatusListener? _onStatus;
   final AssignmentReceiver _receiver;
   final StoragePressureManager _storagePressure;
@@ -112,6 +125,8 @@ class AssignmentCoordinator {
   final ExecutionStopTracker _stopTracker = ExecutionStopTracker();
   bool _assignmentStarted = false;
   WorkerResourceReservationEntry? _activeReservation;
+  Timer? _leaseRenewalTimer;
+  int _leaseRenewSequence = 0;
 
   ExecutionStatus _status = const ExecutionStatus(phase: ExecutionPhase.idle);
   bool _cancelRequested = false;
@@ -142,7 +157,7 @@ class AssignmentCoordinator {
       final map = item as Map<String, dynamic>;
       return AssignmentInboxEntry(
         assignmentId: map['assignmentId'] as String,
-        attemptId: map['assignmentId'] as String,
+        attemptId: map['attemptId'] as String? ?? map['assignmentId'] as String,
         fenceToken: map['fenceToken'] as int,
         recordedAt: DateTime.now().toUtc(),
         deliveryInboxId: map['deliveryInboxId'] as String?,
@@ -238,10 +253,23 @@ class AssignmentCoordinator {
     final device = snapshot ?? await _platform.readDeviceSnapshot();
     _receiver.ensureAccepted(_receiver.validateContract(assignment));
     _processLifecycle?.acknowledgeFreshGrantReconciliation();
-    await _assignmentInbox.recordBeforeProcess(
+    final inboxReceipt = await _assignmentInbox.recordBeforeProcess(
       assignment,
       deliveryInboxId: assignment.deliveryInboxId,
     );
+    if (inboxReceipt.disposition == AssignmentInboxDisposition.duplicateReplay) {
+      return;
+    }
+    if (inboxReceipt.disposition == AssignmentInboxDisposition.staleFenceSuperseded) {
+      throw AssignmentRejectedException(
+        AssignmentValidationIssue(
+          step: AssignmentValidationStep.fence,
+          failureCode: 'ASSIGNMENT_STALE_FENCE',
+          retryable: false,
+          detail: 'local inbox has newer fence ${inboxReceipt.entry.fenceToken}',
+        ),
+      );
+    }
     _receiver.ensureAccepted(_receiver.validateConsent(device));
     _storagePressure.ensureHeadroomForWork(device);
     _constraints.ensureOrThrow(device, heavyTask: true);
@@ -299,6 +327,7 @@ class AssignmentCoordinator {
     );
     await _assignmentInbox.markAcked(assignment.assignmentId, fenceToken: assignment.fenceToken);
     _assignmentStarted = true;
+    _startLeaseRenewal(assignment);
     _activeReservation = WorkerHeartbeatTelemetry.reservationForTask(
       assignmentId: assignment.assignmentId,
       taskType: assignment.taskType,
@@ -423,20 +452,28 @@ class AssignmentCoordinator {
     final completionMetrics = Map<String, dynamic>.from(output.metrics)
       ..['costFeedback'] = costFeedback.toJson();
 
-    await _api.completeAssignment(
-      assignmentId: assignment.assignmentId,
-      accessToken: _accessToken,
-      idempotencyKey: 'complete-${assignment.attemptId}',
-      body: {
-        'leaseToken': assignment.leaseToken,
-        'fenceToken': assignment.fenceToken,
-        'resultSha256': resultSha256,
-        'outputArtifactId': outputArtifactId,
-        'outputInline': utf8.decode(output.resultBytes),
-        'metrics': completionMetrics,
-        'signature': signature,
-      },
-    );
+    final idempotencyKey = 'complete-${assignment.attemptId}';
+    final completeBody = {
+      'leaseToken': assignment.leaseToken,
+      'fenceToken': assignment.fenceToken,
+      'resultSha256': resultSha256,
+      'outputArtifactId': outputArtifactId,
+      'outputInline': utf8.decode(output.resultBytes),
+      'metrics': completionMetrics,
+      'signature': signature,
+    };
+    await _resultOutbox.enqueue(idempotencyKey, completeBody);
+    try {
+      await _api.completeAssignment(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+        idempotencyKey: idempotencyKey,
+        body: completeBody,
+      );
+      await _resultOutbox.ack(idempotencyKey);
+    } catch (_) {
+      rethrow;
+    }
 
     await _cleanup(assignment);
     await _platform.stopForegroundService();
@@ -567,7 +604,46 @@ class AssignmentCoordinator {
     );
   }
 
+  void _startLeaseRenewal(WorkerAssignment assignment) {
+    _stopLeaseRenewal();
+    final now = DateTime.now().toUtc();
+    final ttl = assignment.leaseExpiresAt.difference(now);
+    if (ttl.isNegative) {
+      return;
+    }
+    final renewIn = Duration(
+      milliseconds: (ttl.inMilliseconds * 0.7).round().clamp(5000, ttl.inMilliseconds),
+    );
+    _leaseRenewSequence = 0;
+    _leaseRenewalTimer = Timer(renewIn, () async {
+      if (!_assignmentStarted || _cancelRequested) {
+        return;
+      }
+      try {
+        _leaseRenewSequence += 1;
+        await _api.renewAssignment(
+          assignmentId: assignment.assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: 'renew-${assignment.attemptId}-$_leaseRenewSequence',
+          body: {
+            'leaseToken': assignment.leaseToken,
+            'fenceToken': assignment.fenceToken,
+            'sequence': _leaseRenewSequence,
+          },
+        );
+      } catch (_) {
+        _cancelRequested = true;
+      }
+    });
+  }
+
+  void _stopLeaseRenewal() {
+    _leaseRenewalTimer?.cancel();
+    _leaseRenewalTimer = null;
+  }
+
   Future<void> _cleanup(WorkerAssignment assignment, {bool preserveCheckpoint = false}) async {
+    _stopLeaseRenewal();
     _emit(_status.copyWith(phase: ExecutionPhase.cleaningUp));
     _stopTracker.requestStop(reason: 'assignment_cleanup');
     _activeReservation = null;

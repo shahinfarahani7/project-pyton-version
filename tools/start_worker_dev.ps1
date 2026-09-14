@@ -111,18 +111,15 @@ function Test-AdbReverseRules {
 }
 
 function Apply-DevHotPatches {
-    # Image tags lag repo source; sync the full Python package instead of cherry-picking files.
-    $edgemintSrc = Join-Path $Root 'src/backend/edgemint'
-    if (-not (Test-Path $edgemintSrc)) {
-        throw "Missing $edgemintSrc"
-    }
-    docker cp $edgemintSrc edgemint-worker-registry-1:/app/src/backend/ 2>$null | Out-Null
-    docker cp $edgemintSrc edgemint-api-gateway-1:/app/src/backend/ 2>$null | Out-Null
-    docker cp (Join-Path $edgemintSrc 'services/worker_gateway.py') edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py 2>$null | Out-Null
-    docker cp (Join-Path $edgemintSrc 'services/model_registry.py') edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py 2>$null | Out-Null
-    Invoke-Quiet {
-        docker exec -u 0 edgemint-api-gateway-1 python -m pip install --root-user-action=ignore --no-cache-dir python-multipart==0.0.20 2>$null | Out-Null
-    }
+    $dev = Join-Path $Root 'src\backend\edgemint\dev'
+    $svc = Join-Path $Root 'src\backend\edgemint\services'
+    if (-not (Test-Path $dev)) { throw "Missing $dev" }
+    docker cp $dev edgemint-api-gateway-1:/app/src/backend/edgemint/ 2>$null | Out-Null
+    docker cp $dev edgemint-worker-registry-1:/app/src/backend/edgemint/ 2>$null | Out-Null
+    docker cp (Join-Path $svc 'api_gateway.py') edgemint-api-gateway-1:/app/src/backend/edgemint/services/api_gateway.py 2>$null | Out-Null
+    docker cp (Join-Path $svc 'worker_registry.py') edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py 2>$null | Out-Null
+    docker cp (Join-Path $svc 'worker_gateway.py') edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py 2>$null | Out-Null
+    docker cp (Join-Path $svc 'model_registry.py') edgemint-model-registry-1:/app/src/backend/edgemint/services/model_registry.py 2>$null | Out-Null
     docker restart edgemint-worker-gateway-1 edgemint-worker-registry-1 edgemint-api-gateway-1 edgemint-model-registry-1 2>$null | Out-Null
     if (-not (Wait-BackendHealth -TimeoutSeconds 90)) {
         Write-Host '   WARN: backend slow to recover; continuing if worker-gateway is healthy.'

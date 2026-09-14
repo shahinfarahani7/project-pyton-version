@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from uuid import UUID
 
+import pytest
+
 from edgemint.dev import fixtures
 
 
@@ -11,7 +13,8 @@ def test_dev_workspaces_include_primary_and_staging() -> None:
     assert str(fixtures.DEV_WORKSPACE_STAGING) in workspace_ids
 
 
-def test_dev_tasks_vary_by_workspace() -> None:
+def test_dev_tasks_vary_by_workspace(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(fixtures, "_reconcile_worker_pending_tasks", lambda: [])
     primary = fixtures.dev_tasks(fixtures.DEV_WORKSPACE_PRIMARY)
     staging = fixtures.dev_tasks(fixtures.DEV_WORKSPACE_STAGING)
     assert len(primary["items"]) >= 3

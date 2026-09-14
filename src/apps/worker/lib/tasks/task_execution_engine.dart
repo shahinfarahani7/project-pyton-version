@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
+
 import '../api/worker_assignment_models.dart';
 import '../contracts/worker_error.dart';
 import '../contracts/worker_task_request.dart';
@@ -18,6 +20,7 @@ import '../runtime/execution_plan_runner.dart';
 import '../runtime/runtime_exclusive_group_enforcer.dart';
 import '../runtime/vision_runtime_catalog.dart';
 import '../runtime/runtime_exceptions.dart';
+import '../runtime/worker_model_installer.dart';
 import '../tasks/idempotency_store.dart';
 import '../tasks/task_type_mapper.dart';
 import '../telemetry/worker_task_metrics.dart';
@@ -112,6 +115,7 @@ class TaskExecutionEngine {
 
     try {
       final request = _buildRequest(context);
+      _enforceServerExecutionGrant(context.assignment);
 
       developer.log(
         '[TASK START] '
@@ -272,6 +276,29 @@ class TaskExecutionEngine {
 
             return _toInferenceOutput(result);
           }
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // LLM readiness (load before fresh-session guard)
+      // -----------------------------------------------------------------------
+
+      if (requiresLlm) {
+        _modelReadyFuture ??= WorkerModelInstaller.ensureReady();
+        final llmReady = await _modelReadyFuture!;
+        _modelReadyFuture = null;
+        if (!llmReady) {
+          final result = _failedResult(
+            request,
+            const WorkerError(
+              code: WorkerErrorCode.modelNotAvailable,
+              message: 'Primary model is not resident',
+              retryable: true,
+              stage: WorkerTaskStage.llm,
+            ),
+          );
+          _lastResult = result;
+          return _toInferenceOutput(result);
         }
       }
 
@@ -529,6 +556,30 @@ class TaskExecutionEngine {
     }
 
     return DateTime.tryParse(raw);
+  }
+
+  void _enforceServerExecutionGrant(WorkerAssignment assignment) {
+    final serverPlan = assignment.executionPlan;
+    if (serverPlan == null) {
+      return;
+    }
+    final localPlan = ExecutionPlanCatalog.forTaskType(
+      TaskTypeMapper.toV1(assignment.taskType),
+    );
+    final localHash = sha256.convert(
+      utf8.encode('${localPlan.taskType}:${localPlan.stages.length}'),
+    ).toString();
+    final serverHash = serverPlan['planHash'] as String?;
+    if (serverHash != null && serverHash.isNotEmpty && serverHash != localHash) {
+      throw StateError('Server execution plan hash mismatch');
+    }
+    final allocation = assignment.allocation;
+    if (allocation != null) {
+      final maxCalls = allocation['maxInferenceCalls'];
+      if (maxCalls is int && maxCalls <= 0) {
+        throw StateError('Server allocation forbids inference');
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------

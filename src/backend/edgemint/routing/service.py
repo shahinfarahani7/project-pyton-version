@@ -299,7 +299,10 @@ class RouterService:
         task_run_usage: TaskRunBudgetUsage | None = None,
     ) -> dict[str, Any]:
         """Section 20: rank workers, audit, then atomically reserve + assign in order."""
+        from edgemint.governance.runtime_activation import assert_runtime_activation_gate_open
         from edgemint.routing.cloud_fallback import evaluate_cloud_fallback
+
+        await assert_runtime_activation_gate_open(connection, settings=self.settings)
         from edgemint.routing.task_run_budget import (
             TaskRunBudgetUsage,
             combine_assignment_budget_checks,

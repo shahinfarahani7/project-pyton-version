@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from typing import Any
@@ -18,6 +19,17 @@ from edgemint.routing.resource_reservations import ResourceReservationVector
 ESTIMATOR_VERSION = "envelope-v1"
 POLICY_VERSION = "production-resource-policy-v1"
 COMPATIBILITY_PROFILE_REF = "RuntimeCompatibilityProfile/production-v1@1.0.0"
+
+
+def compute_execution_plan_hash(*, execution_plan_name: str, execution_plan_version: str) -> str:
+    payload = {
+        "planName": execution_plan_name,
+        "planVersion": execution_plan_version,
+    }
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    )
+    return digest.hexdigest()
 
 _INFERENCE_RUNTIME_CLASSES = frozenset(
     {"mediapipe_llm", "paddle_ocr", "image_classifier", "segmentation_runtime"}
@@ -359,6 +371,59 @@ class ExecutionAllocationService:
             model_session_units=int(row["model_session_units"]),
             exclusive_group=str(row["exclusive_group"] or ""),
         )
+
+    async def load_bootstrap_grant_for_attempt(
+        self,
+        connection: AsyncConnection,
+        *,
+        task_attempt_id: UUID,
+    ) -> dict[str, Any] | None:
+        row = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT allocation.execution_plan_name,
+                           allocation.execution_plan_version,
+                           allocation.max_inference_calls,
+                           allocation.cpu_units,
+                           allocation.memory_bytes,
+                           allocation.storage_bytes,
+                           allocation.accelerator_units,
+                           allocation.model_session_units,
+                           allocation.exclusive_group
+                    FROM public.task_attempts AS attempt
+                    JOIN public.task_execution_allocations AS allocation
+                      ON allocation.task_run_id = attempt.task_run_id
+                    WHERE attempt.id = :task_attempt_id
+                    """
+                ),
+                {"task_attempt_id": task_attempt_id},
+            )
+        ).mappings().first()
+        if row is None:
+            return None
+        plan_name = str(row["execution_plan_name"])
+        plan_version = str(row["execution_plan_version"])
+        return {
+            "executionPlan": {
+                "planVersion": plan_version,
+                "planHash": compute_execution_plan_hash(
+                    execution_plan_name=plan_name,
+                    execution_plan_version=plan_version,
+                ),
+            },
+            "allocation": {
+                "maxInferenceCalls": int(row["max_inference_calls"]),
+                "resourceVector": {
+                    "cpuUnits": int(row["cpu_units"]),
+                    "memoryBytes": int(row["memory_bytes"]),
+                    "storageBytes": int(row["storage_bytes"]),
+                    "acceleratorUnits": int(row["accelerator_units"]),
+                    "modelSessionUnits": int(row["model_session_units"]),
+                    "exclusiveGroup": str(row["exclusive_group"] or ""),
+                },
+            },
+        }
 
     async def load_allocation_id_for_attempt(
         self,

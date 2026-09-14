@@ -173,7 +173,7 @@ class QwenTaskProcessor {
     }
     await ensureLoaded(signingKey: signingKey);
     final output = await _adapter.run(
-      inputBytes: Uint8List.fromList(utf8.encode(formatted)),
+      inputBytes: Uint8List.fromList(utf8.encode(prompt)),
       resumedState: null,
     );
     return _enforceOutputLimit(utf8.decode(output.resultBytes));

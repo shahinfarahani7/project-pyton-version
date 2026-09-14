@@ -14,6 +14,7 @@ from edgemint.dev import task_events
 from edgemint.dev import task_type_catalog
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
+from edgemint.tasks.catalog_closure import validate_queue_admission
 from edgemint.tasks.errors import TaskServiceError
 
 router = APIRouter()
@@ -51,6 +52,7 @@ async def _create_task_from_form(
     if not task_type.strip():
         raise HTTPException(422, "TASK_TYPE_REQUIRED")
     try:
+        validate_queue_admission(catalog_code=task_type.strip(), mode="baseline")
         task_type_catalog.validate_task_submission(
             task_type=task_type,
             input_text=input_text,
@@ -181,7 +183,24 @@ async def create_task(
     session: BrowserSessionRecord = Depends(require_dev_portal_session),
 ) -> dict:
     _ensure_workspace_access(session, workspace_id)
+    content_type = request.headers.get("content-type", "")
     try:
+        if "multipart/form-data" in content_type:
+            form = await request.form()
+            task_type = str(form.get("taskType") or "").strip()
+            input_text = form.get("inputText")
+            instructions = form.get("instructions")
+            upload = form.get("inputFile")
+            file_name, file_mime, file_bytes = await _read_uploaded_file(upload)
+            return await _create_task_from_form(
+                workspace_id,
+                task_type=task_type,
+                input_text=str(input_text) if input_text else None,
+                instructions=str(instructions) if instructions else None,
+                file_name=file_name,
+                file_mime=file_mime,
+                file_bytes=file_bytes,
+            )
         payload = DevCreateTaskRequest.model_validate(await request.json())
         return await _create_task_from_form(
             workspace_id,

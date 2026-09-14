@@ -15,6 +15,8 @@ class WorkerAssignment {
     this.deliveryInboxId,
     this.assignmentMode = 'auto',
     this.executionStartsAutomatically = true,
+    this.executionPlan,
+    this.allocation,
   });
 
   factory WorkerAssignment.fromJson(Map<String, dynamic> json) => WorkerAssignment(
@@ -33,6 +35,8 @@ class WorkerAssignment {
         deliveryInboxId: json['deliveryInboxId'] as String?,
         assignmentMode: json['assignmentMode'] as String? ?? 'auto',
         executionStartsAutomatically: json['executionStartsAutomatically'] as bool? ?? true,
+        executionPlan: json['executionPlan'] as Map<String, dynamic>?,
+        allocation: json['allocation'] as Map<String, dynamic>?,
       );
 
   final String assignmentId;
@@ -50,6 +54,8 @@ class WorkerAssignment {
   final String? deliveryInboxId;
   final String assignmentMode;
   final bool executionStartsAutomatically;
+  final Map<String, dynamic>? executionPlan;
+  final Map<String, dynamic>? allocation;
 }
 
 class CommandReceipt {

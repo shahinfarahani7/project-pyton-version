@@ -3,7 +3,6 @@
 #   powershell -ExecutionPolicy Bypass -File tools\open_lan_firewall.ps1
 
 $ErrorActionPreference = 'Stop'
-$Root = Split-Path $PSScriptRoot -Parent
 
 $rules = @(
     @{ Name = 'EdgeMint api-gateway 8080'; Port = 8080 },
@@ -22,7 +21,7 @@ foreach ($rule in $rules) {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Added: $($rule.Name) TCP $($rule.Port)"
     } else {
-        Write-Host "FAILED: $($rule.Name) — run as Administrator" -ForegroundColor Red
+        Write-Host "FAILED: $($rule.Name) - run as Administrator" -ForegroundColor Red
     }
 }
 
@@ -39,7 +38,9 @@ $lanIp = (
 )
 
 Write-Host ''
-Write-Host "Test from another PC on the same LAN (IP: $lanIp):"
-Write-Host "  curl http://${lanIp}:8080/health/live"
-Write-Host "  curl http://${lanIp}:8081/health/live"
-Write-Host "  curl http://${lanIp}:5173/"
+Write-Host ('Test from another PC on the same LAN (IP: {0}):' -f $lanIp)
+Write-Host ('  curl http://{0}:8080/health/live' -f $lanIp)
+Write-Host ('  curl http://{0}:8081/health/live' -f $lanIp)
+Write-Host ('  curl http://{0}:5173/' -f $lanIp)
+Write-Host ''
+Write-Host 'Portal: open the URL above, click Dev login, then use the bottom menu.'

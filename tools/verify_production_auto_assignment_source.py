@@ -18,6 +18,9 @@ def main() -> int:
     sql = (ROOT / "database/sql/008_auto_assignment_protocol.sql").read_text()
     migration = (ROOT / "database/sql/012_assignment_lease_credential_bootstrap.sql").read_text()
     worker_client = (ROOT / "src/apps/worker/lib/api/worker_api_client.dart").read_text()
+    assignment_coordinator = (
+        ROOT / "src/apps/worker/lib/runtime/assignment_coordinator.dart"
+    ).read_text()
     checks = {
         "router_creates_encrypted_credential_atomically": (
             "acquire_assignment_lease" in router
@@ -35,7 +38,10 @@ def main() -> int:
             'event_type="assignment.started"' in assignments
             and 'event_type="assignment.lease_renewed"' in assignments
         ),
-        "mobile_client_can_renew": "Future<CommandReceipt> renewAssignment" in worker_client,
+        "mobile_client_can_renew": (
+            "Future<CommandReceipt> renewAssignment" in worker_client
+            and "_api.renewAssignment" in assignment_coordinator
+        ),
         "attestation_status_aligned": (
             "device.attestation_status = 'verified'" in sql
             and 'session.attestation_status != "verified"' in assignments

@@ -1,0 +1,11 @@
+{
+  "taskId": "P9-AUDIT-02",
+  "classification": "IMPLEMENTED_DEV_ONLY",
+  "findings": ["F03", "F08"],
+  "artifacts": [
+    "src/apps/worker/android/app/src/main/kotlin/io/edgemint/edgemint_worker/WorkerRuntimePlugin.kt",
+    "src/apps/worker/lib/platform/worker_runtime_channel.dart",
+    "src/apps/worker/lib/runtime/assignment_coordinator.dart"
+  ],
+  "notes": "Real battery/network/thermal/consent on Android; lease renewal timer wired; physical sign-off NOT_RUN."
+}

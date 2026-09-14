@@ -24,6 +24,8 @@ class ResultValidationOutcome:
     schema_valid: bool
     business_rules_valid: bool
     semantic_quality_valid: bool = True
+    worker_status: str = "succeeded"
+    acceptance_eligible: bool = True
     failure_code: str | None = None
     detail: str | None = None
 
@@ -968,6 +970,8 @@ class ResultValidatorRegistry:
                 detail="inline output must be an object",
             )
         payload = extract_task_result_payload(envelope)
+        worker_status = _normalize_worker_status(payload.get("status"))
+        acceptance_eligible = worker_status == "succeeded"
         validator = self._validators.get(context.task_type)
         if validator is not None:
             outcome = validator(context, payload)
@@ -978,7 +982,28 @@ class ResultValidatorRegistry:
                 task_input=context.task_input,
             )
             outcome = _validate_with_schema(generic_context, payload)
-        return _apply_semantic_quality(context, payload, outcome)
+        outcome = _apply_semantic_quality(context, payload, outcome)
+        if outcome.valid and not acceptance_eligible:
+            return ResultValidationOutcome(
+                valid=False,
+                schema_valid=outcome.schema_valid,
+                business_rules_valid=outcome.business_rules_valid,
+                semantic_quality_valid=outcome.semantic_quality_valid,
+                worker_status=worker_status,
+                acceptance_eligible=False,
+                failure_code="RESULT_WORKER_FAILED",
+                detail=f"worker reported status={worker_status}",
+            )
+        return ResultValidationOutcome(
+            valid=outcome.valid,
+            schema_valid=outcome.schema_valid,
+            business_rules_valid=outcome.business_rules_valid,
+            semantic_quality_valid=outcome.semantic_quality_valid,
+            worker_status=worker_status,
+            acceptance_eligible=acceptance_eligible and outcome.valid,
+            failure_code=outcome.failure_code,
+            detail=outcome.detail,
+        )
 
 
 _default_registry: ResultValidatorRegistry | None = None

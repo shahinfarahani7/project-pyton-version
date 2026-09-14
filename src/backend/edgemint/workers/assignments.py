@@ -15,6 +15,7 @@ from edgemint.building_blocks.eventing.transactional_outbox import OutboxEvent, 
 from edgemint.building_blocks.ids import public_id
 from edgemint.security.lease_credentials import LeaseCredentialCipher
 from edgemint.security.tokens import hash_session_token
+from edgemint.routing.execution_allocation import ExecutionAllocationService
 from edgemint.routing.resource_reservations import ResourceReservationService
 from edgemint.workers.errors import worker_error
 from edgemint.workers.checkpoint_resume import (
@@ -48,6 +49,7 @@ class AssignmentCredentialBootstrapService:
 
     settings: Settings = field(default_factory=get_settings)
     delivery_inbox: AssignmentDeliveryInboxService = field(default_factory=AssignmentDeliveryInboxService)
+    execution_allocations: ExecutionAllocationService = field(default_factory=ExecutionAllocationService)
 
     async def next_assignment(
         self,
@@ -136,7 +138,7 @@ class AssignmentCredentialBootstrapService:
         )
         api_base = self.settings.worker_api_public_base_url.rstrip("/")
         model_version_id = row["model_version_id"]
-        return {
+        payload: dict[str, Any] = {
             "assignmentId": assignment_id,
             "deliveryInboxId": str(delivery_id),
             "attemptId": str(row["attempt_id"]),
@@ -153,6 +155,14 @@ class AssignmentCredentialBootstrapService:
             "executionStartsAutomatically": True,
             "startDeadlineAt": row["start_deadline_at_utc"].isoformat(),
         }
+        grant = await self.execution_allocations.load_bootstrap_grant_for_attempt(
+            connection,
+            task_attempt_id=row["attempt_id"],
+        )
+        if grant is not None:
+            payload["executionPlan"] = grant["executionPlan"]
+            payload["allocation"] = grant["allocation"]
+        return payload
 
     async def inbox_bootstrap(
         self,
@@ -745,15 +755,49 @@ class AssignmentCommandService:
         if not hmac.compare_digest(signature, expected_signature):
             raise worker_error("INPUT_SCHEMA_INVALID", detail="result signature invalid")
 
+        task_input_row = (
+            await connection.execute(
+                text(
+                    """
+                    SELECT revision.inline_text, revision.parameters_json
+                    FROM public.task_attempts AS attempt
+                    JOIN public.tasks AS task
+                      ON task.id = attempt.task_id
+                     AND task.workspace_id = attempt.workspace_id
+                    JOIN public.task_revisions AS revision
+                      ON revision.id = task.current_revision_id
+                     AND revision.workspace_id = task.workspace_id
+                    WHERE attempt.id = :attempt_id
+                      AND attempt.workspace_id = :workspace_id
+                    """
+                ),
+                {"attempt_id": row["task_attempt_id"], "workspace_id": row["workspace_id"]},
+            )
+        ).mappings().first()
+        task_input: dict[str, Any] | None = None
+        if task_input_row is not None:
+            params = task_input_row["parameters_json"]
+            task_input = {
+                "inlineText": task_input_row["inline_text"],
+                "parameters": params if isinstance(params, dict) else {},
+            }
         validation = validate_task_result(
             task_type=str(row["task_type"]),
             inline_output=output_inline,
+            task_input=task_input,
         )
         if not validation.valid:
             raise worker_error(
                 validation.failure_code or "RESULT_SCHEMA_INVALID",
                 detail=validation.detail,
             )
+        terminal_status = TaskRunStatus.SUCCEEDED
+        terminal_outcome = "assignment_complete"
+        if validation.worker_status == "partial":
+            terminal_status = TaskRunStatus.SUCCEEDED
+            terminal_outcome = "assignment_partial"
+        elif validation.worker_status == "failed":
+            raise worker_error("RESULT_WORKER_FAILED", detail=validation.detail)
 
         task_run_id = row["task_run_id"]
         candidate_id = None
@@ -776,13 +820,22 @@ class AssignmentCommandService:
                 candidate_id=candidate_id,
                 passed=True,
             )
-            await self.result_acceptance.accept_outcome(
-                connection,
-                workspace_id=row["workspace_id"],
-                task_run_id=task_run_id,
-                candidate_id=candidate_id,
-                worker_device_id=row["worker_device_id"],
-            )
+            try:
+                await self.result_acceptance.accept_outcome(
+                    connection,
+                    workspace_id=row["workspace_id"],
+                    task_run_id=task_run_id,
+                    candidate_id=candidate_id,
+                    worker_device_id=row["worker_device_id"],
+                    terminal_status=terminal_status,
+                    terminal_outcome=terminal_outcome,
+                )
+            except Exception as exc:
+                from edgemint.results.errors import ResultServiceError
+
+                if isinstance(exc, ResultServiceError) and exc.code == "RESULT_TERMINAL_LOST":
+                    raise worker_error("ASSIGNMENT_STALE_FENCE", detail="terminal race lost") from exc
+                raise
         else:
             await self._win_task_run_terminal(
                 connection,

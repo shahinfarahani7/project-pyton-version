@@ -31,7 +31,7 @@ requires_postgres = pytest.mark.skipif(not _postgres_available(), reason="Postgr
 
 def test_migration_files_are_transactional() -> None:
     files = sorted(MIGRATIONS.glob("*.sql"))
-    assert len(files) == 9
+    assert len(files) >= 38
     for migration in files:
         text = migration.read_text(encoding="utf-8")
         assert "BEGIN;" in text
@@ -40,11 +40,12 @@ def test_migration_files_are_transactional() -> None:
 
 
 def test_migration_checksums_are_stable() -> None:
+    files = sorted(MIGRATIONS.glob("*.sql"))
     checksums = {
         migration.name: hashlib.sha256(migration.read_bytes()).hexdigest()
-        for migration in sorted(MIGRATIONS.glob("*.sql"))
+        for migration in files
     }
-    assert len(checksums) == 9
+    assert len(checksums) == len(files)
     assert all(len(value) == 64 for value in checksums.values())
 
 

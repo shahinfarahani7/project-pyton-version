@@ -44,6 +44,8 @@ class ObjectStorage(Protocol):
 
     async def delete_object(self, *, object_key: str) -> None: ...
 
+    async def get_object(self, *, object_key: str) -> bytes | None: ...
+
 
 @dataclass
 class InMemoryObjectStorage:
@@ -91,6 +93,13 @@ class InMemoryObjectStorage:
     async def delete_object(self, *, object_key: str) -> None:
         self._objects.pop(object_key, None)
 
+    async def get_object(self, *, object_key: str) -> bytes | None:
+        stored = self._objects.get(object_key)
+        if stored is None:
+            return None
+        payload, _sha256 = stored
+        return payload
+
 
 class S3ObjectStorage:
     """Production adapter placeholder; live AWS wiring is environment-specific."""
@@ -133,6 +142,10 @@ class S3ObjectStorage:
     async def delete_object(self, *, object_key: str) -> None:
         del object_key
         raise file_error("STORAGE_UNAVAILABLE", detail="S3 delete_object requires live AWS integration")
+
+    async def get_object(self, *, object_key: str) -> bytes | None:
+        del object_key
+        raise file_error("STORAGE_UNAVAILABLE", detail="S3 get_object requires live AWS integration")
 
 
 def get_object_storage(settings: Settings | None = None) -> ObjectStorage:

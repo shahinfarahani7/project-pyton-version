@@ -194,14 +194,18 @@ def _dev_worker_assignments_enabled() -> bool:
 
 
 if not _dev_worker_assignments_enabled():
+    import base64
+
     from edgemint.workers.assignments import (
         AssignmentCommandService,
         AssignmentCredentialBootstrapService,
     )
+    from edgemint.workers.assignment_inputs import AssignmentInputService
     from pydantic import BaseModel, Field
 
     assignment_bootstrap = AssignmentCredentialBootstrapService()
     assignment_commands = AssignmentCommandService()
+    assignment_inputs = AssignmentInputService()
 
     class StartAssignmentRequest(BaseModel):
         leaseToken: str = Field(min_length=16, max_length=512)
@@ -239,6 +243,74 @@ if not _dev_worker_assignments_enabled():
     class ConfirmPhysicalStopRequest(StartAssignmentRequest):
         proof: str = Field(min_length=8, max_length=512)
         reason: str = Field(default="worker_stop_confirmed", min_length=1, max_length=128)
+
+    class AssignmentOutputRequest(BaseModel):
+        resultText: str = Field(min_length=1)
+        metrics: dict = Field(default_factory=dict)
+        resultFileBase64: str | None = None
+        resultFileName: str | None = None
+        resultMimeType: str | None = None
+
+    @app.get("/assignments/{assignment_id}/input-manifest", tags=["assignments"])
+    async def assignment_input_manifest(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        taskType: str | None = None,
+    ) -> JSONResponse:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            body = await assignment_inputs.input_manifest(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                task_type_hint=taskType,
+            )
+        response = JSONResponse(body, status_code=200)
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @app.get("/assignments/{assignment_id}/input/content", tags=["assignments"])
+    async def assignment_input_content(
+        assignment_id: str,
+        token: WorkerBearerToken,
+    ) -> Response:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            payload, mime, file_name = await assignment_inputs.input_content(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+            )
+        return Response(
+            content=payload,
+            media_type=mime,
+            headers={"Content-Disposition": f'inline; filename="{file_name}"'},
+        )
+
+    @app.post("/assignments/{assignment_id}/output", tags=["assignments"], status_code=201)
+    async def assignment_output_upload(
+        assignment_id: str,
+        payload: AssignmentOutputRequest,
+        token: WorkerBearerToken,
+    ) -> JSONResponse:
+        result_file_bytes = None
+        if payload.resultFileBase64:
+            try:
+                result_file_bytes = base64.b64decode(payload.resultFileBase64)
+            except ValueError as exc:
+                from fastapi import HTTPException
+
+                raise HTTPException(status_code=422, detail="RESULT_FILE_INVALID_BASE64") from exc
+        async with transaction(isolation="READ COMMITTED") as connection:
+            body = await assignment_inputs.record_output(
+                connection,
+                access_token=token,
+                assignment_id=assignment_id,
+                result_text=payload.resultText,
+                metrics=payload.metrics,
+                result_file_bytes=result_file_bytes,
+                result_file_name=payload.resultFileName,
+                result_mime_type=payload.resultMimeType,
+            )
+        return JSONResponse(body, status_code=201)
 
     @app.get("/assignments:inboxBootstrap", tags=["assignments"])
     async def assignment_inbox_bootstrap(token: WorkerBearerToken) -> JSONResponse:
