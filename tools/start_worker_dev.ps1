@@ -116,6 +116,7 @@ function Apply-DevHotPatches {
     if (-not (Test-Path $dev)) { throw "Missing $dev" }
     docker cp $dev edgemint-api-gateway-1:/app/src/backend/edgemint/ 2>$null | Out-Null
     docker cp $dev edgemint-worker-registry-1:/app/src/backend/edgemint/ 2>$null | Out-Null
+    docker cp $dev edgemint-model-registry-1:/app/src/backend/edgemint/ 2>$null | Out-Null
     docker cp (Join-Path $svc 'api_gateway.py') edgemint-api-gateway-1:/app/src/backend/edgemint/services/api_gateway.py 2>$null | Out-Null
     docker cp (Join-Path $svc 'worker_registry.py') edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py 2>$null | Out-Null
     docker cp (Join-Path $svc 'worker_gateway.py') edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py 2>$null | Out-Null
