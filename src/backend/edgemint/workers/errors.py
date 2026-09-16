@@ -1,14 +1,23 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 
-
-@dataclass(frozen=True, slots=True)
 class WorkerServiceError(Exception):
-    code: str
-    status: int
-    title: str
-    detail: str | None = None
+    """Worker-domain failure mapped to an RFC7807-style HTTP response."""
+
+    __slots__ = ("code", "status", "title", "detail")
+
+    def __init__(
+        self,
+        code: str,
+        status: int,
+        title: str,
+        detail: str | None = None,
+    ) -> None:
+        super().__init__(title)
+        self.code = code
+        self.status = status
+        self.title = title
+        self.detail = detail
 
 
 def worker_error(code: str, *, detail: str | None = None) -> WorkerServiceError:

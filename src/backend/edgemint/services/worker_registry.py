@@ -514,6 +514,15 @@ if _dev_worker_assignments_enabled():
             status_code=200,
         )
 
+    @app.delete(
+        "/internal/dev/assignments/{assignment_id}",
+        tags=["dev-assignments"],
+        status_code=204,
+    )
+    async def dev_cancel_assignment(assignment_id: str) -> Response:
+        dev_worker_assignments.cancel_dev_assignment(assignment_id)
+        return Response(status_code=204)
+
     async def _ensure_task_input(task_id: str, task_type: str) -> None:
         try:
             async with httpx.AsyncClient(timeout=3.0) as client:
@@ -602,6 +611,18 @@ if _dev_worker_assignments_enabled():
             status_code=200,
         )
 
+    @app.post("/assignments/{assignment_id}:confirmStop", tags=["dev-assignments"])
+    async def dev_assignment_confirm_stop(
+        assignment_id: str,
+        token: WorkerBearerToken,
+        idempotency_key: str = Header(alias="Idempotency-Key"),
+    ) -> JSONResponse:
+        _ = (assignment_id, token, idempotency_key)
+        return JSONResponse(
+            dev_worker_assignments.command_receipt("devAssignmentConfirmStop"),
+            status_code=200,
+        )
+
     @app.post("/assignments/{assignment_id}:abandon", tags=["dev-assignments"])
     async def dev_assignment_abandon(
         assignment_id: str,
@@ -621,6 +642,9 @@ if _dev_worker_assignments_enabled():
         idempotency_key: str = Header(alias="Idempotency-Key"),
     ) -> JSONResponse:
         _ = (assignment_id, token, idempotency_key)
+        # A failed dev assignment is terminal. Keeping it eligible causes the
+        # portal queue sync to deliver the same rejected task indefinitely.
+        dev_worker_assignments.mark_completed(assignment_id)
         return JSONResponse(
             dev_worker_assignments.command_receipt("devAssignmentFail"),
             status_code=202,

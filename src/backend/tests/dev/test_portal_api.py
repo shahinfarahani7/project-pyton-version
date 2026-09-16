@@ -83,7 +83,11 @@ def test_dev_portal_creates_task_with_custom_text(gateway_client: TestClient) ->
 
     created = gateway_client.post(
         f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
-        json={"taskType": "text.summarize", "inputText": "Customer paragraph about EdgeMint testing."},
+        json={
+            "taskType": "text.summarize",
+            "inputText": "Customer paragraph about EdgeMint testing.",
+            "instructions": "Return distinct points and one practical improvement.",
+        },
     )
     assert created.status_code == 201, created.text
     body = created.json()
@@ -95,6 +99,10 @@ def test_dev_portal_creates_task_with_custom_text(gateway_client: TestClient) ->
     manifest_body = manifest.json()
     assert manifest_body["customInput"] is True
     assert "Customer paragraph about EdgeMint testing." in manifest_body["prompt"]
+    assert (
+        manifest_body["instructions"]
+        == "Return distinct points and one practical improvement."
+    )
 
 
 @requires_postgres
@@ -129,6 +137,50 @@ def test_dev_portal_creates_task(gateway_client: TestClient) -> None:
     after = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks")
     assert after.status_code == 200
     assert len(after.json()["items"]) == initial_count + 1
+
+
+@requires_postgres
+def test_dev_portal_cancels_task_and_removes_worker_delivery(
+    gateway_client: TestClient,
+) -> None:
+    from edgemint.dev import worker_assignments
+
+    login = gateway_client.post(
+        "/auth/sessions",
+        json={
+            "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+            "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+            "permissions": ["customer.tasks:read", "customer.tasks:write"],
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    created = gateway_client.post(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+        json={
+            "taskType": "text.summarize",
+            "inputText": "Cancel this queued task before worker execution.",
+        },
+    )
+    assert created.status_code == 201, created.text
+    task_id = created.json()["id"]
+
+    cancelled = gateway_client.post(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks/{task_id}:cancel"
+    )
+    assert cancelled.status_code == 200, cancelled.text
+    assert cancelled.json()["lifecycleStatus"] == "cancelled"
+    assert cancelled.json()["executionStatus"] == "cancelled"
+    assert all(
+        assignment["assignmentId"] != task_id
+        for assignment in worker_assignments.list_pending_assignments()
+    )
+
+    listed = gateway_client.get(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks"
+    )
+    matched = next(item for item in listed.json()["items"] if item["id"] == task_id)
+    assert matched["lifecycleStatus"] == "cancelled"
 
 
 @requires_postgres

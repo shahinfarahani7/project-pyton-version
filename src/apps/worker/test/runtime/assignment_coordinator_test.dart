@@ -7,6 +7,7 @@ import 'package:edgemint_worker/api/worker_routes.dart';
 import 'package:edgemint_worker/config/worker_config.dart';
 import 'package:edgemint_worker/platform/worker_runtime_channel.dart';
 import 'package:edgemint_worker/runtime/assignment_coordinator.dart';
+import 'package:edgemint_worker/runtime/assignment_inbox.dart';
 import 'package:edgemint_worker/runtime/assignment_receiver.dart';
 import 'package:edgemint_worker/runtime/checkpoint_store.dart';
 import 'package:edgemint_worker/runtime/device_constraints.dart';
@@ -18,19 +19,22 @@ import 'package:edgemint_worker/runtime/result_signer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-WorkerAssignment sampleAssignment({int fenceToken = 3, String leaseToken = 'lease-token-1234567890'}) => WorkerAssignment(
-      assignmentId: 'asg_test',
-      attemptId: 'att_test',
-      revisionId: 'rev_test',
-      leaseToken: leaseToken,
-      fenceToken: fenceToken,
-      leaseExpiresAt: DateTime.parse('2026-12-26T14:00:00Z'),
-      taskType: 'document.ocr',
-      modelVersionId: 'mdv_test',
-      inputManifestUrl: 'https://example/input',
-      outputUploadUrl: 'https://example/output',
-      startDeadlineAt: DateTime.parse('2026-12-26T13:30:00Z'),
-    );
+WorkerAssignment sampleAssignment({
+  int fenceToken = 3,
+  String leaseToken = 'lease-token-1234567890',
+}) => WorkerAssignment(
+  assignmentId: 'asg_test',
+  attemptId: 'att_test',
+  revisionId: 'rev_test',
+  leaseToken: leaseToken,
+  fenceToken: fenceToken,
+  leaseExpiresAt: DateTime.parse('2026-12-26T14:00:00Z'),
+  taskType: 'document.ocr',
+  modelVersionId: 'mdv_test',
+  inputManifestUrl: 'https://example/input',
+  outputUploadUrl: 'https://example/output',
+  startDeadlineAt: DateTime.parse('2026-12-26T13:30:00Z'),
+);
 
 class _ExecutionMockClient extends http.BaseClient {
   final Map<int, int> progressCalls = {};
@@ -43,6 +47,12 @@ class _ExecutionMockClient extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     final path = request.url.path;
+    if (path.endsWith('/assignments:inboxBootstrap')) {
+      return _json(200, {
+        'workerDeviceId': 'dev_test',
+        'deliveries': <Map<String, dynamic>>[],
+      });
+    }
     if (path.endsWith('/assignments:next')) {
       return _json(200, sampleAssignment().toJson());
     }
@@ -53,7 +63,8 @@ class _ExecutionMockClient extends http.BaseClient {
     if (path.endsWith(':progress')) {
       final body = utf8.decode((request as http.Request).bodyBytes);
       final decoded = jsonDecode(body) as Map<String, dynamic>;
-      progressCalls[decoded['sequence'] as int] = (progressCalls[decoded['sequence'] as int] ?? 0) + 1;
+      progressCalls[decoded['sequence'] as int] =
+          (progressCalls[decoded['sequence'] as int] ?? 0) + 1;
       return _receipt('progressAssignment');
     }
     if (path.endsWith(':checkpoint')) {
@@ -75,12 +86,17 @@ class _ExecutionMockClient extends http.BaseClient {
     return Future.error(UnimplementedError('Unexpected path: $path'));
   }
 
-  Future<http.StreamedResponse> _json(int status, Map<String, dynamic> payload) {
-    return Future.value(http.StreamedResponse(
-      Stream.value(utf8.encode(jsonEncode(payload))),
-      status,
-      headers: {'content-type': 'application/json'},
-    ));
+  Future<http.StreamedResponse> _json(
+    int status,
+    Map<String, dynamic> payload,
+  ) {
+    return Future.value(
+      http.StreamedResponse(
+        Stream.value(utf8.encode(jsonEncode(payload))),
+        status,
+        headers: {'content-type': 'application/json'},
+      ),
+    );
   }
 
   Future<http.StreamedResponse> _receipt(String operationId) {
@@ -95,49 +111,67 @@ class _ExecutionMockClient extends http.BaseClient {
 
 extension on WorkerAssignment {
   Map<String, dynamic> toJson() => {
-        'assignmentId': assignmentId,
-        'attemptId': attemptId,
-        'revisionId': revisionId,
-        'leaseToken': leaseToken,
-        'fenceToken': fenceToken,
-        'leaseExpiresAt': leaseExpiresAt.toIso8601String(),
-        'taskType': taskType,
-        'modelVersionId': modelVersionId,
-        'inputManifestUrl': inputManifestUrl,
-        'outputUploadUrl': outputUploadUrl,
-        'assignmentMode': 'auto',
-        'executionStartsAutomatically': true,
-        'startDeadlineAt': startDeadlineAt.toIso8601String(),
-      };
+    'assignmentId': assignmentId,
+    'attemptId': attemptId,
+    'revisionId': revisionId,
+    'leaseToken': leaseToken,
+    'fenceToken': fenceToken,
+    'leaseExpiresAt': leaseExpiresAt.toIso8601String(),
+    'taskType': taskType,
+    'modelVersionId': modelVersionId,
+    'inputManifestUrl': inputManifestUrl,
+    'outputUploadUrl': outputUploadUrl,
+    'assignmentMode': 'auto',
+    'executionStartsAutomatically': true,
+    'startDeadlineAt': startDeadlineAt.toIso8601String(),
+  };
 }
 
 void main() {
   test('device constraints block unavailable and offline states', () {
     const constraints = DeviceConstraints();
     expect(
-      constraints.evaluate(const DeviceSnapshot(
-        available: false,
-        batteryPercent: 90,
-        isCharging: true,
-        thermalState: ThermalState.normal,
-        network: NetworkKind.wifi,
-        freeStorageMb: 4096,
-        withinSchedule: true,
-        consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
-      )).allowed,
+      constraints
+          .evaluate(
+            const DeviceSnapshot(
+              available: false,
+              batteryPercent: 90,
+              isCharging: true,
+              thermalState: ThermalState.normal,
+              network: NetworkKind.wifi,
+              freeStorageMb: 4096,
+              withinSchedule: true,
+              consentsGranted: [
+                'terms',
+                'privacy',
+                'resource_use',
+                'reward_disclosure',
+              ],
+            ),
+          )
+          .allowed,
       isFalse,
     );
     expect(
-      constraints.evaluate(const DeviceSnapshot(
-        available: true,
-        batteryPercent: 90,
-        isCharging: true,
-        thermalState: ThermalState.normal,
-        network: NetworkKind.offline,
-        freeStorageMb: 4096,
-        withinSchedule: true,
-        consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
-      )).allowed,
+      constraints
+          .evaluate(
+            const DeviceSnapshot(
+              available: true,
+              batteryPercent: 90,
+              isCharging: true,
+              thermalState: ThermalState.normal,
+              network: NetworkKind.offline,
+              freeStorageMb: 4096,
+              withinSchedule: true,
+              consentsGranted: [
+                'terms',
+                'privacy',
+                'resource_use',
+                'reward_disclosure',
+              ],
+            ),
+          )
+          .allowed,
       isFalse,
     );
   });
@@ -151,7 +185,9 @@ void main() {
       fenceToken: 3,
       modelVersionId: 'mdv_test',
       modelDigest: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-      inputDigest: sha256Hex(Uint8List.fromList('input-for-document.ocr'.codeUnits)),
+      inputDigest: sha256Hex(
+        Uint8List.fromList('input-for-document.ocr'.codeUnits),
+      ),
       sequence: 500,
       progressMilli: 500,
       runtimeStateDigest: sha256Hex(Uint8List.fromList([5])),
@@ -165,7 +201,9 @@ void main() {
       loaded!.canResume(
         activeFenceToken: 3,
         activeModelDigest: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-        activeInputDigest: sha256Hex(Uint8List.fromList('input-for-document.ocr'.codeUnits)),
+        activeInputDigest: sha256Hex(
+          Uint8List.fromList('input-for-document.ocr'.codeUnits),
+        ),
       ),
       isTrue,
     );
@@ -173,7 +211,9 @@ void main() {
       loaded.canResume(
         activeFenceToken: 4,
         activeModelDigest: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-        activeInputDigest: sha256Hex(Uint8List.fromList('input-for-document.ocr'.codeUnits)),
+        activeInputDigest: sha256Hex(
+          Uint8List.fromList('input-for-document.ocr'.codeUnits),
+        ),
       ),
       isFalse,
     );
@@ -184,12 +224,17 @@ void main() {
     final artifact = ModelArtifact(
       modelVersionId: 'mdv_test',
       digestSha256: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-      signatureSha256: sha256HexString('${sha256Hex(Uint8List.fromList('model'.codeUnits))}:test-signing-material'),
+      signatureSha256: sha256HexString(
+        '${sha256Hex(Uint8List.fromList('model'.codeUnits))}:test-signing-material',
+      ),
       backend: InferenceBackend.stub,
       bytes: Uint8List.fromList('model'.codeUnits),
     );
     await adapter.loadVerified(artifact, signingKey: 'test-signing-material');
-    final output = await adapter.run(inputBytes: Uint8List.fromList([1, 2, 3]), resumedState: null);
+    final output = await adapter.run(
+      inputBytes: Uint8List.fromList([1, 2, 3]),
+      resumedState: null,
+    );
     expect(output.progressMilli, 1000);
   });
 
@@ -210,24 +255,51 @@ void main() {
     expect(first, second);
   });
 
-  test('assignment coordinator executes and completes with checkpoints', () async {
-    final mockHttp = _ExecutionMockClient();
-    final api = WorkerApiClient(
-      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
-      httpClient: mockHttp,
-    );
+  test(
+    'assignment coordinator executes and completes with checkpoints',
+    () async {
+      final mockHttp = _ExecutionMockClient();
+      final api = WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      );
+      final coordinator = AssignmentCoordinator(
+        api: api,
+        store: InMemoryEncryptedStore(),
+        platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+        inference: StubInferenceAdapter(),
+      );
+      final assignment = await coordinator.pollAssignment();
+      expect(assignment, isNotNull);
+      await coordinator.executeAssignment(assignment!);
+      expect(mockHttp.checkpointCalls, greaterThan(0));
+      expect(mockHttp.completeCalls, 1);
+      expect(coordinator.status.phase, ExecutionPhase.completed);
+    },
+  );
+
+  test('polled assignment defers inbox write until execution', () async {
+    final store = InMemoryEncryptedStore();
     final coordinator = AssignmentCoordinator(
-      api: api,
-      store: InMemoryEncryptedStore(),
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: _ExecutionMockClient(),
+      ),
+      store: store,
       platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
       inference: StubInferenceAdapter(),
     );
+
     final assignment = await coordinator.pollAssignment();
-    expect(assignment, isNotNull);
-    await coordinator.executeAssignment(assignment!);
-    expect(mockHttp.checkpointCalls, greaterThan(0));
-    expect(mockHttp.completeCalls, 1);
-    expect(coordinator.status.phase, ExecutionPhase.completed);
+    final accepted = await coordinator.acceptPolledAssignment(assignment!);
+
+    expect(accepted, same(assignment));
+    expect(
+      await AssignmentInbox(
+        store: store,
+      ).latestEntryFor(assignment.assignmentId),
+      isNull,
+    );
   });
 
   test('crash-safe resume continues from checkpoint state', () async {
@@ -269,7 +341,9 @@ void main() {
         modelArtifact: ModelArtifact(
           modelVersionId: assignment.modelVersionId,
           digestSha256: modelDigest,
-          signatureSha256: sha256HexString('$modelDigest:test-signing-material'),
+          signatureSha256: sha256HexString(
+            '$modelDigest:test-signing-material',
+          ),
           backend: InferenceBackend.stub,
           bytes: modelBytes,
         ),
@@ -283,7 +357,9 @@ void main() {
         modelArtifact: ModelArtifact(
           modelVersionId: assignment.modelVersionId,
           digestSha256: modelDigest,
-          signatureSha256: sha256HexString('$modelDigest:test-signing-material'),
+          signatureSha256: sha256HexString(
+            '$modelDigest:test-signing-material',
+          ),
           backend: InferenceBackend.stub,
           bytes: modelBytes,
         ),
@@ -304,7 +380,9 @@ void main() {
       fenceToken: 2,
       modelVersionId: assignment.modelVersionId,
       modelDigest: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-      inputDigest: sha256Hex(Uint8List.fromList('input-for-document.ocr'.codeUnits)),
+      inputDigest: sha256Hex(
+        Uint8List.fromList('input-for-document.ocr'.codeUnits),
+      ),
       sequence: 500,
       progressMilli: 500,
       runtimeStateDigest: sha256Hex(Uint8List.fromList([5])),
@@ -313,18 +391,25 @@ void main() {
     );
     await checkpointStore.save(record, Uint8List.fromList([5]));
     final coordinator = AssignmentCoordinator(
-      api: WorkerApiClient(config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')), httpClient: http.Client()),
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: http.Client(),
+      ),
       store: store,
       platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
       inference: StubInferenceAdapter(),
     );
     final bundle = AssignmentInputBundle(
       inputBytes: Uint8List.fromList('input-for-document.ocr'.codeUnits),
-      inputDigest: sha256Hex(Uint8List.fromList('input-for-document.ocr'.codeUnits)),
+      inputDigest: sha256Hex(
+        Uint8List.fromList('input-for-document.ocr'.codeUnits),
+      ),
       modelArtifact: ModelArtifact(
         modelVersionId: assignment.modelVersionId,
         digestSha256: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-        signatureSha256: sha256HexString('${sha256Hex(Uint8List.fromList('model'.codeUnits))}:test-signing-material'),
+        signatureSha256: sha256HexString(
+          '${sha256Hex(Uint8List.fromList('model'.codeUnits))}:test-signing-material',
+        ),
         backend: InferenceBackend.stub,
         bytes: Uint8List.fromList('model'.codeUnits),
       ),
@@ -333,63 +418,69 @@ void main() {
     expect(decision.discardedStaleCheckpoint, isTrue);
   });
 
-  test('assignment receiver rejects invalid contract before execution', () async {
-    final mockHttp = _ExecutionMockClient();
-    final api = WorkerApiClient(
-      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
-      httpClient: mockHttp,
-    );
-    final coordinator = AssignmentCoordinator(
-      api: api,
-      store: InMemoryEncryptedStore(),
-      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
-      inference: StubInferenceAdapter(),
-    );
+  test(
+    'assignment receiver rejects invalid contract before execution',
+    () async {
+      final mockHttp = _ExecutionMockClient();
+      final api = WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      );
+      final coordinator = AssignmentCoordinator(
+        api: api,
+        store: InMemoryEncryptedStore(),
+        platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+        inference: StubInferenceAdapter(),
+      );
 
-    await expectLater(
-      coordinator.executeAssignment(sampleAssignment(leaseToken: 'short')),
-      throwsA(isA<AssignmentRejectedException>()),
-    );
+      await expectLater(
+        coordinator.executeAssignment(sampleAssignment(leaseToken: 'short')),
+        throwsA(isA<AssignmentRejectedException>()),
+      );
 
-    expect(mockHttp.startedCalls, 0);
-    expect(mockHttp.completeCalls, 0);
-    expect(mockHttp.failCalls, 1);
-    expect(coordinator.status.phase, ExecutionPhase.failed);
-  });
+      expect(mockHttp.startedCalls, 0);
+      expect(mockHttp.completeCalls, 0);
+      expect(mockHttp.failCalls, 1);
+      expect(coordinator.status.phase, ExecutionPhase.failed);
+    },
+  );
 
-  test('assignment receiver rejects missing consent before execution', () async {
-    final mockHttp = _ExecutionMockClient();
-    final api = WorkerApiClient(
-      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
-      httpClient: mockHttp,
-    );
-    final coordinator = AssignmentCoordinator(
-      api: api,
-      store: InMemoryEncryptedStore(),
-      platform: NoopWorkerRuntimeChannel(
-        material: 'test-signing-material',
-        snapshot: const DeviceSnapshot(
-          available: true,
-          batteryPercent: 100,
-          isCharging: true,
-          thermalState: ThermalState.normal,
-          network: NetworkKind.wifi,
-          freeStorageMb: 8192,
-          withinSchedule: true,
-          consentsGranted: ['terms'],
+  test(
+    'assignment receiver rejects missing consent before execution',
+    () async {
+      final mockHttp = _ExecutionMockClient();
+      final api = WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      );
+      final coordinator = AssignmentCoordinator(
+        api: api,
+        store: InMemoryEncryptedStore(),
+        platform: NoopWorkerRuntimeChannel(
+          material: 'test-signing-material',
+          snapshot: const DeviceSnapshot(
+            available: true,
+            batteryPercent: 100,
+            isCharging: true,
+            thermalState: ThermalState.normal,
+            network: NetworkKind.wifi,
+            freeStorageMb: 8192,
+            withinSchedule: true,
+            consentsGranted: ['terms'],
+          ),
         ),
-      ),
-      inference: StubInferenceAdapter(),
-    );
+        inference: StubInferenceAdapter(),
+      );
 
-    await expectLater(
-      coordinator.executeAssignment(sampleAssignment()),
-      throwsA(isA<AssignmentRejectedException>()),
-    );
+      await expectLater(
+        coordinator.executeAssignment(sampleAssignment()),
+        throwsA(isA<AssignmentRejectedException>()),
+      );
 
-    expect(mockHttp.startedCalls, 0);
-    expect(mockHttp.failCalls, 1);
-  });
+      expect(mockHttp.startedCalls, 0);
+      expect(mockHttp.failCalls, 1);
+    },
+  );
 
   test('lease revocation abandons safely', () async {
     final mockHttp = _ExecutionMockClient();
@@ -409,7 +500,10 @@ void main() {
 
   test('execution routes match worker API contract', () {
     expect(WorkerRoutes.nextAssignment, '/assignments:next');
-    expect(WorkerRoutes.completeAssignment('asg_test'), '/assignments/asg_test:complete');
+    expect(
+      WorkerRoutes.completeAssignment('asg_test'),
+      '/assignments/asg_test:complete',
+    );
     expect(WorkerRoutes.executionRoutes.length, 9);
   });
 }

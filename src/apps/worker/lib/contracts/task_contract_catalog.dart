@@ -78,8 +78,14 @@ abstract final class TaskContractCatalog {
     'text.summarize': TaskRuntimeContract(
       engine: 'qwen',
       instruction:
-          'Summarize faithfully and identify missing or unclear points.',
-      outputSchema: {'summary': 'string', 'keyPoints': 'array'},
+          'Summarize faithfully with distinct points, the main complaint, and a practical improvement.',
+      outputSchema: {
+        'summary': 'string',
+        'keyPoints': 'array',
+        'mainComplaint': 'string',
+        'suggestedImprovement': 'string',
+        'missingOrUnclear': 'array',
+      },
     ),
     'text.classify': TaskRuntimeContract(
       engine: 'qwen',
@@ -176,7 +182,8 @@ abstract final class TaskContractCatalog {
     ),
     'llm.ocr_output_validation': TaskRuntimeContract(
       engine: 'qwen',
-      instruction: 'Validate OCR output against the provided context and formatting constraints.',
+      instruction:
+          'Validate OCR output against the provided context and formatting constraints.',
       outputSchema: {
         'valid': 'boolean',
         'qualityScore': 'number',
@@ -278,7 +285,8 @@ abstract final class TaskContractCatalog {
     ),
     'extract.date': TaskRuntimeContract(
       engine: 'qwen_ocr',
-      instruction: 'Extract the document date and normalize to ISO-8601 when unambiguous.',
+      instruction:
+          'Extract the document date and normalize to ISO-8601 when unambiguous.',
       outputSchema: {
         'date': 'string',
         'original': 'string',
@@ -351,7 +359,8 @@ abstract final class TaskContractCatalog {
     ),
     'dataset.duplicate_cleanup': TaskRuntimeContract(
       engine: 'qwen_flex',
-      instruction: 'Group semantic duplicate records and select deterministic keep/remove IDs.',
+      instruction:
+          'Group semantic duplicate records and select deterministic keep/remove IDs.',
       outputSchema: {
         'duplicateGroups': 'array',
         'keepIds': 'array',
@@ -371,7 +380,8 @@ abstract final class TaskContractCatalog {
     ),
     'ml.active_learning_prelabel': TaskRuntimeContract(
       engine: 'qwen_flex',
-      instruction: 'Prelabel record using allowedLabels and request review when uncertain.',
+      instruction:
+          'Prelabel record using allowedLabels and request review when uncertain.',
       outputSchema: {
         'label': 'string',
         'confidence': 'number',
@@ -405,7 +415,8 @@ abstract final class TaskContractCatalog {
     ),
     'image.classify': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Classify the dominant visible subject using supplied labels when present.',
+      instruction:
+          'Classify the dominant visible subject using supplied labels when present.',
       outputSchema: {
         'label': 'string',
         'confidence': 'number',
@@ -445,7 +456,8 @@ abstract final class TaskContractCatalog {
     ),
     'safety.unsafe_image': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Assess overall image safety across adult, violence, self-harm, hate, and illegal-goods categories.',
+      instruction:
+          'Assess overall image safety across adult, violence, self-harm, hate, and illegal-goods categories.',
       outputSchema: {
         'safe': 'boolean',
         'riskScore': 'number',
@@ -455,7 +467,8 @@ abstract final class TaskContractCatalog {
     ),
     'moderation.profile_image': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Check profile image suitability, privacy exposure, impersonation signals, and prohibited content.',
+      instruction:
+          'Check profile image suitability, privacy exposure, impersonation signals, and prohibited content.',
       outputSchema: {
         'allowed': 'boolean',
         'riskScore': 'number',
@@ -465,7 +478,8 @@ abstract final class TaskContractCatalog {
     ),
     'moderation.generated_image': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Review the generated image for unsafe or policy-violating visual content.',
+      instruction:
+          'Review the generated image for unsafe or policy-violating visual content.',
       outputSchema: {
         'allowed': 'boolean',
         'riskScore': 'number',
@@ -475,7 +489,8 @@ abstract final class TaskContractCatalog {
     ),
     'catalog.image_tagging': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Return concise tags grounded in visible objects, materials, colors, and setting.',
+      instruction:
+          'Return concise tags grounded in visible objects, materials, colors, and setting.',
       outputSchema: {
         'tags': 'array',
         'confidence': 'number',
@@ -494,7 +509,8 @@ abstract final class TaskContractCatalog {
     ),
     'catalog.product_quality_score': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Score listing-image quality, framing, lighting, sharpness, and product visibility.',
+      instruction:
+          'Score listing-image quality, framing, lighting, sharpness, and product visibility.',
       outputSchema: {
         'score': 'number',
         'issues': 'array',
@@ -525,7 +541,8 @@ abstract final class TaskContractCatalog {
     ),
     'llm.image_output_safety': TaskRuntimeContract(
       engine: 'internvl',
-      instruction: 'Evaluate whether the generated image output is safe and consistent with supplied policy context.',
+      instruction:
+          'Evaluate whether the generated image output is safe and consistent with supplied policy context.',
       outputSchema: {
         'safe': 'boolean',
         'riskScore': 'number',

@@ -58,11 +58,16 @@ class WorkerKpiCard extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 4),
-          Text(trend, style: TextStyle(fontSize: 12, color: accent)),
+          Text(
+            trend,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 12, color: accent),
+          ),
           if (sparkline != null && sparkline!.length >= 2) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SizedBox(
-              height: 36,
+              height: 28,
               width: double.infinity,
               child: CustomPaint(
                 painter: _SparklinePainter(values: sparkline!, color: accent),

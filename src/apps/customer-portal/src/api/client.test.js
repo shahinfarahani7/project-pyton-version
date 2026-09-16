@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { apiErrorMessage, fetchJson, getCsrfToken, setCsrfToken } from './client.js';
+import { apiErrorMessage, fetchJson, getCsrfToken, portalApi, setCsrfToken } from './client.js';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -91,6 +91,31 @@ describe('api client security', () => {
       expect.objectContaining({
         headers: expect.objectContaining({ 'If-Match': '"7"' }),
       }),
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('cancels a workspace task through the dev portal endpoint', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          id: 'tsk_1',
+          lifecycleStatus: 'cancelled',
+          executionStatus: 'cancelled',
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await portalApi.cancelTask('ws_1', 'tsk_1');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/v1/workspaces/ws_1/tasks/tsk_1:cancel',
+      expect.objectContaining({ method: 'POST' }),
     );
     vi.unstubAllGlobals();
   });

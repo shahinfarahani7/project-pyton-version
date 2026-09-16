@@ -11,6 +11,7 @@ class WorkerSessionRecord {
     required this.expiresAt,
     required this.installationId,
     this.benchmarkSubmitted = false,
+    this.lastHeartbeatSequence = 0,
   });
 
   factory WorkerSessionRecord.fromJson(Map<String, dynamic> json) => WorkerSessionRecord(
@@ -20,6 +21,7 @@ class WorkerSessionRecord {
         expiresAt: DateTime.parse(json['expiresAt'] as String),
         installationId: json['installationId'] as String,
         benchmarkSubmitted: json['benchmarkSubmitted'] as bool? ?? false,
+        lastHeartbeatSequence: json['lastHeartbeatSequence'] as int? ?? 0,
       );
 
   final String workerId;
@@ -28,6 +30,7 @@ class WorkerSessionRecord {
   final DateTime expiresAt;
   final String installationId;
   final bool benchmarkSubmitted;
+  final int lastHeartbeatSequence;
 
   bool get isExpired => expiresAt.isBefore(DateTime.now().toUtc());
 
@@ -41,6 +44,7 @@ class WorkerSessionRecord {
     DateTime? expiresAt,
     String? installationId,
     bool? benchmarkSubmitted,
+    int? lastHeartbeatSequence,
   }) {
     return WorkerSessionRecord(
       workerId: workerId ?? this.workerId,
@@ -49,6 +53,7 @@ class WorkerSessionRecord {
       expiresAt: expiresAt ?? this.expiresAt,
       installationId: installationId ?? this.installationId,
       benchmarkSubmitted: benchmarkSubmitted ?? this.benchmarkSubmitted,
+      lastHeartbeatSequence: lastHeartbeatSequence ?? this.lastHeartbeatSequence,
     );
   }
 
@@ -59,6 +64,7 @@ class WorkerSessionRecord {
         'expiresAt': expiresAt.toUtc().toIso8601String(),
         'installationId': installationId,
         'benchmarkSubmitted': benchmarkSubmitted,
+        'lastHeartbeatSequence': lastHeartbeatSequence,
       };
 }
 

@@ -287,6 +287,31 @@ def create_dev_task(
     return task
 
 
+def cancel_dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
+    from edgemint.dev.assignment_bridge import cancel_assignment_for_worker
+
+    task = next(
+        (
+            item
+            for item in _created_tasks.get(workspace_id, [])
+            if item["id"] == task_id
+        ),
+        None,
+    )
+    if task is None:
+        return None
+    if task["lifecycleStatus"] in {"succeeded", "failed", "cancelled", "expired"}:
+        return task
+
+    task["lifecycleStatus"] = "cancelled"
+    task["executionStatus"] = "cancelled"
+    task["updatedAt"] = _now_iso()
+    task["version"] = int(task.get("version", 0)) + 1
+    cancel_assignment_for_worker(assignment_id=task_id)
+    _notify_task_event(workspace_id, task_id, "task.cancelled")
+    return task
+
+
 def update_dev_task_execution(
     task_id: str,
     *,

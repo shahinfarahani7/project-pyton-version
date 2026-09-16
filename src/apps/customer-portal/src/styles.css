@@ -1391,6 +1391,23 @@ a {
   color: inherit;
 }
 
+.em-task-row__main {
+  display: contents;
+  color: inherit;
+  text-decoration: none;
+}
+
+.em-task-cancel-btn {
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  color: var(--md-error);
+}
+
+.em-task-cancel-btn:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .em-task-row__primary {
   min-width: 0;
 }

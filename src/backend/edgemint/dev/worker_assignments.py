@@ -45,6 +45,15 @@ def pop_next_assignment() -> dict[str, Any] | None:
     while _pending:
         assignment = _pending.pop(0)
         if assignment["assignmentId"] not in _completed:
+            # Dev tasks may sit in the in-memory queue while a model installs
+            # or an emulator sleeps. Deadlines begin at actual delivery.
+            delivered_at = _now()
+            assignment["leaseExpiresAt"] = (
+                delivered_at + timedelta(minutes=30)
+            ).isoformat()
+            assignment["startDeadlineAt"] = (
+                delivered_at + timedelta(minutes=5)
+            ).isoformat()
             return assignment
     return None
 
@@ -59,7 +68,21 @@ def command_receipt(operation_id: str) -> dict[str, Any]:
 
 
 def mark_completed(assignment_id: str) -> None:
-    _completed.append(assignment_id)
+    if assignment_id not in _completed:
+        _completed.append(assignment_id)
+    _pending[:] = [
+        assignment
+        for assignment in _pending
+        if assignment["assignmentId"] != assignment_id
+    ]
+
+
+def cancel_dev_assignment(assignment_id: str) -> bool:
+    existed = any(
+        assignment["assignmentId"] == assignment_id for assignment in _pending
+    )
+    mark_completed(assignment_id)
+    return existed
 
 
 def list_pending_assignments() -> list[dict[str, Any]]:

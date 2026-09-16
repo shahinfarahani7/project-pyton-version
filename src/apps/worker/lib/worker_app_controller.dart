@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -38,7 +37,7 @@ import 'runtime/storage_pressure_manager.dart';
 import 'runtime/switchable_inference_adapter.dart';
 import 'runtime/worker_access_token_provider.dart';
 import 'runtime/worker_heartbeat_service.dart';
-import 'runtime/worker_heartbeat_telemetry.dart';
+import 'runtime/worker_pipeline_log.dart';
 import 'runtime/worker_session_lifecycle.dart';
 import 'runtime/worker_session_store.dart';
 import 'tasks/task_execution_engine.dart';
@@ -64,7 +63,9 @@ class WorkerAppController extends ChangeNotifier {
        _storagePressure = storagePressure ?? StoragePressureManager(),
        _encryptedStore = encryptedStore ?? InMemoryEncryptedStore() {
     _exclusiveGroups = RuntimeExclusiveGroupEnforcer();
-    _ocrEngineRef = OcrEngineRef(_wrapOcrEngine(ocrEngine ?? PaddleOcrEngine()));
+    _ocrEngineRef = OcrEngineRef(
+      _wrapOcrEngine(ocrEngine ?? PaddleOcrEngine()),
+    );
 
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
@@ -75,10 +76,13 @@ class WorkerAppController extends ChangeNotifier {
     _inference = SwitchableInferenceAdapter(_primaryInferenceAdapter);
 
     _checkpointManager = CheckpointManager(_encryptedStore);
-    _qwenProcessor = qwenProcessor ??
+    _qwenProcessor =
+        qwenProcessor ??
         QwenTaskProcessor(
           adapter: _primaryInferenceAdapter,
           checkpointManager: _checkpointManager,
+          log: (message) =>
+              WorkerPipelineLog.info(WorkerPipelineLog.exec, message),
         );
     _accessTokenProvider = WorkerAccessTokenProvider(
       initialToken: _workerAccessToken,
@@ -97,7 +101,10 @@ class WorkerAppController extends ChangeNotifier {
       config: _config,
       httpClient: _http,
       onAudit: ({required method, required path, required status}) {
-        _logTask('Worker API $method $path -> $status');
+        WorkerPipelineLog.info(
+          WorkerPipelineLog.api,
+          '$method $path -> $status',
+        );
       },
     );
 
@@ -126,6 +133,8 @@ class WorkerAppController extends ChangeNotifier {
       accessTokenProvider: _accessTokenProvider,
       accessToken: _runtimeAccessToken,
       onStatus: _onExecutionStatus,
+      onLog: (message) =>
+          WorkerPipelineLog.info(WorkerPipelineLog.exec, message),
       processLifecycle: _processLifecycle,
     );
     _storagePressure.seedDefaultCatalog();
@@ -141,11 +150,11 @@ class WorkerAppController extends ChangeNotifier {
         store = await PersistentEncryptedStore.open(path);
       }
     } catch (error, stackTrace) {
-      developer.log(
+      WorkerPipelineLog.error(
+        WorkerPipelineLog.boot,
         'Persistent store unavailable; using in-memory store',
-        name: 'EdgeMintWorker',
-        error: error,
-        stackTrace: stackTrace,
+        error,
+        stackTrace,
       );
     }
     return WorkerAppController(platform: platform, encryptedStore: store);
@@ -269,6 +278,7 @@ class WorkerAppController extends ChangeNotifier {
   DateTime? _runtimeTokenExpiresAt;
   bool workerEnrolled = false;
   String? enrollmentMessage;
+  int _lastHeartbeatSequence = 0;
   bool _enrollmentPermanentlyBlocked = false;
   DateTime? _nextEnrollmentAttemptAt;
   int _enrollmentAttempts = 0;
@@ -286,6 +296,7 @@ class WorkerAppController extends ChangeNotifier {
     _runtimeWorkerId = session.workerId;
     _runtimeAccessToken = session.accessToken;
     _runtimeTokenExpiresAt = session.expiresAt;
+    _lastHeartbeatSequence = session.lastHeartbeatSequence;
     _accessTokenProvider.update(session.accessToken);
     workerEnrolled = true;
     enrollmentMessage = null;
@@ -306,11 +317,30 @@ class WorkerAppController extends ChangeNotifier {
         api: _api,
         workerId: _runtimeWorkerId,
         accessToken: token,
+        initialSequence: _lastHeartbeatSequence,
       );
-      _heartbeat!.updateCredentials(workerId: _runtimeWorkerId, accessToken: token);
+      _heartbeat!.updateCredentials(
+        workerId: _runtimeWorkerId,
+        accessToken: token,
+      );
+      _heartbeat!.resetSequence(_lastHeartbeatSequence);
       return;
     }
     _heartbeat = null;
+  }
+
+  Future<void> _persistHeartbeatSequence(int sequence) async {
+    if (sequence <= _lastHeartbeatSequence) {
+      return;
+    }
+    _lastHeartbeatSequence = sequence;
+    final session = await _sessionStore.readSession();
+    if (session == null || session.workerId != _runtimeWorkerId) {
+      return;
+    }
+    await _sessionStore.writeSession(
+      session.copyWith(lastHeartbeatSequence: sequence),
+    );
   }
 
   bool _disposed = false;
@@ -333,6 +363,7 @@ class WorkerAppController extends ChangeNotifier {
       backendOnline &&
       !isGemmaDownloading &&
       available &&
+      (usesDevMockInference || isGemmaReady) &&
       (hasManualCredentials || workerEnrolled);
 
   bool get canPollAssignments => canAcceptAssignments;
@@ -352,8 +383,8 @@ class WorkerAppController extends ChangeNotifier {
   // Logging
   // ---------------------------------------------------------------------------
 
-  void _logTask(String message) {
-    developer.log(message, name: 'EdgeMintWorker');
+  void _logTask(String message, {String phase = WorkerPipelineLog.boot}) {
+    WorkerPipelineLog.info(phase, message);
   }
 
   static const _verboseTaskLogs = bool.fromEnvironment(
@@ -371,13 +402,13 @@ class WorkerAppController extends ChangeNotifier {
     return '${normalized.substring(0, maxLength)}...';
   }
 
-  void _logError(String message, Object error, [StackTrace? stackTrace]) {
-    developer.log(
-      '$message: $error',
-      name: 'EdgeMintWorker',
-      error: error,
-      stackTrace: stackTrace,
-    );
+  void _logError(
+    String message,
+    Object error, [
+    StackTrace? stackTrace,
+    String phase = WorkerPipelineLog.boot,
+  ]) {
+    WorkerPipelineLog.error(phase, message, error, stackTrace);
   }
 
   // ---------------------------------------------------------------------------
@@ -385,7 +416,7 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   Future<void> bootstrap() async {
-    _logTask('Worker bootstrap started');
+    _logTask('Worker bootstrap started', phase: WorkerPipelineLog.boot);
 
     await _platform.setConsentsGranted(const [
       'terms',
@@ -480,7 +511,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> _runAutoAssignmentLoop(int generation) async {
-    _logTask('Auto-assignment loop started');
+    _logTask('Auto-assignment loop started', phase: WorkerPipelineLog.assign);
 
     while (!_disposed && generation == _assignmentLoopGeneration && available) {
       if (!canAcceptAssignments) {
@@ -508,7 +539,7 @@ class WorkerAppController extends ChangeNotifier {
     }
 
     if (generation == _assignmentLoopGeneration) {
-      _logTask('Auto-assignment loop stopped');
+      _logTask('Auto-assignment loop stopped', phase: WorkerPipelineLog.assign);
     }
   }
 
@@ -646,7 +677,9 @@ class WorkerAppController extends ChangeNotifier {
               body: jsonEncode({'installationId': 'worker-api-probe'}),
             )
             .timeout(const Duration(seconds: 5));
-        if (!WorkerConfig.workerApiProbeStatusAcceptable(workerProbe.statusCode)) {
+        if (!WorkerConfig.workerApiProbeStatusAcceptable(
+          workerProbe.statusCode,
+        )) {
           _logTask(
             'Skipping $candidate — worker enrollment route missing '
             '(HTTP ${workerProbe.statusCode})',
@@ -690,14 +723,22 @@ class WorkerAppController extends ChangeNotifier {
     }
 
     try {
-      _logTask('Enrollment started');
+      _logTask('Enrollment started', phase: WorkerPipelineLog.enroll);
       final snapshot = await _platform.readDeviceSnapshot();
-      final session = await _sessionLifecycle.ensureSession(snapshotOverride: snapshot);
+      final session = await _sessionLifecycle.ensureSession(
+        snapshotOverride: snapshot,
+      );
       _applyWorkerSession(session);
       _enrollmentAttempts = 0;
       _nextEnrollmentAttemptAt = null;
-      _logTask('Worker enrolled: ${session.workerId}');
-      _logTask('Heartbeat started');
+      _logTask(
+        'Worker enrolled: ${session.workerId}',
+        phase: WorkerPipelineLog.enroll,
+      );
+      _logTask(
+        'Heartbeat ready (lastSeq=$_lastHeartbeatSequence)',
+        phase: WorkerPipelineLog.heartbeat,
+      );
     } on WorkerApiException catch (error) {
       workerEnrolled = false;
       _enrollmentAttempts += 1;
@@ -739,7 +780,10 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
     final expiresAt = _runtimeTokenExpiresAt;
-    if (expiresAt == null || !expiresAt.isBefore(DateTime.now().toUtc().add(const Duration(hours: 1)))) {
+    if (expiresAt == null ||
+        !expiresAt.isBefore(
+          DateTime.now().toUtc().add(const Duration(hours: 1)),
+        )) {
       return;
     }
     try {
@@ -794,16 +838,18 @@ class WorkerAppController extends ChangeNotifier {
           ? [
               {
                 'modelVersionId': WorkerModelCatalog.modelVersionId,
-                'artifactSha256': WorkerModelCatalog.pinnedDigestSha256.isNotEmpty
+                'artifactSha256':
+                    WorkerModelCatalog.pinnedDigestSha256.isNotEmpty
                     ? WorkerModelCatalog.pinnedDigestSha256
                     : WorkerModelCatalog.installedDigestMarker,
               },
             ]
           : const <Map<String, String>>[];
-      final loadedModelIds =
-          isGemmaReady ? [WorkerModelCatalog.modelVersionId] : const <String>[];
+      final loadedModelIds = isGemmaReady
+          ? [WorkerModelCatalog.modelVersionId]
+          : const <String>[];
 
-      await heartbeat.send(
+      final sequence = await heartbeat.send(
         context: _coordinator.heartbeatTelemetryContext(
           snapshot: snapshot,
           sequence: heartbeat.sequence,
@@ -812,13 +858,20 @@ class WorkerAppController extends ChangeNotifier {
           loadedModelIds: loadedModelIds,
           identityLifecycleView: IdentityLifecycleTracer.instance.heartbeatView(
             runtimeGeneration: _processLifecycle.runtimeGeneration,
-            nativeHandlesInvalidated: _processLifecycle.nativeHandlesInvalidated,
+            nativeHandlesInvalidated:
+                _processLifecycle.nativeHandlesInvalidated,
             hasActiveAssignment: _coordinator.activeAssignmentIds().isNotEmpty,
           ),
         ),
       );
+      await _persistHeartbeatSequence(sequence);
     } catch (error, stackTrace) {
-      _logError('Heartbeat failed', error, stackTrace);
+      _logError(
+        'Heartbeat failed',
+        error,
+        stackTrace,
+        WorkerPipelineLog.heartbeat,
+      );
     }
   }
 
@@ -834,6 +887,57 @@ class WorkerAppController extends ChangeNotifier {
     _modelReadyFuture = _ensureModelReadyInternal();
 
     return _modelReadyFuture!;
+  }
+
+  Future<bool> _installBundledAssetIfConfigured() async {
+    final bundledAsset = WorkerModelCatalog.bundledAssetFromEnvironment();
+    if (bundledAsset == null || usesDevMockInference) {
+      return false;
+    }
+
+    if (await WorkerModelInstaller.verifyActive(log: _logTask)) {
+      _setModelReady();
+      return true;
+    }
+
+    if (modelPhase == ModelInstallPhase.downloading) {
+      return false;
+    }
+
+    try {
+      await GemmaBootstrap.ensureInitialized();
+
+      _logTask(
+        'Installing bundled model asset: '
+        '$bundledAsset',
+        phase: WorkerPipelineLog.model,
+      );
+
+      modelPhase = ModelInstallPhase.downloading;
+      modelProgress = 0;
+      notifyListeners();
+
+      await WorkerModelCatalog.installBuilder()
+          .fromAsset(bundledAsset)
+          .install();
+
+      if (await WorkerModelInstaller.ensureReady(log: _logTask)) {
+        _setModelReady();
+        _logTask(
+          '${WorkerModelCatalog.displayName} '
+          'installed from bundled asset',
+          phase: WorkerPipelineLog.model,
+        );
+        return true;
+      }
+    } catch (error, stackTrace) {
+      _logError('Bundled model install failed', error, stackTrace);
+      modelPhase = ModelInstallPhase.failed;
+      modelError = '$error';
+    }
+
+    notifyListeners();
+    return false;
   }
 
   Future<bool> _ensureModelReadyInternal() async {
@@ -855,6 +959,10 @@ class WorkerAppController extends ChangeNotifier {
 
           if (ready) {
             _setModelReady();
+            return true;
+          }
+
+          if (await _installBundledAssetIfConfigured()) {
             return true;
           }
         } catch (error, stackTrace) {
@@ -920,6 +1028,11 @@ class WorkerAppController extends ChangeNotifier {
     modelProgress = 1;
 
     modelError = null;
+
+    if (executionStatus.phase == ExecutionPhase.preparing &&
+        (executionStatus.detail?.contains('Install') ?? false)) {
+      executionStatus = const ExecutionStatus(phase: ExecutionPhase.idle);
+    }
   }
 
   Future<void> _refreshModelState() async {
@@ -1264,7 +1377,7 @@ class WorkerAppController extends ChangeNotifier {
     required bool announceEmptyQueue,
     required int waitSeconds,
   }) async {
-    _logTask('Checking for next assignment');
+    _logTask('Checking for next assignment', phase: WorkerPipelineLog.assign);
 
     _logTask(
       'Worker base URL: '
@@ -1342,8 +1455,8 @@ class WorkerAppController extends ChangeNotifier {
       );
 
       _logTask(
-        'Waiting for assignment '
-        'from worker-gateway',
+        'Polling assignments:next from worker-gateway',
+        phase: WorkerPipelineLog.assign,
       );
 
       final assignment = await _coordinator.pollAssignment(
@@ -1380,35 +1493,47 @@ class WorkerAppController extends ChangeNotifier {
       );
 
       if (!isGemmaReady && await _assignmentNeedsLlm(assignment)) {
-        lastPortalTaskId = assignment.taskId;
-
-        lastAssignmentId = assignment.assignmentId;
-
-        executionStatus = ExecutionStatus(
-          phase: ExecutionPhase.preparing,
-          detail:
-              'Task '
-              '${assignment.taskId ?? assignment.assignmentId} '
-              'received. Install '
-              '${WorkerModelCatalog.displayName} '
-              'to run ${assignment.taskType}.',
-          taskType: assignment.taskType,
-          assignmentId: assignment.assignmentId,
-          taskId: assignment.taskId,
-        );
-
         _logTask(
-          'LLM model not ready - '
-          'assignment held until '
-          '${WorkerModelCatalog.displayName} '
-          'is installed',
+          'LLM model not ready after poll - '
+          'attempting bundled install before execution',
         );
 
-        lastSync = _formatNow();
+        await _installBundledAssetIfConfigured();
 
-        notifyListeners();
+        if (!isGemmaReady) {
+          await downloadGemmaModel();
+        }
 
-        return;
+        if (!isGemmaReady) {
+          lastPortalTaskId = assignment.taskId;
+
+          lastAssignmentId = assignment.assignmentId;
+
+          executionStatus = ExecutionStatus(
+            phase: ExecutionPhase.preparing,
+            detail:
+                'Task '
+                '${assignment.taskId ?? assignment.assignmentId} '
+                'received. Install '
+                '${WorkerModelCatalog.displayName} '
+                'to run ${assignment.taskType}.',
+            taskType: assignment.taskType,
+            assignmentId: assignment.assignmentId,
+            taskId: assignment.taskId,
+          );
+
+          _logTask(
+            'LLM model not ready - '
+            'open Models tab to finish '
+            '${WorkerModelCatalog.displayName} setup',
+          );
+
+          lastSync = _formatNow();
+
+          notifyListeners();
+
+          return;
+        }
       }
 
       if (await _assignmentNeedsOcr(assignment) && !ocrModelsReady) {
@@ -1502,7 +1627,9 @@ class WorkerAppController extends ChangeNotifier {
       ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,
         digestSha256: WorkerModelCatalog.installedDigestMarker,
-        signatureSha256: WorkerModelCatalog.installedAttestationSignature(signingMaterial),
+        signatureSha256: WorkerModelCatalog.installedAttestationSignature(
+          signingMaterial,
+        ),
         backend: InferenceBackend.liteRt,
         bytes: Uint8List.fromList([0]),
       ),
@@ -1569,13 +1696,10 @@ class WorkerAppController extends ChangeNotifier {
       '${DateTime.now().minute.toString().padLeft(2, '0')}';
 
   Uri _resolveDevServiceUrl(String url) {
-    final parsed = Uri.parse(url);
-
-    if (parsed.host != '127.0.0.1' && parsed.host != 'localhost') {
-      return parsed;
-    }
-
-    return parsed.replace(host: _config.baseUrl.host, port: 8080);
+    return WorkerConfig.resolveDevServiceUrl(
+      workerGatewayBaseUrl: _config.baseUrl,
+      embeddedServiceUrl: url,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -1628,7 +1752,7 @@ class WorkerAppController extends ChangeNotifier {
       'promptChars=${prompt.length}',
     );
 
-    if (_verboseTaskLogs) {
+    if (kDebugMode || _verboseTaskLogs) {
       _logTask('[TASK PROMPT] ${_preview(prompt)}');
     }
 
@@ -1715,7 +1839,9 @@ class WorkerAppController extends ChangeNotifier {
       modelArtifact: ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,
         digestSha256: WorkerModelCatalog.installedDigestMarker,
-        signatureSha256: WorkerModelCatalog.installedAttestationSignature(signingMaterial),
+        signatureSha256: WorkerModelCatalog.installedAttestationSignature(
+          signingMaterial,
+        ),
         backend: InferenceBackend.liteRt,
         bytes: Uint8List.fromList([0]),
       ),
@@ -1782,7 +1908,8 @@ class WorkerAppController extends ChangeNotifier {
         '[OUTPUT UPLOAD] '
         'taskId=${assignment.taskId ?? "-"} '
         'assignmentId=${assignment.assignmentId} '
-        'chars=${resultText.length}',
+        'chars=${resultText.length} '
+        'result="${_preview(resultText)}"',
       );
 
       final response = await _http
@@ -1799,7 +1926,7 @@ class WorkerAppController extends ChangeNotifier {
         'taskId=${assignment.taskId ?? "-"}',
       );
 
-      if (_verboseTaskLogs) {
+      if (kDebugMode || _verboseTaskLogs) {
         _logTask(
           '[OUTPUT RESPONSE BODY] '
           '${_preview(response.body)}',
@@ -1846,7 +1973,8 @@ class WorkerAppController extends ChangeNotifier {
     _processLifecycle.handleAppLifecycleState(state);
   }
 
-  Map<String, Object?> get processLifecycleTelemetry => _processLifecycle.toTelemetry();
+  Map<String, Object?> get processLifecycleTelemetry =>
+      _processLifecycle.toTelemetry();
 
   // ---------------------------------------------------------------------------
   // Dispose

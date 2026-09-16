@@ -23,4 +23,26 @@ void main() {
     expect(WorkerConfig.workerApiProbeStatusAcceptable(422), isTrue);
     expect(WorkerConfig.workerApiProbeStatusAcceptable(201), isTrue);
   });
+
+  test('resolveDevServiceUrl rewrites LAN api-gateway URL for emulator', () {
+    final resolved = WorkerConfig.resolveDevServiceUrl(
+      workerGatewayBaseUrl: Uri.parse('http://10.0.2.2:8081'),
+      embeddedServiceUrl:
+          'http://172.20.34.71:8080/v1/dev/worker/tasks/tsk_dev_abc/input',
+    );
+    expect(
+      resolved.toString(),
+      'http://10.0.2.2:8080/v1/dev/worker/tasks/tsk_dev_abc/input',
+    );
+  });
+
+  test('resolveDevServiceUrl keeps LAN URL for physical device on same network', () {
+    const embedded =
+        'http://172.20.34.71:8080/v1/dev/worker/tasks/tsk_dev_abc/input';
+    final resolved = WorkerConfig.resolveDevServiceUrl(
+      workerGatewayBaseUrl: Uri.parse('http://172.20.34.71:8081'),
+      embeddedServiceUrl: embedded,
+    );
+    expect(resolved.toString(), embedded);
+  });
 }

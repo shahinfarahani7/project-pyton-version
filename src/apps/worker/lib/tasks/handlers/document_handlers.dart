@@ -8,7 +8,6 @@ import '../../inference/llm/prompt_templates.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../runtime/checkpoint_manager.dart';
 import '../../inference/ocr/ocr_engine.dart';
-import '../../inference/ocr/ocr_text_normalizer.dart';
 import '../../telemetry/worker_task_metrics.dart';
 import 'ocr_pipeline_mixin.dart';
 import 'task_handler.dart';
@@ -131,6 +130,7 @@ class DocumentSummarizeHandler with OcrPipelineMixin implements TaskHandler {
     final llmStart = DateTime.now();
     final data = await qwenProcessor.runSummarizeJsonTask(
       inputText: ocr.rawText,
+      userInstructions: request.input.data['instructions'] as String?,
       signingKey: signingKey,
       assignmentId: assignmentId,
       fenceToken: fenceToken,
@@ -191,6 +191,7 @@ class TextSummarizeHandler implements TaskHandler {
 
     final data = await qwenProcessor.runSummarizeJsonTask(
       inputText: inputText,
+      userInstructions: request.input.data['instructions'] as String?,
       signingKey: signingKey,
       assignmentId: assignmentId,
       fenceToken: fenceToken,

@@ -409,9 +409,10 @@ class WorkerEnrollmentService:
 
         last_sequence = await self._last_heartbeat_sequence(connection, session.device_id)
         if payload.sequence <= last_sequence:
-            raise worker_error("HEARTBEAT_SEQUENCE_INVALID", detail="replay or stale sequence")
-        if payload.sequence != last_sequence + 1:
-            raise worker_error("HEARTBEAT_SEQUENCE_INVALID", detail="sequence gap")
+            raise worker_error(
+                "HEARTBEAT_SEQUENCE_INVALID",
+                detail=f"replay or stale sequence; lastSequence={last_sequence}",
+            )
 
         now = datetime.now(UTC)
         capability_json = (

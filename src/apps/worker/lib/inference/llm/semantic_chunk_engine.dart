@@ -2,18 +2,12 @@ import '../../runtime/encrypted_store.dart';
 import 'context_budget_manager.dart';
 
 class ProcessedRange {
-  const ProcessedRange({
-    required this.startChar,
-    required this.endChar,
-  });
+  const ProcessedRange({required this.startChar, required this.endChar});
 
   final int startChar;
   final int endChar;
 
-  Map<String, int> toJson() => {
-        'startChar': startChar,
-        'endChar': endChar,
-      };
+  Map<String, int> toJson() => {'startChar': startChar, 'endChar': endChar};
 }
 
 class SemanticChunk {
@@ -36,13 +30,13 @@ class SemanticChunk {
   final int overlapChars;
 
   Map<String, dynamic> toMapStageMetadata() => {
-        'chunkId': chunkId,
-        'chunkIndex': chunkIndex,
-        'inputHash': inputHash,
-        'processedRange': processedRange.toJson(),
-        'estimatedTokens': estimatedTokens,
-        'overlapChars': overlapChars,
-      };
+    'chunkId': chunkId,
+    'chunkIndex': chunkIndex,
+    'inputHash': inputHash,
+    'processedRange': processedRange.toJson(),
+    'estimatedTokens': estimatedTokens,
+    'overlapChars': overlapChars,
+  };
 }
 
 class ChunkPlan {
@@ -116,9 +110,26 @@ class SemanticChunkEngine {
   final TokenEstimator estimator;
   final int overlapTokens;
 
-  int get tokenBudgetPerChunk => profile.inputBudgetTokens;
+  // Leave room for the map-stage instruction and metadata wrapped around
+  // every chunk; otherwise a maximal chunk immediately exceeds the same
+  // direct-inference budget when its prompt is constructed.
+  int get tokenBudgetPerChunk => chunkTokenBudget();
 
-  ChunkPlan chunk(String input) {
+  /// [reservedPromptTokens] must cover every token the caller wraps around a
+  /// chunk body: system instruction, template text and customer instructions.
+  /// Without a measured reserve the engine falls back to a static estimate of
+  /// the template overhead.
+  int chunkTokenBudget({int? reservedPromptTokens}) {
+    final overhead =
+        reservedPromptTokens ??
+        (profile.systemTemplateTokens * 2) + profile.safetyMarginTokens;
+    return (profile.inputBudgetTokens - overhead - profile.safetyMarginTokens)
+        .clamp(1, profile.inputBudgetTokens)
+        .toInt();
+  }
+
+  ChunkPlan chunk(String input, {int? reservedPromptTokens}) {
+    final budget = chunkTokenBudget(reservedPromptTokens: reservedPromptTokens);
     final normalized = input.replaceAll('\r\n', '\n');
     final inputHash = sha256HexString(normalized);
     if (normalized.trim().isEmpty) {
@@ -126,29 +137,28 @@ class SemanticChunkEngine {
         inputHash: inputHash,
         text: '',
         estimatedTokens: 0,
-        tokenBudgetPerChunk: tokenBudgetPerChunk,
+        tokenBudgetPerChunk: budget,
         overlapTokens: overlapTokens,
       );
     }
 
-    final evaluation = ContextBudgetManager(
-      profile: profile,
-      estimator: estimator,
-    ).evaluate(prompt: normalized);
-    if (!evaluation.requiresChunkPipeline) {
+    final estimatedTokens = estimator.estimate(normalized);
+    if (estimatedTokens <= budget) {
       return ChunkPlan.single(
         inputHash: inputHash,
         text: normalized,
-        estimatedTokens: evaluation.estimatedPromptTokens,
-        tokenBudgetPerChunk: tokenBudgetPerChunk,
+        estimatedTokens: estimatedTokens,
+        tokenBudgetPerChunk: budget,
         overlapTokens: overlapTokens,
       );
     }
 
     final segments = _semanticSegments(normalized);
+    // Overlap text is prepended after packing, so it has to fit the same
+    // per-chunk budget as the body it is merged into.
     final packed = _packSegments(
       segments,
-      maxTokens: tokenBudgetPerChunk,
+      maxTokens: (budget - overlapTokens).clamp(1, budget).toInt(),
     );
     final chunks = _applyOverlap(
       inputHash: inputHash,
@@ -159,7 +169,7 @@ class SemanticChunkEngine {
     return ChunkPlan(
       inputHash: inputHash,
       chunks: chunks,
-      tokenBudgetPerChunk: tokenBudgetPerChunk,
+      tokenBudgetPerChunk: budget,
       overlapTokens: overlapTokens,
     );
   }
@@ -224,6 +234,56 @@ class SemanticChunkEngine {
     }
   }
 
+  /// A single sentence (or a run of text without sentence punctuation) can be
+  /// larger than a whole chunk, so it is split on word boundaries before
+  /// packing. Without this a maximal segment would travel to the runtime as
+  /// one oversized prompt.
+  List<_SemanticSegment> _fitSegments(
+    List<_SemanticSegment> segments, {
+    required int maxTokens,
+  }) {
+    final maxChars = (maxTokens * estimator.charactersPerToken).floor().clamp(
+      1,
+      1 << 30,
+    );
+    final fitted = <_SemanticSegment>[];
+
+    for (final segment in segments) {
+      if (segment.text.length <= maxChars) {
+        fitted.add(segment);
+        continue;
+      }
+
+      var offset = 0;
+      while (offset < segment.text.length) {
+        var end = offset + maxChars;
+        if (end >= segment.text.length) {
+          end = segment.text.length;
+        } else {
+          final boundary = segment.text.lastIndexOf(' ', end);
+          if (boundary > offset) {
+            end = boundary;
+          }
+        }
+        final piece = segment.text.substring(offset, end);
+        if (piece.trim().isNotEmpty) {
+          fitted.add(
+            _SemanticSegment(
+              text: piece.trim(),
+              startChar: segment.startChar + offset,
+              endChar: segment.startChar + end,
+            ),
+          );
+        }
+        offset = end < segment.text.length && segment.text[end] == ' '
+            ? end + 1
+            : end;
+      }
+    }
+
+    return fitted;
+  }
+
   List<List<_SemanticSegment>> _packSegments(
     List<_SemanticSegment> segments, {
     required int maxTokens,
@@ -232,7 +292,7 @@ class SemanticChunkEngine {
     var current = <_SemanticSegment>[];
     var currentTokens = 0;
 
-    for (final segment in segments) {
+    for (final segment in _fitSegments(segments, maxTokens: maxTokens)) {
       final segmentTokens = estimator.estimate(segment.text);
       final separatorTokens = current.isEmpty ? 0 : 1;
       if (current.isNotEmpty &&
@@ -284,7 +344,10 @@ class SemanticChunkEngine {
           chunkIndex: index,
           inputHash: inputHash,
           text: text,
-          processedRange: ProcessedRange(startChar: startChar, endChar: endChar),
+          processedRange: ProcessedRange(
+            startChar: startChar,
+            endChar: endChar,
+          ),
           estimatedTokens: estimator.estimate(text),
           overlapChars: overlapChars,
         ),
@@ -333,5 +396,7 @@ String _chunkId({
   required int endChar,
   required String text,
 }) {
-  return sha256HexString('$inputHash:$chunkIndex:$startChar:$endChar:${text.length}');
+  return sha256HexString(
+    '$inputHash:$chunkIndex:$startChar:$endChar:${text.length}',
+  );
 }

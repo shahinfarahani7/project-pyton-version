@@ -181,7 +181,8 @@ class TaskExecutionEngine {
         ocrOnly: request.options.ocrOnly,
       );
       final usesExecutionPlan =
-          requiresLlm || VisionRuntimeCatalog.isVisionCapability(v1Type);
+          (requiresLlm && _qwenProcessor.requiresNativeRuntime) ||
+          VisionRuntimeCatalog.isVisionCapability(v1Type);
 
       if (requiresOcr &&
           requiresLlm &&
@@ -284,21 +285,47 @@ class TaskExecutionEngine {
       // -----------------------------------------------------------------------
 
       if (requiresLlm) {
-        _modelReadyFuture ??= WorkerModelInstaller.ensureReady();
-        final llmReady = await _modelReadyFuture!;
-        _modelReadyFuture = null;
-        if (!llmReady) {
-          final result = _failedResult(
-            request,
-            const WorkerError(
-              code: WorkerErrorCode.modelNotAvailable,
-              message: 'Primary model is not resident',
-              retryable: true,
-              stage: WorkerTaskStage.llm,
-            ),
+        if (_qwenProcessor.requiresNativeRuntime) {
+          _modelReadyFuture ??= WorkerModelInstaller.ensureReady();
+          final llmReady = await _modelReadyFuture!;
+          _modelReadyFuture = null;
+          if (!llmReady) {
+            final result = _failedResult(
+              request,
+              const WorkerError(
+                code: WorkerErrorCode.modelNotAvailable,
+                message: 'Primary model is not resident',
+                retryable: true,
+                stage: WorkerTaskStage.llm,
+              ),
+            );
+            _lastResult = result;
+            return _toInferenceOutput(result);
+          }
+        }
+        try {
+          developer.log(
+            '[LLM RESIDENT LOAD] taskId=${request.taskId}',
+            name: 'EdgeMintTaskEngine',
           );
-          _lastResult = result;
-          return _toInferenceOutput(result);
+          await _qwenProcessor.ensureRuntimeResident(signingKey: signingKey);
+          developer.log(
+            '[LLM RESIDENT READY] taskId=${request.taskId}',
+            name: 'EdgeMintTaskEngine',
+          );
+        } catch (error, stackTrace) {
+          developer.log(
+            '[LLM RESIDENT ERROR] taskId=${request.taskId} error=$error',
+            name: 'EdgeMintTaskEngine',
+            error: error,
+            stackTrace: stackTrace,
+          );
+          throw WorkerError(
+            code: WorkerErrorCode.modelNotAvailable,
+            message: '$error',
+            retryable: true,
+            stage: WorkerTaskStage.llm,
+          );
         }
       }
 
@@ -334,16 +361,16 @@ class TaskExecutionEngine {
         );
 
         Future<WorkerTaskResult> invokeHandler() => handler.handle(
-              request: request,
-              ocrEngine: _ocrEngine,
-              qwenProcessor: _qwenProcessor,
-              signingKey: signingKey,
-              metrics: metrics,
-              isCancelled: isCancelled,
-              assignmentId: context.assignment.assignmentId,
-              fenceToken: context.assignment.fenceToken,
-              onChunkCheckpoint: eventReporter?.reportChunkCheckpoint,
-            );
+          request: request,
+          ocrEngine: _ocrEngine,
+          qwenProcessor: _qwenProcessor,
+          signingKey: signingKey,
+          metrics: metrics,
+          isCancelled: isCancelled,
+          assignmentId: context.assignment.assignmentId,
+          fenceToken: context.assignment.fenceToken,
+          onChunkCheckpoint: eventReporter?.reportChunkCheckpoint,
+        );
 
         final planRunner = executionPlanRunner;
         WorkerTaskResult result;
@@ -540,9 +567,14 @@ class TaskExecutionEngine {
         compareImageBytes: context.compareImageBytes,
         text: text,
         imageUri: manifest['imageUri'] as String?,
-        data: Map<String, dynamic>.from(
-          (manifest['inputData'] as Map?) ?? const <String, dynamic>{},
-        ),
+        data: {
+          ...Map<String, dynamic>.from(
+            (manifest['inputData'] as Map?) ?? const <String, dynamic>{},
+          ),
+          if (manifest['instructions'] case final String instructions
+              when instructions.trim().isNotEmpty)
+            'instructions': instructions.trim(),
+        },
       ),
       options: options,
       deadlineAt: _parseDate(manifest['deadlineAt'] as String?),
@@ -568,11 +600,15 @@ class TaskExecutionEngine {
       return;
     }
     final localPlan = ExecutionPlanCatalog.forTaskType(v1Type);
-    final localHash = sha256.convert(
-      utf8.encode('${localPlan.taskType}:${localPlan.stages.length}'),
-    ).toString();
+    final localHash = sha256
+        .convert(
+          utf8.encode('${localPlan.taskType}:${localPlan.stages.length}'),
+        )
+        .toString();
     final serverHash = serverPlan['planHash'] as String?;
-    if (serverHash != null && serverHash.isNotEmpty && serverHash != localHash) {
+    if (serverHash != null &&
+        serverHash.isNotEmpty &&
+        serverHash != localHash) {
       throw StateError('Server execution plan hash mismatch');
     }
     final allocation = assignment.allocation;

@@ -1,39 +1,51 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:flutter_gemma/flutter_gemma.dart';
 
+import '../inference/llm/context_budget_manager.dart';
 import '../models/worker_model_catalog.dart';
+import '../validation/json_stream_boundary.dart';
+import '../validation/output_repetition_guard.dart';
 import 'gemma_model_runtime_manager.dart';
 import 'inference_adapter.dart';
 import 'model_runtime_manager.dart';
-import 'runtime_exceptions.dart';
+import 'worker_pipeline_log.dart';
+
+class _BoundedGeneration {
+  const _BoundedGeneration({required this.text, required this.stopReason});
+
+  final String text;
+  final String stopReason;
+}
 
 /// Runs task prompts through the active on-device Qwen2.5 model.
 class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   GemmaLiteRtInferenceAdapter({
     GemmaModelRuntimeManager? runtimeManager,
+    this.maxOutputTokens = 256,
+    this.temperature = 0.1,
+    this.topK = 20,
+    this.topP = 0.8,
   }) : _runtime = runtimeManager ?? GemmaModelRuntimeManager();
 
   final GemmaModelRuntimeManager _runtime;
+  final int maxOutputTokens;
+  final double temperature;
+  final int topK;
+  final double topP;
 
   ModelRuntimeManager get runtimeManager => _runtime;
-
-  static const _verboseTaskLogs = bool.fromEnvironment(
-    'WORKER_VERBOSE_TASK_LOGS',
-    defaultValue: false,
-  );
 
   @override
   InferenceBackend get backend => InferenceBackend.liteRt;
 
   void _log(String message) {
-    developer.log(message, name: 'EdgeMintModel');
+    WorkerPipelineLog.info(WorkerPipelineLog.exec, message);
   }
 
-  String _preview(String value, {int maxLength = 500}) {
-    final normalized = value.replaceAll('\n', ' ');
+  String _preview(String value, {int maxLength = 1200}) {
+    final normalized = value.replaceAll('\n', r'\n');
     if (normalized.length <= maxLength) {
       return normalized;
     }
@@ -77,15 +89,17 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       '[LLM START] model=${WorkerModelCatalog.displayName} '
       'inputBytes=${inputBytes.length} promptChars=${prompt.length}',
     );
-    if (_verboseTaskLogs) {
-      _log('[LLM PROMPT] ${_preview(prompt)}');
-    }
+    _log('[LLM REQUEST] prompt="${_preview(prompt)}"');
 
     try {
       await onProgress?.call(resumedState == null ? 100 : 500);
 
       _log('[LLM SESSION] creating');
       final chat = await model.createChat(
+        temperature: temperature,
+        topK: topK,
+        topP: topP,
+        maxOutputTokens: maxOutputTokens,
         systemInstruction:
             'You are EdgeMint worker AI. '
             'Answer concisely for the assigned task payload.',
@@ -97,27 +111,22 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         await onProgress?.call(700);
 
         _log('[LLM INFERENCE] generation started');
-        final reply = await chat.generateChatResponse();
+        final generation = await _generateBounded(chat);
         if (stopwatch.isRunning) {
           stopwatch.stop();
         }
         _log(
-          '[LLM INFERENCE] generation completed elapsedMs=${stopwatch.elapsedMilliseconds}',
+          '[LLM INFERENCE] generation completed '
+          'elapsedMs=${stopwatch.elapsedMilliseconds} '
+          'stopReason=${generation.stopReason}',
         );
         await onProgress?.call(1000);
 
-        final text = switch (reply) {
-          TextResponse(:final token) => token,
-          ThinkingResponse(:final content) => content,
-          FunctionCallResponse(:final name, :final args) => '$name(${args.toString()})',
-          ParallelFunctionCallResponse(:final calls) =>
-            calls.map((call) => '${call.name}(${call.args})').join(', '),
-        };
-
-        _log('[LLM OUTPUT] chars=${text.length} elapsedMs=${stopwatch.elapsedMilliseconds}');
-        if (_verboseTaskLogs) {
-          _log('[LLM RESPONSE] ${_preview(text)}');
-        }
+        final text = generation.text;
+        _log(
+          '[LLM OUTPUT] chars=${text.length} elapsedMs=${stopwatch.elapsedMilliseconds}',
+        );
+        _log('[LLM RESPONSE] response="${_preview(text)}"');
 
         return InferenceOutput(
           resultBytes: Uint8List.fromList(utf8.encode(text)),
@@ -129,6 +138,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
             'outputChars': text.length,
             'elapsedMs': stopwatch.elapsedMilliseconds,
             'maxTokens': 1280,
+            'stopReason': generation.stopReason,
             'sessionStage': 'inference',
           },
         );
@@ -137,11 +147,11 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
           await chat.session.close();
           _log('[LLM SESSION] closed');
         } catch (error, stackTrace) {
-          developer.log(
-            '[LLM SESSION] close failed: $error',
-            name: 'EdgeMintModel',
-            error: error,
-            stackTrace: stackTrace,
+          WorkerPipelineLog.error(
+            WorkerPipelineLog.exec,
+            '[LLM SESSION] close failed',
+            error,
+            stackTrace,
           );
         }
       }
@@ -149,18 +159,85 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       if (stopwatch.isRunning) {
         stopwatch.stop();
       }
-      developer.log(
-        '[LLM ERROR] elapsedMs=${stopwatch.elapsedMilliseconds} error=$error',
-        name: 'EdgeMintModel',
-        error: error,
-        stackTrace: stackTrace,
+      WorkerPipelineLog.error(
+        WorkerPipelineLog.exec,
+        '[LLM ERROR] elapsedMs=${stopwatch.elapsedMilliseconds}',
+        error,
+        stackTrace,
       );
       rethrow;
     }
   }
 
+  /// Streams the reply and stops the native decode as soon as the requested
+  /// JSON object closes or the output budget is spent. The MediaPipe `.task`
+  /// path ignores `maxOutputTokens`, so without this the model keeps decoding
+  /// until it hits the sequence limit and returns truncated, repeated text.
+  Future<_BoundedGeneration> _generateBounded(InferenceChat chat) async {
+    final maxOutputChars =
+        (maxOutputTokens * const TokenEstimator().charactersPerToken).floor();
+    final boundary = JsonObjectBoundaryScanner();
+    final repetition = OutputRepetitionGuard();
+    final buffer = StringBuffer();
+    var stopReason = 'model_eos';
+    var stopRequested = false;
+
+    await for (final response in chat.generateChatResponseAsync()) {
+      // Tokens can still arrive after the stop is requested; the session stays
+      // busy until the stream completes, so the loop keeps draining instead of
+      // breaking out (closing a busy session throws IllegalStateException).
+      if (stopRequested) {
+        continue;
+      }
+
+      final fragment = switch (response) {
+        TextResponse(:final token) => token,
+        ThinkingResponse(:final content) => content,
+        FunctionCallResponse(:final name, :final args) => '$name($args)',
+        ParallelFunctionCallResponse(:final calls) => calls
+            .map((call) => '${call.name}(${call.args})')
+            .join(', '),
+      };
+      buffer.write(fragment);
+
+      // Reasoning text is not part of the answer object, so braces inside it
+      // must not end the turn early.
+      final answerFragment = response is ThinkingResponse ? '' : fragment;
+      if (boundary.feed(answerFragment)) {
+        stopReason = 'json_complete';
+      } else if (buffer.length >= maxOutputChars) {
+        stopReason = 'output_limit';
+      } else if (repetition.feed(answerFragment)) {
+        stopReason = 'repetition';
+      } else {
+        continue;
+      }
+
+      stopRequested = true;
+      await _stopGeneration(chat);
+    }
+
+    return _BoundedGeneration(text: buffer.toString(), stopReason: stopReason);
+  }
+
+  Future<void> _stopGeneration(InferenceChat chat) async {
+    try {
+      await chat.stopGeneration();
+    } catch (error, stackTrace) {
+      WorkerPipelineLog.error(
+        WorkerPipelineLog.exec,
+        '[LLM SESSION] stop failed',
+        error,
+        stackTrace,
+      );
+    }
+  }
+
   @override
   Future<void> dispose() {
-    return _runtime.unload(reason: ModelUnloadReason.lifecycleShutdown, force: true);
+    return _runtime.unload(
+      reason: ModelUnloadReason.lifecycleShutdown,
+      force: true,
+    );
   }
 }

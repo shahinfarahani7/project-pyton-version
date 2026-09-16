@@ -130,8 +130,9 @@ void main() {
           calls += 1;
           if (prompt.contains('Combine the partial summaries')) {
             return jsonDecode(
-              '{"summary":"Final merged summary","keyPoints":["alpha"],"missingOrUnclear":[]}',
-            ) as Map<String, dynamic>;
+                  '{"summary":"Final merged summary","keyPoints":["alpha"],"missingOrUnclear":[]}',
+                )
+                as Map<String, dynamic>;
           }
           return {
             'summary': 'partial',

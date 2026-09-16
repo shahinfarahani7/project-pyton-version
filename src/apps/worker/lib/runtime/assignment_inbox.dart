@@ -28,20 +28,23 @@ class AssignmentInboxEntry {
   final String? deliveryInboxId;
 
   Map<String, dynamic> toJson() => {
-        'assignmentId': assignmentId,
-        'attemptId': attemptId,
-        'fenceToken': fenceToken,
-        'recordedAt': recordedAt.toIso8601String(),
-        if (ackedAt != null) 'ackedAt': ackedAt!.toIso8601String(),
-        if (deliveryInboxId != null) 'deliveryInboxId': deliveryInboxId,
-      };
+    'assignmentId': assignmentId,
+    'attemptId': attemptId,
+    'fenceToken': fenceToken,
+    'recordedAt': recordedAt.toIso8601String(),
+    if (ackedAt != null) 'ackedAt': ackedAt!.toIso8601String(),
+    if (deliveryInboxId != null) 'deliveryInboxId': deliveryInboxId,
+  };
 
-  factory AssignmentInboxEntry.fromJson(Map<String, dynamic> json) => AssignmentInboxEntry(
+  factory AssignmentInboxEntry.fromJson(Map<String, dynamic> json) =>
+      AssignmentInboxEntry(
         assignmentId: json['assignmentId'] as String,
         attemptId: json['attemptId'] as String,
         fenceToken: json['fenceToken'] as int,
         recordedAt: DateTime.parse(json['recordedAt'] as String),
-        ackedAt: json['ackedAt'] == null ? null : DateTime.parse(json['ackedAt'] as String),
+        ackedAt: json['ackedAt'] == null
+            ? null
+            : DateTime.parse(json['ackedAt'] as String),
         deliveryInboxId: json['deliveryInboxId'] as String?,
       );
 }
@@ -62,8 +65,8 @@ class AssignmentInbox {
     required EncryptedStore store,
     DateTime Function()? clock,
     this.storageKey = 'assignment_inbox_v1',
-  })  : _store = store,
-        _clock = clock ?? DateTime.now;
+  }) : _store = store,
+       _clock = clock ?? DateTime.now;
 
   final EncryptedStore _store;
   final DateTime Function() _clock;
@@ -74,8 +77,11 @@ class AssignmentInbox {
     String? deliveryInboxId,
   }) async {
     final entries = await _loadEntries();
-    final existing = entries.where((item) => item.assignmentId == assignment.assignmentId).toList()
-      ..sort((a, b) => b.fenceToken.compareTo(a.fenceToken));
+    final existing =
+        entries
+            .where((item) => item.assignmentId == assignment.assignmentId)
+            .toList()
+          ..sort((a, b) => b.fenceToken.compareTo(a.fenceToken));
     if (existing.isNotEmpty) {
       final latest = existing.first;
       if (latest.fenceToken == assignment.fenceToken) {
@@ -113,7 +119,8 @@ class AssignmentInbox {
     var changed = false;
     for (var i = 0; i < entries.length; i++) {
       final entry = entries[i];
-      if (entry.assignmentId == assignmentId && entry.fenceToken == fenceToken) {
+      if (entry.assignmentId == assignmentId &&
+          entry.fenceToken == fenceToken) {
         entries[i] = AssignmentInboxEntry(
           assignmentId: entry.assignmentId,
           attemptId: entry.attemptId,
@@ -135,7 +142,8 @@ class AssignmentInbox {
   }) async {
     final local = await _loadEntries();
     final merged = <String, AssignmentInboxEntry>{
-      for (final entry in local) '${entry.assignmentId}|${entry.fenceToken}': entry,
+      for (final entry in local)
+        '${entry.assignmentId}|${entry.fenceToken}': entry,
     };
     for (final serverEntry in serverEntries) {
       final key = '${serverEntry.assignmentId}|${serverEntry.fenceToken}';
@@ -149,7 +157,18 @@ class AssignmentInbox {
 
   Future<List<AssignmentInboxEntry>> pendingEntries() async {
     final entries = await _loadEntries();
-    return entries.where((entry) => entry.ackedAt == null).toList(growable: false);
+    return entries
+        .where((entry) => entry.ackedAt == null)
+        .toList(growable: false);
+  }
+
+  Future<AssignmentInboxEntry?> latestEntryFor(String assignmentId) async {
+    final matches =
+        (await _loadEntries())
+            .where((entry) => entry.assignmentId == assignmentId)
+            .toList()
+          ..sort((left, right) => right.fenceToken.compareTo(left.fenceToken));
+    return matches.isEmpty ? null : matches.first;
   }
 
   Future<List<AssignmentInboxEntry>> _loadEntries() async {
@@ -159,12 +178,16 @@ class AssignmentInbox {
     }
     final decoded = jsonDecode(utf8.decode(bytes)) as List<dynamic>;
     return decoded
-        .map((item) => AssignmentInboxEntry.fromJson(item as Map<String, dynamic>))
+        .map(
+          (item) => AssignmentInboxEntry.fromJson(item as Map<String, dynamic>),
+        )
         .toList(growable: true);
   }
 
   Future<void> _persist(List<AssignmentInboxEntry> entries) async {
-    final payload = utf8.encode(jsonEncode(entries.map((entry) => entry.toJson()).toList()));
+    final payload = utf8.encode(
+      jsonEncode(entries.map((entry) => entry.toJson()).toList()),
+    );
     await _store.write(storageKey, Uint8List.fromList(payload));
   }
 }

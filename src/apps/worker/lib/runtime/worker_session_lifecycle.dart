@@ -6,6 +6,7 @@ import '../api/worker_api_client.dart';
 import '../platform/worker_runtime_channel.dart';
 import 'device_snapshot.dart';
 import 'worker_enrollment_payload.dart';
+import 'worker_pipeline_log.dart';
 import 'worker_session_store.dart';
 
 /// Production-safe worker auto-enrollment and session refresh.
@@ -31,6 +32,12 @@ class WorkerSessionLifecycle {
   }) async {
     final snapshot = snapshotOverride ?? await _platform.readDeviceSnapshot();
     var session = await _store.readSession();
+    WorkerPipelineLog.info(
+      WorkerPipelineLog.enroll,
+      session == null
+          ? 'No persisted session — registering new worker device'
+          : 'Loaded session workerId=${session.workerId} expired=${session.isExpired}',
+    );
 
     if (session != null && !session.isExpired && !session.expiresWithin(sessionRefreshWindow)) {
       await _ensureBenchmarkAndPreferences(session, snapshot);

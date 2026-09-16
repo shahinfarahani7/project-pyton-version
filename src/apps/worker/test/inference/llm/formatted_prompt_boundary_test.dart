@@ -8,6 +8,8 @@ import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
 import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fixtures/oversized_prompt.dart';
+
 void main() {
   group('Formatted prompt boundary (T10)', () {
     const manager = ContextBudgetManager();
@@ -21,14 +23,8 @@ void main() {
     });
 
     test('effective limit is min of artifact, runtime and task policy', () {
-      expect(
-        manager.effectiveContextLimit(taskPolicyContextLimit: 1500),
-        1280,
-      );
-      expect(
-        manager.effectiveContextLimit(taskPolicyContextLimit: 900),
-        900,
-      );
+      expect(manager.effectiveContextLimit(taskPolicyContextLimit: 1500), 1280);
+      expect(manager.effectiveContextLimit(taskPolicyContextLimit: 900), 900);
     });
 
     test('english JSON template fits direct inference', () {
@@ -44,7 +40,7 @@ void main() {
     });
 
     test('persian OCR template near boundary uses formatted count', () {
-      final ocrText = 'فاکتور فروش ${'شماره ۱۲۳۴۵ ' * 120}';
+      final ocrText = 'فاکتور فروش ${oversizedFiller(unit: 'شماره ۱۲۳۴۵ ')}';
       final formatted = PromptTemplates.documentExtract(
         ocrText: ocrText,
         ocrConfidence: 0.88,
@@ -55,7 +51,10 @@ void main() {
         maxOutputTokens: 300,
       );
       expect(evaluation.requiresChunkPipeline, isTrue);
-      expect(evaluation.formattedPromptTokens, greaterThan(600));
+      expect(
+        evaluation.formattedPromptTokens,
+        greaterThan(ContextBudgetProfile.qwenBaseline.inputBudgetTokens),
+      );
     });
 
     test('mixed multilingual and JSON payload respects total budget', () {
@@ -83,7 +82,7 @@ void main() {
 
     test('long system instruction consumes shared budget', () {
       final formatted = FormattedPromptBuilder.buildTaskPrompt(
-        systemInstruction: 'RULE ${'x' * 900}',
+        systemInstruction: 'RULE ${oversizedFiller(unit: 'x')}',
         templateBody: 'tiny payload',
       );
       final evaluation = manager.evaluateFormattedPrompt(
@@ -109,7 +108,10 @@ payload with /no_think marker and <special> tokens
         formattedPrompt: '$formatted\n${'extra ' * 500}',
         maxOutputTokens: 300,
       );
-      expect(longEval.formattedPromptTokens, greaterThan(shortEval.formattedPromptTokens));
+      expect(
+        longEval.formattedPromptTokens,
+        greaterThan(shortEval.formattedPromptTokens),
+      );
     });
   });
 
@@ -126,23 +128,54 @@ payload with /no_think marker and <special> tokens
       expect(evaluation.reason, OutputTerminationReason.truncatedByLimit);
     });
 
-    test('QwenTaskProcessor rejects oversized formatted prompt before runner', () async {
+    test(
+      'QwenTaskProcessor rejects oversized formatted prompt before runner',
+      () async {
+        var runnerCalls = 0;
+        final processor = QwenTaskProcessor(
+          runner: (prompt) async {
+            runnerCalls += 1;
+            return prompt;
+          },
+        );
+        final oversized = oversizedFiller();
+        await expectLater(
+          processor.runJsonTask(
+            prompt: oversized,
+            signingKey: 'test-signing-key',
+          ),
+          throwsA(isA<ContextBudgetRequiresChunkException>()),
+        );
+        expect(runnerCalls, 0);
+      },
+    );
+
+    test('QwenTaskProcessor compacts oversized valid JSON once', () async {
       var runnerCalls = 0;
+      final logs = <String>[];
       final processor = QwenTaskProcessor(
-        runner: (prompt) async {
+        config: const QwenInferenceConfig(maxOutputTokens: 40),
+        log: logs.add,
+        runner: (_) async {
           runnerCalls += 1;
-          return prompt;
+          if (runnerCalls == 1) {
+            return jsonEncode({
+              'summary': List<String>.filled(80, 'repeated words').join(' '),
+            });
+          }
+          return '{"summary":"short result"}';
         },
       );
-      final oversized = List.filled(500, 'token ').join();
-      await expectLater(
-        processor.runJsonTask(
-          prompt: oversized,
-          signingKey: 'test-signing-key',
-        ),
-        throwsA(isA<ContextBudgetRequiresChunkException>()),
+
+      final result = await processor.runJsonTask(
+        prompt: 'Summarize this short input.',
+        signingKey: 'test-signing-key',
       );
-      expect(runnerCalls, 0);
+
+      expect(runnerCalls, 2);
+      expect(result['summary'], 'short result');
+      expect(logs, contains(startsWith('[MODEL COMPACT RETRY]')));
+      expect(logs, contains(startsWith('[MODEL COMPACT RESPONSE]')));
     });
   });
 }

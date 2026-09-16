@@ -10,18 +10,18 @@ import 'package:edgemint_worker/runtime/worker_resource_enforcer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 WorkerAssignment _assignment() => WorkerAssignment(
-      assignmentId: 'asg-123',
-      attemptId: 'att-123',
-      revisionId: 'rev-123',
-      leaseToken: 'lease-token-1234567890',
-      fenceToken: 4,
-      leaseExpiresAt: DateTime.parse('2026-09-01T10:30:00Z'),
-      taskType: 'text.summarize',
-      modelVersionId: 'mdv-qwen',
-      inputManifestUrl: 'https://example/input',
-      outputUploadUrl: 'https://example/output',
-      startDeadlineAt: DateTime.parse('2026-09-01T10:00:00Z'),
-    );
+  assignmentId: 'asg-123',
+  attemptId: 'att-123',
+  revisionId: 'rev-123',
+  leaseToken: 'lease-token-1234567890',
+  fenceToken: 4,
+  leaseExpiresAt: DateTime.parse('2026-09-01T10:30:00Z'),
+  taskType: 'text.summarize',
+  modelVersionId: 'mdv-qwen',
+  inputManifestUrl: 'https://example/input',
+  outputUploadUrl: 'https://example/output',
+  startDeadlineAt: DateTime.parse('2026-09-01T10:00:00Z'),
+);
 
 void main() {
   const mapper = FailureEvidenceMapper();
@@ -71,20 +71,49 @@ void main() {
     expect(evidence?.retryable, isTrue);
   });
 
+  test(
+    'preserves output schema failure instead of reporting runtime crash',
+    () {
+      final error = WorkerError.fromJson(
+        {
+          'code': 'OUTPUT_SCHEMA_MISMATCH',
+          'message': 'Summary quality validation failed',
+          'retryable': true,
+          'stage': 'LLM',
+        },
+        fallbackMessage: 'fallback',
+        fallbackRetryable: false,
+      );
+      final evidence = mapper.map(
+        assignment: _assignment(),
+        error: error,
+        executionTime: Duration.zero,
+      );
+
+      expect(error.toString(), contains('OUTPUT_SCHEMA_MISMATCH'));
+      expect(evidence?.failureCode, ClosedFailureCode.resultSchemaMismatch);
+      expect(evidence?.failureCode, isNot(ClosedFailureCode.runtimeCrash));
+    },
+  );
+
   test('maps resource enforcer memory violation to INSUFFICIENT_MEMORY', () {
     final enforcer = WorkerResourceEnforcer(
       capacity: const DeviceResourceCapacity(
-      cpuUnits: 1000,
-      totalRamBytes: 4 * 1024 * 1024 * 1024,
-      availableRamBytes: 2 * 1024 * 1024 * 1024,
-      safetyReserveBytes: 512 * 1024 * 1024,
-      storageAvailableBytes: 8 * 1024 * 1024 * 1024,
-      storageMinimumFreeBytes: 512 * 1024 * 1024,
-      maxAiStorageBytes: 2 * 1024 * 1024 * 1024,
-    ),
-  );
+        cpuUnits: 1000,
+        totalRamBytes: 4 * 1024 * 1024 * 1024,
+        availableRamBytes: 2 * 1024 * 1024 * 1024,
+        safetyReserveBytes: 512 * 1024 * 1024,
+        storageAvailableBytes: 8 * 1024 * 1024 * 1024,
+        storageMinimumFreeBytes: 512 * 1024 * 1024,
+        maxAiStorageBytes: 2 * 1024 * 1024 * 1024,
+      ),
+    );
     final verdict = enforcer.evaluateRequest(
-      reserved: const ResourceClassTotals(cpuUnits: 0, memoryBytes: 0, storageBytes: 0),
+      reserved: const ResourceClassTotals(
+        cpuUnits: 0,
+        memoryBytes: 0,
+        storageBytes: 0,
+      ),
       requested: ResourceClassTotals(
         cpuUnits: 0,
         memoryBytes: enforcer.effectiveBudgets.memoryBytes + 1,

@@ -239,6 +239,19 @@ async def get_task(
     return task_type_catalog.enrich_task_row(task)
 
 
+@router.post("/v1/workspaces/{workspace_id}/tasks/{task_id}:cancel")
+async def cancel_task(
+    workspace_id: UUID,
+    task_id: str,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    _ensure_workspace_access(session, workspace_id)
+    task = fixtures.cancel_dev_task(workspace_id, task_id)
+    if task is None:
+        raise HTTPException(404, "TASK_NOT_FOUND")
+    return task_type_catalog.enrich_task_row(task)
+
+
 @router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}/result-file")
 async def get_task_result_file(
     workspace_id: UUID,

@@ -352,6 +352,8 @@ def register_task(
     flex_data = _flex_input_data(task_type, content_text)
     if flex_data is not None:
         entry["inputData"] = flex_data
+    if user_note:
+        entry["instructions"] = user_note
     if store_blob and task_id in _INPUT_BLOBS:
         entry["inputContentUrl"] = f"{_dev_api_base()}/v1/dev/worker/tasks/{task_id}/input/content"
     if content_text:

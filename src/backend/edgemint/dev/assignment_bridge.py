@@ -40,3 +40,19 @@ def fetch_pending_assignments_from_worker() -> list[dict[str, Any]]:
     from edgemint.dev.worker_assignments import list_pending_assignments
 
     return list_pending_assignments()
+
+
+def cancel_assignment_for_worker(*, assignment_id: str) -> None:
+    """Prevent a cancelled dev task from being delivered or re-enqueued."""
+    url = f"{_WORKER_REGISTRY}/internal/dev/assignments/{assignment_id}"
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            response = client.delete(url)
+            response.raise_for_status()
+            return
+    except (httpx.HTTPError, OSError, RuntimeError):
+        pass
+
+    from edgemint.dev.worker_assignments import cancel_dev_assignment
+
+    cancel_dev_assignment(assignment_id)

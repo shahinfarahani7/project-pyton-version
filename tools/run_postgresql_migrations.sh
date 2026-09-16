@@ -35,7 +35,25 @@ for migration in /migrations/*.sql; do
     continue
   fi
 
-  last_statement="$(grep -Ev '^[[:space:]]*(--.*)?$' "$migration" | tail -n 1 | tr -d '[:space:]')"
+  last_statement="$(
+    awk '
+      { lines[NR] = $0 }
+      END {
+        idx = NR
+        while (idx > 0) {
+          terminal = lines[idx]
+          gsub(/\r/, "", terminal)
+          sub(/^[[:space:]]+/, "", terminal)
+          sub(/[[:space:]]+$/, "", terminal)
+          if (terminal != "" && substr(terminal, 1, 2) != "--") {
+            break
+          }
+          idx--
+        }
+        print toupper(terminal)
+      }
+    ' "$migration"
+  )"
   [[ "$last_statement" == "COMMIT;" ]] || {
     echo "MIGRATION_MUST_END_WITH_COMMIT:$version" >&2
     exit 1
@@ -60,7 +78,11 @@ for migration in /migrations/*.sql; do
           }
           idx--
         }
-        if (idx == 0 || toupper(lines[idx]) != "COMMIT;") {
+        terminal = lines[idx]
+        gsub(/\r/, "", terminal)
+        sub(/^[[:space:]]+/, "", terminal)
+        sub(/[[:space:]]+$/, "", terminal)
+        if (idx == 0 || toupper(terminal) != "COMMIT;") {
           printf "MIGRATION_MUST_END_WITH_COMMIT:%s\n", file > "/dev/stderr"
           exit 1
         }

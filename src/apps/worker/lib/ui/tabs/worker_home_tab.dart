@@ -81,7 +81,7 @@ class WorkerHomeTab extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: cols == 4 ? 1.35 : 1.05,
+              childAspectRatio: cols == 4 ? 1.35 : 0.88,
               children: [
                 WorkerKpiCard(
                   label: 'Tasks processed',

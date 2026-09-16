@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 
 import '../api/worker_api_client.dart';
 import '../api/worker_assignment_models.dart';
+import '../contracts/worker_error.dart';
 import '../platform/worker_runtime_channel.dart';
 import 'runtime_exclusive_group_enforcer.dart';
 import 'assignment_event_reporter.dart';
@@ -38,6 +39,7 @@ import 'sandbox_limits.dart';
 import 'worker_access_token_provider.dart';
 
 typedef StatusListener = void Function(ExecutionStatus status);
+typedef RuntimeLog = void Function(String message);
 
 class AssignmentInputBundle {
   const AssignmentInputBundle({
@@ -57,7 +59,8 @@ class AssignmentInputBundle {
   final bool isImageInput;
 }
 
-typedef InputLoader = Future<AssignmentInputBundle> Function(WorkerAssignment assignment);
+typedef InputLoader =
+    Future<AssignmentInputBundle> Function(WorkerAssignment assignment);
 
 class AssignmentCoordinator {
   AssignmentCoordinator({
@@ -74,32 +77,35 @@ class AssignmentCoordinator {
     String? accessToken,
     WorkerAccessTokenProvider? accessTokenProvider,
     StatusListener? onStatus,
+    RuntimeLog? onLog,
     AssignmentReceiver? assignmentReceiver,
     StoragePressureManager? storagePressure,
     AssignmentInbox? assignmentInbox,
     ProcessLifecycleCoordinator? processLifecycle,
     PrivacyCleanupCoordinator? privacyCleanup,
-  })  : _api = api,
-        _checkpointStore = CheckpointStore(store),
-        _resultOutbox = ResultSubmissionOutbox(store: store),
-        _platform = platform,
-        _inference = inference,
-        _constraints = constraints ?? const DeviceConstraints(),
-        _safety = safetyController ?? const RuntimeSafetyController(),
-        _resourceEnforcer = resourceEnforcer,
-        _sandbox = sandbox ?? const SandboxLimits(),
-        _inputLoader = inputLoader ?? _defaultInputLoader,
-        _taskEngine = taskEngine,
-        _accessTokens = accessTokenProvider ??
-            WorkerAccessTokenProvider(
-              initialToken: accessToken ?? (kDebugMode ? 'token' : ''),
-            ),
-        _onStatus = onStatus,
-        _receiver = assignmentReceiver ?? AssignmentReceiver(),
-        _storagePressure = storagePressure ?? StoragePressureManager(),
-        _assignmentInbox = assignmentInbox ?? AssignmentInbox(store: store),
-        _processLifecycle = processLifecycle,
-        _privacyCleanup = privacyCleanup ?? PrivacyCleanupCoordinator();
+  }) : _api = api,
+       _checkpointStore = CheckpointStore(store),
+       _resultOutbox = ResultSubmissionOutbox(store: store),
+       _platform = platform,
+       _inference = inference,
+       _constraints = constraints ?? const DeviceConstraints(),
+       _safety = safetyController ?? const RuntimeSafetyController(),
+       _resourceEnforcer = resourceEnforcer,
+       _sandbox = sandbox ?? const SandboxLimits(),
+       _inputLoader = inputLoader ?? _defaultInputLoader,
+       _taskEngine = taskEngine,
+       _accessTokens =
+           accessTokenProvider ??
+           WorkerAccessTokenProvider(
+             initialToken: accessToken ?? (kDebugMode ? 'token' : ''),
+           ),
+       _onStatus = onStatus,
+       _onLog = onLog,
+       _receiver = assignmentReceiver ?? AssignmentReceiver(),
+       _storagePressure = storagePressure ?? StoragePressureManager(),
+       _assignmentInbox = assignmentInbox ?? AssignmentInbox(store: store),
+       _processLifecycle = processLifecycle,
+       _privacyCleanup = privacyCleanup ?? PrivacyCleanupCoordinator();
 
   final WorkerApiClient _api;
   final CheckpointStore _checkpointStore;
@@ -116,6 +122,7 @@ class AssignmentCoordinator {
 
   String get _accessToken => _accessTokens.requireToken();
   final StatusListener? _onStatus;
+  final RuntimeLog? _onLog;
   final AssignmentReceiver _receiver;
   final StoragePressureManager _storagePressure;
   final AssignmentInbox _assignmentInbox;
@@ -138,6 +145,10 @@ class AssignmentCoordinator {
     _onStatus?.call(next);
   }
 
+  void _log(String message) {
+    _onLog?.call(message);
+  }
+
   Future<WorkerAssignment?> pollAssignment({
     DeviceSnapshot? snapshot,
     RuntimeSafetySignals? safetySignals,
@@ -146,12 +157,20 @@ class AssignmentCoordinator {
     _emit(_status.copyWith(phase: ExecutionPhase.waitingForAssignment));
     final device = snapshot ?? await _platform.readDeviceSnapshot();
     _constraints.ensureOrThrow(device);
-    _safety.ensureExecuteOrThrow(device, signals: safetySignals ?? RuntimeSafetySignals.none);
-    return _api.getNextAssignment(accessToken: _accessToken, waitSeconds: waitSeconds);
+    _safety.ensureExecuteOrThrow(
+      device,
+      signals: safetySignals ?? RuntimeSafetySignals.none,
+    );
+    return _api.getNextAssignment(
+      accessToken: _accessToken,
+      waitSeconds: waitSeconds,
+    );
   }
 
   Future<void> reconcileInboxBootstrap() async {
-    final bootstrap = await _api.getAssignmentInboxBootstrap(accessToken: _accessToken);
+    final bootstrap = await _api.getAssignmentInboxBootstrap(
+      accessToken: _accessToken,
+    );
     final deliveries = bootstrap['deliveries'] as List<dynamic>? ?? const [];
     final serverEntries = deliveries.map((item) {
       final map = item as Map<String, dynamic>;
@@ -161,35 +180,46 @@ class AssignmentCoordinator {
         fenceToken: map['fenceToken'] as int,
         recordedAt: DateTime.now().toUtc(),
         deliveryInboxId: map['deliveryInboxId'] as String?,
-        ackedAt: (map['acked'] as bool? ?? false) ? DateTime.now().toUtc() : null,
+        ackedAt: (map['acked'] as bool? ?? false)
+            ? DateTime.now().toUtc()
+            : null,
       );
     });
     await _assignmentInbox.reconcileBootstrap(serverEntries: serverEntries);
   }
 
-  Future<WorkerAssignment?> acceptPolledAssignment(WorkerAssignment assignment) async {
-    await reconcileInboxBootstrap();
-    final receipt = await _assignmentInbox.recordBeforeProcess(
-      assignment,
-      deliveryInboxId: assignment.deliveryInboxId,
+  Future<WorkerAssignment?> acceptPolledAssignment(
+    WorkerAssignment assignment,
+  ) async {
+    final localBeforeBootstrap = await _assignmentInbox.latestEntryFor(
+      assignment.assignmentId,
     );
-    if (receipt.disposition == AssignmentInboxDisposition.staleFenceSuperseded) {
+    await reconcileInboxBootstrap();
+    final latest = await _assignmentInbox.latestEntryFor(
+      assignment.assignmentId,
+    );
+    if (latest != null && latest.fenceToken > assignment.fenceToken) {
       throw AssignmentRejectedException(
         AssignmentValidationIssue(
           step: AssignmentValidationStep.fence,
           failureCode: 'ASSIGNMENT_STALE_FENCE',
           retryable: false,
-          detail: 'local inbox has newer fence ${receipt.entry.fenceToken}',
+          detail: 'local inbox has newer fence ${latest.fenceToken}',
         ),
       );
     }
-    if (receipt.disposition == AssignmentInboxDisposition.duplicateReplay) {
+    if (localBeforeBootstrap?.fenceToken == assignment.fenceToken) {
       return null;
     }
+    // executeAssignment performs the one durable inbox write immediately
+    // before validation and execution side effects.
     return assignment;
   }
 
-  Future<ResumeDecision> inspectResume(WorkerAssignment assignment, AssignmentInputBundle bundle) async {
+  Future<ResumeDecision> inspectResume(
+    WorkerAssignment assignment,
+    AssignmentInputBundle bundle,
+  ) async {
     if (_processLifecycle?.requiresFreshGrantReconciliation ?? false) {
       return const ResumeDecision(
         startFresh: true,
@@ -197,7 +227,9 @@ class AssignmentCoordinator {
         blockedPendingFreshGrant: true,
       );
     }
-    final checkpoint = await _checkpointStore.latestFor(assignment.assignmentId);
+    final checkpoint = await _checkpointStore.latestFor(
+      assignment.assignmentId,
+    );
     if (checkpoint == null) {
       return const ResumeDecision(startFresh: true);
     }
@@ -207,10 +239,17 @@ class AssignmentCoordinator {
       activeInputDigest: bundle.inputDigest,
     )) {
       await _checkpointStore.purge(assignment.assignmentId);
-      return const ResumeDecision(startFresh: true, discardedStaleCheckpoint: true);
+      return const ResumeDecision(
+        startFresh: true,
+        discardedStaleCheckpoint: true,
+      );
     }
     final state = await _checkpointStore.readState(checkpoint);
-    return ResumeDecision(startFresh: false, checkpoint: checkpoint, resumedState: state);
+    return ResumeDecision(
+      startFresh: false,
+      checkpoint: checkpoint,
+      resumedState: state,
+    );
   }
 
   Future<void> executeAssignment(
@@ -251,26 +290,48 @@ class AssignmentCoordinator {
     ResumeDecision? resume,
   }) async {
     final device = snapshot ?? await _platform.readDeviceSnapshot();
-    _receiver.ensureAccepted(_receiver.validateContract(assignment));
+    final now = DateTime.now().toUtc();
+    _log(
+      '[VALIDATE CONTRACT] assignmentId=${assignment.assignmentId} '
+      'now=${now.toIso8601String()} '
+      'startDeadlineAt=${assignment.startDeadlineAt.toUtc().toIso8601String()} '
+      'leaseExpiresAt=${assignment.leaseExpiresAt.toUtc().toIso8601String()}',
+    );
+    final contractVerdict = _receiver.validateContract(assignment);
+    if (!contractVerdict.accepted) {
+      _log(
+        '[VALIDATE CONTRACT REJECTED] '
+        'code=${contractVerdict.issue?.failureCode} '
+        'detail=${contractVerdict.issue?.detail}',
+      );
+    } else {
+      _log('[VALIDATE CONTRACT OK] assignmentId=${assignment.assignmentId}');
+    }
+    _receiver.ensureAccepted(contractVerdict);
     _processLifecycle?.acknowledgeFreshGrantReconciliation();
     final inboxReceipt = await _assignmentInbox.recordBeforeProcess(
       assignment,
       deliveryInboxId: assignment.deliveryInboxId,
     );
-    if (inboxReceipt.disposition == AssignmentInboxDisposition.duplicateReplay) {
+    if (inboxReceipt.disposition ==
+        AssignmentInboxDisposition.duplicateReplay) {
       return;
     }
-    if (inboxReceipt.disposition == AssignmentInboxDisposition.staleFenceSuperseded) {
+    if (inboxReceipt.disposition ==
+        AssignmentInboxDisposition.staleFenceSuperseded) {
       throw AssignmentRejectedException(
         AssignmentValidationIssue(
           step: AssignmentValidationStep.fence,
           failureCode: 'ASSIGNMENT_STALE_FENCE',
           retryable: false,
-          detail: 'local inbox has newer fence ${inboxReceipt.entry.fenceToken}',
+          detail:
+              'local inbox has newer fence ${inboxReceipt.entry.fenceToken}',
         ),
       );
     }
-    _receiver.ensureAccepted(_receiver.validateConsent(device));
+    final consentVerdict = _receiver.validateConsent(device);
+    _receiver.ensureAccepted(consentVerdict);
+    _log('[VALIDATE CONSENT OK] assignmentId=${assignment.assignmentId}');
     _storagePressure.ensureHeadroomForWork(device);
     _constraints.ensureOrThrow(device, heavyTask: true);
     _safety.ensureExecuteOrThrow(
@@ -281,23 +342,34 @@ class AssignmentCoordinator {
 
     if (_resourceEnforcer != null && taskResourceRequest != null) {
       _resourceEnforcer!.ensureWithinBudgetOrThrow(
-        reserved: const ResourceClassTotals(cpuUnits: 0, memoryBytes: 0, storageBytes: 0),
+        reserved: const ResourceClassTotals(
+          cpuUnits: 0,
+          memoryBytes: 0,
+          storageBytes: 0,
+        ),
         requested: taskResourceRequest,
       );
     }
 
-    _emit(ExecutionStatus(
-      phase: ExecutionPhase.preparing,
-      assignmentId: assignment.assignmentId,
-      taskId: assignment.taskId,
-      taskType: assignment.taskType,
-    ));
+    _emit(
+      ExecutionStatus(
+        phase: ExecutionPhase.preparing,
+        assignmentId: assignment.assignmentId,
+        taskId: assignment.taskId,
+        taskType: assignment.taskType,
+      ),
+    );
     await _platform.startForegroundService(
       assignmentId: assignment.assignmentId,
       taskType: assignment.taskType,
     );
 
+    _log('[INPUT REQUEST] loading assignment manifest and payload');
     final bundle = await _inputLoader(assignment);
+    _log(
+      '[INPUT RESPONSE] bytes=${bundle.inputBytes.length} '
+      'digest=${bundle.inputDigest} image=${bundle.isImageInput}',
+    );
     final feedbackBuilder = ExecutionCostFeedbackBuilder(
       taskType: assignment.taskType,
       inputBytes: bundle.inputBytes.length,
@@ -313,11 +385,18 @@ class AssignmentCoordinator {
 
     final signingMaterial = await _platform.signingMaterial();
     final usePipeline =
-        _taskEngine != null && TaskTypeMapper.isPipelineTask(assignment.taskType);
+        _taskEngine != null &&
+        TaskTypeMapper.isPipelineTask(assignment.taskType);
     if (!usePipeline) {
-      await _inference.loadVerified(bundle.modelArtifact, signingKey: signingMaterial);
+      _log('[MODEL LOAD] verifying and loading ${assignment.modelVersionId}');
+      await _inference.loadVerified(
+        bundle.modelArtifact,
+        signingKey: signingMaterial,
+      );
+      _log('[MODEL LOAD OK] ${assignment.modelVersionId}');
     }
 
+    _log('[START REQUEST] assignmentId=${assignment.assignmentId}');
     await _api.reportAssignmentStarted(
       assignmentId: assignment.assignmentId,
       accessToken: _accessToken,
@@ -325,14 +404,20 @@ class AssignmentCoordinator {
       fenceToken: assignment.fenceToken,
       idempotencyKey: 'start-${assignment.attemptId}',
     );
-    await _assignmentInbox.markAcked(assignment.assignmentId, fenceToken: assignment.fenceToken);
+    _log('[START RESPONSE] assignment accepted by worker-gateway');
+    await _assignmentInbox.markAcked(
+      assignment.assignmentId,
+      fenceToken: assignment.fenceToken,
+    );
     _assignmentStarted = true;
     _startLeaseRenewal(assignment);
     _activeReservation = WorkerHeartbeatTelemetry.reservationForTask(
       assignmentId: assignment.assignmentId,
       taskType: assignment.taskType,
     );
-    final checkpoint = await _checkpointStore.latestFor(assignment.assignmentId);
+    final checkpoint = await _checkpointStore.latestFor(
+      assignment.assignmentId,
+    );
     _storagePressure.bindActiveAssignment(
       assignmentId: assignment.assignmentId,
       fenceToken: assignment.fenceToken,
@@ -351,7 +436,12 @@ class AssignmentCoordinator {
       assignmentId: assignment.assignmentId,
       blobRef: 'runtime/decode/${assignment.assignmentId}',
     );
-    _emit(_status.copyWith(phase: ExecutionPhase.running, progressMilli: decision.checkpoint?.progressMilli ?? 0));
+    _emit(
+      _status.copyWith(
+        phase: ExecutionPhase.running,
+        progressMilli: decision.checkpoint?.progressMilli ?? 0,
+      ),
+    );
 
     var lastReportedProgress = decision.checkpoint?.progressMilli ?? 0;
     Future<void> onProgressWrapper(int progressMilli) async {
@@ -361,7 +451,10 @@ class AssignmentCoordinator {
       final current = await _platform.readDeviceSnapshot();
       final constraint = _constraints.evaluate(current, heavyTask: true);
       if (!constraint.allowed) {
-        throw ConstraintBlockedException(constraint.violation!, constraint.detail);
+        throw ConstraintBlockedException(
+          constraint.violation!,
+          constraint.detail,
+        );
       }
       final safety = _safety.evaluate(
         current,
@@ -376,8 +469,12 @@ class AssignmentCoordinator {
         throw StateError('Execution exceeded sandbox time limit');
       }
       _emit(_status.copyWith(progressMilli: progressMilli));
-      await _platform.updateForegroundStatus(progressMilli: progressMilli, detail: assignment.taskType);
-      if (progressMilli - lastReportedProgress >= ExecutionPolicy.minimumProgressDeltaMilli) {
+      await _platform.updateForegroundStatus(
+        progressMilli: progressMilli,
+        detail: assignment.taskType,
+      );
+      if (progressMilli - lastReportedProgress >=
+          ExecutionPolicy.minimumProgressDeltaMilli) {
         await _api.progressAssignment(
           assignmentId: assignment.assignmentId,
           accessToken: _accessToken,
@@ -399,7 +496,12 @@ class AssignmentCoordinator {
         );
       }
     }
+
     final InferenceOutput output;
+    _log(
+      '[INFERENCE ROUTE] ${usePipeline ? "task-pipeline" : "direct-model"} '
+      'taskType=${assignment.taskType}',
+    );
     if (usePipeline) {
       final eventReporter = AssignmentEventReporter(
         api: _api,
@@ -428,8 +530,29 @@ class AssignmentCoordinator {
         onProgress: onProgressWrapper,
       );
     }
+    _log(
+      '[INFERENCE OUTPUT] bytes=${output.resultBytes.length} '
+      'progress=${output.progressMilli} metrics=${jsonEncode(output.metrics)}',
+    );
+    final taskStatus = output.metrics['taskStatus'] as String?;
+    if (taskStatus != null && taskStatus != WorkerResultStatus.succeeded.name) {
+      final structured = output.metrics['structuredResult'];
+      final errorMap = structured is Map<String, dynamic>
+          ? structured['error'] as Map<String, dynamic>?
+          : null;
+      throw WorkerError.fromJson(
+        errorMap,
+        fallbackMessage: 'Task pipeline returned terminal status $taskStatus',
+        fallbackRetryable: taskStatus == WorkerResultStatus.retryable.name,
+      );
+    }
 
-    _emit(_status.copyWith(phase: ExecutionPhase.submitting, progressMilli: output.progressMilli));
+    _emit(
+      _status.copyWith(
+        phase: ExecutionPhase.submitting,
+        progressMilli: output.progressMilli,
+      ),
+    );
     final resultSha256 = sha256Hex(output.resultBytes);
     final outputArtifactId = 'art_${assignment.attemptId}';
     // The result MAC is scoped to this short-lived lease capability. The server
@@ -443,8 +566,10 @@ class AssignmentCoordinator {
     );
 
     final endSnapshot = await _platform.readDeviceSnapshot();
-    final taskMetrics = _taskMetricsFromOutput(output.metrics, startedAt: startedAt)
-      ..inputBytes ??= bundle.inputBytes.length;
+    final taskMetrics = _taskMetricsFromOutput(
+      output.metrics,
+      startedAt: startedAt,
+    )..inputBytes ??= bundle.inputBytes.length;
     final costFeedback = feedbackBuilder.build(
       metrics: taskMetrics,
       endSnapshot: endSnapshot,
@@ -481,20 +606,22 @@ class AssignmentCoordinator {
     final structured = output.metrics['structuredResult'];
     final resultPreview = outputKind == 'json' && structured is Map
         ? (structured['output']?['rawText'] as String? ??
-            structured['output']?['data']?.toString() ??
-            structured['error']?['message'] as String? ??
-            'Structured task result ready')
+              structured['output']?['data']?.toString() ??
+              structured['error']?['message'] as String? ??
+              'Structured task result ready')
         : outputKind == 'image'
-            ? (output.metrics['resultSummary'] as String? ?? 'Image output ready')
-            : utf8.decode(output.resultBytes);
-    _emit(_status.copyWith(
-      phase: ExecutionPhase.completed,
-      progressMilli: 1000,
-      detail: resultPreview,
-      taskType: assignment.taskType,
-      assignmentId: assignment.assignmentId,
-      taskId: assignment.taskId,
-    ));
+        ? (output.metrics['resultSummary'] as String? ?? 'Image output ready')
+        : utf8.decode(output.resultBytes);
+    _emit(
+      _status.copyWith(
+        phase: ExecutionPhase.completed,
+        progressMilli: 1000,
+        detail: resultPreview,
+        taskType: assignment.taskType,
+        assignmentId: assignment.assignmentId,
+        taskId: assignment.taskId,
+      ),
+    );
   }
 
   Future<void> safeStopAndCheckpoint(
@@ -502,7 +629,12 @@ class AssignmentCoordinator {
     AssignmentInputBundle bundle,
     int progressMilli,
   ) async {
-    _emit(_status.copyWith(phase: ExecutionPhase.checkpointing, progressMilli: progressMilli));
+    _emit(
+      _status.copyWith(
+        phase: ExecutionPhase.checkpointing,
+        progressMilli: progressMilli,
+      ),
+    );
     await _writeCheckpoint(
       assignment: assignment,
       bundle: bundle,
@@ -517,7 +649,9 @@ class AssignmentCoordinator {
     required Object error,
     required DateTime startedAt,
   }) async {
-    final checkpoint = await _checkpointStore.latestFor(assignment.assignmentId);
+    final checkpoint = await _checkpointStore.latestFor(
+      assignment.assignmentId,
+    );
     final evidence = _failureMapper.map(
       assignment: assignment,
       error: error,
@@ -528,29 +662,39 @@ class AssignmentCoordinator {
       return;
     }
     try {
+      _log(
+        '[FAILURE REQUEST] assignmentId=${assignment.assignmentId} '
+        'code=${evidence.failureCode} retryable=${evidence.retryable}',
+      );
       await _api.failAssignment(
         assignmentId: assignment.assignmentId,
         accessToken: _accessToken,
         idempotencyKey: 'fail-${assignment.attemptId}-${evidence.failureCode}',
         body: evidence.toFailRequest(leaseToken: assignment.leaseToken),
       );
+      _log('[FAILURE RESPONSE] worker-gateway accepted failure evidence');
     } finally {
       _storagePressure.clearActiveAssignment();
       if (_assignmentStarted) {
         await _cleanup(assignment, preserveCheckpoint: checkpoint != null);
         await _platform.stopForegroundService();
       }
-      _emit(_status.copyWith(
-        phase: ExecutionPhase.failed,
-        detail: evidence.failureCode,
-        assignmentId: assignment.assignmentId,
-        taskId: assignment.taskId,
-        taskType: assignment.taskType,
-      ));
+      _emit(
+        _status.copyWith(
+          phase: ExecutionPhase.failed,
+          detail: evidence.failureCode,
+          assignmentId: assignment.assignmentId,
+          taskId: assignment.taskId,
+          taskType: assignment.taskType,
+        ),
+      );
     }
   }
 
-  Future<void> abandon(WorkerAssignment assignment, {required String reason}) async {
+  Future<void> abandon(
+    WorkerAssignment assignment, {
+    required String reason,
+  }) async {
     await _api.abandonAssignment(
       assignmentId: assignment.assignmentId,
       accessToken: _accessToken,
@@ -612,7 +756,10 @@ class AssignmentCoordinator {
       return;
     }
     final renewIn = Duration(
-      milliseconds: (ttl.inMilliseconds * 0.7).round().clamp(5000, ttl.inMilliseconds),
+      milliseconds: (ttl.inMilliseconds * 0.7).round().clamp(
+        5000,
+        ttl.inMilliseconds,
+      ),
     );
     _leaseRenewSequence = 0;
     _leaseRenewalTimer = Timer(renewIn, () async {
@@ -640,7 +787,10 @@ class AssignmentCoordinator {
     _leaseRenewalTimer = null;
   }
 
-  Future<void> _cleanup(WorkerAssignment assignment, {bool preserveCheckpoint = false}) async {
+  Future<void> _cleanup(
+    WorkerAssignment assignment, {
+    bool preserveCheckpoint = false,
+  }) async {
     _stopLeaseRenewal();
     _emit(_status.copyWith(phase: ExecutionPhase.cleaningUp));
     _stopTracker.requestStop(reason: 'assignment_cleanup');
@@ -682,8 +832,7 @@ class AssignmentCoordinator {
       ExecutionPhase.idle ||
       ExecutionPhase.waitingForAssignment ||
       ExecutionPhase.completed ||
-      ExecutionPhase.failed =>
-        const [],
+      ExecutionPhase.failed => const [],
       _ => [assignmentId],
     };
   }
@@ -728,8 +877,12 @@ class AssignmentCoordinator {
     return taskMetrics;
   }
 
-  static Future<AssignmentInputBundle> _defaultInputLoader(WorkerAssignment assignment) async {
-    final inputBytes = Uint8List.fromList('input-for-${assignment.taskType}'.codeUnits);
+  static Future<AssignmentInputBundle> _defaultInputLoader(
+    WorkerAssignment assignment,
+  ) async {
+    final inputBytes = Uint8List.fromList(
+      'input-for-${assignment.taskType}'.codeUnits,
+    );
     final modelBytes = Uint8List.fromList('model'.codeUnits);
     final modelDigest = sha256Hex(modelBytes);
     final signingKey = 'test-signing-material';

@@ -21,6 +21,8 @@ const createOpen = ref(false);
 const createFormKey = ref(0);
 const creating = ref(false);
 const createError = ref('');
+const cancelError = ref('');
+const cancellingTaskId = ref('');
 const searchQuery = ref('');
 const typeFilter = ref('all');
 const statusFilter = ref('all');
@@ -124,6 +126,39 @@ async function submitCreateTask(payload) {
     creating.value = false;
   }
 }
+
+function canCancelTask(task) {
+  return !['succeeded', 'completed', 'failed', 'cancelled', 'expired'].includes(
+    String(task.lifecycleStatus).toLowerCase(),
+  );
+}
+
+async function cancelTask(task) {
+  if (
+    !session.workspaceId ||
+    !session.hasPermission('customer.tasks:write') ||
+    !canCancelTask(task)
+  ) {
+    return;
+  }
+  if (!window.confirm(t('tasks.cancelConfirm'))) {
+    return;
+  }
+
+  cancellingTaskId.value = task.id;
+  cancelError.value = '';
+  try {
+    const cancelled = await portalApi.cancelTask(session.workspaceId, task.id);
+    const items = (tasks.value?.items ?? []).map((item) =>
+      item.id === cancelled.id ? cancelled : item,
+    );
+    tasks.value = { ...(tasks.value ?? {}), items };
+  } catch (err) {
+    cancelError.value = err?.message ?? t('tasks.cancelError');
+  } finally {
+    cancellingTaskId.value = '';
+  }
+}
 </script>
 
 <template>
@@ -177,6 +212,7 @@ async function submitCreateTask(payload) {
 
     <p v-if="listError" class="md-alert md-alert--error" role="alert">{{ listError }}</p>
     <p v-if="createError && !createOpen" class="md-alert md-alert--error" role="alert">{{ createError }}</p>
+    <p v-if="cancelError" class="md-alert md-alert--error" role="alert">{{ cancelError }}</p>
     <div v-if="loading" class="md-card"><div class="md-skeleton" style="height: 6rem" /></div>
     <EmptyState
       v-else-if="!filteredTasks.length"
@@ -190,18 +226,30 @@ async function submitCreateTask(payload) {
         <span>{{ t('tasks.colDetail') }}</span>
         <span>{{ t('tasks.colCreated') }}</span>
       </li>
-      <li v-for="task in filteredTasks" :key="task.id">
-        <RouterLink :to="{ name: 'task-detail', params: { id: task.id } }" class="em-task-row">
+      <li v-for="task in filteredTasks" :key="task.id" class="em-task-row">
+        <RouterLink
+          :to="{ name: 'task-detail', params: { id: task.id } }"
+          class="em-task-row__main"
+        >
           <div class="em-task-row__primary">
             <code class="em-task-row__id">{{ task.id.slice(0, 8) }}</code>
             <p class="em-task-row__type">{{ formatTaskType(task) }}</p>
           </div>
           <TaskDetailCell :task="task" />
-          <div class="em-task-row__meta">
-            <StatusChip :status="task.lifecycleStatus" />
-            <span>{{ formatDateTime(task.createdAt) }}</span>
-          </div>
         </RouterLink>
+        <div class="em-task-row__meta">
+          <StatusChip :status="task.lifecycleStatus" />
+          <span>{{ formatDateTime(task.createdAt) }}</span>
+          <button
+            v-if="session.hasPermission('customer.tasks:write') && canCancelTask(task)"
+            type="button"
+            class="md-btn md-btn-text em-task-cancel-btn"
+            :disabled="cancellingTaskId === task.id"
+            @click="cancelTask(task)"
+          >
+            {{ cancellingTaskId === task.id ? t('tasks.cancelling') : t('tasks.cancelTask') }}
+          </button>
+        </div>
       </li>
     </ul>
   </section>

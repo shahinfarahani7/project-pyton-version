@@ -19,7 +19,7 @@ Future<String> _summarizeMockRunner(String prompt) async {
       'missingOrUnclear': [],
     });
   }
-  if (prompt.contains('Summarize only this chunk')) {
+  if (prompt.contains('Extract only what this chunk')) {
     final indexMatch = RegExp(r'chunkIndex=(\d+)').firstMatch(prompt);
     final index = indexMatch?.group(1) ?? '0';
     return jsonEncode({

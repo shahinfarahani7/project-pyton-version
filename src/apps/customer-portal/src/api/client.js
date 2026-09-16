@@ -173,6 +173,10 @@ export const portalApi = {
     });
   },
   task: (workspaceId, taskId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks/${taskId}`),
+  cancelTask: (workspaceId, taskId) =>
+    fetchJson(`/v1/workspaces/${workspaceId}/tasks/${taskId}:cancel`, {
+      method: 'POST',
+    }),
   taskTypes: (query) => {
     const params = new URLSearchParams();
     if (query?.q) {
