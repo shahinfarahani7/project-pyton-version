@@ -239,8 +239,8 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
 
     companion object {
         const val CHANNEL = "io.edgemint/worker_runtime"
-        private const val MODEL_FILE_NAME = "Qwen3-0.6B.litertlm"
-        private const val MIN_MODEL_BYTES = 100_000_000L
+        private const val MODEL_FILE_NAME = "gemma-4-E4B-it.litertlm"
+        private const val MIN_MODEL_BYTES = 3_000_000_000L
         private const val CONSENT_PREFS = "edgemint_worker_consent"
         private const val CONSENT_KEY = "granted_consents"
         private val REQUIRED_CONSENTS = listOf(

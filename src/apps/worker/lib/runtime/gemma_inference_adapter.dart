@@ -19,7 +19,7 @@ class _BoundedGeneration {
   final String stopReason;
 }
 
-/// Runs task prompts through the active on-device Qwen2.5 model.
+/// Runs task prompts through the active on-device Gemma model.
 class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   GemmaLiteRtInferenceAdapter({
     GemmaModelRuntimeManager? runtimeManager,
@@ -137,7 +137,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
             'inputBytes': inputBytes.length,
             'outputChars': text.length,
             'elapsedMs': stopwatch.elapsedMilliseconds,
-            'maxTokens': 1280,
+            'maxTokens': WorkerModelCatalog.runtimeMaxTokens,
             'stopReason': generation.stopReason,
             'sessionStage': 'inference',
           },

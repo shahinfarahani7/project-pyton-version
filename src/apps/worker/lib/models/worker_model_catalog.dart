@@ -4,22 +4,28 @@ import '../runtime/encrypted_store.dart';
 import '../runtime/model_artifact_verifier.dart';
 
 abstract final class WorkerModelCatalog {
-  static const profileId = 'qwen2.5-0.5b';
+  static const profileId = 'gemma-4-e4b-it';
 
-  static const modelVersionId = 'mdv_qwen2_5_0_5b';
+  static const modelVersionId = 'mdv_gemma_4_e4b_it';
 
-  static const displayName = 'Qwen2.5 0.5B';
+  static const displayName = 'Gemma 4 E4B IT';
 
-  static const fileName =
-      'Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task';
+  static const fileName = 'gemma-4-E4B-it.litertlm';
 
-  /// Verified artifact context window from LiteRT task filename (ekv1280).
-  static const verifiedArtifactContextLimit = 1280;
+  /// Bundled dev artifact under [pubspec.yaml] `flutter.assets`.
+  static const bundledAssetPath = 'assets/models/gemma-4-E4B-it.litertlm';
 
-  static const approximateDownloadSize = '~547 MB';
+  /// LiteRT-LM runtime context for Gemma 4 E4B (see flutter_gemma example).
+  static const verifiedArtifactContextLimit = 4096;
+
+  static const runtimeMaxTokens = 4096;
+
+  static const outputReserveTokens = 512;
+
+  static const approximateDownloadSize = '~4.3 GB';
 
   static const huggingFaceDownloadUrl =
-      'https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/$fileName';
+      'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/$fileName';
 
   static const installedDigestMarker = 'installed-on-device';
 
@@ -48,7 +54,7 @@ abstract final class WorkerModelCatalog {
 
   static const _useBackendArtifact = bool.fromEnvironment(
     'WORKER_USE_BACKEND_ARTIFACT',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   static bool usesBackendArtifactProxy() {
@@ -86,15 +92,24 @@ abstract final class WorkerModelCatalog {
     return huggingFaceDownloadUrl;
   }
 
+  /// Returns the bundled asset path by default so dev builds pick up
+  /// [bundledAssetPath] without an extra `--dart-define`. Override with
+  /// `WORKER_MODEL_ASSET=` to disable bundling.
   static String? bundledAssetFromEnvironment() {
     const asset = String.fromEnvironment('WORKER_MODEL_ASSET');
-    return asset.isEmpty ? null : asset;
+    if (asset == 'none') {
+      return null;
+    }
+    if (asset.isNotEmpty) {
+      return asset;
+    }
+    return bundledAssetPath;
   }
 
   static InferenceInstallationBuilder installBuilder() {
     return FlutterGemma.installModel(
-      modelType: ModelType.qwen,
-      fileType: ModelFileType.task,
+      modelType: ModelType.gemma4,
+      fileType: ModelFileType.litertlm,
     );
   }
 }

@@ -28,7 +28,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   String? _modelVersionId;
   int _openSessions = 0;
 
-  static const _maxTokens = 1280;
+  static const _maxTokens = WorkerModelCatalog.runtimeMaxTokens;
 
   void _log(String message) {
     developer.log(message, name: 'EdgeMintModelRuntime');
@@ -81,7 +81,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
     try {
       _model = await FlutterGemma.getActiveModel(
         maxTokens: _maxTokens,
-        preferredBackend: PreferredBackend.cpu,
+        preferredBackend: PreferredBackend.gpu,
       );
       IdentityLifecycleTracer.instance.recordNativeModelCreate(
         caller: 'GemmaModelRuntimeManager.ensureResident',

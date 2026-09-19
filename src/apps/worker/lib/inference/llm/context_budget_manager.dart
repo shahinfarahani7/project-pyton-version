@@ -13,8 +13,8 @@ class ContextBudgetProfile {
     required this.configuredRuntimeContextLimit,
   });
 
-  static const int qwenBaselineTotalContextTokens = 1280;
-  static const int qwenBaselineOutputReserveTokens = 256;
+  static const int qwenBaselineTotalContextTokens = 4096;
+  static const int qwenBaselineOutputReserveTokens = 512;
   final int totalContextTokens;
   final int systemTemplateTokens;
   final int inputBudgetTokens;
@@ -23,15 +23,15 @@ class ContextBudgetProfile {
   final int verifiedArtifactContextLimit;
   final int configuredRuntimeContextLimit;
 
-  /// Conservative Qwen baseline (Architecture Section 25).
+  /// Active on-device LLM context budget (currently Gemma 4 E4B).
  static const ContextBudgetProfile qwenBaseline = ContextBudgetProfile(
-   totalContextTokens: 1280,
+   totalContextTokens: qwenBaselineTotalContextTokens,
    systemTemplateTokens: 96,
-   inputBudgetTokens: 900,       // فضای باقی‌مونده برای پرامپت کاربر
-   outputReserveTokens: 256,      // فضای رزرو خروجی
+   inputBudgetTokens: 3456,
+   outputReserveTokens: qwenBaselineOutputReserveTokens,
    safetyMarginTokens: 32,
-   verifiedArtifactContextLimit: 1280,   // = WorkerModelCatalog.verifiedArtifactContextLimit
-   configuredRuntimeContextLimit: 1280,
+   verifiedArtifactContextLimit: WorkerModelCatalog.verifiedArtifactContextLimit,
+   configuredRuntimeContextLimit: WorkerModelCatalog.runtimeMaxTokens,
  );
 }
 /// Deterministic token estimate before native runtime (Architecture Section 25).

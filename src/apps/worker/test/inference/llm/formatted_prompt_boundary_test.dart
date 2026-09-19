@@ -14,16 +14,16 @@ void main() {
   group('Formatted prompt boundary (T10)', () {
     const manager = ContextBudgetManager();
 
-    test('artifact context limit is bound to ekv1280 model artifact', () {
+    test('artifact context limit follows the active worker model catalog', () {
       expect(
         ContextBudgetProfile.qwenBaseline.verifiedArtifactContextLimit,
         WorkerModelCatalog.verifiedArtifactContextLimit,
       );
-      expect(WorkerModelCatalog.verifiedArtifactContextLimit, 1280);
+      expect(WorkerModelCatalog.verifiedArtifactContextLimit, 4096);
     });
 
     test('effective limit is min of artifact, runtime and task policy', () {
-      expect(manager.effectiveContextLimit(taskPolicyContextLimit: 1500), 1280);
+      expect(manager.effectiveContextLimit(taskPolicyContextLimit: 8192), 4096);
       expect(manager.effectiveContextLimit(taskPolicyContextLimit: 900), 900);
     });
 

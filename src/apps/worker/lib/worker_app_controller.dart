@@ -579,8 +579,8 @@ class WorkerAppController extends ChangeNotifier {
       //
       // x86 is no longer automatically mapped to Dev Mock.
       //
-      // Qwen2.5 .task is allowed to attempt real inference
-      // on Android x86/x86_64.
+      // Gemma 4 `.litertlm` requires arm64-v8a; x86 emulators need
+      // WORKER_USE_DEV_MOCK=true or a physical ARM device.
       //
       if (_devMockRequested) {
         _enableDevMockInference();
@@ -1255,6 +1255,7 @@ class WorkerAppController extends ChangeNotifier {
     if (forceReinstall) {
       final possibleModels = <String>{
         WorkerModelCatalog.fileName,
+        'Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task',
         'Qwen3-0.6B.litertlm',
       };
 
