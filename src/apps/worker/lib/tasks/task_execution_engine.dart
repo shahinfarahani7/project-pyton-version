@@ -573,7 +573,7 @@ class TaskExecutionEngine {
           ),
           if (manifest['instructions'] case final String instructions
               when instructions.trim().isNotEmpty)
-            'instructions': instructions.trim(),
+            'instructions': instructions,
         },
       ),
       options: options,

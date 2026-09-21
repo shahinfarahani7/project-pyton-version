@@ -131,10 +131,12 @@ class DocumentSummarizeHandler with OcrPipelineMixin implements TaskHandler {
     final data = await qwenProcessor.runSummarizeJsonTask(
       inputText: ocr.rawText,
       userInstructions: request.input.data['instructions'] as String?,
+      constraints: request.options.summarize,
       signingKey: signingKey,
       assignmentId: assignmentId,
       fenceToken: fenceToken,
       onChunkCheckpoint: onChunkCheckpoint,
+      isCancelled: isCancelled,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
     return WorkerTaskResult(
@@ -192,10 +194,12 @@ class TextSummarizeHandler implements TaskHandler {
     final data = await qwenProcessor.runSummarizeJsonTask(
       inputText: inputText,
       userInstructions: request.input.data['instructions'] as String?,
+      constraints: request.options.summarize,
       signingKey: signingKey,
       assignmentId: assignmentId,
       fenceToken: fenceToken,
       onChunkCheckpoint: onChunkCheckpoint,
+      isCancelled: isCancelled,
     );
 
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;

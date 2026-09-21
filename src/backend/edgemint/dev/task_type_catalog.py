@@ -198,17 +198,27 @@ def enrich_task_row(row: dict[str, Any], *, locale: str = "en") -> dict[str, Any
     enriched["taskTypeLabel"] = label_for(task_type, locale=locale)
 
     task_id = str(row.get("id", ""))
-    if task_id and (not enriched.get("inputPreview") or not enriched.get("inputLabel")):
+    if task_id:
         from edgemint.dev import worker_task_inputs
 
         manifest = worker_task_inputs.input_manifest(task_id)
         if manifest:
             if not enriched.get("inputLabel"):
                 enriched["inputLabel"] = manifest.get("inputLabel") or manifest.get("documentTitle")
+            manifest_input = manifest.get("inputText") or manifest.get("contentText")
+            if manifest_input and not enriched.get("inputText"):
+                enriched["inputText"] = str(manifest_input)
+            if not enriched.get("instructions") and manifest.get("instructions"):
+                enriched["instructions"] = manifest.get("instructions")
             if not enriched.get("inputPreview"):
-                preview = manifest.get("inputText") or manifest.get("prompt")
+                preview = manifest_input or manifest.get("prompt")
                 if preview:
                     enriched["inputPreview"] = str(preview)[:2000]
+        if not enriched.get("resultText"):
+            stored_manifest = worker_task_inputs.input_manifest(task_id) or {}
+            last_output = stored_manifest.get("lastOutput")
+            if isinstance(last_output, dict) and last_output.get("resultText"):
+                enriched["resultText"] = str(last_output["resultText"])
     return enriched
 
 

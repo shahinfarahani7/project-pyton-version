@@ -16,11 +16,14 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   GemmaModelRuntimeManager({
     RuntimeExclusiveGroupEnforcer? exclusiveGroupEnforcer,
     ModelArtifactVerifier? artifactVerifier,
+    PreferredBackend preferredBackend = PreferredBackend.gpu,
   })  : _exclusiveGroupEnforcer = exclusiveGroupEnforcer,
-        _artifactVerifier = artifactVerifier ?? const ModelArtifactVerifier();
+        _artifactVerifier = artifactVerifier ?? const ModelArtifactVerifier(),
+        _preferredBackend = preferredBackend;
 
   final RuntimeExclusiveGroupEnforcer? _exclusiveGroupEnforcer;
   final ModelArtifactVerifier _artifactVerifier;
+  PreferredBackend _preferredBackend;
   @override
   bool get allowsOnlyOnePrimaryHeavyModel => true;
   InferenceModel? _model;
@@ -42,6 +45,12 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
 
   @override
   int get openSessionCount => _openSessions;
+
+  PreferredBackend get preferredBackend => _preferredBackend;
+
+  void configurePreferredBackend(PreferredBackend backend) {
+    _preferredBackend = backend;
+  }
 
   @override
   Future<void> ensureResident({
@@ -75,13 +84,14 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
 
     _log(
       '[MODEL LOAD] profile=${WorkerModelCatalog.profileId} '
-      'model=${WorkerModelCatalog.displayName}',
+      'model=${WorkerModelCatalog.displayName} '
+      'backend=${_preferredBackend.name}',
     );
 
     try {
       _model = await FlutterGemma.getActiveModel(
         maxTokens: _maxTokens,
-        preferredBackend: PreferredBackend.gpu,
+        preferredBackend: _preferredBackend,
       );
       IdentityLifecycleTracer.instance.recordNativeModelCreate(
         caller: 'GemmaModelRuntimeManager.ensureResident',

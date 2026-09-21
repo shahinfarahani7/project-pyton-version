@@ -2,19 +2,73 @@ import 'dart:convert';
 
 import '../contracts/worker_error.dart';
 
+/// Structured result from [JsonOutputValidator.extractJsonObject].
+class JsonExtractResult {
+  const JsonExtractResult({
+    required this.rawPreserved,
+    this.object,
+    this.rejectionStage,
+    this.rejectionReason,
+  });
+
+  final String rawPreserved;
+  final Map<String, dynamic>? object;
+  final String? rejectionStage;
+  final String? rejectionReason;
+
+  bool get ok => object != null;
+}
+
 abstract final class JsonOutputValidator {
-  static Map<String, dynamic>? parseJsonObject(String raw) {
-    final cleaned = _stripMarkdownFences(_stripThinkBlocks(raw.trim()));
-    if (cleaned.isEmpty) {
-      return null;
-    }
-    for (final candidate in _candidates(cleaned)) {
-      final decoded = _tryDecodeObject(candidate);
-      if (decoded != null) {
-        return decoded;
+  static Map<String, dynamic>? parseJsonObject(String raw) =>
+      extractJsonObject(raw).object;
+
+  static JsonExtractResult extractJsonObject(String raw) {
+    final preserved = raw;
+    final thinkStripped = _stripThinkBlocks(raw.trim());
+    final cleaned = _stripMarkdownFences(thinkStripped);
+    final sources = cleaned == thinkStripped || cleaned.isEmpty
+        ? [cleaned]
+        : [cleaned, thinkStripped];
+    for (final source in sources) {
+      if (source.isEmpty) {
+        continue;
+      }
+      final objectCount = _countTopLevelObjects(source);
+      if (objectCount != null && objectCount > 1) {
+        return JsonExtractResult(
+          rawPreserved: preserved,
+          rejectionStage: 'boundary',
+          rejectionReason: 'json_extract_ambiguous_multiple_objects',
+        );
+      }
+      for (final candidate in _candidates(source)) {
+        final decoded = _tryDecodeObject(candidate);
+        if (decoded != null) {
+          return JsonExtractResult(rawPreserved: preserved, object: decoded);
+        }
+      }
+      final balanced = _extractFirstJsonObject(source);
+      if (balanced != null && _tryDecodeObject(balanced) == null) {
+        return JsonExtractResult(
+          rawPreserved: preserved,
+          rejectionStage: 'decode',
+          rejectionReason: 'json_extract_decode_failed',
+        );
       }
     }
-    return null;
+    if (cleaned.isEmpty && thinkStripped.isEmpty) {
+      return JsonExtractResult(
+        rawPreserved: preserved,
+        rejectionStage: 'markdown',
+        rejectionReason: 'json_extract_empty_after_strip',
+      );
+    }
+    return JsonExtractResult(
+      rawPreserved: preserved,
+      rejectionStage: 'boundary',
+      rejectionReason: 'json_extract_no_object',
+    );
   }
 
   /// Cuts an oversized but valid object down to the contract limits: duplicate
@@ -78,10 +132,15 @@ abstract final class JsonOutputValidator {
         continue;
       }
       yield source;
+      final controlEscaped = _escapeControlCharactersInStrings(source);
+      yield controlEscaped;
       final quoted = _quoteBareKeys(source);
       yield quoted;
+      yield _quoteBareKeys(controlEscaped);
       yield _escapeStrayQuotes(source);
+      yield _escapeStrayQuotes(controlEscaped);
       yield _escapeStrayQuotes(quoted);
+      yield _escapeStrayQuotes(_quoteBareKeys(controlEscaped));
     }
   }
 
@@ -270,18 +329,128 @@ abstract final class JsonOutputValidator {
   }
 
   static String _stripMarkdownFences(String input) {
-    if (!input.startsWith('```')) {
-      return input;
-    }
     final lines = input.split('\n');
-    if (lines.length < 2) {
-      return input;
+    var openIndex = -1;
+    for (var index = 0; index < lines.length; index++) {
+      final line = lines[index].trim();
+      if (line.startsWith('```')) {
+        openIndex = index;
+        break;
+      }
     }
-    final end = lines.lastWhere((l) => l.trim() == '```', orElse: () => '');
-    if (end.isEmpty) {
-      return lines.skip(1).join('\n').trim();
+    if (openIndex < 0) {
+      return _stripTrailingMalformedFenceLines(input.trim());
     }
-    return lines.sublist(1, lines.length - 1).join('\n').trim();
+    final body = <String>[];
+    final openTrimmed = lines[openIndex].trim();
+    if (openTrimmed.length > 3) {
+      final afterFence = openTrimmed.substring(3).trimLeft();
+      if (afterFence.isNotEmpty) {
+        body.add(afterFence);
+      }
+    }
+    for (var index = openIndex + 1; index < lines.length; index++) {
+      final trimmed = lines[index].trim();
+      if (trimmed.startsWith('```') && trimmed.length >= 3) {
+        break;
+      }
+      body.add(lines[index]);
+    }
+    return _stripTrailingMalformedFenceLines(body.join('\n')).trimRight();
+  }
+
+  /// Drops decorative fence fragments the model started but never closed after
+  /// `json_complete` (for example a lone `` ` `` line after the closing `}`).
+  static String _stripTrailingMalformedFenceLines(String input) {
+    final lines = input.split('\n');
+    while (lines.isNotEmpty) {
+      final last = lines.last.trim();
+      if (last.isEmpty) {
+        lines.removeLast();
+        continue;
+      }
+      if (RegExp(r'^`{1,3}$').hasMatch(last)) {
+        lines.removeLast();
+        continue;
+      }
+      break;
+    }
+    return lines.join('\n');
+  }
+
+  /// Escapes raw control characters small models emit inside JSON string values.
+  /// Does not rewrite valid Unicode punctuation such as curly quotes.
+  static String _escapeControlCharactersInStrings(String input) {
+    final output = StringBuffer();
+    var inString = false;
+    var escaped = false;
+    for (var index = 0; index < input.length; index++) {
+      final char = input[index];
+      if (!inString) {
+        output.write(char);
+        if (char == '"') {
+          inString = true;
+        }
+        continue;
+      }
+      if (escaped) {
+        output.write(char);
+        escaped = false;
+        continue;
+      }
+      if (char == r'\') {
+        output.write(char);
+        escaped = true;
+        continue;
+      }
+      if (char == '"') {
+        output.write(char);
+        inString = false;
+        continue;
+      }
+      switch (char) {
+        case '\n':
+          output.write(r'\n');
+        case '\r':
+          output.write(r'\r');
+        case '\t':
+          output.write(r'\t');
+        default:
+          output.write(char);
+      }
+    }
+    return output.toString();
+  }
+
+  static int? _countTopLevelObjects(String input) {
+    var count = 0;
+    var depth = 0;
+    var inString = false;
+    var escaped = false;
+    for (var index = 0; index < input.length; index++) {
+      final char = input[index];
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+        } else if (char == r'\') {
+          escaped = true;
+        } else if (char == '"') {
+          inString = false;
+        }
+        continue;
+      }
+      if (char == '"') {
+        inString = true;
+      } else if (char == '{') {
+        if (depth == 0) {
+          count += 1;
+        }
+        depth += 1;
+      } else if (char == '}') {
+        depth -= 1;
+      }
+    }
+    return depth == 0 ? count : null;
   }
 
   /// Returns the first balanced `{...}` span, so trailing tokens emitted after

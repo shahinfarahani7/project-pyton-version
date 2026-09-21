@@ -72,6 +72,8 @@ class WorkerHomeTab extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
+        _LivePortalTaskPanel(controller: controller),
+        const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
             final cols = constraints.maxWidth >= 900 ? 4 : 2;
@@ -312,7 +314,9 @@ class _AvailabilityCard extends StatelessWidget {
               if (!controller.isGemmaReady && controller.backendOnline && !controller.usesDevMockInference) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Model not ready — on x86 MEmu use dev mock (auto), or sideload on ARM64 device.',
+                  controller.isX86Android
+                      ? 'Model not ready — on x86 emulator Qwen runs on CPU (slower but stable).'
+                      : 'Model not ready — open Models tab to finish setup.',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -326,6 +330,129 @@ class _AvailabilityCard extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LivePortalTaskPanel extends StatelessWidget {
+  const _LivePortalTaskPanel({required this.controller});
+
+  final WorkerAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = controller.executionStatus;
+    final taskId = status.taskId ?? controller.lastPortalTaskId;
+    final listening = controller.isAutoAssigning &&
+        status.phase == ExecutionPhase.waitingForAssignment;
+    final active = taskId != null ||
+        status.phase == ExecutionPhase.running ||
+        status.phase == ExecutionPhase.preparing ||
+        status.phase == ExecutionPhase.completed ||
+        status.phase == ExecutionPhase.failed;
+
+    final (phaseLabel, phaseColor) = switch (status.phase) {
+      ExecutionPhase.waitingForAssignment => ('Listening', WorkerColors.info),
+      ExecutionPhase.preparing => ('Preparing', WorkerColors.warning),
+      ExecutionPhase.running => ('Running', WorkerColors.primary),
+      ExecutionPhase.completed => ('Completed', WorkerColors.success),
+      ExecutionPhase.failed => ('Failed', WorkerColors.error),
+      _ when controller.available && controller.backendOnline =>
+        ('Ready', WorkerColors.success),
+      _ => ('Idle', WorkerColors.onSurfaceVariant),
+    };
+
+    final headline = switch (status.phase) {
+      ExecutionPhase.waitingForAssignment =>
+        'Waiting for a portal task…',
+      ExecutionPhase.preparing || ExecutionPhase.running =>
+        'Running ${status.taskType ?? 'task'}',
+      ExecutionPhase.completed => 'Last task completed',
+      ExecutionPhase.failed => 'Last task failed',
+      _ when controller.available && controller.backendOnline =>
+        'Ready — create a task in the portal',
+      _ => 'Turn availability ON to receive portal tasks',
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: workerPanelDecoration(
+        borderColor: active || listening
+            ? WorkerColors.primary.withValues(alpha: 0.45)
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                listening ? Icons.radar : Icons.assignment_outlined,
+                color: phaseColor,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Live portal task',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              WorkerStatusChip(label: phaseLabel, active: listening || active),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            headline,
+            style: const TextStyle(
+              color: WorkerColors.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (taskId != null) ...[
+            const SizedBox(height: 8),
+            SelectableText(
+              taskId,
+              style: const TextStyle(
+                color: WorkerColors.onSurfaceVariant,
+                fontFamily: 'monospace',
+                fontSize: 12,
+              ),
+            ),
+          ],
+          if (status.detail != null &&
+              (status.phase == ExecutionPhase.completed ||
+                  status.phase == ExecutionPhase.failed ||
+                  status.phase == ExecutionPhase.running ||
+                  status.phase == ExecutionPhase.preparing)) ...[
+            const SizedBox(height: 10),
+            SelectableText(
+              status.detail!,
+              style: const TextStyle(color: WorkerColors.onSurfaceVariant),
+            ),
+          ],
+          if (status.phase == ExecutionPhase.running && status.progressMilli > 0) ...[
+            const SizedBox(height: 10),
+            LinearProgressIndicator(
+              value: status.progressMilli / 1000,
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ],
+          if (controller.deviceId != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              'This device: ${controller.deviceId}',
+              style: const TextStyle(
+                color: WorkerColors.onSurfaceVariant,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

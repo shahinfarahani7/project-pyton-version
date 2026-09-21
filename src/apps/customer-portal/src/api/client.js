@@ -154,7 +154,7 @@ export const portalApi = {
   workspaces: () => fetchJson('/v1/workspaces'),
   tasks: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks`),
   createTask: (workspaceId, payload) => {
-    const { taskType, inputText, inputFile, instructions } = payload;
+    const { taskType, inputText, inputFile, instructions, summarizeOptions } = payload;
     if (inputFile) {
       const formData = new FormData();
       formData.append('taskType', taskType);
@@ -164,12 +164,20 @@ export const portalApi = {
       if (instructions) {
         formData.append('instructions', instructions);
       }
+      if (summarizeOptions) {
+        formData.append('summarizeOptions', JSON.stringify(summarizeOptions));
+      }
       formData.append('inputFile', inputFile);
       return fetchForm(`/v1/workspaces/${workspaceId}/tasks`, formData);
     }
     return fetchJson(`/v1/workspaces/${workspaceId}/tasks`, {
       method: 'POST',
-      body: { taskType, inputText, instructions },
+      body: {
+        taskType,
+        inputText,
+        instructions,
+        ...(summarizeOptions ? { summarizeOptions } : {}),
+      },
     });
   },
   task: (workspaceId, taskId) => fetchJson(`/v1/workspaces/${workspaceId}/tasks/${taskId}`),

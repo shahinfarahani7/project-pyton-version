@@ -21,6 +21,7 @@ import 'inference/ocr/paddle_ocr_installer.dart';
 import 'models/worker_model_catalog.dart';
 import 'platform/worker_runtime_channel.dart';
 import 'runtime/assignment_coordinator.dart';
+import 'runtime/assignment_output_upload_coordinator.dart';
 import 'runtime/checkpoint_manager.dart';
 import 'runtime/dev_mock_inference_adapter.dart';
 import 'runtime/device_snapshot.dart';
@@ -38,6 +39,7 @@ import 'runtime/switchable_inference_adapter.dart';
 import 'runtime/worker_access_token_provider.dart';
 import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_pipeline_log.dart';
+import 'runtime/worker_content_diagnostics.dart';
 import 'runtime/worker_session_lifecycle.dart';
 import 'runtime/worker_session_store.dart';
 import 'tasks/task_execution_engine.dart';
@@ -70,8 +72,10 @@ class WorkerAppController extends ChangeNotifier {
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
     );
+    const inferenceConfig = QwenInferenceConfig();
     _primaryInferenceAdapter = GemmaLiteRtInferenceAdapter(
       runtimeManager: _runtimeManager,
+      maxOutputTokens: inferenceConfig.maxOutputTokens,
     );
     _inference = SwitchableInferenceAdapter(_primaryInferenceAdapter);
 
@@ -81,6 +85,7 @@ class WorkerAppController extends ChangeNotifier {
         QwenTaskProcessor(
           adapter: _primaryInferenceAdapter,
           checkpointManager: _checkpointManager,
+          config: inferenceConfig,
           log: (message) =>
               WorkerPipelineLog.info(WorkerPipelineLog.exec, message),
         );
@@ -100,6 +105,7 @@ class WorkerAppController extends ChangeNotifier {
     _api = WorkerApiClient(
       config: _config,
       httpClient: _http,
+      devClaimAssignments: _devClaimAssignments,
       onAudit: ({required method, required path, required status}) {
         WorkerPipelineLog.info(
           WorkerPipelineLog.api,
@@ -222,6 +228,9 @@ class WorkerAppController extends ChangeNotifier {
 
   String? lastAssignmentId;
 
+  final AssignmentOutputUploadCoordinator _outputUploadCoordinator =
+      AssignmentOutputUploadCoordinator();
+
   String lastSync = 'never';
 
   int batteryPercent = 100;
@@ -263,6 +272,12 @@ class WorkerAppController extends ChangeNotifier {
     defaultValue: false,
   );
 
+  /// Pins dev assignments to this worker device on first poll (local dev default).
+  static const _devClaimAssignments = bool.fromEnvironment(
+    'EDGEMINT_DEV_CLAIM_ASSIGNMENTS',
+    defaultValue: true,
+  );
+
   static const _workerId = String.fromEnvironment(
     'EDGEMINT_WORKER_ID',
     defaultValue: '',
@@ -274,6 +289,7 @@ class WorkerAppController extends ChangeNotifier {
   );
 
   String _runtimeWorkerId = _workerId;
+  String? _runtimeDeviceId;
   String _runtimeAccessToken = _workerAccessToken;
   DateTime? _runtimeTokenExpiresAt;
   bool workerEnrolled = false;
@@ -289,11 +305,14 @@ class WorkerAppController extends ChangeNotifier {
 
   String get workerId => _runtimeWorkerId;
 
+  String? get deviceId => _runtimeDeviceId;
+
   bool get hasManualCredentials =>
       _workerId.isNotEmpty && _workerAccessToken.isNotEmpty;
 
   void _applyWorkerSession(WorkerSessionRecord session) {
     _runtimeWorkerId = session.workerId;
+    _runtimeDeviceId = session.deviceId;
     _runtimeAccessToken = session.accessToken;
     _runtimeTokenExpiresAt = session.expiresAt;
     _lastHeartbeatSequence = session.lastHeartbeatSequence;
@@ -559,6 +578,10 @@ class WorkerAppController extends ChangeNotifier {
 
       isX86Android = snapshot.isX86Android;
 
+      _runtimeManager.configurePreferredBackend(
+        WorkerModelCatalog.preferredInferenceBackend(isX86Android: isX86Android),
+      );
+
       freeStorageMb = snapshot.freeStorageMb;
 
       thermalLabel = switch (snapshot.thermalState) {
@@ -600,7 +623,8 @@ class WorkerAppController extends ChangeNotifier {
       if (isX86Android) {
         _logTask(
           'Android x86/x86_64 detected - '
-          'real ${WorkerModelCatalog.displayName} inference enabled',
+          '${WorkerModelCatalog.displayName} uses CPU backend '
+          '(OpenCL/GPU unavailable on x86 emulator)',
         );
       } else {
         _logTask(
@@ -732,7 +756,7 @@ class WorkerAppController extends ChangeNotifier {
       _enrollmentAttempts = 0;
       _nextEnrollmentAttemptAt = null;
       _logTask(
-        'Worker enrolled: ${session.workerId}',
+        'Worker enrolled: ${session.workerId} device=${session.deviceId}',
         phase: WorkerPipelineLog.enroll,
       );
       _logTask(
@@ -1257,6 +1281,7 @@ class WorkerAppController extends ChangeNotifier {
         WorkerModelCatalog.fileName,
         'Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task',
         'Qwen3-0.6B.litertlm',
+        'gemma-4-E4B-it.litertlm',
       };
 
       for (final modelId in possibleModels) {
@@ -1488,6 +1513,18 @@ class WorkerAppController extends ChangeNotifier {
         'taskType=${assignment.taskType}',
       );
 
+      lastPortalTaskId = assignment.taskId ?? assignment.assignmentId;
+      lastAssignmentId = assignment.assignmentId;
+      executionStatus = ExecutionStatus(
+        phase: ExecutionPhase.preparing,
+        detail:
+            'Portal task ${assignment.taskId ?? assignment.assignmentId} received',
+        taskType: assignment.taskType,
+        assignmentId: assignment.assignmentId,
+        taskId: assignment.taskId,
+      );
+      notifyListeners();
+
       _logTask(
         'Task ${assignment.taskId ?? assignment.assignmentId} '
         '(${assignment.taskType})',
@@ -1565,9 +1602,9 @@ class WorkerAppController extends ChangeNotifier {
 
       await _coordinator.executeAssignment(accepted);
 
-      await _uploadAssignmentOutput(assignment);
+      final uploadAccepted = await _uploadAssignmentOutput(assignment);
 
-      if (executionStatus.phase == ExecutionPhase.completed) {
+      if (uploadAccepted && executionStatus.phase == ExecutionPhase.completed) {
         tasksProcessed++;
       }
 
@@ -1757,6 +1794,47 @@ class WorkerAppController extends ChangeNotifier {
       _logTask('[TASK PROMPT] ${_preview(prompt)}');
     }
 
+    final inputText = manifest['inputText'] as String?;
+    final contentText = manifest['contentText'] as String?;
+    final instructions = manifest['instructions'] as String?;
+    final options = manifest['options'] as Map<String, dynamic>?;
+    final summarizeOptions = options?['summarize'];
+    WorkerContentDiagnostics.logText(
+      label: 'TASK MANIFEST PROMPT (preview only, not inference input)',
+      content: prompt,
+      metadata: {
+        'taskId': assignment.taskId ?? assignment.assignmentId,
+        'assignmentId': assignment.assignmentId,
+        'taskType': assignment.taskType,
+      },
+    );
+    WorkerContentDiagnostics.logText(
+      label: 'TASK SOURCE inputText',
+      content: inputText ?? contentText,
+      metadata: {
+        'taskId': assignment.taskId ?? assignment.assignmentId,
+        'assignmentId': assignment.assignmentId,
+      },
+    );
+    WorkerContentDiagnostics.logText(
+      label: 'TASK INSTRUCTIONS',
+      content: instructions,
+      metadata: {
+        'taskId': assignment.taskId ?? assignment.assignmentId,
+        'assignmentId': assignment.assignmentId,
+      },
+    );
+    if (summarizeOptions != null) {
+      WorkerContentDiagnostics.logText(
+        label: 'TASK OPTIONS summarize',
+        content: jsonEncode(summarizeOptions),
+        metadata: {
+          'taskId': assignment.taskId ?? assignment.assignmentId,
+          'assignmentId': assignment.assignmentId,
+        },
+      );
+    }
+
     final contentUrl = manifest['inputContentUrl'] as String?;
 
     final Uint8List inputBytes;
@@ -1853,15 +1931,33 @@ class WorkerAppController extends ChangeNotifier {
   // Assignment output
   // ---------------------------------------------------------------------------
 
-  Future<void> _uploadAssignmentOutput(WorkerAssignment assignment) async {
+  Future<bool> _uploadAssignmentOutput(WorkerAssignment assignment) async {
     if (executionStatus.phase != ExecutionPhase.completed) {
-      return;
+      return false;
+    }
+
+    final assignmentId = assignment.assignmentId;
+    if (_outputUploadCoordinator.statusFor(assignmentId) ==
+        AssignmentOutputUploadStatus.accepted) {
+      return true;
+    }
+    if (_outputUploadCoordinator.shouldSkipUpload(assignmentId)) {
+      _logTask(
+        'Output upload skipped (${_outputUploadCoordinator.statusFor(assignmentId).name}): '
+        '$assignmentId',
+      );
+      return false;
+    }
+    if (!_outputUploadCoordinator.markInFlight(assignmentId)) {
+      _logTask('Output upload skipped (concurrent): $assignmentId');
+      return false;
     }
 
     final resultText = executionStatus.detail;
 
     if (resultText == null || resultText.isEmpty) {
-      return;
+      _outputUploadCoordinator.releaseInFlight(assignmentId);
+      return false;
     }
 
     try {
@@ -1913,41 +2009,99 @@ class WorkerAppController extends ChangeNotifier {
         'result="${_preview(resultText)}"',
       );
 
-      final response = await _http
-          .post(
-            uploadUrl,
-            headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode(payload),
-          )
-          .timeout(const Duration(seconds: 15));
+      final encodedPayload = jsonEncode(payload);
+      for (
+        var attempt = 0;
+        attempt < _outputUploadCoordinator.maxAttempts;
+        attempt += 1
+      ) {
+        try {
+          final response = await _http
+              .post(
+                uploadUrl,
+                headers: const {'Content-Type': 'application/json'},
+                body: encodedPayload,
+              )
+              .timeout(const Duration(seconds: 15));
 
-      _logTask(
-        '[OUTPUT RESPONSE] '
-        'status=${response.statusCode} '
-        'taskId=${assignment.taskId ?? "-"}',
-      );
+          _logTask(
+            '[OUTPUT RESPONSE] '
+            'status=${response.statusCode} '
+            'taskId=${assignment.taskId ?? "-"} '
+            'attempt=${attempt + 1}',
+          );
 
-      if (kDebugMode || _verboseTaskLogs) {
-        _logTask(
-          '[OUTPUT RESPONSE BODY] '
-          '${_preview(response.body)}',
-        );
+          if (kDebugMode || _verboseTaskLogs) {
+            _logTask(
+              '[OUTPUT RESPONSE BODY] '
+              '${_preview(response.body)}',
+            );
+          }
+
+          if (response.statusCode >= 200 && response.statusCode < 300) {
+            _outputUploadCoordinator.markAccepted(assignmentId);
+            _logTask(
+              'Portal task '
+              '${assignment.taskId ?? "?"} '
+              'marked completed',
+            );
+            return true;
+          }
+
+          if (_outputUploadCoordinator.isTerminalHttpStatus(
+            response.statusCode,
+          )) {
+            _outputUploadCoordinator.markRejectedTerminal(assignmentId);
+            executionStatus = executionStatus.copyWith(
+              phase: ExecutionPhase.failed,
+              detail:
+                  'Portal rejected output: '
+                  '${_preview(response.body, maxLength: 240)}',
+            );
+            notifyListeners();
+            return false;
+          }
+
+          if (_outputUploadCoordinator.isRetryableHttpStatus(
+                response.statusCode,
+              ) &&
+              attempt + 1 < _outputUploadCoordinator.maxAttempts) {
+            _logTask(
+              'Output upload retryable HTTP ${response.statusCode}; '
+              'retry ${attempt + 2}/${_outputUploadCoordinator.maxAttempts}',
+            );
+            await Future<void>.delayed(
+              _outputUploadCoordinator.backoffForAttempt(attempt),
+            );
+            continue;
+          }
+
+          _logTask('Output upload HTTP ${response.statusCode}');
+          _outputUploadCoordinator.releaseInFlight(assignmentId);
+          return false;
+        } on TimeoutException catch (error, stackTrace) {
+          if (attempt + 1 < _outputUploadCoordinator.maxAttempts) {
+            _logTask(
+              'Output upload timeout; '
+              'retry ${attempt + 2}/${_outputUploadCoordinator.maxAttempts}',
+            );
+            await Future<void>.delayed(
+              _outputUploadCoordinator.backoffForAttempt(attempt),
+            );
+            continue;
+          }
+          _logError('Output upload timed out', error, stackTrace);
+          _outputUploadCoordinator.releaseInFlight(assignmentId);
+          return false;
+        }
       }
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        _logTask(
-          'Portal task '
-          '${assignment.taskId ?? "?"} '
-          'marked completed',
-        );
-      } else {
-        _logTask(
-          'Output upload HTTP '
-          '${response.statusCode}',
-        );
-      }
+      _outputUploadCoordinator.releaseInFlight(assignmentId);
+      return false;
     } catch (error, stackTrace) {
       _logError('Output upload failed', error, stackTrace);
+      _outputUploadCoordinator.releaseInFlight(assignmentId);
+      return false;
     }
   }
 
@@ -1964,6 +2118,8 @@ class WorkerAppController extends ChangeNotifier {
       'task=${status.taskType ?? "-"} '
       'progress=${status.progressMilli}',
     );
+
+    notifyListeners();
   }
 
   // ---------------------------------------------------------------------------

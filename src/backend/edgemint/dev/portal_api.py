@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -16,15 +18,37 @@ from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
 from edgemint.tasks.catalog_closure import validate_queue_admission
 from edgemint.tasks.errors import TaskServiceError
+from edgemint.results.text_summarize_constraints import (
+    SummarizeConstraintsError,
+    parse_summarize_constraints,
+)
 
 router = APIRouter()
 session_store = BrowserSessionStore()
+
+_MAX_INPUT_TEXT_CHARS = 32_000
+_MAX_INSTRUCTIONS_CHARS = 8_000
+
+
+def _bounded_form_text(
+    value: object | None,
+    *,
+    max_length: int,
+    error_code: str,
+) -> str | None:
+    if value is None:
+        return None
+    text = str(value)
+    if len(text) > max_length:
+        raise ValueError(error_code)
+    return text
 
 
 class DevCreateTaskRequest(BaseModel):
     taskType: str = Field(min_length=1, max_length=128)
     inputText: str | None = Field(default=None, max_length=32_000)
     instructions: str | None = Field(default=None, max_length=8_000)
+    summarizeOptions: dict[str, Any] | None = None
 
 
 async def _read_uploaded_file(upload: object | None) -> tuple[str | None, str | None, bytes | None]:
@@ -39,6 +63,28 @@ async def _read_uploaded_file(upload: object | None) -> tuple[str | None, str | 
     return str(file_name), file_mime, file_bytes
 
 
+def _parse_summarize_options(raw: object | None) -> dict[str, Any] | None:
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(422, "SUMMARIZE_OPTIONS_INVALID_JSON") from exc
+        if not isinstance(parsed, dict):
+            raise HTTPException(422, "SUMMARIZE_OPTIONS_MUST_BE_OBJECT")
+        raw = parsed
+    if not isinstance(raw, dict):
+        raise HTTPException(422, "SUMMARIZE_OPTIONS_MUST_BE_OBJECT")
+    try:
+        constraints = parse_summarize_constraints(raw)
+    except SummarizeConstraintsError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if constraints is None:
+        return None
+    return raw
+
+
 async def _create_task_from_form(
     workspace_id: UUID,
     *,
@@ -48,6 +94,7 @@ async def _create_task_from_form(
     file_name: str | None,
     file_mime: str | None,
     file_bytes: bytes | None,
+    summarize_options: dict[str, Any] | None = None,
 ) -> dict:
     if not task_type.strip():
         raise HTTPException(422, "TASK_TYPE_REQUIRED")
@@ -73,6 +120,7 @@ async def _create_task_from_form(
         file_name=file_name,
         file_mime=file_mime,
         file_bytes=file_bytes,
+        summarize_options=summarize_options,
     )
     return task_type_catalog.enrich_task_row(task)
 
@@ -188,18 +236,27 @@ async def create_task(
         if "multipart/form-data" in content_type:
             form = await request.form()
             task_type = str(form.get("taskType") or "").strip()
-            input_text = form.get("inputText")
-            instructions = form.get("instructions")
+            input_text = _bounded_form_text(
+                form.get("inputText"),
+                max_length=_MAX_INPUT_TEXT_CHARS,
+                error_code="INPUT_TEXT_TOO_LONG",
+            )
+            instructions = _bounded_form_text(
+                form.get("instructions"),
+                max_length=_MAX_INSTRUCTIONS_CHARS,
+                error_code="INSTRUCTIONS_TOO_LONG",
+            )
             upload = form.get("inputFile")
             file_name, file_mime, file_bytes = await _read_uploaded_file(upload)
             return await _create_task_from_form(
                 workspace_id,
                 task_type=task_type,
-                input_text=str(input_text) if input_text else None,
-                instructions=str(instructions) if instructions else None,
+                input_text=input_text,
+                instructions=instructions,
                 file_name=file_name,
                 file_mime=file_mime,
                 file_bytes=file_bytes,
+                summarize_options=_parse_summarize_options(form.get("summarizeOptions")),
             )
         payload = DevCreateTaskRequest.model_validate(await request.json())
         return await _create_task_from_form(
@@ -210,6 +267,7 @@ async def create_task(
             file_name=None,
             file_mime=None,
             file_bytes=None,
+            summarize_options=payload.summarizeOptions,
         )
     except ValueError as exc:
         if str(exc) == "INPUT_FILE_TOO_LARGE":
@@ -217,6 +275,8 @@ async def create_task(
         if str(exc) in {
             "UNSUPPORTED_TASK_TYPE",
             "INPUT_TEXT_REQUIRED",
+            "INPUT_TEXT_TOO_LONG",
+            "INSTRUCTIONS_TOO_LONG",
             "INPUT_IMAGE_REQUIRED",
             "INPUT_FILE_OR_TEXT_REQUIRED",
             "TASK_TYPE_REQUIRED",

@@ -19,6 +19,41 @@ def test_enqueue_assignment_falls_back_to_local_queue_on_http_error() -> None:
             enqueue.assert_called_once_with(task_id="tsk_dev_abc", task_type="text.generate")
 
 
+def test_dev_assignment_exclusive_device_claim() -> None:
+    worker_assignments._pending.clear()
+    worker_assignments._completed.clear()
+    worker_assignments._exclusive_device_public_id = None
+
+    worker_assignments.enqueue_dev_assignment(
+        task_id="tsk_dev_local_only",
+        task_type="text.summarize",
+    )
+
+    blocked = worker_assignments.claim_next_assignment(
+        device_public_id="dev_remote_worker",
+        claim_exclusive=False,
+    )
+    assert blocked is None
+
+    local = worker_assignments.claim_next_assignment(
+        device_public_id="dev_local_worker",
+        claim_exclusive=True,
+    )
+    assert local is not None
+    assert local["taskId"] == "tsk_dev_local_only"
+    assert worker_assignments.preferred_device_public_id() == "dev_local_worker"
+
+    worker_assignments.enqueue_dev_assignment(
+        task_id="tsk_dev_second",
+        task_type="text.summarize",
+    )
+    stolen = worker_assignments.claim_next_assignment(
+        device_public_id="dev_remote_worker",
+        claim_exclusive=False,
+    )
+    assert stolen is None
+
+
 def test_dev_assignment_deadlines_begin_when_delivered(
     monkeypatch,
 ) -> None:

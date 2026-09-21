@@ -1,0 +1,9 @@
+```json
+{
+  "summary": "A customer reports a delayed delivery and an incorrect substitution in their grocery order.",
+  "keyPoints": ["Delayed delivery of order B410 by 40 minutes.", "Incorrect substitution of regular milk in order B426.", "Pending refund for incorrect milk in B426.", "Uncertainty about the substitution approval process in B426."],
+  "mainComplaint": "Delayed delivery and incorrect substitution in grocery orders.",
+  "suggestedImprovement": "Provide clear and accurate delivery estimates and support for substitution decisions.",
+  "missingOrUnclear": ["Pending refund for incorrect milk in B426.", "Uncertainty about the substitution approval process in B426."]
+}
+`

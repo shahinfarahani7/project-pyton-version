@@ -1,6 +1,8 @@
 import 'package:edgemint_worker/validation/json_output_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'synthetic_json_extract_fixtures.dart';
+
 void main() {
   test('parses JSON after stripping think blocks', () {
     const raw = '<think>internal reasoning</think>{"label":"invoice","confidence":0.9}';
@@ -34,10 +36,22 @@ void main() {
     expect(parsed?['mainComplaint'], 'Late delivery');
   });
 
-  test('keeps the first object when the model keeps decoding past it', () {
+  test('rejects two complete top-level objects as ambiguous', () {
     const raw =
         '{"summary":"first","keyPoints":["a"],"missingOrUnclear":[]}'
-        '{"summary":"second"}trailing prose';
+        '{"summary":"second","keyPoints":["b"],"missingOrUnclear":[]}';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isFalse);
+    expect(
+      extract.rejectionReason,
+      'json_extract_ambiguous_multiple_objects',
+    );
+  });
+
+  test('keeps the first object when trailing prose follows it', () {
+    const raw =
+        '{"summary":"first","keyPoints":["a"],"missingOrUnclear":[]}'
+        'trailing prose';
     final parsed = JsonOutputValidator.parseJsonObject(raw);
     expect(parsed?['summary'], 'first');
   });
@@ -203,8 +217,74 @@ void main() {
     expect(trimmed['summary'], 'alpha beta gamma');
   });
 
+  test('extracts JSON when the opening brace is on the fence line', () {
+    const raw =
+        '```json {\n'
+        '  "summary": "ok",\n'
+        '  "keyPoints": ["a"],\n'
+        '  "mainComplaint": "",\n'
+        '  "suggestedImprovement": "",\n'
+        '  "missingOrUnclear": []\n'
+        '}\n'
+        '`';
+    final result = JsonOutputValidator.extractJsonObject(raw);
+    expect(result.ok, isTrue, reason: result.rejectionReason);
+    expect(result.object!['summary'], 'ok');
+  });
+
   test('returns null when no object is present', () {
     expect(JsonOutputValidator.parseJsonObject('no json here'), isNull);
     expect(JsonOutputValidator.parseJsonObject(''), isNull);
+  });
+
+  test('extracts fenced JSON with malformed closing fence and literal newlines',
+      () {
+    const raw = syntheticLiteralNewlineInSummary;
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue, reason: extract.rejectionReason);
+    expect((extract.object!['keyPoints'] as List).length, 4);
+  });
+
+  test('preserves curly quote characters in valid JSON strings', () {
+    const raw = syntheticValidCurlyQuotesInSummary;
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue, reason: extract.rejectionReason);
+    expect(extract.object!['summary'], contains('“five minutes away”'));
+  });
+
+  test('extracts JSON after leading prose and opening fence', () {
+    const raw =
+        'Here is the chunk summary:\n'
+        '```json\n'
+        '{"summary":"ok","keyPoints":["a"],"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}\n'
+        '``';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue);
+    expect(extract.object!['summary'], 'ok');
+  });
+
+  test('rejects multiple top-level objects explicitly', () {
+    const raw =
+        '{"summary":"first","keyPoints":["a"],"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}'
+        '{"summary":"second","keyPoints":["b"],"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isFalse);
+    expect(
+      extract.rejectionReason,
+      'json_extract_ambiguous_multiple_objects',
+    );
+  });
+
+  test('does not silently complete genuinely truncated JSON', () {
+    const raw =
+        '{"summary":"Deliveries were late.",'
+        '"keyPoints":["Order A184 arrived at 19:35","Refund is pen';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    // Salvage may recover partial facts for non-map repair paths, but must not
+    // report a clean top-level object count when braces are unbalanced.
+    expect(extract.rejectionStage, isNot('schema'));
+    if (extract.ok) {
+      expect(extract.object!.containsKey('suggestedImprovement'), isFalse);
+    }
   });
 }

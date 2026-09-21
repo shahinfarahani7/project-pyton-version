@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import '../inference/llm/summarize_task_constraints.dart';
+
 class WorkerTaskInput {
   const WorkerTaskInput({
     this.imageBytes,
@@ -31,6 +33,7 @@ class WorkerTaskOptions {
     this.outputSchema,
     this.allowedLabels,
     this.ocrOnly = false,
+    this.summarize,
   });
 
   final List<String> languages;
@@ -39,10 +42,16 @@ class WorkerTaskOptions {
   final Map<String, dynamic>? outputSchema;
   final List<String>? allowedLabels;
   final bool ocrOnly;
+  final SummarizeTaskConstraintsV1? summarize;
 
   factory WorkerTaskOptions.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
       return const WorkerTaskOptions();
+    }
+    SummarizeTaskConstraintsV1? summarize;
+    final summarizeRaw = json['summarize'];
+    if (summarizeRaw is Map<String, dynamic>) {
+      summarize = SummarizeTaskConstraints.parseOptionsMap(summarizeRaw);
     }
     return WorkerTaskOptions(
       languages:
@@ -57,6 +66,7 @@ class WorkerTaskOptions {
           ?.map((e) => e.toString())
           .toList(),
       ocrOnly: json['ocrOnly'] == true,
+      summarize: summarize,
     );
   }
 }

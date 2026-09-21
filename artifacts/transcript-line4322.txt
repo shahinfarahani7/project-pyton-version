@@ -1,0 +1,9 @@
+<timestamp>Monday, Sep 21, 2026, 10:54 AM (UTC+3:30)</timestamp>
+<user_query>
+چهار نکته باقی مانده:
+
+بودجهٔ Reduce: عبارت with sample partials JSON کافی نیست. باید اندازهٔ prompt با خروجی واقعی تمام chunkها، درست قبل از inference بررسی شود؛ نمونهٔ فرضی تضمین نمی‌کند متن داخل context جا شود.
+وضعیت Portal بعد از 422: تغییر ExecutionPhase.failed در اپ به‌تنهایی ثابت نمی‌کند وضعیت ذخیره‌شدهٔ Portal هم درست است. تست integration باید نشان دهد تسک موفق نمی‌شود، در حالت running باقی نمی‌ماند و upload بی‌پایان تکرار نمی‌شود.
+تست‌های Backend: smoke test جای pytest را نمی‌گیرد. تست‌های اعتبارسنجی و پذیرش خروجی باید در محیط backend اجرا شوند؛ همچنین ثابت شود constraints از تسک ذخیره‌شده در backend خوانده می‌شوند، نه metadata ارسالی Worker.
+اتصال Portal: باید تأیید شود Portal واقعاً options.summarize را ارسال و backend ذخیره می‌کند. صرف ارائهٔ JSON نمونه، پیاده‌سازی این اتصال را ثابت نمی‌کند.
+</user_query>

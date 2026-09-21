@@ -178,7 +178,11 @@ def _needs_input_blob(
     return _is_image(file_mime=file_mime, file_name=file_name, file_bytes=file_bytes)
 
 
-def _options_for(task_type: str) -> dict[str, Any]:
+def _options_for(
+    task_type: str,
+    *,
+    summarize_options: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if task_type in _FLEX_OUTPUT_SCHEMAS:
         return {"maxOutputTokens": 512, "outputSchema": _FLEX_OUTPUT_SCHEMAS[task_type]}
     family = pipeline_family(task_type)
@@ -199,6 +203,14 @@ def _options_for(task_type: str) -> dict[str, Any]:
         }
     if family == "document.ocr":
         return {"languages": ["fa", "en"], "minOcrConfidence": 0.55, "ocrOnly": True}
+    if family == "text.summarize":
+        options: dict[str, Any] = {
+            "languages": ["fa", "en"],
+            "minOcrConfidence": 0.55,
+        }
+        if summarize_options:
+            options["summarize"] = summarize_options
+        return options
     return {"languages": ["fa", "en"], "minOcrConfidence": 0.55}
 
 
@@ -277,13 +289,14 @@ def register_task(
     file_name: str | None = None,
     file_mime: str | None = None,
     file_bytes: bytes | None = None,
+    summarize_options: dict[str, Any] | None = None,
 ) -> None:
     if file_bytes and len(file_bytes) > _MAX_FILE_BYTES:
         raise ValueError("INPUT_FILE_TOO_LARGE")
 
     decoded_text = _decode_upload(file_name=file_name, file_mime=file_mime, file_bytes=file_bytes)
     content_text = (input_text or decoded_text or "").strip()[:_MAX_TEXT_CHARS] or None
-    user_note = (instructions or "").strip() or None
+    user_note = instructions if instructions and instructions.strip() else None
     has_custom = bool(content_text or file_bytes or user_note)
     store_blob = _needs_input_blob(
         task_type=task_type,
@@ -347,7 +360,7 @@ def register_task(
         customInput=True,
         inputLabel=title,
         outputKind="image" if task_type == "image.remove_background" else "text",
-        options=_options_for(task_type),
+        options=_options_for(task_type, summarize_options=summarize_options),
     )
     flex_data = _flex_input_data(task_type, content_text)
     if flex_data is not None:
@@ -426,6 +439,16 @@ def record_output(
 ) -> None:
     from edgemint.dev import fixtures
 
+    existing = fixtures.dev_task_by_id(task_id)
+    if existing is not None and existing.get("lifecycleStatus") == "succeeded":
+        _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
+        _TASK_INPUTS[task_id]["lastOutput"] = {
+            "resultText": result_text[:_MAX_TEXT_CHARS],
+            "metrics": metrics or {},
+            "hasResultFile": bool(result_file_bytes),
+        }
+        return
+
     workspace_id = _workspace_id_for_task(task_id)
     result_artifact_url = None
     result_mime = result_mime_type
@@ -445,13 +468,13 @@ def record_output(
         task_id,
         lifecycle_status="succeeded",
         execution_status="completed",
-        result_preview=result_text,
+        result_text=result_text,
         result_artifact_url=result_artifact_url,
         result_mime_type=result_mime,
     )
     _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
     _TASK_INPUTS[task_id]["lastOutput"] = {
-        "resultText": result_text[:4000],
+        "resultText": result_text[:_MAX_TEXT_CHARS],
         "metrics": metrics or {},
         "hasResultFile": bool(result_file_bytes),
     }

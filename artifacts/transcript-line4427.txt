@@ -1,0 +1,24 @@
+<timestamp>Monday, Sep 21, 2026, 11:24 AM (UTC+3:30)</timestamp>
+<user_query>
+Perform a read-only diagnosis of the latest grocery-feedback run. Do not modify the pipeline or model settings.
+
+The log shows chunks=1, so cross-chunk information loss is not supported by this run.
+
+Inspect the final prompt construction immediately before the model call. Verify whether it preserves:
+
+1. The complete source text.
+2. The sentence saying the customer declined the $10 coupon because it required a $50 minimum purchase.
+3. The explicit main concern: dietary substitution despite disabled substitutions, followed by an unsupported approval claim.
+4. All user instructions, including the final refund prohibition.
+
+Also determine:
+
+* Whether options.summarize was actually supplied.
+* Whether “2 concise sentences” reaches the model or appears only in the earlier task preview.
+* Whether any source text is shortened, filtered, or replaced before inference.
+
+Use existing captured data if available. If the exact runtime prompt was not saved, distinguish code-based reconstruction from verified runtime evidence; do not claim they are identical.
+
+Report the exact findings and any missing evidence. Do not implement another fix unless you identify a concrete defect.
+
+</user_query>

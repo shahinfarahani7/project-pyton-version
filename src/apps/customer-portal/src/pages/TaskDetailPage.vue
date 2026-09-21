@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import { useTaskEventStream } from '../composables/useTaskEventStream';
+import ExpandableText from '../components/ExpandableText.vue';
 import MobilePageHeader from '../components/ui/MobilePageHeader.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
@@ -69,6 +70,14 @@ const statusClass = computed(() => {
 
 const resultState = computed(() => taskResultState(task.value));
 
+const sourceText = computed(
+  () => task.value?.inputText ?? task.value?.inputPreview ?? '',
+);
+
+const resultText = computed(
+  () => task.value?.resultText ?? task.value?.resultPreview ?? '',
+);
+
 onMounted(() => {
   void loadTask();
 });
@@ -113,11 +122,11 @@ watch(taskId, () => {
           <div><dt>{{ t('tasks.colInput') }}</dt><dd>{{ task.inputLabel ?? '—' }}</dd></div>
           <div v-if="task.instructions">
             <dt>{{ t('tasks.instructions') }}</dt>
-            <dd class="em-task-detail-text">{{ task.instructions }}</dd>
+            <dd><ExpandableText :text="task.instructions" :preview-chars="500" /></dd>
           </div>
-          <div v-if="task.inputPreview">
-            <dt>{{ t('tasks.inputPreview') }}</dt>
-            <dd class="em-task-detail-text">{{ task.inputPreview }}</dd>
+          <div v-if="sourceText">
+            <dt>{{ t('tasks.fullInput') }}</dt>
+            <dd><ExpandableText :text="sourceText" :preview-chars="500" /></dd>
           </div>
         </dl>
           </article>
@@ -157,7 +166,7 @@ watch(taskId, () => {
 
         <div v-if="resultState.kind === 'text'" class="em-result-summary">
           <p class="em-result-summary__label">{{ t('tasks.resultPreview') }}</p>
-          <p class="em-result-summary__value em-task-detail-text">{{ task.resultPreview }}</p>
+          <ExpandableText :text="resultText" :preview-chars="500" monospace />
         </div>
 
         <div v-else-if="resultState.kind === 'file'" class="em-result-summary">
@@ -177,6 +186,7 @@ watch(taskId, () => {
 
         <details class="em-raw-json">
           <summary class="em-section-title">{{ t('tasks.rawResponse') }}</summary>
+          <p class="md-hint">{{ t('tasks.rawResponseNote') }}</p>
           <pre class="em-code-block">{{ JSON.stringify(task, null, 2) }}</pre>
         </details>
       </article>

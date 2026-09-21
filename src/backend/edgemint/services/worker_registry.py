@@ -510,7 +510,7 @@ if _dev_worker_assignments_enabled():
     @app.get("/internal/dev/assignments", tags=["dev-assignments"])
     async def dev_list_assignments() -> JSONResponse:
         return JSONResponse(
-            {"items": dev_worker_assignments.list_pending_assignments()},
+            dev_worker_assignments.dev_assignment_state(),
             status_code=200,
         )
 
@@ -550,12 +550,34 @@ if _dev_worker_assignments_enabled():
         return response
 
     @app.get("/assignments:next", tags=["dev-assignments"])
-    async def dev_next_assignment(token: WorkerBearerToken) -> JSONResponse:
-        _ = token
-        assignment = dev_worker_assignments.pop_next_assignment()
+    async def dev_next_assignment(
+        token: WorkerBearerToken,
+        claim_assignments: str | None = Header(
+            default=None,
+            alias="X-EdgeMint-Dev-Claim-Assignments",
+        ),
+    ) -> JSONResponse:
+        from edgemint.workers.sessions import resolve_worker_session
+
+        device_public_id: str | None = None
+        try:
+            async with transaction(isolation="READ COMMITTED") as connection:
+                session = await resolve_worker_session(connection, access_token=token)
+            device_public_id = session.device_public_id
+        except Exception:
+            pass
+
+        claim_exclusive = claim_assignments == "1"
+        assignment = dev_worker_assignments.claim_next_assignment(
+            device_public_id=device_public_id,
+            claim_exclusive=claim_exclusive,
+        )
         if assignment is None:
             await _sync_portal_tasks_to_worker_queue()
-            assignment = dev_worker_assignments.pop_next_assignment()
+            assignment = dev_worker_assignments.claim_next_assignment(
+                device_public_id=device_public_id,
+                claim_exclusive=claim_exclusive,
+            )
         if assignment is None:
             return Response(status_code=204)
         task_id = assignment.get("taskId") or assignment["assignmentId"]

@@ -9,6 +9,11 @@ from jsonschema.exceptions import ValidationError
 
 from edgemint.results.semantic_quality import evaluate_semantic_quality
 from edgemint.results.task_type_schemas import output_schema_for
+from edgemint.results.text_summarize_constraints import (
+    normalize_summarize_data,
+    summarize_constraints_from_manifest,
+    validate_summarize_data,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,7 +117,7 @@ def _document_ocr_business_rules(
 
 
 def _text_summarize_business_rules(
-    _context: ResultValidationContext,
+    context: ResultValidationContext,
     payload: dict[str, Any],
 ) -> tuple[bool, str | None]:
     status = str(payload.get("status", "")).lower()
@@ -121,12 +126,11 @@ def _text_summarize_business_rules(
     data = payload.get("data")
     if not isinstance(data, dict):
         return False, "summarize data must be an object"
-    summary = data.get("summary")
-    key_points = data.get("keyPoints")
-    if not isinstance(summary, str) or summary.strip() == "":
-        return False, "summarize result requires non-empty summary"
-    if not isinstance(key_points, list) or len(key_points) == 0:
-        return False, "summarize result requires at least one keyPoint"
+    constraints = summarize_constraints_from_manifest(context.task_input)
+    normalized = normalize_summarize_data(data)
+    outcome = validate_summarize_data(normalized, constraints)
+    if not outcome.passed:
+        return False, outcome.blocking_violations[0]
     return True, None
 
 

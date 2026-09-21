@@ -7,14 +7,20 @@ import '../../runtime/gemma_inference_adapter.dart';
 import '../../runtime/inference_adapter.dart';
 import '../../runtime/checkpoint_manager.dart';
 import '../../runtime/model_runtime_manager.dart';
+import '../../runtime/worker_content_diagnostics.dart';
 import '../../validation/json_output_validator.dart';
 import 'context_budget_manager.dart';
 import 'formatted_prompt_builder.dart';
+import 'hierarchical_reduce_bounds.dart';
 import 'hierarchical_summarize_pipeline.dart';
 import 'labeled_summary_parser.dart';
+import 'map_partial_validator.dart';
 import 'output_limit_enforcer.dart';
 import 'prompt_templates.dart';
 import 'semantic_chunk_engine.dart';
+import 'summarize_output_normalizer.dart';
+import 'summarize_output_validator.dart';
+import 'summarize_task_constraints.dart';
 
 class QwenInferenceConfig {
   const QwenInferenceConfig({
@@ -39,10 +45,33 @@ typedef QwenPipelineLog = void Function(String message);
 
 /// A model reply plus whether the runtime stop cut it at the output budget.
 class _PromptReply {
-  const _PromptReply({required this.text, required this.truncated});
+  const _PromptReply({
+    required this.text,
+    required this.truncated,
+    this.stopReason = 'model_eos',
+  });
 
   final String text;
   final bool truncated;
+  final String stopReason;
+}
+
+/// One shared budget for JSON repair, labeled fallback, compact, and constraint repair.
+class CorrectiveInferenceBudget {
+  CorrectiveInferenceBudget({this.maxCalls = 1});
+
+  final int maxCalls;
+  var used = 0;
+
+  bool get hasRemaining => used < maxCalls;
+
+  bool consume() {
+    if (!hasRemaining) {
+      return false;
+    }
+    used += 1;
+    return true;
+  }
 }
 
 class QwenTaskProcessor {
@@ -73,9 +102,9 @@ class QwenTaskProcessor {
   final QwenInferenceConfig config;
 
   static const _minKeyPoints = 3;
-  static const _maxKeyPoints = 6;
-  static const _maxInstructionTokens = 200;
   static const _minRepairExcerptChars = 400;
+  static const _mapIntermediateMaxKeyPoints =
+      HierarchicalReduceBounds.mapIntermediateMaxKeyPoints;
 
   static const _summaryOutputSchema = <String, String>{
     'summary': 'string',
@@ -135,24 +164,52 @@ class QwenTaskProcessor {
     required String signingKey,
     int maxArrayItems = 3,
     bool labeledFallback = false,
+    CorrectiveInferenceBudget? correctiveBudget,
   }) async {
+    final mapStage = prompt.contains('Chunk metadata:');
+    final stage = mapStage
+        ? 'map'
+        : prompt.contains('Combine the partial summaries')
+        ? 'reduce'
+        : prompt.contains('validationIssue')
+        ? 'repair'
+        : 'direct';
+    WorkerContentDiagnostics.logInferencePrompt(stage: stage, prompt: prompt);
     _log(
-      '[MODEL REQUEST] promptChars=${prompt.length} '
+      '[MODEL REQUEST] stage=$stage promptChars=${prompt.length} '
       'prompt="${_preview(prompt)}"',
     );
     final reply = await _runPromptReply(prompt, signingKey: signingKey);
-    _log(
-      '[MODEL RESPONSE] responseChars=${reply.text.length} '
-      'truncated=${reply.truncated} response="${_preview(reply.text)}"',
+    WorkerContentDiagnostics.logInferenceResponse(
+      stage: stage,
+      raw: reply.text,
+      stopReason: reply.stopReason,
+      truncated: reply.truncated,
     );
-    return _parseJsonResponse(
+    _log(
+      '[MODEL RESPONSE] stage=$stage responseChars=${reply.text.length} '
+      'truncated=${reply.truncated} stopReason=${reply.stopReason} '
+      'response="${_preview(reply.text)}"',
+    );
+    final parsed = await _parseJsonResponse(
       raw: reply.text,
       outputSchema: outputSchema,
       signingKey: signingKey,
       maxArrayItems: maxArrayItems,
       truncated: reply.truncated,
+      stopReason: reply.stopReason,
+      mapStage: mapStage,
       sourcePrompt: labeledFallback ? prompt : null,
+      correctiveBudget: correctiveBudget,
     );
+    if (mapStage) {
+      _assertUsableMapPartial(
+        partial: parsed,
+        generationTruncated: reply.truncated,
+        stopReason: reply.stopReason,
+      );
+    }
+    return parsed;
   }
 
   Future<Map<String, dynamic>> runSummarizeJsonTask({
@@ -160,15 +217,21 @@ class QwenTaskProcessor {
     String? userInstructions,
     required String signingKey,
     Map<String, dynamic>? outputSchema,
+    SummarizeTaskConstraintsV1? constraints,
     String? assignmentId,
     int? fenceToken,
     Future<void> Function(ChunkCheckpointRecord record)? onChunkCheckpoint,
+    bool Function()? isCancelled,
   }) async {
-    final keyPointCount = _requestedKeyPointCount(userInstructions);
-    final instructions = _boundedInstructions(userInstructions);
+    final instructions = resolveSummarizeInstructions(userInstructions);
+    final keyPointCount = constraints?.keyPointCount ?? _minKeyPoints;
+    _assertInstructionsFitOrThrow(
+      instructions: instructions,
+      constraints: constraints,
+    );
     final reservedPromptTokens = summarizePromptReserveTokens(
       userInstructions: instructions,
-      keyPointCount: keyPointCount,
+      constraints: constraints,
     );
     final plan = planInputChunks(
       inputText,
@@ -180,6 +243,7 @@ class QwenTaskProcessor {
       'reservedPromptTokens=$reservedPromptTokens '
       'chunkBudgetTokens=${plan.tokenBudgetPerChunk}',
     );
+    final correctiveBudget = CorrectiveInferenceBudget();
     final checkpointScope =
         assignmentId != null && fenceToken != null && _checkpointManager != null
         ? SummarizeCheckpointScope(
@@ -198,94 +262,179 @@ class QwenTaskProcessor {
         signingKey: signingKey,
         maxArrayItems: keyPointCount,
         labeledFallback: true,
+        correctiveBudget: correctiveBudget,
       ),
     );
-    var result = await pipeline.summarize(
+    var rawResult = await pipeline.summarize(
       inputText: inputText,
       plan: plan,
       userInstructions: instructions,
-      keyPointCount: keyPointCount,
+      constraints: constraints,
       checkpointScope: checkpointScope,
+      shouldContinue: () => isCancelled?.call() != true,
     );
-    result = _applyDeterministicSummaryRepairs(
-      _normalizeSummary(
-        result,
-        sourceText: inputText,
-        keyPointCount: keyPointCount,
-      ),
-      sourceText: inputText,
+    _log('[SUMMARY RAW RESPONSE] response=${jsonEncode(rawResult)}');
+    var normalized = SummarizeOutputNormalizer.normalize(rawResult);
+    var result = Map<String, dynamic>.from(normalized.normalized);
+    var validation = SummarizeOutputValidator.validate(
+      summary: result,
+      constraints: constraints,
     );
-    var qualityIssue = _summaryQualityIssue(
-      result,
-      sourceText: inputText,
-      keyPointCount: keyPointCount,
-    );
-    if (qualityIssue != null) {
+    _logValidation(validation, prefix: 'STRUCTURAL');
+    if (!validation.passed && correctiveBudget.consume()) {
       final repairPrompt = _summaryRepairPrompt(
         sourceText: inputText,
         invalidSummaryJson: jsonEncode(result),
-        qualityIssue: qualityIssue,
+        validationIssue: validation.blockingViolations.join('; '),
         userInstructions: instructions,
-        keyPointCount: keyPointCount,
+        constraints: constraints,
       );
       if (repairPrompt == null) {
-        _log('[SUMMARY QUALITY REPAIR SKIPPED] reason=$qualityIssue');
-      } else {
-        _log('[SUMMARY QUALITY RETRY] reason=$qualityIssue');
-        result = _applyDeterministicSummaryRepairs(
-          _normalizeSummary(
-            await runJsonTask(
-              prompt: repairPrompt,
-              outputSchema: outputSchema ?? _summaryOutputSchema,
-              signingKey: signingKey,
-              maxArrayItems: keyPointCount,
-              labeledFallback: true,
-            ),
-            sourceText: inputText,
-            keyPointCount: keyPointCount,
-          ),
-          sourceText: inputText,
+        _log(
+          '[SUMMARY CONSTRAINT REPAIR SKIPPED] '
+          'reason=${validation.blockingViolations.join("; ")}',
         );
+      } else {
+        _log(
+          '[SUMMARY CONSTRAINT REPAIR] '
+          'reason=${validation.blockingViolations.join("; ")}',
+        );
+        rawResult = await runJsonTask(
+          prompt: repairPrompt,
+          outputSchema: outputSchema ?? _summaryOutputSchema,
+          signingKey: signingKey,
+          maxArrayItems: keyPointCount,
+          labeledFallback: true,
+          correctiveBudget: correctiveBudget,
+        );
+        _log('[SUMMARY REPAIR RAW RESPONSE] response=${jsonEncode(rawResult)}');
+        normalized = SummarizeOutputNormalizer.normalize(rawResult);
+        result = Map<String, dynamic>.from(normalized.normalized);
+        validation = SummarizeOutputValidator.validate(
+          summary: result,
+          constraints: constraints,
+        );
+        _logValidation(validation, prefix: 'CONSTRAINT');
       }
-      // A repaired answer that is merely short of the requested key point
-      // count is still usable, so only structural defects fail the task.
-      qualityIssue = _summaryQualityIssue(
-        result,
-        sourceText: inputText,
-        keyPointCount: keyPointCount,
-        minimumKeyPoints: _minKeyPoints,
-      );
     }
-    if (qualityIssue != null) {
+    if (!validation.passed) {
       throw WorkerError(
         code: WorkerErrorCode.outputSchemaMismatch,
-        message: 'Summary quality validation failed: $qualityIssue',
-        retryable: true,
+        message:
+            'Summary constraint validation failed: '
+            '${validation.blockingViolations.join("; ")}',
+        retryable: false,
         stage: WorkerTaskStage.llm,
       );
     }
-    _log('[SUMMARY QUALITY OK] response=${jsonEncode(result)}');
+    _log('[SUMMARY VALIDATION OK] response=${jsonEncode(result)}');
+    WorkerContentDiagnostics.logText(
+      label: 'SUMMARY NORMALIZED RESULT',
+      content: jsonEncode(result),
+    );
     return result;
   }
 
-  /// The repair prompt carries the source text back to the model, so on a
-  /// heavy input it is shortened until it fits; when even a short excerpt does
-  /// not fit, the deterministic repairs are the only correction available.
+  void _logValidation(SummarizeValidationResult validation, {required String prefix}) {
+    if (validation.passed) {
+      _log('[SUMMARY $prefix OK]');
+    } else {
+      _log(
+        '[SUMMARY $prefix FAILED] '
+        'violations=${validation.blockingViolations.join("; ")}',
+      );
+    }
+    if (validation.uncheckedCoverageAxes.isNotEmpty) {
+      _log(
+        '[SUMMARY UNCHECKED AXES] '
+        'axes=${validation.uncheckedCoverageAxes.join(", ")}',
+      );
+    }
+    if (validation.uncheckedBillingRuleIds.isNotEmpty) {
+      _log(
+        '[SUMMARY UNCHECKED BILLING RULES] '
+        'rules=${validation.uncheckedBillingRuleIds.join(", ")}',
+      );
+    }
+  }
+
+  bool labeledFallbackEnabled({
+    required String? sourcePrompt,
+    required bool mapStage,
+  }) =>
+      sourcePrompt != null && !mapStage;
+
+  void _logJsonRejection({
+    required JsonExtractResult extract,
+    required bool mapStage,
+    required String stopReason,
+    required bool truncated,
+    CorrectiveInferenceBudget? correctiveBudget,
+  }) {
+    _log(
+      '[JSON EXTRACT REJECTED] stage=${mapStage ? "map" : "json"} '
+      'reason=${extract.rejectionReason ?? "unknown"} '
+      'extractStage=${extract.rejectionStage ?? "unknown"} '
+      'stopReason=$stopReason truncated=$truncated '
+      'correctiveRemaining=${correctiveBudget == null ? "unbounded" : correctiveBudget.hasRemaining ? correctiveBudget.maxCalls - correctiveBudget.used : 0}',
+    );
+  }
+
+  void _logCorrectiveAttempt({
+    required String action,
+    required bool mapStage,
+    required String stopReason,
+    required bool truncated,
+    CorrectiveInferenceBudget? correctiveBudget,
+    String? rejectionReason,
+  }) {
+    _log(
+      '[JSON CORRECTIVE] action=$action stage=${mapStage ? "map" : "json"} '
+      'priorReason=${rejectionReason ?? "unknown"} '
+      'stopReason=$stopReason truncated=$truncated '
+      'budgetRemaining=${correctiveBudget == null ? "unbounded" : correctiveBudget.maxCalls - correctiveBudget.used}',
+    );
+  }
+
+  void _assertInstructionsFitOrThrow({
+    required String? instructions,
+    SummarizeTaskConstraintsV1? constraints,
+  }) {
+    if (instructions == null) {
+      return;
+    }
+    final prompt = PromptTemplates.textSummarize(
+      sourceText: '',
+      userInstructions: instructions,
+      constraints: constraints,
+    );
+    if (!_fitsDirectInference(prompt)) {
+      throw WorkerError(
+        code: WorkerErrorCode.invalidTask,
+        message:
+            'Customer instructions exceed the direct inference budget; '
+            'shorten structured options or instructions',
+        retryable: false,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+  }
+
   String? _summaryRepairPrompt({
     required String sourceText,
     required String invalidSummaryJson,
-    required String qualityIssue,
+    required String validationIssue,
     required String? userInstructions,
-    required int keyPointCount,
+    SummarizeTaskConstraintsV1? constraints,
   }) {
     var excerpt = sourceText;
     while (true) {
-      final prompt = PromptTemplates.summaryQualityRepair(
+      final prompt = PromptTemplates.summaryConstraintRepair(
         sourceText: excerpt,
         invalidSummaryJson: invalidSummaryJson,
-        qualityIssue: qualityIssue,
+        validationIssue: validationIssue,
         userInstructions: userInstructions,
-        keyPointCount: keyPointCount,
+        constraints: constraints,
       );
       if (_fitsDirectInference(prompt)) {
         return prompt;
@@ -312,16 +461,18 @@ class QwenTaskProcessor {
   /// direct-inference budget once its prompt is built.
   int summarizePromptReserveTokens({
     String? userInstructions,
-    int keyPointCount = _minKeyPoints,
+    SummarizeTaskConstraintsV1? constraints,
   }) {
     final estimator = _contextBudget.estimator;
+    final system = _contextBudget.defaultSystemInstruction;
+    final keyPointCount = constraints?.keyPointCount ?? _minKeyPoints;
     final direct = FormattedPromptBuilder.buildTaskPrompt(
-      templateBody: PromptTemplates.documentSummarize(
-        ocrText: '',
+      templateBody: PromptTemplates.textSummarize(
+        sourceText: '',
         userInstructions: userInstructions,
-        keyPointCount: keyPointCount,
+        constraints: constraints,
       ),
-      systemInstruction: _contextBudget.defaultSystemInstruction,
+      systemInstruction: system,
     );
     final mapped = FormattedPromptBuilder.buildTaskPrompt(
       templateBody: PromptTemplates.summarizeMapChunk(
@@ -329,273 +480,36 @@ class QwenTaskProcessor {
         chunkIndex: 0,
         totalChunks: 999,
         chunkId: '0' * 64,
+        maxKeyPoints: _mapIntermediateMaxKeyPoints,
       ),
-      systemInstruction: _contextBudget.defaultSystemInstruction,
+      systemInstruction: system,
     );
     final directTokens = estimator.estimate(direct);
     final mappedTokens = estimator.estimate(mapped);
     return directTokens > mappedTokens ? directTokens : mappedTokens;
   }
 
-  /// Instructions share the same context window as the source text, so an
-  /// oversized block is trimmed instead of starving the chunk budget.
-  String? _boundedInstructions(String? userInstructions) {
-    final trimmed = userInstructions?.trim();
-    if (trimmed == null || trimmed.isEmpty) {
-      return null;
-    }
-    const maxChars = _maxInstructionTokens * 3;
-    if (trimmed.length <= maxChars) {
-      return trimmed;
-    }
-    _log('[INSTRUCTIONS TRIMMED] chars=${trimmed.length} keptChars=$maxChars');
-    return trimmed.substring(0, maxChars);
-  }
-
-  int _requestedKeyPointCount(String? userInstructions) {
-    final text = userInstructions?.toLowerCase();
-    if (text == null || text.isEmpty) {
-      return _minKeyPoints;
-    }
-    const spelled = {'three': 3, 'four': 4, 'five': 5, 'six': 6};
-    final match = RegExp(
-      r'(\d+|three|four|five|six)\s+(?:\w+\s+){0,2}'
-      r'(?:key\s*points?|bullet\s*points?|bullets|facts|points)',
-    ).firstMatch(text);
-    if (match == null) {
-      return _minKeyPoints;
-    }
-    final token = match.group(1)!;
-    final count = spelled[token] ?? int.tryParse(token);
-    if (count == null) {
-      return _minKeyPoints;
-    }
-    return count.clamp(_minKeyPoints, _maxKeyPoints).toInt();
-  }
-
-  Map<String, dynamic> _applyDeterministicSummaryRepairs(
-    Map<String, dynamic> summary, {
-    required String sourceText,
+  void _assertUsableMapPartial({
+    required Map<String, dynamic> partial,
+    required bool generationTruncated,
+    required String stopReason,
   }) {
-    final source = _comparisonText(sourceText);
-    final complaint = summary['mainComplaint'] as String;
-    if (_sourceHasDelayAndEstimateProblem(source) &&
-        !_containsAny(_comparisonText(complaint), const [
-          'tracking',
-          'estimate',
-          'unreliable',
-          'inaccurate',
-        ])) {
-      final separator = complaint.trim().endsWith('.') ? ' ' : '; ';
-      final estimateClause = _containsPersian(sourceText)
-          ? 'زمان تخمینی رسیدن نیز غیرقابل اعتماد بود.'
-          : 'arrival estimates were unreliable.';
-      summary['mainComplaint'] = '$complaint$separator$estimateClause';
-      _log(
-        '[SUMMARY DETERMINISTIC REPAIR] '
-        'added unreliable estimate coverage to mainComplaint',
-      );
-    }
-    return summary;
-  }
-
-  Map<String, dynamic> _normalizeSummary(
-    Map<String, dynamic> raw, {
-    required String sourceText,
-    int keyPointCount = _minKeyPoints,
-  }) => {
-    'summary': _cleanText(raw['summary']),
-    // Twice the requested count is collected first so points copied verbatim
-    // from the source cannot take the slots of original ones.
-    'keyPoints': _rankKeyPoints(
-      _uniqueStrings(raw['keyPoints'], maxItems: keyPointCount * 2),
-      sourceText: sourceText,
-      maxItems: keyPointCount,
-    ),
-    'mainComplaint': _cleanText(raw['mainComplaint']),
-    'suggestedImprovement': _cleanText(raw['suggestedImprovement']),
-    'missingOrUnclear': _uniqueStrings(
-      raw['missingOrUnclear'],
-      maxItems: keyPointCount > _minKeyPoints ? 3 : 2,
-    ).where((item) => !_isClearlySupported(item, sourceText)).toList(),
-  };
-
-  /// A key point that is a verbatim source sentence tells the customer nothing
-  /// they could not read themselves, so it sinks to the end of the list and is
-  /// dropped once enough original points remain.
-  List<String> _rankKeyPoints(
-    List<String> points, {
-    required String sourceText,
-    required int maxItems,
-  }) {
-    final sentences = _sourceSentences(sourceText);
-    final original = <String>[];
-    final copied = <String>[];
-    for (final point in points) {
-      if (sentences.contains(_comparisonText(point))) {
-        copied.add(point);
-      } else {
-        original.add(point);
-      }
-    }
-    if (copied.isEmpty) {
-      return points.take(maxItems).toList();
-    }
-    _log('[SUMMARY ECHO FILTER] copiedKeyPoints=${copied.length}');
-    final ranked = original.length >= _minKeyPoints
-        ? original
-        : [...original, ...copied];
-    return ranked.take(maxItems).toList();
-  }
-
-  Set<String> _sourceSentences(String sourceText) => sourceText
-      .split(RegExp(r'[.!?\u061F\u06D4\n]+'))
-      .map(_comparisonText)
-      .where((sentence) => sentence.isNotEmpty)
-      .toSet();
-
-  String? _summaryQualityIssue(
-    Map<String, dynamic> summary, {
-    required String sourceText,
-    int keyPointCount = _minKeyPoints,
-    int? minimumKeyPoints,
-  }) {
-    if ((summary['summary'] as String).isEmpty) return 'summary is empty';
-    final keyPoints = summary['keyPoints'] as List<String>;
-    final required = minimumKeyPoints ?? keyPointCount;
-    if (keyPoints.length < required) {
-      return 'at least $required distinct key points required';
-    }
-    if ((summary['mainComplaint'] as String).isEmpty) {
-      return 'main complaint is missing';
-    }
-    if ((summary['suggestedImprovement'] as String).isEmpty) {
-      return 'suggested improvement is missing';
-    }
-    final source = _comparisonText(sourceText);
-    final complaint = _comparisonText(summary['mainComplaint'] as String);
-    if (_sourceHasDelayAndEstimateProblem(source) &&
-        (!_containsAny(complaint, const ['late', 'delay', 'delayed']) ||
-            !_containsAny(complaint, const [
-              'tracking',
-              'estimate',
-              'unreliable',
-              'inaccurate',
-            ]))) {
-      return 'main complaint must include both delivery delays and unreliable estimates';
-    }
-    // The defect to catch is one sentence echoed across every field. A main
-    // complaint that restates one of the key points is normal, so only the
-    // echoes that carry no extra information are rejected.
-    final summaryText = _comparisonText(summary['summary'] as String);
-    final improvement = _comparisonText(
-      summary['suggestedImprovement'] as String,
+    final issues = MapPartialValidator.validate(
+      partial: partial,
+      generationTruncated: generationTruncated,
+      stopReason: stopReason,
     );
-    final pointTexts = keyPoints.map(_comparisonText).toList();
-    if (summaryText.isNotEmpty &&
-        (pointTexts.contains(summaryText) || summaryText == complaint)) {
-      return 'summary repeats another field';
+    if (issues.isEmpty) {
+      return;
     }
-    if (improvement.isNotEmpty && improvement == complaint) {
-      return 'suggested improvement repeats the main complaint';
-    }
-    if (_summaryCopiesSource(summary['summary'] as String, sourceText)) {
-      return 'summary copies the source text instead of condensing it';
-    }
-    return null;
+    _log('[MAP PARTIAL REJECTED] issues=${issues.join('; ')}');
+    throw WorkerError(
+      code: WorkerErrorCode.outputSchemaMismatch,
+      message: 'Map chunk partial is incomplete: ${issues.join('; ')}',
+      retryable: true,
+      stage: WorkerTaskStage.llm,
+    );
   }
-
-  /// True when every sentence of the summary is a verbatim source sentence.
-  /// Short sources are exempt, since a faithful one-sentence summary of a
-  /// one-sentence source is legitimately the same sentence.
-  bool _summaryCopiesSource(String summaryText, String sourceText) {
-    final sentences = _sourceSentences(sourceText);
-    if (sentences.length <= 2) {
-      return false;
-    }
-    final summarySentences = _sourceSentences(summaryText);
-    if (summarySentences.isEmpty) {
-      return false;
-    }
-    return summarySentences.every(sentences.contains);
-  }
-
-  bool _sourceHasDelayAndEstimateProblem(String source) =>
-      _containsAny(source, const [
-        'late',
-        'delay',
-        'delayed',
-        'تاخیر',
-        'دیر',
-      ]) &&
-      _containsAny(source, const ['tracking', 'estimate', 'arrival time']) &&
-      _containsAny(source, const [
-        'inaccurate',
-        'unreliable',
-        'could not provide',
-        'kept showing',
-      ]);
-
-  bool _containsPersian(String value) =>
-      RegExp(r'[\u0600-\u06FF]').hasMatch(value);
-
-  String _cleanText(Object? value) =>
-      value is String ? value.trim().replaceAll(RegExp(r'\s+'), ' ') : '';
-
-  List<String> _uniqueStrings(Object? value, {required int maxItems}) {
-    if (value is! List) return <String>[];
-    final seen = <String>{};
-    final result = <String>[];
-    for (final item in value) {
-      final text = _cleanText(item);
-      if (text.isEmpty || !seen.add(_comparisonText(text))) continue;
-      result.add(text);
-      if (result.length == maxItems) break;
-    }
-    return result;
-  }
-
-  bool _isClearlySupported(String claim, String sourceText) {
-    final claimTokens = _contentTokens(claim);
-    if (claimTokens.isEmpty) return false;
-    final sourceTokens = _contentTokens(sourceText);
-    final matched = claimTokens.where(sourceTokens.contains).length;
-    return matched * 10 >= claimTokens.length * 7;
-  }
-
-  Set<String> _contentTokens(String value) {
-    const stopWords = {
-      'a',
-      'an',
-      'and',
-      'are',
-      'as',
-      'at',
-      'be',
-      'for',
-      'in',
-      'is',
-      'of',
-      'on',
-      'the',
-      'to',
-      'was',
-      'were',
-      'with',
-    };
-    return _comparisonText(value)
-        .split(' ')
-        .where((token) => token.length > 1 && !stopWords.contains(token))
-        .toSet();
-  }
-
-  bool _containsAny(String value, List<String> terms) =>
-      terms.any(value.contains);
-
-  String _comparisonText(String value) => value
-      .toLowerCase()
-      .replaceAll(RegExp(r'''[\s.,;:!?،؛؟"'“”]+'''), ' ')
-      .trim();
 
   Future<Map<String, dynamic>> _parseJsonResponse({
     required String raw,
@@ -603,33 +517,94 @@ class QwenTaskProcessor {
     required String signingKey,
     int maxArrayItems = 3,
     bool truncated = false,
+    String stopReason = 'model_eos',
+    bool mapStage = false,
     String? sourcePrompt,
+    CorrectiveInferenceBudget? correctiveBudget,
   }) async {
-    var parsed = JsonOutputValidator.parseJsonObject(raw);
-    if (parsed == null && sourcePrompt != null) {
-      // Re-asking this model to fix its own broken JSON corrupts the text
-      // further, so the summarize path drops the format instead.
-      parsed = await _runLabeledFallback(
-        sourcePrompt: sourcePrompt,
-        signingKey: signingKey,
-        keyPointCount: maxArrayItems,
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    var parsed = extract.object;
+    if (parsed == null) {
+      _logJsonRejection(
+        extract: extract,
+        mapStage: mapStage,
+        stopReason: stopReason,
+        truncated: truncated,
+        correctiveBudget: correctiveBudget,
       );
+    }
+    final useLabeledFallback =
+        labeledFallbackEnabled(sourcePrompt: sourcePrompt, mapStage: mapStage);
+    if (parsed == null && useLabeledFallback) {
+      if (correctiveBudget == null || correctiveBudget.consume()) {
+        _logCorrectiveAttempt(
+          action: 'labeled_fallback',
+          mapStage: mapStage,
+          stopReason: stopReason,
+          truncated: truncated,
+          correctiveBudget: correctiveBudget,
+          rejectionReason: extract.rejectionReason,
+        );
+        parsed = await _runLabeledFallback(
+          sourcePrompt: sourcePrompt!,
+          signingKey: signingKey,
+          keyPointCount: maxArrayItems,
+        );
+      } else {
+        _log('[LABELED FALLBACK SKIPPED] corrective budget exhausted');
+      }
     } else if (parsed == null) {
-      final repairPrompt = _jsonRepairPrompt(raw);
-      if (repairPrompt != null) {
-        final repaired = await _runPrompt(repairPrompt, signingKey: signingKey);
-        parsed = JsonOutputValidator.parseJsonObject(repaired);
+      if (correctiveBudget == null || correctiveBudget.consume()) {
+        _logCorrectiveAttempt(
+          action: 'json_repair',
+          mapStage: mapStage,
+          stopReason: stopReason,
+          truncated: truncated,
+          correctiveBudget: correctiveBudget,
+          rejectionReason: extract.rejectionReason,
+        );
+        final repairPrompt = _jsonRepairPrompt(raw);
+        if (repairPrompt != null) {
+          final repaired = await _runPrompt(
+            repairPrompt,
+            signingKey: signingKey,
+          );
+          parsed = JsonOutputValidator.parseJsonObject(repaired);
+          if (parsed == null) {
+            _log('[JSON REPAIR FAILED] reason=repair_output_not_valid_json');
+          }
+        }
+      } else {
+        _log('[JSON REPAIR SKIPPED] corrective budget exhausted');
       }
     }
     if (parsed == null) {
-      throw const WorkerError(
+      final reason = extract.rejectionReason ?? 'json_decode_failed';
+      throw WorkerError(
         code: WorkerErrorCode.llmInvalidJson,
-        message: 'LLM output is not valid JSON after repair attempt',
+        message: mapStage
+            ? 'Map chunk JSON could not be recovered locally '
+                '(reason=$reason; stopReason=$stopReason)'
+            : 'LLM output is not valid JSON after repair attempt '
+                '(reason=$reason)',
+        retryable: correctiveBudget == null,
+        stage: WorkerTaskStage.llm,
+      );
+    }
+    final summarizePath = correctiveBudget != null;
+    if (!summarizePath) {
+      parsed = JsonOutputValidator.coerceSchemaTypes(parsed, outputSchema);
+    }
+    if (truncated && mapStage) {
+      throw WorkerError(
+        code: WorkerErrorCode.outputSchemaMismatch,
+        message:
+            'Map chunk generation truncated before completion '
+            '(stopReason=$stopReason)',
         retryable: true,
         stage: WorkerTaskStage.llm,
       );
     }
-    parsed = JsonOutputValidator.coerceSchemaTypes(parsed, outputSchema);
     if (truncated) {
       // The runtime stop cut the reply, so the trailing fields never arrived.
       // Completing the shape keeps the extracted facts and leaves the content
@@ -658,7 +633,7 @@ class QwenTaskProcessor {
       ),
       jsonRequired: true,
     );
-    if (!limit.treatAsSuccess) {
+    if (!limit.treatAsSuccess && !summarizePath) {
       // A reply that repeats itself until the output budget runs out is valid
       // JSON that simply carries too many items. Cutting it to the contract
       // limits here keeps the fields the model did fill in; asking the model
@@ -685,38 +660,47 @@ class QwenTaskProcessor {
       }
     }
     if (!limit.treatAsSuccess) {
-      _log(
-        '[MODEL COMPACT RETRY] estimatedTokens=${limit.estimatedOutputTokens} '
-        'maxTokens=${limit.maxOutputTokens}',
-      );
-      final compactedRaw = await _runPrompt(
-        PromptTemplates.jsonCompact(
-          oversizedJson: encoded,
-          maxOutputTokens: limit.maxOutputTokens,
-          maxArrayItems: maxArrayItems,
-        ),
-        signingKey: signingKey,
-      );
-      final parsedCompact = JsonOutputValidator.parseJsonObject(compactedRaw);
-      if (parsedCompact == null) {
-        throw const WorkerError(
-          code: WorkerErrorCode.llmInvalidJson,
-          message: 'Compacted LLM output is not valid JSON',
-          retryable: true,
-          stage: WorkerTaskStage.llm,
+      if (correctiveBudget != null && !correctiveBudget.consume()) {
+        _log('[MODEL COMPACT SKIPPED] corrective budget exhausted');
+      } else {
+        _log(
+          '[MODEL COMPACT RETRY] estimatedTokens=${limit.estimatedOutputTokens} '
+          'maxTokens=${limit.maxOutputTokens}',
         );
+        final compactedRaw = await _runPrompt(
+          PromptTemplates.jsonCompact(
+            oversizedJson: encoded,
+            maxOutputTokens: limit.maxOutputTokens,
+            maxArrayItems: maxArrayItems,
+          ),
+          signingKey: signingKey,
+        );
+        final parsedCompact = JsonOutputValidator.parseJsonObject(compactedRaw);
+        if (parsedCompact == null) {
+          throw WorkerError(
+            code: WorkerErrorCode.llmInvalidJson,
+            message: 'Compacted LLM output is not valid JSON',
+            retryable: correctiveBudget == null,
+            stage: WorkerTaskStage.llm,
+          );
+        }
+        final compacted = summarizePath
+            ? parsedCompact
+            : JsonOutputValidator.coerceSchemaTypes(
+                parsedCompact,
+                outputSchema,
+              );
+        schemaError = JsonOutputValidator.validateSchema(
+          compacted,
+          outputSchema,
+        );
+        if (schemaError != null) {
+          throw schemaError;
+        }
+        _enforceOutputLimit(jsonEncode(compacted));
+        _log('[MODEL COMPACT RESPONSE] response=${jsonEncode(compacted)}');
+        parsed = compacted;
       }
-      final compacted = JsonOutputValidator.coerceSchemaTypes(
-        parsedCompact,
-        outputSchema,
-      );
-      schemaError = JsonOutputValidator.validateSchema(compacted, outputSchema);
-      if (schemaError != null) {
-        throw schemaError;
-      }
-      _enforceOutputLimit(jsonEncode(compacted));
-      _log('[MODEL COMPACT RESPONSE] response=${jsonEncode(compacted)}');
-      parsed = compacted;
     }
     return parsed;
   }
@@ -747,7 +731,21 @@ class QwenTaskProcessor {
       );
       if (_fitsDirectInference(prompt)) {
         final raw = await _runPrompt(prompt, signingKey: signingKey);
-        final parsed = LabeledSummaryParser.parse(raw);
+        var parsed = LabeledSummaryParser.parse(raw);
+        final mapStage = sourcePrompt.contains('Chunk metadata:');
+        if (parsed != null && mapStage) {
+          final issues = MapPartialValidator.validate(
+            partial: parsed,
+            generationTruncated: false,
+          );
+          if (issues.isNotEmpty) {
+            _log(
+              '[LABELED FALLBACK REJECTED] issues=${issues.join('; ')} '
+              'requestedPoints=$requestedPoints replyChars=${raw.length}',
+            );
+            parsed = null;
+          }
+        }
         _log(
           '[LABELED FALLBACK] excerptChars=${excerpt.length} '
           'requestedPoints=$requestedPoints parsed=${parsed != null} '
@@ -812,12 +810,13 @@ class QwenTaskProcessor {
       inputBytes: Uint8List.fromList(utf8.encode(prompt)),
       resumedState: null,
     );
-    final stopReason = output.metrics['stopReason'];
+    final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
     return _PromptReply(
       text: utf8.decode(output.resultBytes),
       // Both stops cut the reply before the model closed the object, so the
       // trailing fields have to be completed locally.
       truncated: stopReason == 'output_limit' || stopReason == 'repetition',
+      stopReason: stopReason,
     );
   }
 

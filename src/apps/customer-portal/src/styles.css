@@ -1453,6 +1453,18 @@ a {
   color: var(--md-error);
 }
 
+.em-expandable-text__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.em-expandable-text__btn {
+  min-height: auto;
+  padding: 0 0.25rem;
+}
+
 .em-raw-json summary {
   cursor: pointer;
   list-style: none;

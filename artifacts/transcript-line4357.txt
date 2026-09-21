@@ -1,0 +1,162 @@
+<timestamp>Monday, Sep 21, 2026, 11:02 AM (UTC+3:30)</timestamp>
+<user_query>
+Review the latest summarize patch against the four concerns below. Inspect the actual code first; do not assume the previous report proves correctness.
+
+If a concern is confirmed, implement the smallest safe fix and test it. If the implementation is already correct, provide file/function references and test evidence instead of making unnecessary changes.
+
+Keep the current model and architecture. Preserve unrelated changes. Do not inspect Git history, reset data, delete volumes, or modify authentication/enrollment.
+
+## 1. Ensure grocery constraints are not global defaults
+
+Inspect:
+
+* config/summarizeOptions.js
+* TaskSubmitForm.vue
+* client.js
+* portal_api.py
+* task registration and manifest generation
+
+The report says every text.summarize request now sends summarizeOptions.
+
+Determine exactly what is sent for a generic summarization task.
+
+Required behavior:
+
+* Grocery-specific coverageAxes, billingRules, the five-point count, and the 80-word limit apply only when explicitly selected/configured for that task.
+* Do not silently apply that fixture to every text.summarize request.
+* If a task already supplies structured options, preserve them.
+* Without explicit options, preserve generic summarization behavior.
+* Do not infer machine-enforced options from free-text instructions.
+* Preserve instructions verbatim.
+* Validate and persist explicit options in the backend; the stored task definition remains authoritative.
+* If the Portal has no preset selection mechanism, remove the unconditional grocery configuration. Keep the grocery options in the regression fixture or an explicitly configured request; do not build a large new settings UI.
+
+Verify JSON and multipart requests follow the same rules.
+
+Add focused tests for:
+
+1. Generic task does not acquire grocery constraints.
+2. Explicit grocery task retains its configured options in the manifest.
+3. A different custom summarization configuration is preserved.
+4. Invalid options fail clearly.
+
+## 2. Fix upload retry classification without losing valid results
+
+Inspect _outputUploadAttemptedAssignmentIds, its lifetime, and every caller of _uploadAssignmentOutput.
+
+A blanket “one attempt per assignment” must not prevent delivery after a transient failure.
+
+Required behavior:
+
+* Accepted response: stop unnecessary uploads.
+* HTTP 422 for an invalid result: treat that payload as terminally rejected; do not keep uploading it.
+* Network interruption, timeout, and retryable server failures: use the existing bounded retry/backoff mechanism.
+* Respect cancellation and applicable deadlines.
+* Reuse stable task/assignment identity and existing idempotency mechanisms.
+* Handle “backend accepted the upload but the response was lost” without duplicate side effects.
+* Prevent concurrent uploads for the same result.
+* Increment tasksProcessed exactly once after confirmed acceptance, consistent with its existing meaning.
+* Avoid an indefinitely growing in-memory set.
+* Inspect app restart behavior; do not claim an in-memory set provides durable delivery guarantees.
+
+Do not invent a new delivery subsystem. Reuse existing state and retry mechanisms where possible.
+
+Tests should cover:
+
+* 503 followed by acceptance;
+* timeout followed by retry;
+* terminal 422 without repeated upload;
+* duplicate/concurrent invocation;
+* accepted upload with lost response and safe retry;
+* tasksProcessed is not double-counted.
+
+## 3. Prove recursive reduce terminates within runtime limits
+
+Inspect SummarizeReduceBudget and the recursive fan-in implementation.
+
+Required behavior:
+
+* Check every actual reduce prompt before inference using real serialized partials, full instructions, templates, formatting, output allowance, and the existing estimation safety margin.
+* Never invoke inference with a known oversized prompt.
+* Demonstrate measurable progress between levels: fewer partials or a smaller measured representation.
+* Detect non-progress and terminate with a clear error.
+* Bound recursion depth and total reduce calls.
+* Check cancellation and remaining execution/lease deadline before each call.
+* Handle a single oversized partial explicitly.
+* Handle instructions/template overhead that leaves no usable source budget.
+* Do not silently discard chunks, uncertainties, or relevant evidence to make a prompt fit.
+* Keep normal map/reduce calls distinct from corrective inference calls; the total corrective-call budget remains one.
+* Preserve the simple single-chunk path.
+
+Use conservative limits appropriate for Qwen2.5 1.5B on CPU. Explain how the limits relate to existing configuration rather than adding arbitrary large allowances.
+
+Tests should cover:
+
+1. Real oversized partials require bounded multi-level reduction.
+2. Intermediate output does not shrink.
+3. One partial is individually too large.
+4. Instructions consume the available budget.
+5. Cancellation/deadline interrupts further calls.
+6. No known oversized prompt reaches the mocked model.
+
+Mocks prove control flow and evidence transport, not live semantic fidelity. State that distinction.
+
+## 4. Verify actual backend and Portal terminal state
+
+The previous integration tests were skipped because Postgres was unavailable. They are not passed tests.
+
+Inspect the relationship between:
+
+* assignment :complete;
+* result upload;
+* backend result acceptance;
+* persisted Portal task status;
+* Worker local ExecutionPhase.
+
+Required behavior:
+
+* A rejected result must not leave the user-facing task succeeded, completed, or indefinitely running.
+* Persist the appropriate existing terminal failure/rejection state and a safe reason.
+* A local Flutter ExecutionPhase.failed is not proof of persisted backend state.
+* Preserve intentional separation between assignment execution completion and result acceptance.
+* Ensure duplicate invalid uploads are idempotent.
+* Ensure a late rejected/duplicate request cannot downgrade a previously accepted result.
+* Validate against backend-stored task constraints, never worker-supplied overrides.
+
+Run the integration tests against the configured development/test Postgres if available. Use isolated test records and the repository’s normal test setup. Do not use production data, reset databases, or delete volumes.
+
+If Postgres is unavailable:
+
+* explicitly report the tests as blocked/skipped;
+* give the exact environment prerequisites and repository-correct command;
+* do not claim end-to-end lifecycle verification.
+
+Integration assertions must inspect the persisted status and failure reason, not merely assert “status != succeeded”.
+
+## Verification and delivery
+
+Run focused tests for changed behavior and relevant existing regressions. Do not make unrelated refactors or add cloud inference, heavy dependencies, or keyword-based semantic rejection.
+
+Return a concise report:
+
+1. Each concern: confirmed defect, already correct, or unresolved.
+2. Code evidence: file and function.
+3. Changes made and resulting behavior.
+4. Exact tests executed, with passed/failed/skipped counts.
+5. Any remaining blocker.
+6. Whether the system is ready for the live grocery-feedback rerun.
+
+If the actual emulator/model is available, rerun the fixture after the fixes and report:
+
+* effective manifest options;
+* raw and normalized output separately;
+* inference duration;
+* map/reduce call count;
+* corrective inference count;
+* backend acceptance and persisted Portal state.
+
+Otherwise clearly state that live model verification was not performed.
+
+Do the review and authorized fixes now. Do not stop after proposing another plan.
+
+</user_query>

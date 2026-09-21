@@ -4,28 +4,30 @@ import '../runtime/encrypted_store.dart';
 import '../runtime/model_artifact_verifier.dart';
 
 abstract final class WorkerModelCatalog {
-  static const profileId = 'gemma-4-e4b-it';
+  static const profileId = 'qwen2.5-1.5b';
 
-  static const modelVersionId = 'mdv_gemma_4_e4b_it';
+  static const modelVersionId = 'mdv_qwen2_5_1_5b';
 
-  static const displayName = 'Gemma 4 E4B IT';
+  static const displayName = 'Qwen2.5 1.5B';
 
-  static const fileName = 'gemma-4-E4B-it.litertlm';
+  static const fileName =
+      'Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.task';
 
   /// Bundled dev artifact under [pubspec.yaml] `flutter.assets`.
-  static const bundledAssetPath = 'assets/models/gemma-4-E4B-it.litertlm';
+  static const bundledAssetPath =
+      'assets/models/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.task';
 
-  /// LiteRT-LM runtime context for Gemma 4 E4B (see flutter_gemma example).
+  /// Verified artifact context window from LiteRT task filename (ekv4096).
   static const verifiedArtifactContextLimit = 4096;
 
   static const runtimeMaxTokens = 4096;
 
   static const outputReserveTokens = 512;
 
-  static const approximateDownloadSize = '~4.3 GB';
+  static const approximateDownloadSize = '~1.5 GB';
 
   static const huggingFaceDownloadUrl =
-      'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/$fileName';
+      'https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/$fileName';
 
   static const installedDigestMarker = 'installed-on-device';
 
@@ -108,8 +110,13 @@ abstract final class WorkerModelCatalog {
 
   static InferenceInstallationBuilder installBuilder() {
     return FlutterGemma.installModel(
-      modelType: ModelType.gemma4,
-      fileType: ModelFileType.litertlm,
+      modelType: ModelType.qwen,
+      fileType: ModelFileType.task,
     );
+  }
+
+  /// x86 Android emulators lack OpenCL; GPU backend crashes in native LiteRT.
+  static PreferredBackend preferredInferenceBackend({required bool isX86Android}) {
+    return isX86Android ? PreferredBackend.cpu : PreferredBackend.gpu;
   }
 }

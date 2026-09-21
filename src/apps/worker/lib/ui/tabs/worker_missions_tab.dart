@@ -30,9 +30,9 @@ class WorkerMissionsTab extends StatelessWidget {
               Text(
                 controller.backendOnline
                     ? '1. Create a task in the customer portal (Tasks → New Task)\n'
-                      '2. Keep worker availability ON — assignments start automatically\n'
-                      '3. Install Qwen3 on ARM64 for real on-device inference'
-                    : 'Backend offline — run: adb reverse tcp:8081 tcp:8081',
+                      '2. Keep worker availability ON — the Live task panel on Home shows it immediately\n'
+                      '3. This worker claims dev tasks locally (remote workers are ignored after first poll)'
+                    : 'Backend offline — use http://127.0.0.1:8081 or adb reverse tcp:8081 tcp:8081',
                 style: const TextStyle(color: WorkerColors.onSurfaceVariant, height: 1.45),
               ),
               const SizedBox(height: 16),

@@ -10,6 +10,10 @@ class HierarchicalReduceBounds {
 
   static const textSummarizeMapReduce = HierarchicalReduceBounds();
 
+  /// Soft per-chunk map preference; final [SummarizeTaskConstraintsV1.keyPointCount]
+  /// is enforced only after reduce/direct validation.
+  static const mapIntermediateMaxKeyPoints = 3;
+
   final int maxChunks;
   final int maxReduceDepth;
   final int maxInferenceCalls;

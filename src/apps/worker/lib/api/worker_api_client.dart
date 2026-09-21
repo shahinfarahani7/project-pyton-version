@@ -104,6 +104,7 @@ class WorkerApiClient {
     WorkerConfig? config,
     http.Client? httpClient,
     WorkerApiAuditCallback? onAudit,
+    this.devClaimAssignments = false,
   })  : _config = config ?? WorkerConfig.fromEnvironment(),
         _http = httpClient ?? http.Client(),
         _onAudit = onAudit;
@@ -111,6 +112,9 @@ class WorkerApiClient {
   final WorkerConfig _config;
   final http.Client _http;
   final WorkerApiAuditCallback? _onAudit;
+
+  /// When true, dev worker-gateway pins assignments to this device on first poll.
+  bool devClaimAssignments;
 
   void reconfigure(WorkerConfig config) {
     _config.baseUrl = config.baseUrl;
@@ -273,7 +277,13 @@ class WorkerApiClient {
           _config.resolve(path).replace(queryParameters: {
             if (waitSeconds > 0) 'waitSeconds': '$waitSeconds',
           }),
-          headers: _headers(accessToken: accessToken, requestId: requestId),
+          headers: _headers(
+            accessToken: accessToken,
+            requestId: requestId,
+            extra: devClaimAssignments
+                ? const {'X-EdgeMint-Dev-Claim-Assignments': '1'}
+                : null,
+          ),
         )
         .timeout(timeout);
     _audit('GET', path, response.statusCode);
@@ -527,12 +537,14 @@ class WorkerApiClient {
     String? idempotencyKey,
     String? requestId,
     bool json = false,
+    Map<String, String>? extra,
   }) {
     return {
       if (json) 'Content-Type': 'application/json',
       if (accessToken != null) 'Authorization': 'Bearer $accessToken',
-      'Idempotency-Key': ?idempotencyKey,
-      'X-Request-Id': ?requestId,
+      if (idempotencyKey != null) 'Idempotency-Key': idempotencyKey,
+      if (requestId != null) 'X-Request-Id': requestId,
+      ...?extra,
     };
   }
 

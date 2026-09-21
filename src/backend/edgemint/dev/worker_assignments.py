@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import os
 import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from edgemint.dev.dev_public_urls import dev_api_public_base
 
-_WORKER_MODEL_VERSION_ID = "mdv_qwen3_0_6b"
+_WORKER_MODEL_VERSION_ID = "mdv_qwen2_5_1_5b"
 
 _pending: list[dict[str, Any]] = []
 _completed: list[str] = []
+_exclusive_device_public_id: str | None = (
+    os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID") or None
+)
 
 
 def _now() -> datetime:
@@ -39,6 +43,38 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
     }
     _pending.append(assignment)
     return assignment
+
+
+def preferred_device_public_id() -> str | None:
+    return _exclusive_device_public_id
+
+
+def register_exclusive_device(device_public_id: str) -> None:
+    global _exclusive_device_public_id
+    env_pin = os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID")
+    if env_pin:
+        return
+    if _exclusive_device_public_id is None:
+        _exclusive_device_public_id = device_public_id
+
+
+def _assignment_allowed_for_device(device_public_id: str | None) -> bool:
+    pin = os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID") or _exclusive_device_public_id
+    if pin is None:
+        return True
+    return device_public_id == pin
+
+
+def claim_next_assignment(
+    *,
+    device_public_id: str | None = None,
+    claim_exclusive: bool = False,
+) -> dict[str, Any] | None:
+    if claim_exclusive and device_public_id:
+        register_exclusive_device(device_public_id)
+    if not _assignment_allowed_for_device(device_public_id):
+        return None
+    return pop_next_assignment()
 
 
 def pop_next_assignment() -> dict[str, Any] | None:
@@ -87,3 +123,10 @@ def cancel_dev_assignment(assignment_id: str) -> bool:
 
 def list_pending_assignments() -> list[dict[str, Any]]:
     return [assignment for assignment in _pending if assignment["assignmentId"] not in _completed]
+
+
+def dev_assignment_state() -> dict[str, Any]:
+    return {
+        "exclusiveDeviceId": preferred_device_public_id(),
+        "items": list_pending_assignments(),
+    }

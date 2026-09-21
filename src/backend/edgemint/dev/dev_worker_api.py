@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import base64
+import json
 
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 from edgemint.building_blocks.settings import get_settings
+from edgemint.dev import fixtures
 from edgemint.dev import worker_task_inputs
+from edgemint.results.text_summarize_constraints import (
+    summarize_constraints_from_manifest,
+    validate_summarize_data,
+)
+from edgemint.results.validator import extract_task_result_payload
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
@@ -65,8 +72,43 @@ async def worker_task_result_content(task_id: str):
 async def worker_task_output(task_id: str, payload: DevWorkerOutputRequest) -> dict:
     if not _dev_enabled():
         raise HTTPException(503, "DEV_WORKER_API_DISABLED")
-    if worker_task_inputs.input_manifest(task_id) is None:
+    manifest = worker_task_inputs.input_manifest(task_id)
+    if manifest is None:
         raise HTTPException(404, "TASK_INPUT_NOT_FOUND")
+    structured_raw = payload.metrics.get("structuredResultJson")
+    if isinstance(structured_raw, str) and structured_raw.strip():
+        try:
+            envelope = json.loads(structured_raw)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(422, "STRUCTURED_RESULT_INVALID_JSON") from exc
+        if not isinstance(envelope, dict):
+            raise HTTPException(422, "STRUCTURED_RESULT_INVALID_JSON")
+        task_type = str(manifest.get("taskType", ""))
+        if task_type == "text.summarize":
+            extracted = extract_task_result_payload(envelope)
+            data = extracted.get("data")
+            if not isinstance(data, dict):
+                raise HTTPException(422, "SUMMARIZE_RESULT_INVALID_SHAPE")
+            constraints = summarize_constraints_from_manifest(manifest)
+            from edgemint.results.text_summarize_constraints import normalize_summarize_data
+
+            outcome = validate_summarize_data(normalize_summarize_data(data), constraints)
+            if not outcome.passed:
+                detail = outcome.blocking_violations[0]
+                rejection = {
+                    "code": "SUMMARIZE_OUTPUT_REJECTED",
+                    "detail": detail,
+                    "violations": list(outcome.blocking_violations),
+                }
+                existing = fixtures.dev_task_by_id(task_id)
+                if existing is not None and existing.get("lifecycleStatus") == "succeeded":
+                    raise HTTPException(422, rejection)
+                fixtures.reject_dev_task_output(
+                    task_id,
+                    reason_code="SUMMARIZE_OUTPUT_REJECTED",
+                    reason_detail=detail,
+                )
+                raise HTTPException(422, rejection)
     result_file_bytes = None
     if payload.resultFileBase64:
         try:

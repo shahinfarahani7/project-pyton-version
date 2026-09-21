@@ -1,0 +1,189 @@
+<timestamp>Monday, Sep 21, 2026, 10:36 AM (UTC+3:30)</timestamp>
+<user_query>
+Implement the fixes discussed above in the current repository. Complete the implementation and relevant tests, not just another analysis.
+
+The active runtime in the supplied logs is Qwen2.5 1.5B on an Android x86 emulator using CPU and the MediaPipe `.task` path. Design for a small model with limited instruction-following ability, context budget, and inference speed.
+
+Use the previous customer-feedback task and logs as a regression fixture. Do not hardcode its answers or its five categories into the general summarization pipeline.
+
+## 1. Verify before changing
+
+Inspect the current implementations of:
+
+* `qwen_task_processor.dart`
+* `prompt_templates.dart`
+* `hierarchical_summarize_pipeline.dart`
+* `worker_task_inputs.py`
+* `results/validator.py`
+* `dev_worker_api.py`
+
+Locate actual paths and callers; the previous analysis is a hypothesis until verified against code.
+
+Important corrections to the previous analysis:
+
+* Trimming 646 characters to 600 removes 46 characters, not necessarily all three final instruction lines. Identify the exact removed text.
+* The logs already show `missingOrUnclear: []` in the raw model response. Normalization may contain a separate bug, but it did not cause this particular empty array.
+* Instruction trimming is a proven defect, but it has not been proven to be the sole or main cause of every quality issue.
+* Preserving numbers means keeping relevant numeric facts accurate; a short summary need not repeat every number in the source.
+* Inspect the actual validator before claiming what it checks.
+
+Work with current files. Do not inspect Git history or overwrite unrelated changes.
+
+## 2. Preserve instructions and budget the prompt correctly
+
+Replace silent character-based instruction truncation.
+
+Requirements:
+
+* Preserve accepted user instructions completely.
+* Do not retain only lines containing English words such as “Preserve” or “Do not”.
+* Account for template, instructions, source, chat formatting, and output allowance when budgeting context.
+* Use an existing tokenizer if available. Otherwise use a conservative, documented estimate with a safety margin; do not present estimates as exact token counts.
+* Reduce source chunk size when necessary, preserving all source content across chunks.
+* If instructions alone cannot fit safely, return an explicit supported error. Do not silently shorten them or mark the task successful.
+* Do not merely increase `600` to another arbitrary character limit.
+
+Inspect the actual runtime output-limit behavior. The log says `maxOutputTokens=256` is ignored on the `.task` path. Do not assume that parameter limits generation, and do not blindly reduce model context capacity to impose an output cap.
+
+Preserve existing cancellation, deadlines, session cleanup, and supported generation controls.
+
+## 3. Simplify conflicting prompts for the small model
+
+Create a short, consistent prompt contract using the existing architecture.
+
+* Keep instructions and source text clearly separated.
+* Treat source text as data, not executable instructions.
+* Remove conflicting defaults when the user explicitly specifies a different requirement.
+* Do not impose “at most two sentences” or “12 words per key point” when these are unrequested constraints that obstruct the task.
+* Remove the blanket prohibition against repeating any fact across fields: summary and mainComplaint may legitimately overlap.
+* Keep keyPoints distinct from one another.
+* Do not call ordinary text “OCR text”.
+* Preserve the existing external response schema and compatible behavior.
+
+For this regression task, the requested requirements are:
+
+* summary at most 80 words;
+* exactly five distinct keyPoints covering delivery, tracking, product issues, billing, and support;
+* mainComplaint respects the customer’s stated priority;
+* one practical relevant improvement;
+* missingOrUnclear contains genuinely unresolved information.
+
+These requirements belong to this task, not every `text.summarize` request. Reuse existing task options where available. Do not introduce brittle keyword parsing that pretends to understand arbitrary natural-language instructions.
+
+## 4. Preserve unresolved facts through normalization and chunking
+
+Inspect `_normalizeSummary` and `_isClearlySupported`.
+
+Do not discard an uncertainty merely because it shares words with the source. A source explicitly saying “I do not know whether…” is evidence of uncertainty.
+
+Normalization should safely handle types, whitespace, empty entries, and duplicates. It must not silently delete valid meaning or manufacture missing facts.
+
+Do not force missingOrUnclear to be nonempty for every task.
+
+Inspect map/reduce behavior:
+
+* If map always returns an empty uncertainty list, verify whether unresolved facts survive elsewhere.
+* Preserve relevant uncertainties, numbers, and distinctions between reported facts, claims, pending transactions, and promises across chunk boundaries.
+* Do not expect reduce to recover evidence discarded by map.
+* Keep the single-chunk path simple; do not add map/reduce calls unnecessarily.
+
+## 5. Make validation honest and repairs bounded
+
+Separate:
+
+1. structural checks;
+2. explicitly supported task-constraint checks;
+3. semantic heuristics.
+
+Deterministically validate types, required fields, and explicitly available count/length constraints.
+
+Do not claim full semantic correctness based on JSON validity or keyword matches. Rename misleading quality logs to describe the checks actually performed.
+
+Avoid:
+
+* requiring every source number in the result;
+* treating the presence of “pending” anywhere as proof of correct billing interpretation;
+* forcing a nonempty uncertainty list;
+* hardcoding grocery categories, order IDs, amounts, or expected sentences;
+* treating overlapping vocabulary as semantic duplication.
+
+Use existing semantic checks only where justified. Document their limits. If a requirement cannot be reliably verified by the current lightweight validator, report it as unchecked rather than inventing a reliable-looking pass.
+
+Allow at most one targeted repair attempt per final result for this fix, accounting for existing retries so they do not stack.
+
+The repair should include:
+
+* the specific detected violations;
+* the relevant source context;
+* the original task requirements.
+
+Keep it concise. Respect the remaining context, lease, and execution deadline.
+
+If a blocking validated requirement still fails, use the existing failure contract with a clear reason. Do not substitute a canned answer or silently report success. Heuristic uncertainty alone must not become an unreliable hard rejection.
+
+## 6. Align backend acceptance safely
+
+The backend remains authoritative for accepting results.
+
+Inspect the actual envelopes and lifecycle for:
+
+* production result validation;
+* development output upload;
+* Worker `:complete`;
+* Portal task completion.
+
+Reuse compatible structural and supported task-constraint validation in development and production. Do not simply call a production validator against a different dev payload shape.
+
+A rejected upload must not leave the Portal task marked successful. Inspect the ordering carefully and make only the necessary changes.
+
+Do not change authentication, enrollment, assignment routing, lease semantics, or storage schemas unless a demonstrated requirement of this fix makes it necessary. Do not redesign the lifecycle.
+
+Keep Worker and backend validation consistent with contract tests and shared fixtures, without duplicating speculative semantic rules.
+
+## 7. Regression tests
+
+Use the exact supplied task and source as a fixture, without asserting one exact model wording.
+
+Add focused tests for:
+
+* All 646 instruction characters survive prompt construction, including the final prohibition.
+* Long accepted instructions are preserved; oversized inputs fail clearly rather than being silently truncated.
+* Explicit user constraints are not overridden by default sentence or per-point word limits.
+* A supported uncertainty survives normalization.
+* Clearly resolved input can legitimately produce `missingOrUnclear: []`.
+* Multi-chunk processing retains pending/payment and promise/completion distinctions.
+* Structural and supported task constraints reject invalid outputs.
+* Repair attempts are bounded.
+* Backend rejection does not mark the Portal task successful.
+* An unrelated summarization task is not forced into the grocery-feedback categories.
+
+Use mocked model responses for deterministic pipeline tests. Do not describe mocked tests as proof of live model quality.
+
+If the real device/runtime is available, rerun the exact feedback task and report the raw and normalized responses separately, along with duration and repair count. Otherwise state that live verification remains unperformed.
+
+For manual evaluation of this fixture, check:
+
+* A219 was on time.
+* The priority is the disabled dietary substitution and unsupported approval claim.
+* Tracking is covered.
+* One $64.80 payment is completed; the second $64.80 authorization is pending.
+* The $12 refund is promised within five business days; only two have passed.
+* Unresolved authorization/approval questions are represented.
+* The improvement investigates and prevents unauthorized substitution, not substitution disabling itself.
+
+## Delivery
+
+Implement the smallest coherent patch. Do not change the model, add a cloud LLM, add heavy dependencies, or introduce repeated inference loops.
+
+At the end provide:
+
+* verified causes versus remaining hypotheses;
+* files changed and why;
+* exact test results;
+* any compatibility or lifecycle implications;
+* live model result if actually tested;
+* remaining semantic limitations.
+
+Do not claim the model is now universally accurate. Demonstrate that instructions are preserved, prompts are consistent, normalization preserves meaning, validation is honest, and failures are handled correctly.
+
+</user_query>

@@ -112,11 +112,19 @@ function Test-AdbReverseRules {
 
 function Apply-DevHotPatches {
     $dev = Join-Path $Root 'src\backend\edgemint\dev'
+    $results = Join-Path $Root 'src\backend\edgemint\results'
     $svc = Join-Path $Root 'src\backend\edgemint\services'
     if (-not (Test-Path $dev)) { throw "Missing $dev" }
-    docker cp $dev edgemint-api-gateway-1:/app/src/backend/edgemint/ 2>$null | Out-Null
-    docker cp $dev edgemint-worker-registry-1:/app/src/backend/edgemint/ 2>$null | Out-Null
-    docker cp $dev edgemint-model-registry-1:/app/src/backend/edgemint/ 2>$null | Out-Null
+    if (-not (Test-Path $results)) { throw "Missing $results" }
+    foreach ($container in @(
+            'edgemint-api-gateway-1',
+            'edgemint-worker-gateway-1',
+            'edgemint-worker-registry-1',
+            'edgemint-model-registry-1'
+        )) {
+        docker cp $results "${container}:/app/src/backend/edgemint/" 2>$null | Out-Null
+        docker cp $dev "${container}:/app/src/backend/edgemint/" 2>$null | Out-Null
+    }
     docker cp (Join-Path $svc 'api_gateway.py') edgemint-api-gateway-1:/app/src/backend/edgemint/services/api_gateway.py 2>$null | Out-Null
     docker cp (Join-Path $svc 'worker_registry.py') edgemint-worker-registry-1:/app/src/backend/edgemint/services/worker_registry.py 2>$null | Out-Null
     docker cp (Join-Path $svc 'worker_gateway.py') edgemint-worker-gateway-1:/app/src/backend/edgemint/services/worker_gateway.py 2>$null | Out-Null

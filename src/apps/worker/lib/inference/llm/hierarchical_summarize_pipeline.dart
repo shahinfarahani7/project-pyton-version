@@ -1,17 +1,19 @@
 import 'dart:convert';
 
 import 'context_budget_manager.dart';
-import 'formatted_prompt_builder.dart';
 import 'hierarchical_reduce_bounds.dart';
 import 'prompt_templates.dart';
 import 'semantic_chunk_engine.dart';
 import 'semantic_merge_validator.dart';
+import 'summarize_reduce_budget.dart';
+import 'summarize_task_constraints.dart';
 import '../../runtime/checkpoint_manager.dart';
 import '../../runtime/resume_grant.dart';
 
 typedef SummarizePromptRunner =
     Future<Map<String, dynamic>> Function(String prompt);
 typedef SummarizePipelineLog = void Function(String message);
+typedef SummarizePipelineGuard = bool Function();
 
 class SummarizeCheckpointScope {
   const SummarizeCheckpointScope({
@@ -50,9 +52,11 @@ class HierarchicalSummarizePipeline {
     required String inputText,
     required ChunkPlan plan,
     String? userInstructions,
-    int keyPointCount = 3,
+    SummarizeTaskConstraintsV1? constraints,
     SummarizeCheckpointScope? checkpointScope,
+    SummarizePipelineGuard? shouldContinue,
   }) async {
+    final keyPointCount = constraints?.keyPointCount ?? 3;
     final tracker = ReduceProgressTracker(bounds: _bounds);
     tracker.assertChunkCount(plan.totalChunks);
     _log?.call(
@@ -62,10 +66,10 @@ class HierarchicalSummarizePipeline {
     if (plan.totalChunks <= 1) {
       _log?.call('[CHUNK REQUEST] index=0/1 chars=${inputText.length}');
       final result = await _runPromptJson(
-        PromptTemplates.documentSummarize(
-          ocrText: inputText,
+        PromptTemplates.textSummarize(
+          sourceText: inputText,
           userInstructions: userInstructions,
-          keyPointCount: keyPointCount,
+          constraints: constraints,
         ),
       );
       _log?.call('[CHUNK RESPONSE] index=0/1 response=${jsonEncode(result)}');
@@ -93,6 +97,7 @@ class HierarchicalSummarizePipeline {
     }
 
     for (var index = startIndex; index < plan.chunks.length; index++) {
+      _assertShouldContinue(shouldContinue);
       final chunk = plan.chunks[index];
       tracker.recordInferenceCall();
       _log?.call(
@@ -105,6 +110,7 @@ class HierarchicalSummarizePipeline {
           chunkIndex: chunk.chunkIndex,
           totalChunks: plan.totalChunks,
           chunkId: chunk.chunkId,
+          maxKeyPoints: HierarchicalReduceBounds.mapIntermediateMaxKeyPoints,
         ),
       );
       _log?.call(
@@ -131,7 +137,8 @@ class HierarchicalSummarizePipeline {
       partials,
       tracker: tracker,
       userInstructions: userInstructions,
-      keyPointCount: keyPointCount,
+      constraints: constraints,
+      shouldContinue: shouldContinue,
     );
     _log?.call(
       '[CHUNK FINAL RESPONSE] chunks=${plan.totalChunks} '
@@ -150,8 +157,10 @@ class HierarchicalSummarizePipeline {
     int depth = 0,
     ReduceProgressTracker? tracker,
     String? userInstructions,
-    int keyPointCount = 3,
+    SummarizeTaskConstraintsV1? constraints,
+    SummarizePipelineGuard? shouldContinue,
   }) async {
+    _assertShouldContinue(shouldContinue);
     final progress = tracker ?? ReduceProgressTracker(bounds: _bounds);
     progress.recordDepth(depth);
 
@@ -159,21 +168,29 @@ class HierarchicalSummarizePipeline {
       return partials.single;
     }
 
-    final reducePrompt = PromptTemplates.summarizeReduce(
-      partialSummariesJson: jsonEncode(partials),
-      chunkCount: partials.length,
+    final evaluation = SummarizeReduceBudget.evaluate(
+      contextBudget: _contextBudget,
+      partials: partials,
       userInstructions: userInstructions,
-      keyPointCount: keyPointCount,
-    );
-    final formatted = FormattedPromptBuilder.buildTaskPrompt(
-      templateBody: reducePrompt,
-      systemInstruction: _contextBudget.defaultSystemInstruction,
-    );
-    final evaluation = _contextBudget.evaluateFormattedPrompt(
-      formattedPrompt: formatted,
+      constraints: constraints,
       maxOutputTokens: _bounds.maxOutputTokensPerStage,
     );
+    final partialsJson = jsonEncode(partials);
+    _log?.call(
+      '[CHUNK REDUCE BUDGET] depth=$depth partials=${partials.length} '
+      'partialsChars=${partialsJson.length} '
+      'estimatedPromptTokens=${evaluation.formattedPromptTokens} '
+      'requiresChunkPipeline=${evaluation.requiresChunkPipeline}',
+    );
+
     if (!evaluation.requiresChunkPipeline) {
+      _assertReducePromptFits(evaluation);
+      final reducePrompt = PromptTemplates.summarizeReduce(
+        partialSummariesJson: partialsJson,
+        chunkCount: partials.length,
+        userInstructions: userInstructions,
+        constraints: constraints,
+      );
       progress.recordInferenceCall();
       _log?.call(
         '[CHUNK REDUCE REQUEST] depth=$depth partials=${partials.length}',
@@ -205,21 +222,44 @@ class HierarchicalSummarizePipeline {
       depth: depth + 1,
       tracker: progress,
       userInstructions: userInstructions,
-      keyPointCount: keyPointCount,
+      constraints: constraints,
+      shouldContinue: shouldContinue,
     );
     final right = await reducePartials(
       partials.sublist(mid),
       depth: depth + 1,
       tracker: progress,
       userInstructions: userInstructions,
-      keyPointCount: keyPointCount,
+      constraints: constraints,
+      shouldContinue: shouldContinue,
     );
     return reducePartials(
       [left, right],
       depth: depth + 1,
       tracker: progress,
       userInstructions: userInstructions,
-      keyPointCount: keyPointCount,
+      constraints: constraints,
+      shouldContinue: shouldContinue,
     );
+  }
+
+  void _assertShouldContinue(SummarizePipelineGuard? shouldContinue) {
+    if (shouldContinue != null && !shouldContinue()) {
+      throw HierarchicalReduceExhaustedException(
+        reason: 'cancelled_or_deadline_exceeded',
+        depth: 0,
+        inferenceCalls: 0,
+      );
+    }
+  }
+
+  void _assertReducePromptFits(FormattedPromptEvaluation evaluation) {
+    if (evaluation.requiresChunkPipeline) {
+      throw HierarchicalReduceExhaustedException(
+        reason: 'reduce_prompt_oversized',
+        depth: 0,
+        inferenceCalls: 0,
+      );
+    }
   }
 }

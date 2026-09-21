@@ -12,9 +12,13 @@ DEV_WORKSPACE_STAGING = UUID("00000000-0000-0000-0000-00000000000c")
 
 DEV_WORKSPACE_IDS = frozenset({DEV_WORKSPACE_PRIMARY, DEV_WORKSPACE_STAGING})
 
-WORKER_MODEL_VERSION_ID = "mdv_qwen3_0_6b"
+WORKER_MODEL_VERSION_ID = "mdv_qwen2_5_1_5b"
 
 PAGE = {"limit": 25, "hasMore": False}
+
+_PREVIEW_INPUT_CHARS = 2000
+_PREVIEW_RESULT_CHARS = 500
+_MAX_STORED_TEXT_CHARS = 32_000
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
 
@@ -242,6 +246,7 @@ def create_dev_task(
     file_name: str | None = None,
     file_mime: str | None = None,
     file_bytes: bytes | None = None,
+    summarize_options: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     from edgemint.dev.assignment_bridge import enqueue_assignment_for_worker
 
@@ -258,9 +263,11 @@ def create_dev_task(
             "Pasted text" if input_text and not file_bytes else "Customer upload"
         )
         if input_text and input_text.strip():
-            task["inputPreview"] = input_text.strip()[:2000]
+            full_input = input_text.strip()[:_MAX_STORED_TEXT_CHARS]
+            task["inputText"] = full_input
+            task["inputPreview"] = full_input[:_PREVIEW_INPUT_CHARS]
         if instructions and instructions.strip():
-            task["instructions"] = instructions.strip()[:800]
+            task["instructions"] = instructions.strip()[:_MAX_STORED_TEXT_CHARS]
         task["inputSource"] = {
             "input_text": input_text,
             "instructions": instructions,
@@ -279,12 +286,47 @@ def create_dev_task(
         file_name=file_name,
         file_mime=file_mime,
         file_bytes=file_bytes,
+        summarize_options=summarize_options,
     )
     enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
     task["assignmentId"] = task["id"]
     task.pop("inputSource", None)
     _notify_task_event(workspace_id, task["id"], "task.created")
     return task
+
+
+def dev_task_by_id(task_id: str) -> dict[str, Any] | None:
+    workspace_id = find_task_workspace(task_id)
+    if workspace_id is None:
+        return None
+    return dev_task(workspace_id, task_id)
+
+
+def reject_dev_task_output(
+    task_id: str,
+    *,
+    reason_code: str,
+    reason_detail: str,
+) -> bool:
+    """Persist terminal failure when worker output is rejected.
+
+    Returns False when the task already succeeded (accepted result must not be downgraded).
+    """
+    task = dev_task_by_id(task_id)
+    if task is None:
+        return False
+    if task["lifecycleStatus"] == "succeeded":
+        return False
+    if task["lifecycleStatus"] in {"failed", "cancelled", "expired"}:
+        return True
+    update_dev_task_execution(
+        task_id,
+        lifecycle_status="failed",
+        execution_status="failed",
+        failure_reason_code=reason_code,
+        failure_reason=reason_detail,
+    )
+    return True
 
 
 def cancel_dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
@@ -318,8 +360,11 @@ def update_dev_task_execution(
     lifecycle_status: str,
     execution_status: str,
     result_preview: str | None = None,
+    result_text: str | None = None,
     result_artifact_url: str | None = None,
     result_mime_type: str | None = None,
+    failure_reason_code: str | None = None,
+    failure_reason: str | None = None,
 ) -> bool:
     updated = False
     workspace_id: UUID | None = None
@@ -330,12 +375,22 @@ def update_dev_task_execution(
                 task["lifecycleStatus"] = lifecycle_status
                 task["executionStatus"] = execution_status
                 task["updatedAt"] = _now_iso()
-                if result_preview is not None:
-                    task["resultPreview"] = result_preview[:500]
+                if result_text is not None:
+                    stored = result_text[:_MAX_STORED_TEXT_CHARS]
+                    task["resultText"] = stored
+                    task["resultPreview"] = stored[:_PREVIEW_RESULT_CHARS]
+                elif result_preview is not None:
+                    stored = result_preview[:_MAX_STORED_TEXT_CHARS]
+                    task["resultText"] = stored
+                    task["resultPreview"] = stored[:_PREVIEW_RESULT_CHARS]
                 if result_artifact_url is not None:
                     task["resultArtifactUrl"] = result_artifact_url
                 if result_mime_type is not None:
                     task["resultMimeType"] = result_mime_type
+                if failure_reason_code is not None:
+                    task["failureReasonCode"] = failure_reason_code
+                if failure_reason is not None:
+                    task["failureReason"] = failure_reason[:500]
                 updated = True
     for ws_id in (DEV_WORKSPACE_PRIMARY, DEV_WORKSPACE_STAGING):
         for task in _seeded_tasks(ws_id):
@@ -344,12 +399,22 @@ def update_dev_task_execution(
                 task["lifecycleStatus"] = lifecycle_status
                 task["executionStatus"] = execution_status
                 task["updatedAt"] = _now_iso()
-                if result_preview is not None:
-                    task["resultPreview"] = result_preview[:500]
+                if result_text is not None:
+                    stored = result_text[:_MAX_STORED_TEXT_CHARS]
+                    task["resultText"] = stored
+                    task["resultPreview"] = stored[:_PREVIEW_RESULT_CHARS]
+                elif result_preview is not None:
+                    stored = result_preview[:_MAX_STORED_TEXT_CHARS]
+                    task["resultText"] = stored
+                    task["resultPreview"] = stored[:_PREVIEW_RESULT_CHARS]
                 if result_artifact_url is not None:
                     task["resultArtifactUrl"] = result_artifact_url
                 if result_mime_type is not None:
                     task["resultMimeType"] = result_mime_type
+                if failure_reason_code is not None:
+                    task["failureReasonCode"] = failure_reason_code
+                if failure_reason is not None:
+                    task["failureReason"] = failure_reason[:500]
                 updated = True
     if updated and workspace_id is not None:
         _notify_task_event(workspace_id, task_id, "task.updated")

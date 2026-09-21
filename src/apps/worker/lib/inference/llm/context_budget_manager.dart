@@ -23,7 +23,7 @@ class ContextBudgetProfile {
   final int verifiedArtifactContextLimit;
   final int configuredRuntimeContextLimit;
 
-  /// Active on-device LLM context budget (currently Gemma 4 E4B).
+  /// Active on-device LLM context budget (currently Qwen2.5 1.5B ekv4096).
  static const ContextBudgetProfile qwenBaseline = ContextBudgetProfile(
    totalContextTokens: qwenBaselineTotalContextTokens,
    systemTemplateTokens: 96,
