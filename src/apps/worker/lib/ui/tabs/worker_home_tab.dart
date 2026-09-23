@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../runtime/execution_status.dart';
+import '../../inference/llm/diagnostic/summarize_map_evidence_diagnostic_fixture.dart';
+import '../../inference/llm/diagnostic/summarize_map_prompt_variant.dart';
+import '../../inference/llm/diagnostic/facts_only_experiment.dart';
+import '../../inference/llm/summarize_diagnostic_map.dart';
 import '../../worker_app_controller.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
@@ -72,6 +76,9 @@ class WorkerHomeTab extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
+        if (SummarizeDiagnosticMap.armed)
+          _MapEvidenceDiagnosticPanel(controller: controller),
+        if (SummarizeDiagnosticMap.armed) const SizedBox(height: 16),
         _LivePortalTaskPanel(controller: controller),
         const SizedBox(height: 16),
         LayoutBuilder(
@@ -740,6 +747,197 @@ class _QuickActionsRow extends StatelessWidget {
         WorkerQuickAction(icon: Icons.account_balance_wallet_outlined, label: 'Earnings', onTap: () => onNavigate(3)),
         WorkerQuickAction(icon: Icons.more_horiz, label: 'More', onTap: () => onNavigate(4)),
       ],
+    );
+  }
+}
+
+class _MapEvidenceDiagnosticPanel extends StatefulWidget {
+  const _MapEvidenceDiagnosticPanel({required this.controller});
+
+  final WorkerAppController controller;
+
+  @override
+  State<_MapEvidenceDiagnosticPanel> createState() =>
+      _MapEvidenceDiagnosticPanelState();
+}
+
+class _MapEvidenceDiagnosticPanelState extends State<_MapEvidenceDiagnosticPanel> {
+  bool _running = false;
+  String? _lastRunId;
+  SummarizeMapEvidenceDiagnosticFixtureId? _lastFixture;
+
+  Future<void> _runDiagnostic(
+    SummarizeMapEvidenceDiagnosticFixtureId fixtureId,
+  ) async {
+    if (_running) {
+      return;
+    }
+    setState(() => _running = true);
+    try {
+      final result = await widget.controller.runIsolatedMapEvidenceDiagnostic(
+        fixtureId: fixtureId,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _lastRunId = result.runId;
+        _lastFixture = result.fixtureId;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Map diagnostic ${result.fixtureId.logLabel} ${result.runId}: '
+            'variant=${result.promptVariant.logLabel} '
+            'stage=${result.inferenceStage} '
+            'structuralFirstPass=${result.firstPassSuccess} '
+            'repaired=${result.repairedSuccess}',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Map diagnostic failed: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _running = false);
+      }
+    }
+  }
+
+  Future<void> _runClassification(
+    SummarizeMapEvidenceDiagnosticFixtureId fixtureId,
+  ) async {
+    if (_running) {
+      return;
+    }
+    setState(() => _running = true);
+    try {
+      final result = await widget.controller.runFactsOnlyClassificationDiagnostic(
+        fixtureId: fixtureId,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _lastRunId = result.classificationRunId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Classification ${fixtureId.logLabel} ${result.classificationRunId}: '
+            'structuralFirstPass=${result.firstPassSuccess} '
+            'repaired=${result.repairedSuccess} '
+            'semanticSupport=${result.semanticSupportCheck}',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Classification failed: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _running = false);
+      }
+    }
+  }
+
+  Widget _classifyButton(
+    SummarizeMapEvidenceDiagnosticFixtureId fixtureId,
+    String label,
+  ) {
+    final ready =
+        widget.controller.classifiableFactsSnapshot(fixtureId) != null;
+    return OutlinedButton.icon(
+      onPressed: _running || !ready ? null : () => _runClassification(fixtureId),
+      icon: const Icon(Icons.rule),
+      label: Text(label),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final factsOnly = widget.controller.factsOnlyDiagnosticSelected;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: workerPanelDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Map evidence diagnostic (dev)',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'One isolated mapEvidence run per tap (no Reduce, no task upload). '
+            'Compare baseline fact-like lines vs narrative presentation.',
+          ),
+          if (factsOnly) ...[
+            const SizedBox(height: 8),
+            const Text(
+              'Facts-only mode: "Run" performs extraction. "Classify" uses only '
+              'that fixture\'s latest accepted extraction, once.',
+            ),
+          ],
+          if (_lastRunId != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Last run: $_lastRunId '
+              '(${_lastFixture?.logLabel ?? "unknown"})',
+            ),
+          ],
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: _running
+                    ? null
+                    : () => _runDiagnostic(
+                          SummarizeMapEvidenceDiagnosticFixtureId
+                              .baselineFactLines,
+                        ),
+                icon: _running
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.format_list_bulleted),
+                label: const Text('Run baseline fixture'),
+              ),
+              OutlinedButton.icon(
+                onPressed: _running
+                    ? null
+                    : () => _runDiagnostic(
+                          SummarizeMapEvidenceDiagnosticFixtureId.narrative,
+                        ),
+                icon: const Icon(Icons.short_text),
+                label: const Text('Run narrative fixture'),
+              ),
+              if (factsOnly) ...[
+                _classifyButton(
+                  SummarizeMapEvidenceDiagnosticFixtureId.baselineFactLines,
+                  'Classify baseline facts',
+                ),
+                _classifyButton(
+                  SummarizeMapEvidenceDiagnosticFixtureId.narrative,
+                  'Classify narrative facts',
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ class JsonExtractResult {
     this.object,
     this.rejectionStage,
     this.rejectionReason,
+    this.literalEscapeRecovered = false,
   });
 
   final String rawPreserved;
@@ -16,14 +17,23 @@ class JsonExtractResult {
   final String? rejectionStage;
   final String? rejectionReason;
 
+  /// True when [JsonOutputValidator] decoded via [_tryLiteralEscapeLayerRecovery].
+  final bool literalEscapeRecovered;
+
   bool get ok => object != null;
 }
 
 abstract final class JsonOutputValidator {
-  static Map<String, dynamic>? parseJsonObject(String raw) =>
-      extractJsonObject(raw).object;
+  static Map<String, dynamic>? parseJsonObject(
+    String raw, {
+    bool allowSalvage = true,
+  }) =>
+      extractJsonObject(raw, allowSalvage: allowSalvage).object;
 
-  static JsonExtractResult extractJsonObject(String raw) {
+  static JsonExtractResult extractJsonObject(
+    String raw, {
+    bool allowSalvage = true,
+  }) {
     final preserved = raw;
     final thinkStripped = _stripThinkBlocks(raw.trim());
     final cleaned = _stripMarkdownFences(thinkStripped);
@@ -42,7 +52,10 @@ abstract final class JsonOutputValidator {
           rejectionReason: 'json_extract_ambiguous_multiple_objects',
         );
       }
-      for (final candidate in _candidates(source)) {
+      for (final candidate in _candidates(
+        source,
+        allowSalvage: allowSalvage,
+      )) {
         final decoded = _tryDecodeObject(candidate);
         if (decoded != null) {
           return JsonExtractResult(rawPreserved: preserved, object: decoded);
@@ -54,6 +67,14 @@ abstract final class JsonOutputValidator {
           rawPreserved: preserved,
           rejectionStage: 'decode',
           rejectionReason: 'json_extract_decode_failed',
+        );
+      }
+      final recovered = _tryLiteralEscapeLayerRecovery(source);
+      if (recovered != null) {
+        return JsonExtractResult(
+          rawPreserved: preserved,
+          object: recovered,
+          literalEscapeRecovered: true,
         );
       }
     }
@@ -124,9 +145,12 @@ abstract final class JsonOutputValidator {
   /// unescaped quotes inside a value, an unquoted key copied from the prompt,
   /// a reply cut at the output budget — and a second inference pass repairs
   /// none of them reliably.
-  static Iterable<String> _candidates(String cleaned) sync* {
+  static Iterable<String> _candidates(
+    String cleaned, {
+    required bool allowSalvage,
+  }) sync* {
     final balanced = _extractFirstJsonObject(cleaned);
-    final trimmed = _cutToLastValidMember(cleaned);
+    final trimmed = allowSalvage ? _cutToLastValidMember(cleaned) : null;
     for (final source in [cleaned, balanced, trimmed]) {
       if (source == null || source.isEmpty) {
         continue;
@@ -158,6 +182,121 @@ abstract final class JsonOutputValidator {
       }
     } catch (_) {}
     return null;
+  }
+
+  /// Recovers JSON the model wrote as one escaped string (`\n`, `\"`, … as
+  /// literal two-character sequences). Only runs when the normal brace scanner
+  /// finds no object, the payload contains those literals, and unescaping
+  /// yields exactly one strict [jsonDecode] object with benign trailing junk.
+  static Map<String, dynamic>? _tryLiteralEscapeLayerRecovery(String source) {
+    if (_extractFirstJsonObject(source) != null) {
+      return null;
+    }
+    if (!source.contains('{') ||
+        (!source.contains(r'\n') && !source.contains(r'\"'))) {
+      return null;
+    }
+    final unescaped = _unescapeJsonStringLiterals(source);
+    if (unescaped == source) {
+      return null;
+    }
+    final objectCount = _countTopLevelObjects(unescaped);
+    if (objectCount != 1) {
+      return null;
+    }
+    final balanced = _extractFirstJsonObject(unescaped);
+    if (balanced == null) {
+      return null;
+    }
+    if (!_trailingContentIsBenign(unescaped, balanced)) {
+      return null;
+    }
+    return _tryDecodeObject(balanced);
+  }
+
+  /// Decodes JSON string escape sequences written literally in model output.
+  /// Unknown `\x` pairs are left unchanged so Windows paths and stray
+  /// backslashes are not rewritten globally.
+  static String _unescapeJsonStringLiterals(String input) {
+    final output = StringBuffer();
+    var index = 0;
+    while (index < input.length) {
+      final char = input[index];
+      if (char == r'\' && index + 1 < input.length) {
+        final next = input[index + 1];
+        switch (next) {
+          case 'n':
+            output.write('\n');
+            index += 2;
+            continue;
+          case 'r':
+            output.write('\r');
+            index += 2;
+            continue;
+          case 't':
+            output.write('\t');
+            index += 2;
+            continue;
+          case '"':
+            output.write('"');
+            index += 2;
+            continue;
+          case r'\':
+            output.write(r'\');
+            index += 2;
+            continue;
+          case '/':
+            output.write('/');
+            index += 2;
+            continue;
+          case 'u':
+            if (index + 5 < input.length) {
+              final hex = input.substring(index + 2, index + 6);
+              if (_isHexDigits(hex)) {
+                output.writeCharCode(int.parse(hex, radix: 16));
+                index += 6;
+                continue;
+              }
+            }
+        }
+      }
+      output.write(char);
+      index += 1;
+    }
+    return output.toString();
+  }
+
+  static bool _isHexDigits(String value) {
+    if (value.length != 4) {
+      return false;
+    }
+    for (final codeUnit in value.codeUnits) {
+      final isDigit = codeUnit >= 48 && codeUnit <= 57;
+      final isLower = codeUnit >= 97 && codeUnit <= 102;
+      final isUpper = codeUnit >= 65 && codeUnit <= 70;
+      if (!isDigit && !isLower && !isUpper) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static bool _trailingContentIsBenign(String unescaped, String balanced) {
+    final start = unescaped.indexOf(balanced);
+    if (start < 0) {
+      return false;
+    }
+    final after = unescaped.substring(start + balanced.length).trim();
+    if (after.isEmpty) {
+      return true;
+    }
+    if (RegExp(r'^`{1,3}$').hasMatch(after)) {
+      return true;
+    }
+    if (after.contains('{')) {
+      return false;
+    }
+    return RegExp(r'^[`\s]*$').hasMatch(after);
   }
 
   /// Rewrites values the model emitted in the wrong shape — a bare string for

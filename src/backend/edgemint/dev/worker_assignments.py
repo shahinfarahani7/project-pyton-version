@@ -58,6 +58,14 @@ def register_exclusive_device(device_public_id: str) -> None:
         _exclusive_device_public_id = device_public_id
 
 
+def clear_runtime_exclusive_device_pin() -> None:
+    """Drop the first-claim dev pin so sync/reconcile can deliver to a new emulator."""
+    global _exclusive_device_public_id
+    if os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID"):
+        return
+    _exclusive_device_public_id = None
+
+
 def _assignment_allowed_for_device(device_public_id: str | None) -> bool:
     pin = os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID") or _exclusive_device_public_id
     if pin is None:

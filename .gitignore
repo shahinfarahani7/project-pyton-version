@@ -37,3 +37,5 @@ src/apps/worker/android/.gradle/
 src/apps/worker/android/local.properties
 src/apps/worker/**/ephemeral/
 src/backend/.ruff_cache/
+
+/artifacts/worker-installed-debug.apk

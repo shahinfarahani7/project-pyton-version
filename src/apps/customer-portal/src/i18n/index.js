@@ -144,6 +144,8 @@ const messages = {
     'tasks.instructionsLabel': 'What do you want?',
     'tasks.instructionsPlaceholder': 'Describe exactly what you need — e.g. extract invoice total, flag NSFW content, summarize in Persian…',
     'tasks.instructionsHint': 'Optional for every task type. Sent to the worker as your instruction.',
+    'tasks.phase1RegressionOptions':
+      'Apply Phase 1 regression structured options (100 words, 4 key points)',
     'billing.subtitle': 'Usage, credit balance, and invoice history for the active workspace.',
     'billing.usage': 'Current period',
     'billing.available': 'Available credit',
@@ -375,6 +377,8 @@ const messages = {
     'tasks.instructionsLabel': 'دقیقاً چه می‌خواهید؟',
     'tasks.instructionsPlaceholder': 'توضیح دهید چه نتیجه‌ای می‌خواهید — مثلاً استخراج مبلغ فاکتura، تشخیص NSFW، خلاصه به فارسی…',
     'tasks.instructionsHint': 'برای همه انواع task اختیاری است و به worker به‌عنوان دستور شما ارسال می‌شود.',
+    'tasks.phase1RegressionOptions':
+      'اعمال گزینه‌های ساخت‌یافته رگرسیون فاز ۱ (۱۰۰ کلمه، ۴ نکته کلیدی)',
     'billing.subtitle': 'مصرف، موجودی و فاکتورها.',
     'billing.usage': 'دوره جاری',
     'billing.available': 'اعتبار موجود',

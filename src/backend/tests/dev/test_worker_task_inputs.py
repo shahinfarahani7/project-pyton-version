@@ -3,6 +3,7 @@ from __future__ import annotations
 from edgemint.dev import worker_task_inputs
 from edgemint.results.text_summarize_constraints import (
     DEFAULT_TEXT_SUMMARIZE_PORTAL_OPTIONS,
+    PHASE1_TEXT_SUMMARIZE_REGRESSION_OPTIONS,
 )
 import pytest
 
@@ -96,6 +97,21 @@ def test_explicit_grocery_summarize_options_persist_in_manifest() -> None:
     assert summarize["keyPointCount"] == 5
     assert summarize["maxSummaryWords"] == 80
     assert "delivery" in summarize["coverageAxes"]
+
+
+def test_phase1_regression_summarize_options_persist_in_manifest() -> None:
+    worker_task_inputs.register_task(
+        task_id="tsk_phase1_regression",
+        task_type="text.summarize",
+        input_text="Grocery feedback.",
+        summarize_options=PHASE1_TEXT_SUMMARIZE_REGRESSION_OPTIONS,
+    )
+    manifest = worker_task_inputs.input_manifest("tsk_phase1_regression")
+    assert manifest is not None
+    summarize = manifest["options"]["summarize"]
+    assert summarize["keyPointCount"] == 4
+    assert summarize["maxSummaryWords"] == 100
+    assert "substitution" in summarize["coverageAxes"]
 
 
 def test_custom_summarize_options_are_preserved() -> None:

@@ -287,4 +287,67 @@ void main() {
       expect(extract.object!.containsKey('suggestedImprovement'), isFalse);
     }
   });
+
+  test('parses valid JSON with escaped newlines inside string values', () {
+    const raw =
+        '{"summary":"Line one\\nLine two","keyPoints":["a"],'
+        '"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue, reason: extract.rejectionReason);
+    expect(extract.object!['summary'], 'Line one\nLine two');
+  });
+
+  test('preserves backslashes in Windows paths inside valid JSON', () {
+    const raw =
+        '{"summary":"Saved to C:\\\\Users\\\\test\\\\file.txt","keyPoints":[],'
+        '"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue, reason: extract.rejectionReason);
+    expect(extract.object!['summary'], r'Saved to C:\Users\test\file.txt');
+  });
+
+  test('preserves unicode escape sequences in valid JSON', () {
+    const raw =
+        '{"summary":"Letter \\u0041","keyPoints":["\\u0042"],'
+        '"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue, reason: extract.rejectionReason);
+    expect(extract.object!['summary'], 'Letter A');
+    expect(extract.object!['keyPoints'], ['B']);
+  });
+
+  test('recovers fully literal-escape-encoded fenced JSON from live f71 shape',
+      () {
+    const raw =
+        '```json\\n{\\n  \\"summary\\": \\"ok\\",\\n  \\"keyPoints\\": [\\"a\\"],\\n'
+        '  \\"mainComplaint\\": \\"\\",\\n  \\"suggestedImprovement\\": \\"\\",\\n'
+        '  \\"missingOrUnclear\\": []\\n}\\n```';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isTrue, reason: extract.rejectionReason);
+    expect(extract.literalEscapeRecovered, isTrue);
+    expect(extract.object!['summary'], 'ok');
+  });
+
+  test('map stage disables salvage-cut while keeping literal-escape recovery', () {
+    const salvagedOnly =
+        '{"summary":"Deliveries were late.",'
+        '"keyPoints":["Order A184 arrived at 19:35"],'
+        '"mainComplaint":"Late delivery",'
+        '"suggestedImprovement":"The customer should che';
+    expect(
+      JsonOutputValidator.extractJsonObject(salvagedOnly, allowSalvage: true).ok,
+      isTrue,
+    );
+    expect(
+      JsonOutputValidator.extractJsonObject(salvagedOnly, allowSalvage: false).ok,
+      isFalse,
+    );
+  });
+
+  test('rejects truncated literal-escape payload without forcing acceptance',
+      () {
+    const raw = 'json\\n{\\n  \\"summary\\": \\"Incomplete\\"';
+    final extract = JsonOutputValidator.extractJsonObject(raw);
+    expect(extract.ok, isFalse);
+  });
 }

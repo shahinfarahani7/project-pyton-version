@@ -180,8 +180,10 @@ def _sync_pending_tasks_to_worker_queue(tasks: list[dict[str, Any]]) -> None:
 
 
 def sync_all_pending_tasks_to_worker() -> None:
-    from edgemint.dev import worker_task_inputs
+    from edgemint.dev import worker_assignments, worker_task_inputs
     from edgemint.dev.assignment_bridge import fetch_pending_assignments_from_worker
+
+    worker_assignments.clear_runtime_exclusive_device_pin()
 
     for workspace_id in DEV_WORKSPACE_IDS:
         _sync_pending_tasks_to_worker_queue(_created_tasks.get(workspace_id, []))

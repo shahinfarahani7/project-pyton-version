@@ -32,6 +32,21 @@ void main() {
       expect(issues, contains('map_partial_generation_truncated:output_limit'));
     });
 
+    test('rejects repetition-truncated generation', () {
+      final issues = MapPartialValidator.validate(
+        partial: const {
+          'summary': 'Partial summary',
+          'keyPoints': ['fact'],
+          'mainComplaint': 'Incomplete',
+          'suggestedImprovement': '',
+          'missingOrUnclear': [],
+        },
+        generationTruncated: true,
+        stopReason: 'repetition',
+      );
+      expect(issues, contains('map_partial_generation_truncated:repetition'));
+    });
+
     test('rejects summary-only labeled fallback shape', () {
       final issues = MapPartialValidator.validate(
         partial: const {
@@ -44,6 +59,21 @@ void main() {
         generationTruncated: false,
       );
       expect(issues, contains('map_partial_missing_key_points'));
+    });
+
+    test('accepts five key points without enforcing final keyPointCount', () {
+      final issues = MapPartialValidator.validate(
+        partial: const {
+          'summary': 'Chunk facts.',
+          'keyPoints': ['a', 'b', 'c', 'd', 'e'],
+          'mainComplaint': '',
+          'suggestedImprovement': '',
+          'missingOrUnclear': [],
+        },
+        generationTruncated: false,
+        stopReason: 'model_eos',
+      );
+      expect(issues, isEmpty);
     });
   });
 }

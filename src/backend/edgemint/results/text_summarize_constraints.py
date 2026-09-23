@@ -157,9 +157,23 @@ DEFAULT_TEXT_SUMMARIZE_PORTAL_OPTIONS: dict[str, Any] = {
     "billingRules": ["pending_not_confirmed_charge", "promised_not_completed_refund"],
 }
 
+# Phase 1 grocery-feedback live regression (100 words / 4 key points). Not a portal
+# default — attach only via explicit summarizeOptions on task create.
+PHASE1_TEXT_SUMMARIZE_REGRESSION_OPTIONS: dict[str, Any] = {
+    "schemaVersion": "1",
+    "maxSummaryWords": 100,
+    "keyPointCount": 4,
+    "coverageAxes": ["delivery", "substitution", "payment_refund", "coupon"],
+    "billingRules": ["pending_not_confirmed_charge", "promised_not_completed_refund"],
+}
+
 
 def default_text_summarize_portal_options() -> dict[str, Any]:
     return dict(DEFAULT_TEXT_SUMMARIZE_PORTAL_OPTIONS)
+
+
+def phase1_text_summarize_regression_options() -> dict[str, Any]:
+    return dict(PHASE1_TEXT_SUMMARIZE_REGRESSION_OPTIONS)
 
 
 def normalize_summarize_data(data: dict[str, Any]) -> dict[str, Any]:

@@ -457,6 +457,17 @@ a {
   gap: 0.35rem;
 }
 
+.md-field--checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.md-field--checkbox input {
+  margin-top: 0.15rem;
+}
+
 .md-select,
 .md-input,
 .md-textarea {

@@ -9,6 +9,7 @@ import {
   taskTypeNeedsImage,
   taskTypeNeedsText,
 } from '../config/taskTypeCatalog';
+import { PHASE1_TEXT_SUMMARIZE_REGRESSION_OPTIONS } from '../config/summarizeOptions';
 import { t } from '../i18n';
 
 const props = defineProps({
@@ -29,11 +30,13 @@ const inputFile = ref(null);
 const fileInputEl = ref(null);
 const localError = ref('');
 const dragOver = ref(false);
+const usePhase1RegressionOptions = ref(false);
 
 const acceptAttr = computed(() => taskTypeAccept(taskType.value));
 const needsText = computed(() => taskTypeNeedsText(taskType.value));
 const needsImage = computed(() => taskTypeNeedsImage(taskType.value));
 const needsFlexJson = computed(() => taskTypeNeedsFlexJson(taskType.value));
+const isTextSummarize = computed(() => taskType.value === 'text.summarize');
 
 const inputModes = [
   { id: 'image', labelKey: 'tasks.inputModeImage', icon: 'image' },
@@ -50,6 +53,7 @@ function resetForm() {
   inputUrl.value = '';
   inputFile.value = null;
   localError.value = '';
+  usePhase1RegressionOptions.value = false;
   if (fileInputEl.value) {
     fileInputEl.value.value = '';
   }
@@ -155,6 +159,9 @@ function onSubmit() {
     instructions: instructions.value.trim() || undefined,
     inputText: contentText() || undefined,
     inputFile: inputFile.value ?? undefined,
+    ...(isTextSummarize.value && usePhase1RegressionOptions.value
+      ? { summarizeOptions: PHASE1_TEXT_SUMMARIZE_REGRESSION_OPTIONS }
+      : {}),
   });
 }
 </script>
@@ -176,6 +183,15 @@ function onSubmit() {
         :disabled="submitting"
       />
       <p class="md-hint">{{ t('tasks.instructionsHint') }}</p>
+    </label>
+
+    <label v-if="isTextSummarize" class="md-field md-field--checkbox">
+      <input
+        v-model="usePhase1RegressionOptions"
+        type="checkbox"
+        :disabled="submitting"
+      />
+      <span>{{ t('tasks.phase1RegressionOptions') }}</span>
     </label>
 
     <div class="input-mode-tabs" role="tablist" :aria-label="t('tasks.inputModeLabel')">

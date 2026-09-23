@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'package:edgemint_worker/inference/llm/hierarchical_reduce_bounds.dart';
 import 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
+import 'package:edgemint_worker/inference/llm/reduce_partial_envelope.dart';
 import 'package:edgemint_worker/inference/llm/semantic_merge_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('SemanticMergeValidator', () {
-    test('detects non-shrinking direct reduce', () {
+    test('treats group reduction as merge progress even when token mass grows', () {
       final partials = [
         {
           'summary': 'x' * 200,
@@ -22,9 +23,11 @@ void main() {
         },
       ];
       final output = {
-        'summary': 'z' * 400,
-        'keyPoints': ['a', 'b', 'c', 'd', 'e', 'f'],
-        'missingOrUnclear': [],
+        'summary': 'z' * 800,
+        'keyPoints': List.generate(12, (index) => 'expanded-point-$index ${'w' * 80}'),
+        'mainComplaint': 'complaint text ${'q' * 120}',
+        'suggestedImprovement': 'improvement text ${'r' * 120}',
+        'missingOrUnclear': List.generate(4, (index) => 'open-item-$index ${'s' * 80}'),
       };
       expect(
         () => SemanticMergeValidator.assertDirectReduceProgress(
@@ -32,7 +35,21 @@ void main() {
           output: output,
           minTokenMassReductionRatioMilli: 50,
         ),
-        throwsA(isA<SemanticMergeNoProgressException>()),
+        returnsNormally,
+        reason: '2 groups -> 1 group counts as progress before token mass is checked',
+      );
+    });
+
+    test('detects non-shrinking merge when group count stays the same', () {
+      expect(
+        SemanticMergeValidator.madeProgress(
+          beforeGroups: 2,
+          afterGroups: 2,
+          beforeTokenMass: 200,
+          afterTokenMass: 250,
+          minTokenMassReductionRatioMilli: 50,
+        ),
+        isFalse,
       );
     });
 
@@ -69,7 +86,7 @@ void main() {
       final pipeline = HierarchicalSummarizePipeline(
         contextBudget: QwenTaskProcessor().contextBudget,
         bounds: const HierarchicalReduceBounds(maxChunks: 2),
-        runPromptJson: (prompt) async => {
+        runPromptJson: (prompt, {required inferenceStage}) async => {
           'summary': 'partial',
           'keyPoints': ['p'],
           'missingOrUnclear': [],
@@ -91,8 +108,8 @@ void main() {
           maxReduceDepth: 1,
           maxInferenceCalls: 64,
         ),
-        runPromptJson: (prompt) async {
-          if (prompt.contains('Combine the partial summaries')) {
+        runPromptJson: (prompt, {required inferenceStage}) async {
+          if (prompt.contains('merged intermediate summary')) {
             return {
               'summary': 'merged',
               'keyPoints': ['m'],
@@ -110,14 +127,14 @@ void main() {
       final oversizedPartials = List.generate(
         8,
         (index) => {
-          'summary': 'chunk-$index ${'token ' * 120}',
-          'keyPoints': ['point-$index'],
-          'missingOrUnclear': [],
+          'summary': 'chunk-$index ${'token ' * 500}',
+          'keyPoints': List.generate(8, (point) => 'point-$index-$point ${'y' * 200}'),
+          'missingOrUnclear': ['pending authorization unresolved'],
         },
       );
 
       await expectLater(
-        pipeline.reducePartials(oversizedPartials),
+        pipeline.reduceLegacyPartials(oversizedPartials),
         throwsA(isA<HierarchicalReduceExhaustedException>()),
       );
     });
@@ -126,9 +143,9 @@ void main() {
       var calls = 0;
       final pipeline = HierarchicalSummarizePipeline(
         contextBudget: QwenTaskProcessor().contextBudget,
-        runPromptJson: (prompt) async {
+        runPromptJson: (prompt, {required inferenceStage}) async {
           calls += 1;
-          if (prompt.contains('Combine the partial summaries')) {
+          if (prompt.contains('Combine the partial summaries into one final summary')) {
             return jsonDecode(
                   '{"summary":"Final merged summary","keyPoints":["alpha"],"missingOrUnclear":[]}',
                 )
@@ -142,7 +159,7 @@ void main() {
         },
       );
 
-      final result = await pipeline.reducePartials([
+      final result = await pipeline.reduceLegacyPartials([
         {
           'summary': 'A',
           'keyPoints': ['one'],
@@ -157,6 +174,46 @@ void main() {
 
       expect(calls, 1);
       expect(result['summary'], 'Final merged summary');
+    });
+  });
+
+  group('ReducePartialEnvelope', () {
+    test('mergeGroup unions sourceChunkIndexes and processedCharRanges', () {
+      final left = ReducePartialEnvelope.testSynthetic(
+        chunkIndex: 0,
+        partial: {'summary': 'A', 'keyPoints': ['one']},
+      );
+      final right = ReducePartialEnvelope.testSynthetic(
+        chunkIndex: 1,
+        partial: {'summary': 'B', 'keyPoints': ['two']},
+      );
+      final merged = ReducePartialEnvelope.mergeGroup(
+        [left, right],
+        {
+          'summary': 'AB',
+          'keyPoints': ['one', 'two'],
+        },
+      );
+
+      expect(merged.sourceChunkIndexes, [0, 1]);
+      expect(merged.processedCharRanges, hasLength(2));
+      expect(merged.partial['summary'], 'AB');
+    });
+
+    test('encodeForPrompt wraps partials with provenance metadata', () {
+      final encoded = ReducePartialEnvelope.encodeForPrompt([
+        ReducePartialEnvelope.testSynthetic(
+          chunkIndex: 2,
+          partial: {
+            'summary': 'chunk',
+            'keyPoints': ['fact'],
+            'missingOrUnclear': [],
+          },
+        ),
+      ]);
+      final decoded = jsonDecode(encoded) as List<dynamic>;
+      expect(decoded.single['sourceChunkIndexes'], [2]);
+      expect(decoded.single['partial']['summary'], 'chunk');
     });
   });
 }

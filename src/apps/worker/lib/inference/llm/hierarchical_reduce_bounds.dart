@@ -10,9 +10,15 @@ class HierarchicalReduceBounds {
 
   static const textSummarizeMapReduce = HierarchicalReduceBounds();
 
-  /// Soft per-chunk map preference; final [SummarizeTaskConstraintsV1.keyPointCount]
-  /// is enforced only after reduce/direct validation.
-  static const mapIntermediateMaxKeyPoints = 3;
+  /// Soft map evidence target (prompt guidance only; not array-trimming).
+  /// Final [SummarizeTaskConstraintsV1.keyPointCount] is enforced only after
+  /// reduce/direct validation. [MapPartialValidator] does not detect semantic
+  /// fact errors — a structurally valid map partial may misstate source facts.
+  static const mapIntermediateEvidenceTarget = 6;
+
+  /// Deprecated alias for [mapIntermediateEvidenceTarget].
+  @Deprecated('Use mapIntermediateEvidenceTarget')
+  static const mapIntermediateMaxKeyPoints = mapIntermediateEvidenceTarget;
 
   final int maxChunks;
   final int maxReduceDepth;

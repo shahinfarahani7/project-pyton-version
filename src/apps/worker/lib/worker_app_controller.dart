@@ -12,7 +12,12 @@ import 'api/worker_api_client.dart';
 import 'api/worker_assignment_models.dart';
 import 'api/worker_routes.dart';
 import 'config/worker_config.dart';
+import 'contracts/worker_error.dart';
 import 'inference/llm/qwen_task_processor.dart';
+import 'inference/llm/summarize_diagnostic_map.dart';
+import 'inference/llm/diagnostic/summarize_map_evidence_diagnostic_fixture.dart';
+import 'inference/llm/diagnostic/facts_only_experiment.dart';
+import 'inference/llm/diagnostic/summarize_map_prompt_variant.dart';
 import 'inference/ocr/guarded_ocr_engine.dart';
 import 'inference/ocr/fake_ocr_engine.dart';
 import 'inference/ocr/ocr_engine.dart';
@@ -387,6 +392,128 @@ class WorkerAppController extends ChangeNotifier {
 
   bool get canPollAssignments => canAcceptAssignments;
 
+  bool get mapEvidenceDiagnosticArmed => SummarizeDiagnosticMap.armed;
+
+  /// Isolated Map evidence diagnostic — never uploads assignment output.
+  Future<SummarizeMapEvidenceDiagnosticResult> runIsolatedMapEvidenceDiagnostic({
+    SummarizeMapEvidenceDiagnosticFixtureId fixtureId =
+        SummarizeMapEvidenceDiagnosticFixtureId.baselineFactLines,
+  }) async {
+    SummarizeDiagnosticMap.assertArmedOrThrow();
+    final result = await _withDiagnosticModelLock(() async {
+      await ensureModelReady();
+      final signingMaterial = await _platform.signingMaterial();
+      _logTask(
+        '[DIAGNOSTIC MAP EVIDENCE] starting isolated run '
+        'fixture=${fixtureId.logLabel} '
+        '(does not complete or upload a portal assignment)',
+        phase: WorkerPipelineLog.exec,
+      );
+      return _qwenProcessor.runIsolatedMapEvidenceDiagnostic(
+        signingKey: signingMaterial,
+        fixtureId: fixtureId,
+      );
+    });
+    if (result.promptVariant == SummarizeMapPromptVariant.factsOnly) {
+      final snapshot = result.factsSnapshot;
+      if (snapshot == null) {
+        _factsOnlySnapshots.remove(fixtureId);
+      } else {
+        _factsOnlySnapshots[fixtureId] = snapshot;
+      }
+    }
+    _logTask(
+      '[DIAGNOSTIC MAP EVIDENCE] finished runId=${result.runId} '
+      'fixture=${result.fixtureId.logLabel} '
+      'variant=${result.promptVariant.logLabel} '
+      'stage=${result.inferenceStage} truncated=${result.truncated} '
+      'stopReason=${result.stopReason} firstPassSuccess=${result.firstPassSuccess} '
+      'repairedSuccess=${result.repairedSuccess} '
+      'correctiveInferenceCalls=${result.correctiveInferenceCalls}',
+      phase: WorkerPipelineLog.exec,
+    );
+    return result;
+  }
+
+  final Map<SummarizeMapEvidenceDiagnosticFixtureId, FactsOnlyExtractionSnapshot>
+      _factsOnlySnapshots = {};
+
+  bool get factsOnlyDiagnosticSelected =>
+      SummarizeDiagnosticMap.armed &&
+      SummarizeDiagnosticMap.promptVariant == SummarizeMapPromptVariant.factsOnly;
+
+  /// Latest accepted facts-only extraction not yet classified, if any.
+  FactsOnlyExtractionSnapshot? classifiableFactsSnapshot(
+    SummarizeMapEvidenceDiagnosticFixtureId fixtureId,
+  ) {
+    final snapshot = _factsOnlySnapshots[fixtureId];
+    if (snapshot == null || snapshot.classificationStarted) {
+      return null;
+    }
+    return snapshot;
+  }
+
+  /// Facts-only Step 2 on the fixture's latest accepted extraction; never uploads.
+  Future<FactsClassificationDiagnosticResult> runFactsOnlyClassificationDiagnostic({
+    required SummarizeMapEvidenceDiagnosticFixtureId fixtureId,
+  }) async {
+    SummarizeDiagnosticMap.assertArmedOrThrow();
+    final snapshot = classifiableFactsSnapshot(fixtureId);
+    if (snapshot == null) {
+      throw WorkerError(
+        code: WorkerErrorCode.invalidTask,
+        message:
+            'No accepted, unclassified facts-only extraction for '
+            '${fixtureId.logLabel}; run facts-only extraction first',
+        retryable: false,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+    final result = await _withDiagnosticModelLock(() async {
+      await ensureModelReady();
+      final signingMaterial = await _platform.signingMaterial();
+      _logTask(
+        '[DIAGNOSTIC FACTS CLASSIFICATION] starting '
+        'experimentId=${snapshot.experimentId} '
+        'extractionRunId=${snapshot.extractionRunId} '
+        '(does not complete or upload a portal assignment)',
+        phase: WorkerPipelineLog.exec,
+      );
+      return _qwenProcessor.runFactsOnlyClassificationDiagnostic(
+        signingKey: signingMaterial,
+        snapshot: snapshot,
+      );
+    });
+    _logTask(
+      '[DIAGNOSTIC FACTS CLASSIFICATION] finished '
+      'classificationRunId=${result.classificationRunId} '
+      'firstPassSuccess=${result.firstPassSuccess} '
+      'repairedSuccess=${result.repairedSuccess} '
+      'correctiveCallsExperimentTotal=${result.correctiveCallsExperimentTotal}',
+      phase: WorkerPipelineLog.exec,
+    );
+    return result;
+  }
+
+  /// Holds the assignment-processing flag so polling cannot start a model run
+  /// while a diagnostic uses the model, and rejects overlapping diagnostics.
+  Future<T> _withDiagnosticModelLock<T>(Future<T> Function() body) async {
+    if (_processingAssignment || _isBusyExecuting) {
+      throw WorkerError(
+        code: WorkerErrorCode.invalidTask,
+        message: 'Model is busy with another assignment or diagnostic run',
+        retryable: true,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+    _processingAssignment = true;
+    try {
+      return await body();
+    } finally {
+      _processingAssignment = false;
+    }
+  }
+
   bool get requiresHuggingFaceToken => false;
 
   bool get _isBusyExecuting => switch (executionStatus.phase) {
@@ -462,6 +589,20 @@ class WorkerAppController extends ChangeNotifier {
       if (!usesDevMockInference &&
           modelPhase != ModelInstallPhase.downloading) {
         modelPhase = ModelInstallPhase.idle;
+      }
+    }
+
+    if (SummarizeDiagnosticMap.invokeAtStartup) {
+      try {
+        await runIsolatedMapEvidenceDiagnostic(
+          fixtureId: SummarizeDiagnosticMap.defaultFixtureId,
+        );
+      } catch (error, stackTrace) {
+        _logError(
+          'SUMMARIZE_DIAGNOSTIC_INVOKE_AT_STARTUP failed',
+          error,
+          stackTrace,
+        );
       }
     }
 

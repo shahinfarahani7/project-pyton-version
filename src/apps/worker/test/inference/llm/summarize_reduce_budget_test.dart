@@ -6,64 +6,115 @@ import 'package:edgemint_worker/inference/llm/hierarchical_reduce_bounds.dart';
 import 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/prompt_templates.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
+import 'package:edgemint_worker/inference/llm/reduce_partial_envelope.dart';
 import 'package:edgemint_worker/inference/llm/summarize_reduce_budget.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('SummarizeReduceBudget', () {
-    test('reduce budget uses actual encoded partials before inference', () async {    final logs = <String>[];
-    var directReduceCalls = 0;
-    final contextBudget = ContextBudgetManager();
-    final pipeline = HierarchicalSummarizePipeline(
-      contextBudget: contextBudget,
-      log: logs.add,
-      runPromptJson: (prompt) async {
-        directReduceCalls += 1;
-        return {
-          'summary': 'merged',
-          'keyPoints': ['a', 'b', 'c'],
-          'mainComplaint': 'x',
-          'suggestedImprovement': 'y',
-          'missingOrUnclear': [],
-        };
-      },
-    );
+    test('reduce budget uses actual encoded partials before inference', () async {
+      final logs = <String>[];
+      var directReduceCalls = 0;
+      final contextBudget = ContextBudgetManager();
+      final pipeline = HierarchicalSummarizePipeline(
+        contextBudget: contextBudget,
+        log: logs.add,
+        runPromptJson: (prompt, {required inferenceStage}) async {
+          directReduceCalls += 1;
+          return {
+            'summary': 'merged',
+            'keyPoints': ['a', 'b', 'c'],
+            'mainComplaint': 'x',
+            'suggestedImprovement': 'y',
+            'missingOrUnclear': [],
+          };
+        },
+      );
 
-    final partials = List.generate(3, (index) {
-      return {
-        'summary': 'Partial summary ${'x' * 400}',
-        'keyPoints': List.generate(6, (point) => 'fact-$index-$point ${'y' * 120}'),
-        'mainComplaint': 'complaint-$index',
-        'suggestedImprovement': 'improvement-$index',
-        'missingOrUnclear': ['pending authorization unresolved'],
-      };
+      final partials = List.generate(3, (index) {
+        return {
+          'summary': 'Partial summary ${'x' * 400}',
+          'keyPoints': List.generate(6, (point) => 'fact-$index-$point ${'y' * 120}'),
+          'mainComplaint': 'complaint-$index',
+          'suggestedImprovement': 'improvement-$index',
+          'missingOrUnclear': ['pending authorization unresolved'],
+        };
+      });
+      final envelopes = ReducePartialEnvelope.wrapLegacyPartials(partials);
+
+      final evaluation = SummarizeReduceBudget.evaluate(
+        contextBudget: contextBudget,
+        envelopes: envelopes,
+        userInstructions: 'Analyze the customer feedback using only the provided content.',
+        maxOutputTokens: 256,
+        isFinalMerge: true,
+      );
+
+      await pipeline.reduceLegacyPartials(partials);
+
+      final encoded = ReducePartialEnvelope.encodeForPrompt(envelopes);
+      expect(
+        logs.any((entry) => entry.startsWith('[CHUNK REDUCE BUDGET]')),
+        isTrue,
+      );
+      expect(
+        logs.any(
+          (entry) => entry.contains('partialsChars=${encoded.length}'),
+        ),
+        isTrue,
+      );
+      if (evaluation.requiresChunkPipeline) {
+        expect(directReduceCalls, greaterThan(1));
+      } else {
+        expect(directReduceCalls, 1);
+      }
     });
 
-    final evaluation = SummarizeReduceBudget.evaluate(
-      contextBudget: contextBudget,
-      partials: partials,
-      userInstructions: 'Analyze the customer feedback using only the provided content.',
-      maxOutputTokens: 256,
-    );
+    test('budget evaluate and inference use identical encodeForPrompt output', () {
+      final contextBudget = ContextBudgetManager();
+      final partials = [
+        {
+          'summary': 'A',
+          'keyPoints': ['one'],
+          'mainComplaint': '',
+          'suggestedImprovement': '',
+          'missingOrUnclear': [],
+        },
+        {
+          'summary': 'B',
+          'keyPoints': ['two'],
+          'mainComplaint': '',
+          'suggestedImprovement': '',
+          'missingOrUnclear': [],
+        },
+      ];
+      final envelopes = ReducePartialEnvelope.wrapLegacyPartials(partials);
+      final encoded = ReducePartialEnvelope.encodeForPrompt(envelopes);
 
-    await pipeline.reducePartials(partials);
+      final evaluation = SummarizeReduceBudget.evaluate(
+        contextBudget: contextBudget,
+        envelopes: envelopes,
+        userInstructions: 'test instructions',
+        maxOutputTokens: 300,
+        isFinalMerge: true,
+      );
+      final prompt = PromptTemplates.summarizeReduceFinal(
+        partialSummariesJson: encoded,
+        chunkCount: envelopes.length,
+        userInstructions: 'test instructions',
+      );
+      final formatted = FormattedPromptBuilder.buildTaskPrompt(
+        templateBody: prompt,
+        systemInstruction: contextBudget.defaultSystemInstruction,
+      );
+      final promptEvaluation = contextBudget.evaluateFormattedPrompt(
+        formattedPrompt: formatted,
+        maxOutputTokens: 300,
+      );
 
-    expect(
-      logs.any((entry) => entry.startsWith('[CHUNK REDUCE BUDGET]')),
-      isTrue,
-    );
-    expect(
-      logs.any(
-        (entry) =>
-            entry.contains('partialsChars=${jsonEncode(partials).length}'),
-      ),
-      isTrue,
-    );
-    if (evaluation.requiresChunkPipeline) {
-      expect(directReduceCalls, greaterThan(1));
-    } else {
-      expect(directReduceCalls, 1);
-    }
+      expect(prompt.contains(encoded), isTrue);
+      expect(evaluation.formattedPromptTokens, promptEvaluation.formattedPromptTokens);
+      expect(evaluation.requiresChunkPipeline, promptEvaluation.requiresChunkPipeline);
     });
 
     test('oversized partials require bounded multi-level reduction', () async {
@@ -72,7 +123,7 @@ void main() {
       final pipeline = HierarchicalSummarizePipeline(
         contextBudget: contextBudget,
         bounds: const HierarchicalReduceBounds(maxReduceDepth: 8),
-        runPromptJson: (prompt) async {
+        runPromptJson: (prompt, {required inferenceStage}) async {
           reduceCalls += 1;
           return {
             'summary': 'merged ${prompt.length}',
@@ -96,13 +147,14 @@ void main() {
 
       final evaluation = SummarizeReduceBudget.evaluate(
         contextBudget: contextBudget,
-        partials: partials,
+        envelopes: ReducePartialEnvelope.wrapLegacyPartials(partials),
         userInstructions: null,
         maxOutputTokens: 300,
+        isFinalMerge: true,
       );
       expect(evaluation.requiresChunkPipeline, isTrue);
 
-      await pipeline.reducePartials(partials);
+      await pipeline.reduceLegacyPartials(partials);
       expect(reduceCalls, greaterThan(1));
       expect(reduceCalls, lessThanOrEqualTo(128));
     });
@@ -111,7 +163,7 @@ void main() {
       final contextBudget = ContextBudgetManager();
       final pipeline = HierarchicalSummarizePipeline(
         contextBudget: contextBudget,
-        runPromptJson: (prompt) async => {
+        runPromptJson: (prompt, {required inferenceStage}) async => {
           'summary': 'merged',
           'keyPoints': ['a'],
           'mainComplaint': 'x',
@@ -129,7 +181,7 @@ void main() {
       };
 
       await expectLater(
-        pipeline.reducePartials([oversizedPartial, oversizedPartial]),
+        pipeline.reduceLegacyPartials([oversizedPartial, oversizedPartial]),
         throwsA(isA<HierarchicalReduceExhaustedException>()),
       );
     });
@@ -139,7 +191,7 @@ void main() {
       final prompts = <String>[];
       final pipeline = HierarchicalSummarizePipeline(
         contextBudget: contextBudget,
-        runPromptJson: (prompt) async {
+        runPromptJson: (prompt, {required inferenceStage}) async {
           prompts.add(prompt);
           return {
             'summary': 'merged ${prompt.length}',
@@ -161,7 +213,7 @@ void main() {
         };
       });
 
-      await pipeline.reducePartials(partials);
+      await pipeline.reduceLegacyPartials(partials);
 
       for (final prompt in prompts) {
         final formatted = FormattedPromptBuilder.buildTaskPrompt(
@@ -184,7 +236,7 @@ void main() {
       var calls = 0;
       final pipeline = HierarchicalSummarizePipeline(
         contextBudget: ContextBudgetManager(),
-        runPromptJson: (prompt) async {
+        runPromptJson: (prompt, {required inferenceStage}) async {
           calls += 1;
           return {
             'summary': 'merged',
@@ -210,7 +262,7 @@ void main() {
       ];
 
       await expectLater(
-        pipeline.reducePartials(
+        pipeline.reduceLegacyPartials(
           partials,
           shouldContinue: () => false,
         ),

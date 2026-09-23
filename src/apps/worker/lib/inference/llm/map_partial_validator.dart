@@ -1,4 +1,10 @@
 /// Validates map-stage partial summaries before they enter reduce.
+///
+/// Structural validation only: does not enforce final [keyPointCount] (that
+/// applies after reduce via [SummarizeOutputValidator]). Does not verify factual
+/// correctness — a structurally valid partial may misstate source facts (for
+/// example a false coupon claim). Empty [mainComplaint], [suggestedImprovement],
+/// or [summary] are allowed when [keyPoints] carry evidence.
 abstract final class MapPartialValidator {
   /// Returns blocking issue codes; empty means the partial may enter reduce.
   static List<String> validate({

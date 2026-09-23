@@ -54,6 +54,17 @@ def test_dev_assignment_exclusive_device_claim() -> None:
     assert stolen is None
 
 
+def test_sync_clears_runtime_exclusive_pin_when_unpinned(monkeypatch) -> None:
+    worker_assignments._pending.clear()
+    worker_assignments._completed.clear()
+    worker_assignments._exclusive_device_public_id = "dev_old_emulator"
+    monkeypatch.delenv("EDGEMINT_DEV_PIN_DEVICE_ID", raising=False)
+
+    worker_assignments.clear_runtime_exclusive_device_pin()
+
+    assert worker_assignments.preferred_device_public_id() is None
+
+
 def test_dev_assignment_deadlines_begin_when_delivered(
     monkeypatch,
 ) -> None:

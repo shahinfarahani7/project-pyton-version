@@ -5,6 +5,11 @@
 /// `"the milk arrived on time"` twelve times and never reached the remaining
 /// fields. Stopping at the third repeat leaves those tokens for nothing and
 /// makes the salvage path cheaper.
+///
+/// Matches are counted only inside the trailing local suffix (roughly the last
+/// [windowChars] * [minRepeats] characters). That catches consecutive decode
+/// loops without treating legitimate reuse of the same phrase across JSON
+/// fields (summary, keyPoints, mainComplaint) as a loop.
 class OutputRepetitionGuard {
   OutputRepetitionGuard({
     this.windowChars = 32,
@@ -25,7 +30,13 @@ class OutputRepetitionGuard {
   int _length = 0;
   int _lastCheckedLength = 0;
 
-  /// True once the tail of the reply has occurred [minRepeats] times.
+  /// Populated when [feed] returns true.
+  String? lastTriggerWindow;
+  int? lastTriggerMatchCount;
+  int? lastTriggerOutputLength;
+
+  /// True once the tail of the reply has occurred [minRepeats] times in the
+  /// trailing local suffix.
   bool feed(String fragment) {
     if (fragment.isEmpty) {
       return false;
@@ -41,17 +52,23 @@ class OutputRepetitionGuard {
 
     final text = _normalized.toString();
     final window = text.substring(text.length - windowChars);
-    // Occurrences are counted overlapping: a looping phrase is usually shorter
-    // than the window, so skipping a whole window ahead would step over the
-    // next repeat and hide the loop.
+    final localSuffixStart =
+        text.length - windowChars * minRepeats < 0
+            ? 0
+            : text.length - windowChars * minRepeats;
+    final localText = text.substring(localSuffixStart);
+    // Occurrences are counted overlapping within the local suffix only.
     var count = 0;
-    var index = text.indexOf(window);
+    var index = localText.indexOf(window);
     while (index >= 0) {
       count += 1;
       if (count >= minRepeats) {
+        lastTriggerWindow = window;
+        lastTriggerMatchCount = count;
+        lastTriggerOutputLength = text.length;
         return true;
       }
-      index = text.indexOf(window, index + 1);
+      index = localText.indexOf(window, index + 1);
     }
     return false;
   }

@@ -93,8 +93,25 @@ void main() {
       expect(error.toString(), contains('OUTPUT_SCHEMA_MISMATCH'));
       expect(evidence?.failureCode, ClosedFailureCode.resultSchemaMismatch);
       expect(evidence?.failureCode, isNot(ClosedFailureCode.runtimeCrash));
+      expect(evidence?.retryable, isFalse);
     },
   );
+
+  test('maps output schema mismatch to canonical non-retryable failure', () {
+    final evidence = mapper.map(
+      assignment: _assignment(),
+      error: const WorkerError(
+        code: WorkerErrorCode.outputSchemaMismatch,
+        message: 'Map chunk generation truncated before completion',
+        retryable: false,
+        stage: WorkerTaskStage.llm,
+      ),
+      executionTime: Duration.zero,
+    );
+
+    expect(evidence?.failureCode, ClosedFailureCode.resultSchemaMismatch);
+    expect(evidence?.retryable, isFalse);
+  });
 
   test('maps resource enforcer memory violation to INSUFFICIENT_MEMORY', () {
     final enforcer = WorkerResourceEnforcer(

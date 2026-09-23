@@ -6,6 +6,7 @@ import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/prompt_templates.dart';
 import '../../inference/llm/qwen_task_processor.dart';
+import '../../inference/llm/summarize_pipeline_mode.dart';
 import '../../runtime/checkpoint_manager.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../telemetry/worker_task_metrics.dart';
@@ -189,6 +190,8 @@ class TextSummarizeHandler implements TaskHandler {
       );
     }
 
+    final pipelineMode = resolveTextSummarizePipelineMode();
+
     final llmStart = DateTime.now();
 
     final data = await qwenProcessor.runSummarizeJsonTask(
@@ -200,6 +203,8 @@ class TextSummarizeHandler implements TaskHandler {
       fenceToken: fenceToken,
       onChunkCheckpoint: onChunkCheckpoint,
       isCancelled: isCancelled,
+      pipelineMode: pipelineMode,
+      taskId: request.taskId,
     );
 
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;

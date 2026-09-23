@@ -209,6 +209,15 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         stopReason = 'output_limit';
       } else if (repetition.feed(answerFragment)) {
         stopReason = 'repetition';
+        _log(
+          '[LLM REPETITION STOP] outputChars=${buffer.length} '
+          'windowChars=${repetition.windowChars} '
+          'minRepeats=${repetition.minRepeats} '
+          'localMatches=${repetition.lastTriggerMatchCount} '
+          'outputLength=${repetition.lastTriggerOutputLength} '
+          'window="${_preview(repetition.lastTriggerWindow ?? '', maxLength: 64)}" '
+          'cancelRequested=true',
+        );
       } else {
         continue;
       }

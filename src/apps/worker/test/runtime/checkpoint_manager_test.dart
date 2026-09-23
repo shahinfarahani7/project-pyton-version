@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
 import 'package:edgemint_worker/inference/llm/semantic_chunk_engine.dart';
+import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:edgemint_worker/runtime/checkpoint_manager.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/resume_grant.dart';
@@ -12,19 +13,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'fixtures/semantic_chunk_golden.dart';
 
 Future<String> _summarizeMockRunner(String prompt) async {
-  if (prompt.contains('Combine the partial summaries')) {
+  if (prompt.contains('Combine the partial summaries into one final summary')) {
     return jsonEncode({
       'summary': 'Final merged summary',
       'keyPoints': ['alpha', 'beta', 'gamma'],
+      'mainComplaint': 'late delivery',
+      'suggestedImprovement': 'improve live estimates',
       'missingOrUnclear': [],
     });
   }
-  if (prompt.contains('Extract only what this chunk')) {
+  if (prompt.contains('Extract evidence from this chunk')) {
     final indexMatch = RegExp(r'chunkIndex=(\d+)').firstMatch(prompt);
     final index = indexMatch?.group(1) ?? '0';
     return jsonEncode({
       'summary': 'Partial summary $index',
       'keyPoints': ['point-$index'],
+      'mainComplaint': '',
+      'suggestedImprovement': '',
+      'missingOrUnclear': [],
+    });
+  }
+  if (prompt.contains('Partial summaries')) {
+    return jsonEncode({
+      'summary': 'Final merged summary',
+      'keyPoints': ['alpha', 'beta', 'gamma'],
+      'mainComplaint': 'late delivery',
+      'suggestedImprovement': 'improve live estimates',
       'missingOrUnclear': [],
     });
   }
@@ -113,7 +127,7 @@ void main() {
         activeFenceToken: 7,
         inputDigest: plan.inputHash,
         authorizedChunkIds: {chunk.chunkId},
-        modelVersionId: 'mdv_qwen2_5_0_5b',
+        modelVersionId: WorkerModelCatalog.modelVersionId,
         runtimeVersion: CheckpointManager.runtimeVersion,
         promptTemplateVersion: '1.0',
         executionPlanVersion: '2026-q3-v1',
@@ -154,7 +168,7 @@ void main() {
         activeFenceToken: 7,
         inputDigest: plan.inputHash,
         authorizedChunkIds: const {'chunk-not-saved'},
-        modelVersionId: 'mdv_qwen2_5_0_5b',
+        modelVersionId: WorkerModelCatalog.modelVersionId,
         runtimeVersion: CheckpointManager.runtimeVersion,
         promptTemplateVersion: '1.0',
         executionPlanVersion: '2026-q3-v1',
@@ -214,6 +228,8 @@ void main() {
         partialSummary: {
           'summary': 'Partial summary 0',
           'keyPoints': ['point-0'],
+          'mainComplaint': '',
+          'suggestedImprovement': '',
           'missingOrUnclear': [],
         },
       );
@@ -226,7 +242,8 @@ void main() {
       );
 
       expect(result['summary'], 'Final merged summary');
-      expect(calls, plan.totalChunks);
+      final remainingChunks = plan.totalChunks - 1;
+      expect(calls, inInclusiveRange(remainingChunks + 1, remainingChunks + 2));
     });
   });
 }

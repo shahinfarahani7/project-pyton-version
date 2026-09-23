@@ -1,5 +1,6 @@
 import '../../runtime/encrypted_store.dart';
 import 'context_budget_manager.dart';
+import 'summarize_chunk_experiment.dart';
 
 class ProcessedRange {
   const ProcessedRange({required this.startChar, required this.endChar});
@@ -45,12 +46,20 @@ class ChunkPlan {
     required this.chunks,
     required this.tokenBudgetPerChunk,
     required this.overlapTokens,
+    this.safeTotalSourceBodyTokenBudget,
+    this.effectiveTotalSourceBodyTokenBudget,
+    this.preOverlapPackTokenBudget,
+    this.experimentalSourceChunkTokenCap,
   });
 
   final String inputHash;
   final List<SemanticChunk> chunks;
   final int tokenBudgetPerChunk;
   final int overlapTokens;
+  final int? safeTotalSourceBodyTokenBudget;
+  final int? effectiveTotalSourceBodyTokenBudget;
+  final int? preOverlapPackTokenBudget;
+  final int? experimentalSourceChunkTokenCap;
 
   int get totalChunks => chunks.length;
 
@@ -60,11 +69,18 @@ class ChunkPlan {
     required int estimatedTokens,
     required int tokenBudgetPerChunk,
     required int overlapTokens,
+    SummarizeChunkExperimentBudget? experimentBudget,
   }) {
+    final budgetMeta = experimentBudget;
     return ChunkPlan(
       inputHash: inputHash,
       tokenBudgetPerChunk: tokenBudgetPerChunk,
       overlapTokens: overlapTokens,
+      safeTotalSourceBodyTokenBudget: budgetMeta?.safeTotalSourceBodyTokenBudget,
+      effectiveTotalSourceBodyTokenBudget:
+          budgetMeta?.effectiveTotalSourceBodyTokenBudget,
+      preOverlapPackTokenBudget: budgetMeta?.preOverlapPackTokenBudget,
+      experimentalSourceChunkTokenCap: budgetMeta?.appliedCap,
       chunks: [
         SemanticChunk(
           chunkId: _chunkId(
@@ -128,8 +144,19 @@ class SemanticChunkEngine {
         .toInt();
   }
 
-  ChunkPlan chunk(String input, {int? reservedPromptTokens}) {
+  ChunkPlan chunk(
+    String input, {
+    int? reservedPromptTokens,
+    int? experimentalSourceChunkTokenCap,
+  }) {
     final budget = chunkTokenBudget(reservedPromptTokens: reservedPromptTokens);
+    final experimentBudget = _resolveExperimentBudget(
+      chunkTokenBudget: budget,
+      experimentalSourceChunkTokenCap: experimentalSourceChunkTokenCap,
+    );
+    final packBudget = experimentBudget.preOverlapPackTokenBudget;
+    final effectiveTotalBodyBudget =
+        experimentBudget.effectiveTotalSourceBodyTokenBudget;
     final normalized = input.replaceAll('\r\n', '\n');
     final inputHash = sha256HexString(normalized);
     if (normalized.trim().isEmpty) {
@@ -139,40 +166,81 @@ class SemanticChunkEngine {
         estimatedTokens: 0,
         tokenBudgetPerChunk: budget,
         overlapTokens: overlapTokens,
+        experimentBudget: experimentBudget,
       );
     }
 
     final estimatedTokens = estimator.estimate(normalized);
-    if (estimatedTokens <= budget) {
+    final forceMultiChunk =
+        experimentBudget.active &&
+        estimatedTokens > effectiveTotalBodyBudget;
+    if (!forceMultiChunk && estimatedTokens <= budget) {
       return ChunkPlan.single(
         inputHash: inputHash,
         text: normalized,
         estimatedTokens: estimatedTokens,
         tokenBudgetPerChunk: budget,
         overlapTokens: overlapTokens,
+        experimentBudget: experimentBudget,
       );
     }
 
     final segments = _semanticSegments(normalized);
-    // Overlap text is prepended after packing, so it has to fit the same
-    // per-chunk budget as the body it is merged into.
+    // Overlap is merged after packing; reserve [overlapTokens] inside the
+    // effective total Map body budget before packing new source content.
     final packed = _packSegments(
       segments,
-      maxTokens: (budget - overlapTokens).clamp(1, budget).toInt(),
+      maxTokens: packBudget,
     );
     final chunks = _applyOverlap(
       inputHash: inputHash,
       packed: packed,
       source: normalized,
     );
+    if (experimentBudget.active) {
+      _assertExperimentChunkBodiesWithinBudget(
+        chunks: chunks,
+        maxTotalBodyTokens: effectiveTotalBodyBudget,
+      );
+    }
 
     return ChunkPlan(
       inputHash: inputHash,
       chunks: chunks,
       tokenBudgetPerChunk: budget,
       overlapTokens: overlapTokens,
+      safeTotalSourceBodyTokenBudget:
+          experimentBudget.safeTotalSourceBodyTokenBudget,
+      effectiveTotalSourceBodyTokenBudget: effectiveTotalBodyBudget,
+      preOverlapPackTokenBudget: packBudget,
+      experimentalSourceChunkTokenCap: experimentBudget.appliedCap,
     );
   }
+
+  void _assertExperimentChunkBodiesWithinBudget({
+    required List<SemanticChunk> chunks,
+    required int maxTotalBodyTokens,
+  }) {
+    for (final chunk in chunks) {
+      final estimated = estimator.estimate(chunk.text);
+      if (estimated > maxTotalBodyTokens) {
+        throw StateError(
+          'Experiment chunk ${chunk.chunkIndex} body estimate=$estimated '
+          'exceeds effectiveTotalBodyTokens=$maxTotalBodyTokens',
+        );
+      }
+    }
+  }
+
+  SummarizeChunkExperimentBudget _resolveExperimentBudget({
+    required int chunkTokenBudget,
+    int? experimentalSourceChunkTokenCap,
+  }) =>
+      SummarizeChunkExperiment.resolveBudgetFromCap(
+        chunkTokenBudget: chunkTokenBudget,
+        overlapTokens: overlapTokens,
+        requestedCap: experimentalSourceChunkTokenCap,
+      );
 
   List<_SemanticSegment> _semanticSegments(String input) {
     final segments = <_SemanticSegment>[];

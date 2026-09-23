@@ -203,6 +203,23 @@ if ($assignCode -eq '404') {
 }
 Write-Host "   assignments:next probe = $assignCode (200/204 = OK, 000 = registry still starting)"
 
+$syncRaw = curl.exe -s -w "`n%{http_code}" --max-time 10 -X POST http://127.0.0.1:8080/internal/dev/sync-worker-queue 2>$null
+$syncLines = ($syncRaw -split "`n")
+$syncCode = $syncLines[-1]
+$queueRaw = curl.exe -s --max-time 10 http://127.0.0.1:8081/internal/dev/assignments 2>$null
+if ($syncCode -eq '200') {
+    try {
+        $queue = $queueRaw | ConvertFrom-Json
+        $pendingCount = @($queue.items).Count
+        $exclusive = if ($queue.exclusiveDeviceId) { $queue.exclusiveDeviceId } else { '(none)' }
+        Write-Host "   sync-worker-queue OK; pending=$pendingCount exclusivePin=$exclusive"
+    } catch {
+        Write-Host '   sync-worker-queue OK'
+    }
+} else {
+    Write-Host "   WARN: sync-worker-queue HTTP $syncCode (create a portal task if pending=0)"
+}
+
 Write-Step '3/4 MEmu / emulator (adb reverse)'
 $adbCandidates = @(
     (Join-Path $MemuRoot 'adb.exe'),

@@ -15,6 +15,10 @@ abstract final class SummarizeConstraintRenderer {
     }
     final lines = <String>[
       'Structured output requirements from the task definition:',
+      ..._coverageAndBillingLines(
+        constraints,
+        listFieldLabel: 'keyPoints',
+      ),
     ];
     if (constraints.maxSummaryWords != null) {
       lines.add(
@@ -27,9 +31,50 @@ abstract final class SummarizeConstraintRenderer {
         '(enforced).',
       );
     }
+    return '${lines.join("\n")}\n';
+  }
+
+  /// Coverage and billing guidance for map/intermediate reduce (informational).
+  static String mapGuidanceBlock(SummarizeTaskConstraintsV1? constraints) {
+    return _coverageGuidanceBlock(
+      constraints,
+      listFieldLabel: 'keyPoints',
+    );
+  }
+
+  /// Coverage and billing guidance for evidence map/intermediate stages.
+  static String evidenceMapGuidanceBlock(SummarizeTaskConstraintsV1? constraints) {
+    return _coverageGuidanceBlock(
+      constraints,
+      listFieldLabel: 'facts',
+    );
+  }
+
+  static String _coverageGuidanceBlock(
+    SummarizeTaskConstraintsV1? constraints, {
+    required String listFieldLabel,
+  }) {
+    if (constraints == null) {
+      return '';
+    }
+    final lines = _coverageAndBillingLines(
+      constraints,
+      listFieldLabel: listFieldLabel,
+    );
+    if (lines.isEmpty) {
+      return '';
+    }
+    return '${lines.join("\n")}\n';
+  }
+
+  static List<String> _coverageAndBillingLines(
+    SummarizeTaskConstraintsV1 constraints, {
+    required String listFieldLabel,
+  }) {
+    final lines = <String>[];
     if (constraints.coverageAxes.isNotEmpty) {
       lines.add(
-        '- keyPoints should cover these topics where the source mentions them: '
+        '- $listFieldLabel should cover these topics where the source mentions them: '
         '${constraints.coverageAxes.join(", ")} (informational; not '
         'automatically validated).',
       );
@@ -43,6 +88,6 @@ abstract final class SummarizeConstraintRenderer {
             'automatically validated).');
       }
     }
-    return '${lines.join("\n")}\n';
+    return lines;
   }
 }

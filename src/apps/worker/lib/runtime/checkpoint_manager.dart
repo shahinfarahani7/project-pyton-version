@@ -122,9 +122,10 @@ class CheckpointManager {
     required SemanticChunk chunk,
     required Map<String, dynamic> partialSummary,
     String modelVersionId = WorkerModelCatalog.modelVersionId,
-    String promptVersion = PromptTemplates.version,
+    String? promptVersion,
     String runtimeVersion = CheckpointManager.runtimeVersion,
   }) async {
+    final activePromptVersion = promptVersion ?? PromptTemplates.version;
     final summaryHash = sha256HexString(jsonEncode(partialSummary));
     final record = ChunkCheckpointRecord(
       assignmentId: assignmentId,
@@ -135,7 +136,7 @@ class CheckpointManager {
       summaryHash: summaryHash,
       modelVersionId: modelVersionId,
       runtimeVersion: runtimeVersion,
-      promptVersion: promptVersion,
+      promptVersion: activePromptVersion,
       processedRange: chunk.processedRange,
       partialSummary: partialSummary,
       savedAt: DateTime.now().toUtc(),
@@ -154,10 +155,11 @@ class CheckpointManager {
     required int activeFenceToken,
     required String inputHash,
     String modelVersionId = WorkerModelCatalog.modelVersionId,
-    String promptVersion = PromptTemplates.version,
+    String? promptVersion,
     String runtimeVersion = CheckpointManager.runtimeVersion,
     ResumeGrant? resumeGrant,
   }) async {
+    final activePromptVersion = promptVersion ?? PromptTemplates.version;
     final records = (await _listAll())
         .where((record) => record.assignmentId == assignmentId ||
             (resumeGrant != null &&
@@ -177,7 +179,7 @@ class CheckpointManager {
         inputDigest: inputHash,
         modelVersionId: modelVersionId,
         runtimeVersion: runtimeVersion,
-        promptTemplateVersion: promptVersion,
+        promptTemplateVersion: activePromptVersion,
         executionPlanVersion: '2026-q3-v1',
         requestedChunkIds: records.map((record) => record.chunkId),
       );
@@ -193,13 +195,13 @@ class CheckpointManager {
             activeFenceToken: activeFenceToken,
             activeInputHash: inputHash,
             activeModelVersionId: modelVersionId,
-            activePromptVersion: promptVersion,
+            activePromptVersion: activePromptVersion,
             activeRuntimeVersion: runtimeVersion,
           );
       final grantResume = resumeGrant != null &&
           record.inputHash == inputHash &&
           record.modelVersionId == modelVersionId &&
-          record.promptVersion == promptVersion &&
+          record.promptVersion == activePromptVersion &&
           record.runtimeVersion == runtimeVersion &&
           record.fenceToken == resumeGrant.producerFenceToken &&
           resumeGrant.authorizedChunkIds.contains(record.chunkId) &&
