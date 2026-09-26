@@ -514,6 +514,15 @@ if _dev_worker_assignments_enabled():
             status_code=200,
         )
 
+    @app.post(
+        "/internal/dev/clear-exclusive-device-pin",
+        tags=["dev-assignments"],
+        status_code=204,
+    )
+    async def dev_clear_exclusive_device_pin() -> Response:
+        dev_worker_assignments.clear_runtime_exclusive_device_pin()
+        return Response(status_code=204)
+
     @app.delete(
         "/internal/dev/assignments/{assignment_id}",
         tags=["dev-assignments"],

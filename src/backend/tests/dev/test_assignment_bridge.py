@@ -4,7 +4,27 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 from edgemint.dev import worker_assignments
-from edgemint.dev.assignment_bridge import enqueue_assignment_for_worker
+from edgemint.dev.assignment_bridge import (
+    clear_exclusive_device_pin_on_worker_registry,
+    enqueue_assignment_for_worker,
+)
+
+
+def test_clear_exclusive_pin_posts_to_worker_registry() -> None:
+    with patch("edgemint.dev.assignment_bridge.httpx.Client") as client_cls:
+        client = MagicMock()
+        client.__enter__.return_value = client
+        response = MagicMock()
+        response.raise_for_status.return_value = None
+        client.post.return_value = response
+        client_cls.return_value = client
+
+        clear_exclusive_device_pin_on_worker_registry()
+
+        client.post.assert_called_once()
+        assert client.post.call_args.args[0].endswith(
+            "/internal/dev/clear-exclusive-device-pin"
+        )
 
 
 def test_enqueue_assignment_falls_back_to_local_queue_on_http_error() -> None:

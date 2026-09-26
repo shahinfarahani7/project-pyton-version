@@ -24,6 +24,17 @@ def enqueue_assignment_for_worker(*, task_id: str, task_type: str) -> dict[str, 
     return enqueue_dev_assignment(task_id=task_id, task_type=task_type)
 
 
+def clear_exclusive_device_pin_on_worker_registry() -> None:
+    """Clear dev assignment pin in worker-registry (separate in-memory state from api-gateway)."""
+    url = f"{_WORKER_REGISTRY}/internal/dev/clear-exclusive-device-pin"
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            response = client.post(url)
+            response.raise_for_status()
+    except (httpx.HTTPError, OSError, RuntimeError):
+        pass
+
+
 def fetch_pending_assignments_from_worker() -> list[dict[str, Any]]:
     """Return assignments still queued on worker-registry (survives api-gateway restart)."""
     url = f"{_WORKER_REGISTRY}/internal/dev/assignments"
