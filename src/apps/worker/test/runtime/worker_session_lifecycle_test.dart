@@ -11,10 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 class _EnrollmentMockClient extends http.BaseClient {
-  _EnrollmentMockClient();
+  _EnrollmentMockClient({this.refreshShouldRejectExpired = false});
 
   final http.Client _inner = http.Client();
   int registerCalls = 0;
+  int refreshCalls = 0;
+  final bool refreshShouldRejectExpired;
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
@@ -32,10 +34,17 @@ class _EnrollmentMockClient extends http.BaseClient {
         'workerId': 'wrk_auto',
         'deviceId': 'dev_auto',
         'accessToken': 'token-auto',
-        'expiresAt': '2026-07-26T13:00:00Z',
+        'expiresAt': '2027-07-26T13:00:00Z',
       }));
     }
     if (path.endsWith('/sessions:refresh')) {
+      refreshCalls += 1;
+      if (refreshShouldRejectExpired) {
+        return Future.value(_jsonResponse(request, 401, {
+          'code': 'AUTH_INVALID_CREDENTIAL',
+          'title': 'Invalid refresh token',
+        }));
+      }
       return Future.value(_jsonResponse(request, 200, {
         'workerId': 'wrk_auto',
         'deviceId': 'dev_auto',
@@ -60,7 +69,11 @@ class _EnrollmentMockClient extends http.BaseClient {
         'chargingPolicy': 'preferred',
         'minimumBatteryPercent': 25,
         'contributionModeId': 'balanced',
-        'schedule': {'mode': 'always', 'timezone': 'UTC', 'windows': []},
+        'schedule': {
+          'mode': 'always',
+          'timezone': 'UTC',
+          'windows': <Map<String, dynamic>>[],
+        },
       }));
     }
     if (path.endsWith('/worker-preferences') && request.method == 'PUT') {
@@ -153,5 +166,98 @@ void main() {
     expect(loaded?.workerId, record.workerId);
     expect(loaded?.accessToken, record.accessToken);
     expect(loaded?.benchmarkSubmitted, isTrue);
+  });
+
+  test('refreshes near-expiry session without re-registering', () async {
+    final mock = _EnrollmentMockClient();
+    final api = WorkerApiClient(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: mock,
+      onAudit: ({required method, required path, required status}) {},
+    );
+    final store = WorkerSessionStore(InMemoryEncryptedStore());
+    final lifecycle = WorkerSessionLifecycle(
+      api: api,
+      store: store,
+      platform: NoopWorkerRuntimeChannel(),
+      sessionRefreshWindow: const Duration(hours: 1),
+    );
+    const snapshot = DeviceSnapshot(
+      available: true,
+      batteryPercent: 100,
+      isCharging: true,
+      isEmulator: true,
+      isX86Android: true,
+      thermalState: ThermalState.normal,
+      network: NetworkKind.wifi,
+      freeStorageMb: 4096,
+      withinSchedule: true,
+      consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
+    );
+
+    await store.writeSession(
+      WorkerSessionRecord(
+        workerId: 'wrk_auto',
+        deviceId: 'dev_auto',
+        accessToken: 'token-stale-soon',
+        expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 20)),
+        installationId: 'inst_existing',
+        benchmarkSubmitted: true,
+      ),
+    );
+
+    final session = await lifecycle.ensureSession(snapshotOverride: snapshot);
+    expect(session.accessToken, 'token-refreshed');
+    expect(mock.refreshCalls, 1);
+    expect(mock.registerCalls, 0);
+
+    api.close();
+    mock.close();
+  });
+
+  test('re-registers after expired refresh is rejected', () async {
+    final mock = _EnrollmentMockClient(refreshShouldRejectExpired: true);
+    final api = WorkerApiClient(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: mock,
+      onAudit: ({required method, required path, required status}) {},
+    );
+    final store = WorkerSessionStore(InMemoryEncryptedStore());
+    final lifecycle = WorkerSessionLifecycle(
+      api: api,
+      store: store,
+      platform: NoopWorkerRuntimeChannel(),
+    );
+    const snapshot = DeviceSnapshot(
+      available: true,
+      batteryPercent: 100,
+      isCharging: true,
+      isEmulator: true,
+      isX86Android: true,
+      thermalState: ThermalState.normal,
+      network: NetworkKind.wifi,
+      freeStorageMb: 4096,
+      withinSchedule: true,
+      consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
+    );
+
+    await store.writeSession(
+      WorkerSessionRecord(
+        workerId: 'wrk_old',
+        deviceId: 'dev_old',
+        accessToken: 'token-expired',
+        expiresAt: DateTime.now().toUtc().subtract(const Duration(hours: 2)),
+        installationId: 'inst_existing',
+        benchmarkSubmitted: true,
+      ),
+    );
+
+    final session = await lifecycle.ensureSession(snapshotOverride: snapshot);
+    expect(session.accessToken, 'token-auto');
+    expect(mock.refreshCalls, 1);
+    expect(mock.registerCalls, 1);
+
+    api.close();
+    mock.close();
   });
 }

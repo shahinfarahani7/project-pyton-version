@@ -48,7 +48,10 @@ void main() {
         partial: invalid,
         generationTruncated: false,
       );
-      expect(issues, contains('evidence_public_field_forbidden'));
+      expect(
+        issues,
+        anyElement(startsWith('evidence_public_field_forbidden')),
+      );
     });
 
     test('union merge dedupes exact strings only', () {

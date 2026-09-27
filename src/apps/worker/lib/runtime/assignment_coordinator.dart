@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 
@@ -341,7 +340,7 @@ class AssignmentCoordinator {
     );
 
     if (_resourceEnforcer != null && taskResourceRequest != null) {
-      _resourceEnforcer!.ensureWithinBudgetOrThrow(
+      _resourceEnforcer.ensureWithinBudgetOrThrow(
         reserved: const ResourceClassTotals(
           cpuUnits: 0,
           memoryBytes: 0,
@@ -509,7 +508,7 @@ class AssignmentCoordinator {
         accessToken: _accessToken,
         inputSha256: bundle.inputDigest,
       );
-      output = await _taskEngine!.execute(
+      output = await _taskEngine.execute(
         context: TaskExecutionContext(
           assignment: assignment,
           manifest: bundle.manifest,
@@ -892,7 +891,9 @@ class AssignmentCoordinator {
       modelArtifact: ModelArtifact(
         modelVersionId: assignment.modelVersionId,
         digestSha256: modelDigest,
-        signatureSha256: sha256HexString('$modelDigest:$signingKey'),
+        signatureSha256: sha256HexString(
+          '$modelDigest:${assignment.modelVersionId}:$signingKey',
+        ),
         backend: InferenceBackend.stub,
         bytes: modelBytes,
       ),

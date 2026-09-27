@@ -19,7 +19,22 @@ void main() {
   test('execution routes match worker API contract', () {
     expect(WorkerRoutes.nextAssignment, '/assignments:next');
     expect(WorkerRoutes.completeAssignment('asg_test'), '/assignments/asg_test:complete');
-    expect(WorkerRoutes.executionRoutes.length, 9);
+    expect(
+      WorkerRoutes.executionRoutes,
+      [
+        WorkerRoutes.nextAssignment,
+        WorkerRoutes.assignmentInboxBootstrap,
+        WorkerRoutes.renewAssignment('asg_example'),
+        WorkerRoutes.reportAssignmentStarted('asg_example'),
+        WorkerRoutes.progressAssignment('asg_example'),
+        WorkerRoutes.checkpointAssignment('asg_example'),
+        WorkerRoutes.completeAssignment('asg_example'),
+        WorkerRoutes.failAssignment('asg_example'),
+        WorkerRoutes.confirmPhysicalStop('asg_example'),
+        WorkerRoutes.abandonAssignment('asg_example'),
+      ],
+    );
+    expect(WorkerRoutes.executionRoutes.length, 10);
   });
 
   test('WorkerApiException preserves sanitized request context', () {

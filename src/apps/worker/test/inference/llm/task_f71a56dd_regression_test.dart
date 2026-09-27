@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:edgemint_worker/contracts/worker_error.dart';
 import 'package:edgemint_worker/inference/llm/prompt_templates.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
+import 'package:edgemint_worker/inference/llm/summarize_evidence_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/summarize_inference_stage.dart';
 import 'package:edgemint_worker/validation/json_output_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,8 +48,13 @@ void main() {
       expect(extract.object!.containsKey('missingOrUnclear'), isTrue);
     });
 
+    // V1-only: live log is five-field map partial. Extractor tests above remain
+    // valid under v2; runJsonTask must reject non-evidence shape when flag is on.
     test('map runJsonTask parses locally without repair or labeled fallback',
         () async {
+      if (SummarizeEvidencePipeline.enabled) {
+        return;
+      }
       var calls = 0;
       final logs = <String>[];
       final processor = QwenTaskProcessor(
@@ -86,6 +93,37 @@ void main() {
       expect(
         (result['keyPoints'] as List).length,
         taskF71a56ddExpectedKeyPointCount,
+      );
+    });
+
+    test('map runJsonTask rejects legacy five-field payload when evidence v2 active',
+        () async {
+      if (!SummarizeEvidencePipeline.enabled) {
+        return;
+      }
+      final processor = QwenTaskProcessor(
+        runner: (prompt) async => taskF71a56ddMapResponseRaw,
+      );
+
+      await expectLater(
+        processor.runJsonTask(
+          prompt: PromptTemplates.summarizeMapChunk(
+            chunkText: 'Order B426 had incorrect milk.',
+            chunkIndex: 0,
+            totalChunks: 2,
+            chunkId: 'c' * 64,
+          ),
+          inferenceStage: SummarizeInferenceStage.mapEvidence,
+          signingKey: 'sign',
+          correctiveBudget: CorrectiveInferenceBudget(maxCalls: 0),
+        ),
+        throwsA(
+          isA<WorkerError>().having(
+            (error) => error.code,
+            'code',
+            WorkerErrorCode.outputSchemaMismatch,
+          ),
+        ),
       );
     });
 

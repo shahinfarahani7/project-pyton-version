@@ -8,6 +8,7 @@ import 'package:edgemint_worker/runtime/runtime_exceptions.dart';
 import 'package:edgemint_worker/runtime/runtime_safety_controller.dart';
 import 'package:edgemint_worker/runtime/worker_resource_budget.dart';
 import 'package:edgemint_worker/runtime/worker_resource_enforcer.dart';
+import 'package:edgemint_worker/tasks/task_type_mapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:edgemint_worker/api/worker_assignment_models.dart';
@@ -113,7 +114,7 @@ void main() {
       final memory = InMemoryModelRuntimeManager(verifyArtifact: false);
       await _loadModel(memory);
       final runner = ExecutionPlanRunner(modelRuntime: memory);
-      final plan = ExecutionPlanCatalog.forTaskType('text.classify');
+      final plan = ExecutionPlanCatalog.forTaskType(TaskTypeMapper.textClassify);
       final order = <String>[];
 
       await runner.runPlan(
@@ -125,7 +126,7 @@ void main() {
         },
       );
 
-      expect(order, ['llm-classify', 'validate', 'submit']);
+      expect(order, ['llm-v1']);
       expect(runner.boundAssignmentId, isNull);
       expect(memory.openSessionCount, 0);
       expect(memory.sessionCount, 1);
@@ -135,7 +136,7 @@ void main() {
       final memory = InMemoryModelRuntimeManager(verifyArtifact: false);
       await _loadModel(memory);
       final runner = ExecutionPlanRunner(modelRuntime: memory);
-      final plan = ExecutionPlanCatalog.forTaskType('text.summarize');
+      final plan = ExecutionPlanCatalog.forTaskType(TaskTypeMapper.textSummarize);
       final progress = <int>[];
 
       await runner.runPlan(
@@ -168,7 +169,7 @@ void main() {
         modelRuntime: memory,
         safetyController: safety,
       );
-      final plan = ExecutionPlanCatalog.forTaskType('text.classify');
+      final plan = ExecutionPlanCatalog.forTaskType(TaskTypeMapper.textClassify);
 
       expect(
         () => runner.runPlan(
@@ -204,7 +205,7 @@ void main() {
         modelRuntime: memory,
         resourceEnforcer: enforcer,
       );
-      final plan = ExecutionPlanCatalog.forTaskType('text.classify');
+      final plan = ExecutionPlanCatalog.forTaskType(TaskTypeMapper.textClassify);
 
       expect(
         () => runner.runPlan(

@@ -75,15 +75,27 @@ void main() {
         delegate: FakeOcrEngine(),
         exclusiveGroups: enforcer,
       );
+      final heavyEntered = Completer<void>();
+      final releaseHeavy = Completer<void>();
+      var ocrCompleted = false;
 
       unawaited(enforcer.withHeavyLlmInference(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 40));
+        heavyEntered.complete();
+        await releaseHeavy.future;
       }));
 
-      await Future<void>.delayed(const Duration(milliseconds: 5));
-      final started = Stopwatch()..start();
-      await engine.recognize(imageBytes: [1, 2, 3]);
-      expect(started.elapsed.inMilliseconds, greaterThanOrEqualTo(30));
+      await heavyEntered.future;
+      expect(enforcer.heavyLlmActive, isTrue);
+
+      final ocrFuture = engine.recognize(imageBytes: [1, 2, 3])
+        ..then((_) => ocrCompleted = true);
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(ocrCompleted, isFalse);
+
+      releaseHeavy.complete();
+      await ocrFuture;
+      expect(ocrCompleted, isTrue);
     });
 
     test('execution plan ocr stage uses exclusive group enforcer', () async {
@@ -97,15 +109,19 @@ void main() {
         exclusiveGroupEnforcer: enforcer,
       );
       var ocrStageCompleted = false;
+      final heavyEntered = Completer<void>();
+      final releaseHeavy = Completer<void>();
 
       unawaited(enforcer.withHeavyLlmInference(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 30));
+        heavyEntered.complete();
+        await releaseHeavy.future;
       }));
-      await Future<void>.delayed(const Duration(milliseconds: 5));
 
-      final started = Stopwatch()..start();
+      await heavyEntered.future;
+      expect(enforcer.heavyLlmActive, isTrue);
+
       runner.enterAssignmentScope(assignmentId: 'asg', fenceToken: 1);
-      await runner.runStage(
+      final ocrFuture = runner.runStage(
         stage: const ExecutionPlanStage(
           sequence: 1,
           name: 'ocr-document',
@@ -116,10 +132,15 @@ void main() {
           ocrStageCompleted = true;
         },
       );
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(ocrStageCompleted, isFalse);
+
+      releaseHeavy.complete();
+      await ocrFuture;
       runner.exitAssignment();
 
       expect(ocrStageCompleted, isTrue);
-      expect(started.elapsed.inMilliseconds, greaterThanOrEqualTo(25));
     });
   });
 }

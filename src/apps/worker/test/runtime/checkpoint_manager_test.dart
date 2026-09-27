@@ -1,8 +1,7 @@
-import 'dart:convert';
-
-import 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart';
+import 'package:edgemint_worker/inference/llm/prompt_templates.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
 import 'package:edgemint_worker/inference/llm/semantic_chunk_engine.dart';
+import 'package:edgemint_worker/inference/llm/summarize_evidence_pipeline.dart';
 import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:edgemint_worker/runtime/checkpoint_manager.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
@@ -10,43 +9,23 @@ import 'package:edgemint_worker/runtime/resume_grant.dart';
 import 'package:edgemint_worker/runtime/runtime_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/summarize_contract_mock_runner.dart';
 import 'fixtures/semantic_chunk_golden.dart';
 
-Future<String> _summarizeMockRunner(String prompt) async {
-  if (prompt.contains('Combine the partial summaries into one final summary')) {
-    return jsonEncode({
-      'summary': 'Final merged summary',
-      'keyPoints': ['alpha', 'beta', 'gamma'],
-      'mainComplaint': 'late delivery',
-      'suggestedImprovement': 'improve live estimates',
-      'missingOrUnclear': [],
-    });
+Map<String, dynamic> checkpointPartialForChunk(int index) {
+  if (SummarizeEvidencePipeline.enabled) {
+    return {
+      'schemaVersion': '2',
+      'facts': ['point-$index'],
+      'openItems': <String>[],
+      'priority': '',
+    };
   }
-  if (prompt.contains('Extract evidence from this chunk')) {
-    final indexMatch = RegExp(r'chunkIndex=(\d+)').firstMatch(prompt);
-    final index = indexMatch?.group(1) ?? '0';
-    return jsonEncode({
-      'summary': 'Partial summary $index',
-      'keyPoints': ['point-$index'],
-      'mainComplaint': '',
-      'suggestedImprovement': '',
-      'missingOrUnclear': [],
-    });
-  }
-  if (prompt.contains('Partial summaries')) {
-    return jsonEncode({
-      'summary': 'Final merged summary',
-      'keyPoints': ['alpha', 'beta', 'gamma'],
-      'mainComplaint': 'late delivery',
-      'suggestedImprovement': 'improve live estimates',
-      'missingOrUnclear': [],
-    });
-  }
-  return jsonEncode({
-    'summary': 'Direct summary',
-    'keyPoints': ['direct'],
-    'missingOrUnclear': [],
-  });
+  return {
+    'summary': 'Partial summary $index',
+    'keyPoints': ['point-$index'],
+    'missingOrUnclear': <String>[],
+  };
 }
 
 void main() {
@@ -63,11 +42,7 @@ void main() {
         assignmentId: 'asg-1',
         fenceToken: 4,
         chunk: plan.chunks.first,
-        partialSummary: const {
-          'summary': 'Partial summary 0',
-          'keyPoints': ['point-0'],
-          'missingOrUnclear': [],
-        },
+        partialSummary: checkpointPartialForChunk(0),
       );
 
       final resume = await manager.loadResumableState(
@@ -78,7 +53,11 @@ void main() {
 
       expect(resume, isNotNull);
       expect(resume!.nextChunkIndex, 1);
-      expect(resume.completedPartials.single['summary'], 'Partial summary 0');
+      if (SummarizeEvidencePipeline.enabled) {
+        expect(resume.completedPartials.single['facts'], ['point-0']);
+      } else {
+        expect(resume.completedPartials.single['summary'], 'Partial summary 0');
+      }
     });
 
     test('stale fence invalidates saved chunk checkpoints', () async {
@@ -114,11 +93,7 @@ void main() {
         assignmentId: 'asg-producer',
         fenceToken: 3,
         chunk: chunk,
-        partialSummary: const {
-          'summary': 'Partial summary 0',
-          'keyPoints': ['point-0'],
-          'missingOrUnclear': [],
-        },
+        partialSummary: checkpointPartialForChunk(0),
       );
 
       final grant = ResumeGrant(
@@ -129,7 +104,7 @@ void main() {
         authorizedChunkIds: {chunk.chunkId},
         modelVersionId: WorkerModelCatalog.modelVersionId,
         runtimeVersion: CheckpointManager.runtimeVersion,
-        promptTemplateVersion: '1.0',
+        promptTemplateVersion: PromptTemplates.version,
         executionPlanVersion: '2026-q3-v1',
         producerFenceToken: 3,
         producerAssignmentId: 'asg-producer',
@@ -146,7 +121,11 @@ void main() {
       expect(resume, isNotNull);
       expect(resume!.nextChunkIndex, 1);
       expect(resume.fenceToken, 7);
-      expect(resume.completedPartials.single['summary'], 'Partial summary 0');
+      if (SummarizeEvidencePipeline.enabled) {
+        expect(resume.completedPartials.single['facts'], ['point-0']);
+      } else {
+        expect(resume.completedPartials.single['summary'], 'Partial summary 0');
+      }
     });
 
     test('cross-assignment resume rejects unauthorized chunk coverage', () async {
@@ -170,7 +149,7 @@ void main() {
         authorizedChunkIds: const {'chunk-not-saved'},
         modelVersionId: WorkerModelCatalog.modelVersionId,
         runtimeVersion: CheckpointManager.runtimeVersion,
-        promptTemplateVersion: '1.0',
+        promptTemplateVersion: PromptTemplates.version,
         executionPlanVersion: '2026-q3-v1',
         producerFenceToken: 3,
         producerAssignmentId: 'asg-producer',
@@ -213,7 +192,7 @@ void main() {
       final processor = QwenTaskProcessor(
         runner: (prompt) async {
           calls += 1;
-          return _summarizeMockRunner(prompt);
+          return summarizeContractMockRunner(prompt);
         },
         checkpointManager: checkpointManager,
       );
@@ -225,13 +204,7 @@ void main() {
         assignmentId: 'asg-resume',
         fenceToken: 9,
         chunk: plan.chunks.first,
-        partialSummary: {
-          'summary': 'Partial summary 0',
-          'keyPoints': ['point-0'],
-          'mainComplaint': '',
-          'suggestedImprovement': '',
-          'missingOrUnclear': [],
-        },
+        partialSummary: checkpointPartialForChunk(0),
       );
 
       final result = await processor.runSummarizeJsonTask(

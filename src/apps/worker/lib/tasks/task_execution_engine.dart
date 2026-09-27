@@ -180,9 +180,17 @@ class TaskExecutionEngine {
         v1Type,
         ocrOnly: request.options.ocrOnly,
       );
+      final plan = ExecutionPlanCatalog.forTaskType(
+        v1Type,
+        ocrOnly: request.options.ocrOnly,
+      );
+      final usesMapReduceShell = plan.stages.any(
+        (stage) => stage.operation == 'llm_map',
+      );
       final usesExecutionPlan =
+          VisionRuntimeCatalog.isVisionCapability(v1Type) ||
           (requiresLlm && _qwenProcessor.requiresNativeRuntime) ||
-          VisionRuntimeCatalog.isVisionCapability(v1Type);
+          (_executionPlanRunner != null && requiresLlm && usesMapReduceShell);
 
       if (requiresOcr &&
           requiresLlm &&
@@ -375,10 +383,6 @@ class TaskExecutionEngine {
         final planRunner = executionPlanRunner;
         WorkerTaskResult result;
         if (usesExecutionPlan) {
-          final plan = ExecutionPlanCatalog.forTaskType(
-            v1Type,
-            ocrOnly: request.options.ocrOnly,
-          );
           result = await planRunner.runPlanForScope(
             plan: plan,
             assignmentId: context.assignment.assignmentId,

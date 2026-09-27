@@ -6,35 +6,56 @@ import 'package:edgemint_worker/inference/llm/hierarchical_reduce_bounds.dart';
 import 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/prompt_templates.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
-import 'package:edgemint_worker/inference/llm/reduce_partial_envelope.dart';
+import 'package:edgemint_worker/inference/llm/summarize_evidence_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/summarize_task_constraints.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures/customer_feedback_regression.dart';
 import 'fixtures/semantic_chunk_golden.dart';
+import 'fixtures/summarize_v2_prompt_matchers.dart';
 
 Future<String> _summarizeMockRunner(String prompt) async {
+  if (isEvidenceV2IntermediateReducePrompt(prompt)) {
+    return jsonEncode({
+      'schemaVersion': '2',
+      'facts': ['alpha', 'beta'],
+      'openItems': <String>[],
+      'priority': '',
+    });
+  }
   if (prompt.contains('merged intermediate summary')) {
     return jsonEncode({
       'summary': 'Intermediate merged summary',
       'keyPoints': ['alpha', 'beta'],
       'mainComplaint': '',
       'suggestedImprovement': '',
-      'missingOrUnclear': [],
+      'missingOrUnclear': <String>[],
     });
   }
-  if (prompt.contains('Combine the partial summaries into one final summary')) {
+  if (isFinalReducePrompt(prompt)) {
     return jsonEncode({
       'summary': 'Final merged summary',
       'keyPoints': ['alpha', 'beta', 'gamma'],
       'mainComplaint': 'late delivery',
       'suggestedImprovement': 'improve live estimates',
-      'missingOrUnclear': [],
+      'missingOrUnclear': <String>[],
     });
   }
   if (prompt.contains('Extract evidence from this chunk')) {
     final indexMatch = RegExp(r'chunkIndex=(\d+)').firstMatch(prompt);
     final index = indexMatch?.group(1) ?? '0';
+    if (isEvidenceV2MapChunkPrompt(prompt)) {
+      return jsonEncode({
+        'schemaVersion': '2',
+        'facts': [
+          'point-$index-a',
+          'point-$index-b',
+          'point-$index-c',
+        ],
+        'openItems': ['pending authorization unresolved'],
+        'priority': '',
+      });
+    }
     return jsonEncode({
       'summary': 'Partial summary $index',
       'keyPoints': ['point-$index-a', 'point-$index-b', 'point-$index-c'],
@@ -48,7 +69,7 @@ Future<String> _summarizeMockRunner(String prompt) async {
     'keyPoints': ['easy app', 'late delivery', 'inaccurate tracking'],
     'mainComplaint': 'late deliveries',
     'suggestedImprovement': 'use live driver location',
-    'missingOrUnclear': [],
+    'missingOrUnclear': <String>[],
   });
 }
 
@@ -75,12 +96,12 @@ void main() {
         {
           'summary': 'A',
           'keyPoints': ['one'],
-          'missingOrUnclear': [],
+          'missingOrUnclear': <String>[],
         },
         {
           'summary': 'B',
           'keyPoints': ['two'],
-          'missingOrUnclear': [],
+          'missingOrUnclear': <String>[],
         },
       ]);
 
@@ -107,12 +128,12 @@ void main() {
           {
             'summary': 'A ${'x' * 5000}',
             'keyPoints': List.generate(20, (point) => 'point-a-$point ${'y' * 400}'),
-            'missingOrUnclear': [],
+            'missingOrUnclear': <String>[],
           },
           {
             'summary': 'B ${'x' * 5000}',
             'keyPoints': List.generate(20, (point) => 'point-b-$point ${'y' * 400}'),
-            'missingOrUnclear': [],
+            'missingOrUnclear': <String>[],
           },
         ]),
         throwsA(isA<HierarchicalReduceExhaustedException>()),
@@ -315,12 +336,20 @@ void main() {
 
       expect(mapPrompt, contains(customerFeedbackInstructionTailMarker));
       expect(mapPrompt, contains('Customer instructions (apply when reading this chunk; verbatim)'));
-      expect(mapPrompt, contains('Prefer at most 6'));
-      expect(mapPrompt, contains('distinct points, but include all critical'));
-      expect(mapPrompt, contains('do not enforce final key-point count'));
-      expect(mapPrompt, isNot(contains('exactly 5 distinct facts (enforced)')));
-      expect(mapPrompt, contains('informational; not automatically validated'));
-      expect(mapPrompt, contains('exactly these five keys and no others'));
+      if (SummarizeEvidencePipeline.enabled) {
+        expect(mapPrompt, contains('schemaVersion'));
+        expect(mapPrompt, contains('facts and openItems are JSON arrays of strings only'));
+        expect(mapPrompt, contains(evidenceMapFactLengthGuidance));
+        expect(mapPrompt, isNot(contains('exactly 5 distinct facts (enforced)')));
+        expect(mapPrompt, contains('informational; not automatically validated'));
+      } else {
+        expect(mapPrompt, contains('Prefer at most 6'));
+        expect(mapPrompt, contains('distinct points, but include all critical'));
+        expect(mapPrompt, contains('do not enforce final key-point count'));
+        expect(mapPrompt, isNot(contains('exactly 5 distinct facts (enforced)')));
+        expect(mapPrompt, contains('informational; not automatically validated'));
+        expect(mapPrompt, contains('exactly these five keys and no others'));
+      }
 
       final intermediateReduce = PromptTemplates.summarizeReduceIntermediate(
         partialSummariesJson: '[]',

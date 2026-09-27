@@ -5,9 +5,12 @@ import 'package:edgemint_worker/api/worker_assignment_models.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
 import 'package:edgemint_worker/inference/ocr/fake_ocr_engine.dart';
 import 'package:edgemint_worker/runtime/execution_plan_runner.dart';
+import 'package:edgemint_worker/runtime/inference_adapter.dart';
 import 'package:edgemint_worker/runtime/model_runtime_manager.dart';
 import 'package:edgemint_worker/tasks/task_execution_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../support/summarize_contract_mock_runner.dart';
 
 /// Automated Phase 3 integration smoke: OCR + Qwen paths through ExecutionPlanRunner shell.
 void main() {
@@ -16,13 +19,23 @@ void main() {
     late ExecutionPlanRunner planRunner;
     late TaskExecutionEngine engine;
 
-    setUp(() {
+    setUp(() async {
       modelRuntime = InMemoryModelRuntimeManager(verifyArtifact: false);
+      await modelRuntime.ensureResident(
+        artifact: ModelArtifact(
+          modelVersionId: 'mdv_qwen2_5_0_5b',
+          digestSha256: 'digest',
+          signatureSha256: 'sig',
+          backend: InferenceBackend.liteRt,
+          bytes: Uint8List.fromList([1]),
+        ),
+        signingKey: 'sign',
+      );
       planRunner = ExecutionPlanRunner(modelRuntime: modelRuntime);
       engine = TaskExecutionEngine(
         ocrEngine: FakeOcrEngine(),
         qwenProcessor: QwenTaskProcessor(
-          runner: (_) async => '{"summary":"Smoke summary.","bullets":["a","b"]}',
+          runner: summarizeContractMockRunner,
         ),
         executionPlanRunner: planRunner,
       );
@@ -73,7 +86,8 @@ void main() {
       );
 
       expect(output.metrics['taskStatus'], 'succeeded');
-      expect(engine.lastResult?.output?['summary'], isNotEmpty);
+      final summaryData = engine.lastResult?.output?['data'] as Map<String, dynamic>?;
+      expect(summaryData?['summary'], isNotEmpty);
       expect(planRunner.boundAssignmentId, isNull);
       expect(modelRuntime.sessionCount, greaterThan(0));
       expect(modelRuntime.openSessionCount, 0);

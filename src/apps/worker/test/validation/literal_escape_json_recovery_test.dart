@@ -1,6 +1,7 @@
 import 'package:edgemint_worker/contracts/worker_error.dart';
 import 'package:edgemint_worker/inference/llm/prompt_templates.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
+import 'package:edgemint_worker/inference/llm/summarize_inference_stage.dart';
 import 'package:edgemint_worker/validation/json_output_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -67,7 +68,7 @@ void main() {
 
     test('preserves literal backslash-n token distinct from real newline', () {
       const json =
-          r'{"summary":"Token uses \n not a break","keyPoints":["a"],'
+          r'{"summary":"Token uses \\n not a break","keyPoints":["a"],'
           r'"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
       final extract = JsonOutputValidator.extractJsonObject(
         encodeLiteralEscapeLayer(json),
@@ -79,8 +80,8 @@ void main() {
 
     test('preserves real newline inside a value after unescape', () {
       const json =
-          '{"summary":"Line one\nLine two","keyPoints":["a"],'
-          '"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
+          r'{"summary":"Line one\nLine two","keyPoints":["a"],'
+          r'"mainComplaint":"","suggestedImprovement":"","missingOrUnclear":[]}';
       final extract = JsonOutputValidator.extractJsonObject(
         encodeLiteralEscapeLayer(json),
       );
@@ -175,6 +176,7 @@ void main() {
             totalChunks: 2,
             chunkId: 'c' * 64,
           ),
+          inferenceStage: SummarizeInferenceStage.mapEvidence,
           signingKey: 'sign',
           correctiveBudget: CorrectiveInferenceBudget(maxCalls: 0),
         ),

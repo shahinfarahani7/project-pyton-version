@@ -6,7 +6,6 @@ import 'package:edgemint_worker/runtime/failure_evidence.dart';
 import 'package:edgemint_worker/runtime/inference_adapter.dart';
 import 'package:edgemint_worker/runtime/model_artifact_verifier.dart';
 import 'package:edgemint_worker/runtime/runtime_exceptions.dart';
-import 'package:edgemint_worker/api/worker_assignment_models.dart';
 import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -39,6 +38,85 @@ void main() {
         signingKey: signingKey,
       ),
       returnsNormally,
+    );
+  });
+
+  test('accepts two-segment signature when modelVersionId is omitted from contract', () {
+    final bytes = _modelBytes();
+    final digest = sha256Hex(bytes);
+    expect(
+      () => verifier.verifyBytesOrThrow(
+        bytes: bytes,
+        digestSha256: digest,
+        signatureSha256: sha256HexString('$digest:$signingKey'),
+        signingKey: signingKey,
+      ),
+      returnsNormally,
+    );
+  });
+
+  test('rejects legacy two-segment signature when modelVersionId is required', () {
+    final bytes = _modelBytes();
+    final digest = sha256Hex(bytes);
+    const modelVersionId = 'mdv_test';
+    expect(
+      () => verifier.verifyBytesOrThrow(
+        bytes: bytes,
+        digestSha256: digest,
+        signatureSha256: sha256HexString('$digest:$signingKey'),
+        signingKey: signingKey,
+        modelVersionId: modelVersionId,
+      ),
+      throwsA(
+        predicate<ModelIntegrityException>(
+          (error) => error.reason.contains('signature'),
+        ),
+      ),
+    );
+  });
+
+  test('rejects signature bound to a different modelVersionId', () {
+    final artifact = _signedArtifact(signingKey: signingKey);
+    final wrongVersion = ModelArtifact(
+      modelVersionId: 'mdv_other',
+      digestSha256: artifact.digestSha256,
+      signatureSha256: artifact.signatureSha256,
+      backend: artifact.backend,
+      bytes: artifact.bytes,
+    );
+    expect(
+      () => verifier.verifyOrThrow(artifact: wrongVersion, signingKey: signingKey),
+      throwsA(isA<ModelIntegrityException>()),
+    );
+  });
+
+  test('StubInferenceAdapter loadVerified uses production verifier acceptance', () async {
+    final adapter = StubInferenceAdapter();
+    await adapter.loadVerified(
+      _signedArtifact(signingKey: signingKey),
+      signingKey: signingKey,
+    );
+    final output = await adapter.run(
+      inputBytes: Uint8List.fromList([1]),
+      resumedState: null,
+    );
+    expect(output.progressMilli, 1000);
+  });
+
+  test('StubInferenceAdapter loadVerified rejects legacy signature format', () async {
+    final adapter = StubInferenceAdapter();
+    final bytes = _modelBytes();
+    final digest = sha256Hex(bytes);
+    final legacy = ModelArtifact(
+      modelVersionId: WorkerModelCatalog.modelVersionId,
+      digestSha256: digest,
+      signatureSha256: sha256HexString('$digest:$signingKey'),
+      backend: InferenceBackend.liteRt,
+      bytes: bytes,
+    );
+    await expectLater(
+      adapter.loadVerified(legacy, signingKey: signingKey),
+      throwsA(isA<ModelIntegrityException>()),
     );
   });
 

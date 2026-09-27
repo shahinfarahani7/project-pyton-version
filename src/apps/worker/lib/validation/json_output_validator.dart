@@ -61,13 +61,18 @@ abstract final class JsonOutputValidator {
           return JsonExtractResult(rawPreserved: preserved, object: decoded);
         }
       }
-      final balanced = _extractFirstJsonObject(source);
-      if (balanced != null && _tryDecodeObject(balanced) == null) {
-        return JsonExtractResult(
-          rawPreserved: preserved,
-          rejectionStage: 'decode',
-          rejectionReason: 'json_extract_decode_failed',
-        );
+      if (source.contains(r'\n') || source.contains(r'\"')) {
+        final unescapedProbe = _unescapeJsonStringLiterals(source);
+        if (unescapedProbe != source) {
+          final probeCount = _countTopLevelObjects(unescapedProbe);
+          if (probeCount != null && probeCount > 1) {
+            return JsonExtractResult(
+              rawPreserved: preserved,
+              rejectionStage: 'boundary',
+              rejectionReason: 'json_extract_ambiguous_multiple_objects',
+            );
+          }
+        }
       }
       final recovered = _tryLiteralEscapeLayerRecovery(source);
       if (recovered != null) {
@@ -75,6 +80,14 @@ abstract final class JsonOutputValidator {
           rawPreserved: preserved,
           object: recovered,
           literalEscapeRecovered: true,
+        );
+      }
+      final balanced = _extractFirstJsonObject(source);
+      if (balanced != null && _tryDecodeObject(balanced) == null) {
+        return JsonExtractResult(
+          rawPreserved: preserved,
+          rejectionStage: 'decode',
+          rejectionReason: 'json_extract_decode_failed',
         );
       }
     }
@@ -189,7 +202,8 @@ abstract final class JsonOutputValidator {
   /// finds no object, the payload contains those literals, and unescaping
   /// yields exactly one strict [jsonDecode] object with benign trailing junk.
   static Map<String, dynamic>? _tryLiteralEscapeLayerRecovery(String source) {
-    if (_extractFirstJsonObject(source) != null) {
+    final preBalanced = _extractFirstJsonObject(source);
+    if (preBalanced != null && _tryDecodeObject(preBalanced) != null) {
       return null;
     }
     if (!source.contains('{') ||
@@ -668,6 +682,26 @@ abstract final class JsonOutputValidator {
     return output.toString();
   }
 
+  /// True when a string value inside an array is followed by `:` (object key
+  /// syntax leaked into the array), e.g. repair output appended map keys.
+  static bool _stringInArrayFollowedByObjectKey(
+    String input,
+    int afterQuote,
+    List<_JsonFrame> frames,
+  ) {
+    if (frames.isEmpty || frames.last.isObject) {
+      return false;
+    }
+    var index = afterQuote;
+    while (index < input.length && _isSpace(input[index])) {
+      index += 1;
+    }
+    return index < input.length && input[index] == ':';
+  }
+
+  static bool _isSpace(String char) =>
+      char == ' ' || char == '\t' || char == '\n' || char == '\r';
+
   static bool _closesString(String input, int quoteIndex) {
     for (var index = quoteIndex + 1; index < input.length; index++) {
       final char = input[index];
@@ -724,7 +758,9 @@ abstract final class JsonOutputValidator {
           if (frame != null && frame.isObject && !frame.expectingValue) {
             frame.keyQuoted = true;
           } else if (valueCompletes()) {
-            markSafe(index + 1);
+            if (!_stringInArrayFollowedByObjectKey(input, index + 1, frames)) {
+              markSafe(index + 1);
+            }
             frame?.expectingValue = false;
           }
         }
@@ -756,6 +792,10 @@ abstract final class JsonOutputValidator {
           frames.last.expectingValue = false;
         case ':':
           if (frames.isNotEmpty) {
+            if (!frames.last.isObject) {
+              index = input.length;
+              break;
+            }
             frames.last.expectingValue = true;
           }
         case ',':
@@ -836,9 +876,6 @@ abstract final class JsonOutputValidator {
     }
     return output.toString();
   }
-
-  static bool _isSpace(String char) =>
-      char == ' ' || char == '\t' || char == '\n' || char == '\r';
 
   static final _bareKeyStart = RegExp(r'[A-Za-z_$]');
   static final _bareKeyPart = RegExp(r'[A-Za-z0-9_$.\-]');

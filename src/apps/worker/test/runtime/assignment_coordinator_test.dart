@@ -15,7 +15,9 @@ import 'package:edgemint_worker/runtime/device_snapshot.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/execution_status.dart';
 import 'package:edgemint_worker/runtime/inference_adapter.dart';
+import 'package:edgemint_worker/runtime/model_artifact_verifier.dart';
 import 'package:edgemint_worker/runtime/result_signer.dart';
+import 'package:edgemint_worker/runtime/runtime_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,6 +37,24 @@ WorkerAssignment sampleAssignment({
   outputUploadUrl: 'https://example/output',
   startDeadlineAt: DateTime.parse('2026-12-26T13:30:00Z'),
 );
+
+const _testSigningKey = 'test-signing-material';
+
+ModelArtifact signedStubModel({
+  required String modelVersionId,
+  Uint8List? bytes,
+  String signingKey = _testSigningKey,
+}) {
+  final modelBytes = bytes ?? Uint8List.fromList('model'.codeUnits);
+  final digest = sha256Hex(modelBytes);
+  return ModelArtifact(
+    modelVersionId: modelVersionId,
+    digestSha256: digest,
+    signatureSha256: sha256HexString('$digest:$modelVersionId:$signingKey'),
+    backend: InferenceBackend.stub,
+    bytes: modelBytes,
+  );
+}
 
 class _ExecutionMockClient extends http.BaseClient {
   final Map<int, int> progressCalls = {};
@@ -219,18 +239,38 @@ void main() {
     );
   });
 
-  test('inference adapter verifies digest and signature before load', () async {
-    final adapter = StubInferenceAdapter();
-    final artifact = ModelArtifact(
+  test('assignment model bundle uses digest:modelVersionId:signingKey contract', () {
+    const verifier = ModelArtifactVerifier();
+    final artifact = signedStubModel(modelVersionId: 'mdv_test');
+    expect(
+      () => verifier.verifyOrThrow(
+        artifact: artifact,
+        signingKey: _testSigningKey,
+      ),
+      returnsNormally,
+    );
+    final legacy = ModelArtifact(
       modelVersionId: 'mdv_test',
-      digestSha256: sha256Hex(Uint8List.fromList('model'.codeUnits)),
+      digestSha256: artifact.digestSha256,
       signatureSha256: sha256HexString(
-        '${sha256Hex(Uint8List.fromList('model'.codeUnits))}:test-signing-material',
+        '${artifact.digestSha256}:$_testSigningKey',
       ),
       backend: InferenceBackend.stub,
-      bytes: Uint8List.fromList('model'.codeUnits),
+      bytes: artifact.bytes,
     );
-    await adapter.loadVerified(artifact, signingKey: 'test-signing-material');
+    expect(
+      () => verifier.verifyOrThrow(
+        artifact: legacy,
+        signingKey: _testSigningKey,
+      ),
+      throwsA(isA<ModelIntegrityException>()),
+    );
+  });
+
+  test('inference adapter verifies digest and signature before load', () async {
+    final adapter = StubInferenceAdapter();
+    final artifact = signedStubModel(modelVersionId: 'mdv_test');
+    await adapter.loadVerified(artifact, signingKey: _testSigningKey);
     final output = await adapter.run(
       inputBytes: Uint8List.fromList([1, 2, 3]),
       resumedState: null,
@@ -338,13 +378,8 @@ void main() {
       inputLoader: (_) async => AssignmentInputBundle(
         inputBytes: inputBytes,
         inputDigest: inputDigest,
-        modelArtifact: ModelArtifact(
+        modelArtifact: signedStubModel(
           modelVersionId: assignment.modelVersionId,
-          digestSha256: modelDigest,
-          signatureSha256: sha256HexString(
-            '$modelDigest:test-signing-material',
-          ),
-          backend: InferenceBackend.stub,
           bytes: modelBytes,
         ),
       ),
@@ -354,13 +389,8 @@ void main() {
       AssignmentInputBundle(
         inputBytes: inputBytes,
         inputDigest: inputDigest,
-        modelArtifact: ModelArtifact(
+        modelArtifact: signedStubModel(
           modelVersionId: assignment.modelVersionId,
-          digestSha256: modelDigest,
-          signatureSha256: sha256HexString(
-            '$modelDigest:test-signing-material',
-          ),
-          backend: InferenceBackend.stub,
           bytes: modelBytes,
         ),
       ),
@@ -404,15 +434,7 @@ void main() {
       inputDigest: sha256Hex(
         Uint8List.fromList('input-for-document.ocr'.codeUnits),
       ),
-      modelArtifact: ModelArtifact(
-        modelVersionId: assignment.modelVersionId,
-        digestSha256: sha256Hex(Uint8List.fromList('model'.codeUnits)),
-        signatureSha256: sha256HexString(
-          '${sha256Hex(Uint8List.fromList('model'.codeUnits))}:test-signing-material',
-        ),
-        backend: InferenceBackend.stub,
-        bytes: Uint8List.fromList('model'.codeUnits),
-      ),
+      modelArtifact: signedStubModel(modelVersionId: assignment.modelVersionId),
     );
     final decision = await coordinator.inspectResume(assignment, bundle);
     expect(decision.discardedStaleCheckpoint, isTrue);
@@ -504,6 +526,21 @@ void main() {
       WorkerRoutes.completeAssignment('asg_test'),
       '/assignments/asg_test:complete',
     );
-    expect(WorkerRoutes.executionRoutes.length, 9);
+    expect(
+      WorkerRoutes.executionRoutes,
+      [
+        WorkerRoutes.nextAssignment,
+        WorkerRoutes.assignmentInboxBootstrap,
+        WorkerRoutes.renewAssignment('asg_example'),
+        WorkerRoutes.reportAssignmentStarted('asg_example'),
+        WorkerRoutes.progressAssignment('asg_example'),
+        WorkerRoutes.checkpointAssignment('asg_example'),
+        WorkerRoutes.completeAssignment('asg_example'),
+        WorkerRoutes.failAssignment('asg_example'),
+        WorkerRoutes.confirmPhysicalStop('asg_example'),
+        WorkerRoutes.abandonAssignment('asg_example'),
+      ],
+    );
+    expect(WorkerRoutes.executionRoutes.length, 10);
   });
 }

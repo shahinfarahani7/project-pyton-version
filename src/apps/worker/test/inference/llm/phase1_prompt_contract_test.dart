@@ -1,5 +1,6 @@
 import 'package:edgemint_worker/inference/llm/map_partial_validator.dart';
 import 'package:edgemint_worker/inference/llm/prompt_templates.dart';
+import 'package:edgemint_worker/inference/llm/summarize_evidence_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/summarize_output_validator.dart';
 import 'package:edgemint_worker/inference/llm/summarize_task_constraints.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,9 +19,15 @@ void main() {
         constraints: customerFeedbackConstraints(),
       );
 
-      expect(prompt, contains('Otherwise "".'));
-      expect(prompt, contains('populate ONLY if this chunk explicitly states'));
-      expect(prompt, isNot(contains('Identify the main complaint and one practical')));
+      if (SummarizeEvidencePipeline.enabled) {
+        expect(prompt, contains('openItems: one concise string per unresolved question'));
+        expect(prompt, contains('priority: concise paraphrase'));
+        expect(prompt, isNot(contains('Identify the main complaint and one practical')));
+      } else {
+        expect(prompt, contains('Otherwise "".'));
+        expect(prompt, contains('populate ONLY if this chunk explicitly states'));
+        expect(prompt, isNot(contains('Identify the main complaint and one practical')));
+      }
     });
 
     test('intermediate reduce allows empty complaint and improvement', () {
@@ -31,11 +38,17 @@ void main() {
         constraints: customerFeedbackConstraints(),
       );
 
-      expect(prompt, contains('mainComplaint: use explicit customer priority text'));
-      expect(prompt, contains('if none,\n"".'));
-      expect(prompt, contains('suggestedImprovement: one practical action if clearly supported; otherwise "".'));
-      expect(prompt, isNot(contains('exactly 5 distinct facts (enforced)')));
-      expect(prompt, isNot(contains('Merge missingOrUnclear entries from partials')));
+      if (SummarizeEvidencePipeline.enabled) {
+        expect(prompt, contains('Do not create summary, keyPoints, mainComplaint'));
+        expect(prompt, contains('facts and openItems are JSON arrays of strings only'));
+        expect(prompt, isNot(contains('exactly 5 distinct facts (enforced)')));
+      } else {
+        expect(prompt, contains('mainComplaint: use explicit customer priority text'));
+        expect(prompt, contains('if none,\n"".'));
+        expect(prompt, contains('suggestedImprovement: one practical action if clearly supported; otherwise "".'));
+        expect(prompt, isNot(contains('exactly 5 distinct facts (enforced)')));
+        expect(prompt, isNot(contains('Merge missingOrUnclear entries from partials')));
+      }
     });
 
     test('final reduce derives complaint and improvement from merged facts', () {
@@ -46,11 +59,17 @@ void main() {
         constraints: customerFeedbackConstraints(),
       );
 
-      expect(prompt, contains('derive from the merged facts'));
-      expect(prompt, contains('derive one from the merged facts'));
-      expect(prompt, contains('exactly 5 distinct facts (enforced)'));
-      expect(prompt, contains('One practical action addressing the main complaint'));
-      expect(prompt, isNot(contains('otherwise "".')));
+      if (SummarizeEvidencePipeline.enabled) {
+        expect(prompt, contains('Produce the final customer-facing summary from merged evidence'));
+        expect(prompt, contains('keyPoints:'));
+        expect(prompt, contains('mainComplaint: reflect explicit customer priority'));
+      } else {
+        expect(prompt, contains('derive from the merged facts'));
+        expect(prompt, contains('derive one from the merged facts'));
+        expect(prompt, contains('exactly 5 distinct facts (enforced)'));
+        expect(prompt, contains('One practical action addressing the main complaint'));
+        expect(prompt, isNot(contains('otherwise "".')));
+      }
     });
 
     test('MapPartialValidator accepts empty intermediate strings with keyPoints', () {

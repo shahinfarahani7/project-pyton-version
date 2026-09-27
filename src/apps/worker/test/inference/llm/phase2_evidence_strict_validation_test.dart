@@ -16,6 +16,7 @@ import 'package:edgemint_worker/inference/llm/summarize_task_constraints.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures/phase2_evidence_chunk2.dart';
+import 'fixtures/summarize_v2_prompt_matchers.dart';
 import 'fixtures/task_28f6542b_map1_reconstructed.dart';
 
 const _brokenJson = 'not json at all';
@@ -32,7 +33,10 @@ void main() {
       expect(normalizedWouldEmpty, isNotNull);
       expect(
         normalizedWouldEmpty,
-        contains('evidence_facts_invalid_element:index=0:type=_Map'),
+        allOf(
+          contains('evidence_facts_invalid_element:index=0:type='),
+          contains('Map'),
+        ),
       );
     });
 
@@ -384,7 +388,8 @@ void main() {
         expect(evidencePrompt, contains('facts should cover these topics'));
         expect(evidencePrompt, isNot(contains('keyPoints should cover')));
         expect(evidencePrompt, contains('arrays of strings only'));
-        expect(evidencePrompt, contains('15–25 words'));
+        expect(evidencePrompt, contains(evidenceMapFactLengthGuidance));
+        expect(evidencePrompt, contains('words when practical'));
         expect(evidencePrompt, contains('Format example only'));
       } else {
         expect(

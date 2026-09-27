@@ -1,0 +1,39 @@
+﻿Analyzing 31 items...                                           
+
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart'. Try removing the import directive - lib\runtime\assignment_coordinator.dart:3:8 - unnecessary_import
+warning - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator - lib\runtime\assignment_coordinator.dart:344:24 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator - lib\runtime\assignment_coordinator.dart:512:33 - unnecessary_non_null_assertion
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:19:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:24:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:63:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:68:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:77:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:94:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:118:35 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:124:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:159:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:168:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:173:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:212:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:22:20 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:32:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:41:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:72:25 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:99:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:104:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:131:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:136:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase1_prompt_contract_test.dart:82:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase1_prompt_contract_test.dart:96:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase1_prompt_contract_test.dart:111:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_evidence_strict_validation_test.dart:97:22 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_evidence_strict_validation_test.dart:109:18 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_evidence_strict_validation_test.dart:293:35 - inference_failure_on_collection_literal
+
+flutter : 29 issues found. (ran in 1.6s)
+At C:\Users\Admin\AppData\Local\Temp\ps-script-7e024104-4627-44aa-bf1d-4e7c868f2cb5.ps1:82 char:360
++ ... Location "$root\src\apps\worker"; flutter analyze @paths 2>&1 | Out-F ...
++                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (29 issues found. (ran in 1.6s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

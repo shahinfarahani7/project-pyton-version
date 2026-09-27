@@ -32,6 +32,32 @@
           "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
         },
         {
+          "value": "document.classify",
+          "labelEn": "Document classify",
+          "labelFa": "طبقه‌بندی سند",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-classify@1.0.0",
+          "retryClass": "immediate_other_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "stage",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
+          "value": "document.summarize",
+          "labelEn": "Document summarize",
+          "labelFa": "خلاصه‌سازی سند",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/document-summarize@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": true,
+          "checkpointStrategy": "chunk",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
           "value": "text.summarize",
           "labelEn": "Text summarize",
           "labelFa": "خلاصه‌سازی متن",

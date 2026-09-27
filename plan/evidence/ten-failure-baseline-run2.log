@@ -1,0 +1,245 @@
+========== BASELINE flutter test --no-pub test/inference/llm/map_json_repair_acceptance_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/map_json_repair_acceptance_test.dart
+00:00 +0: Map JSON repair strict completeness accepts complete repaired Map JSON without salvage
+00:00 +1: Map JSON repair strict completeness rejects incomplete repaired Map JSON without salvage or completion
+00:00 +1 -1: Map JSON repair strict completeness rejects incomplete repaired Map JSON without salvage or completion [E]
+  Expected: true
+    Actual: <false>
+  salvage-enabled control must still salvage this payload
+  
+  package:matcher                                                expect
+  package:flutter_test/src/widget_tester.dart 473:18             expect
+  test\inference\llm\map_json_repair_acceptance_test.dart 105:7  main.<fn>.<fn>
+  
+00:00 +1 -1: Map JSON repair strict completeness does not spend a second corrective call after failed repair
+00:00 +2 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/map_json_repair_acceptance_test.dart: Map JSON repair strict completeness rejects incomplete repaired Map JSON without salvage or completion
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/inference/llm/phase2_evidence_contract_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_evidence_contract_test.dart
+00:00 +0: Phase 2 evidence schema contract (NOT RUN by default) accepts chunk-2 regression fixture shape
+00:00 +1: Phase 2 evidence schema contract (NOT RUN by default) empty partial requires facts, openItems, and priority all blank
+00:00 +2: Phase 2 evidence schema contract (NOT RUN by default) rejects public five-field keys in evidence partial
+00:00 +2 -1: Phase 2 evidence schema contract (NOT RUN by default) rejects public five-field keys in evidence partial [E]
+  Expected: contains 'evidence_public_field_forbidden'
+    Actual: ['evidence_public_field_forbidden:field=summary']
+     Which: does not contain 'evidence_public_field_forbidden'
+  
+  package:matcher                                             expect
+  package:flutter_test/src/widget_tester.dart 473:18          expect
+  test\inference\llm\phase2_evidence_contract_test.dart 51:7  main.<fn>.<fn>
+  
+00:00 +2 -1: Phase 2 evidence schema contract (NOT RUN by default) union merge dedupes exact strings only
+00:00 +3 -1: Phase 2 evidence schema contract (NOT RUN by default) rejects truncated evidence generation
+00:00 +4 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_evidence_contract_test.dart: Phase 2 evidence schema contract (NOT RUN by default) rejects public five-field keys in evidence partial
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/inference/llm/phase2_map_prompt_contract_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_map_prompt_contract_test.dart
+flutter : test/inference/llm/phase2_map_prompt_contract_test.dart:132:13: Error: Can't find ')' to match '('.
+At C:\Users\Admin\AppData\Local\Temp\ps-script-14b5a8a6-e060-4334-8bfd-9914360bb426.ps1:82 char:753
++ ... r test --no-pub $t =========="; flutter test --no-pub $t 2>&1 | Out-S ...
++                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test/inference/...' to match '('.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+      expect(prompt, isNot(contains('schemaVersion'));
+            ^
+00:00 +0 -1: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_map_prompt_contract_test.dart [E]
+  Failed to load "D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_map_prompt_contract_test.dart":
+  Compilation failed for testPath=D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_map_prompt_contract_test.dart: test/inference/llm/phase2_map_prompt_contract_test.dart:132:13: Error: Can't find ')' to match '('.
+        expect(prompt, isNot(contains('schemaVersion'));
+              ^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_map_prompt_contract_test.dart: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/phase2_map_prompt_contract_test.dart
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/inference/llm/qwen_map_truncation_policy_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/qwen_map_truncation_policy_test.dart
+flutter : test/inference/llm/qwen_map_truncation_policy_test.dart:17:11: Error: No named parameter with the name 
+'mapStage'.
+At C:\Users\Admin\AppData\Local\Temp\ps-script-14b5a8a6-e060-4334-8bfd-9914360bb426.ps1:82 char:753
++ ... r test --no-pub $t =========="; flutter test --no-pub $t 2>&1 | Out-S ...
++                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test/inference/...ame 'mapStage'.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+          mapStage: true,
+          ^^^^^^^^
+test/inference/llm/qwen_map_truncation_policy_test.dart:27:11: Error: No named parameter with the name 'mapStage'.
+          mapStage: false,
+          ^^^^^^^^
+00:00 +0 -1: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/qwen_map_truncation_policy_test.dart [E]
+  Failed to load "D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/qwen_map_truncation_policy_test.dart":
+  Compilation failed for testPath=D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/qwen_map_truncation_policy_test.dart: test/inference/llm/qwen_map_truncation_policy_test.dart:17:11: Error: No named parameter with the name 'mapStage'.
+            mapStage: true,
+            ^^^^^^^^
+  test/inference/llm/qwen_map_truncation_policy_test.dart:27:11: Error: No named parameter with the name 'mapStage'.
+            mapStage: false,
+            ^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/qwen_map_truncation_policy_test.dart: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/qwen_map_truncation_policy_test.dart
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/inference/llm/task_f71a56dd_regression_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/task_f71a56dd_regression_test.dart
+00:00 +0: task tsk_dev_f71a56dd map response (live log 20260922-082720) fixture length and SHA-256 match INFERENCE RESPONSE map metadata
+00:00 +1: task tsk_dev_f71a56dd map response (live log 20260922-082720) payload uses literal escape sequences, not real newlines
+00:00 +2: task tsk_dev_f71a56dd map response (live log 20260922-082720) current extractor decodes real response without corrective call
+00:00 +3: task tsk_dev_f71a56dd map response (live log 20260922-082720) map runJsonTask parses locally without repair or labeled fallback
+00:00 +4: task tsk_dev_f71a56dd map response (live log 20260922-082720) reports decode failure when literal-escape layer stays truncated
+00:00 +5: task tsk_dev_f71a56dd map response (live log 20260922-082720) does not accept two objects after literal-escape unwrapping
+00:00 +5 -1: task tsk_dev_f71a56dd map response (live log 20260922-082720) does not accept two objects after literal-escape unwrapping [E]
+  Expected: 'json_extract_ambiguous_multiple_objects'
+    Actual: 'json_extract_no_object'
+     Which: is different.
+            Expected: ... n_extract_ambiguous_ ...
+              Actual: ... n_extract_no_object
+                                    ^
+             Differ at offset 13
+  
+  package:matcher                                              expect
+  package:flutter_test/src/widget_tester.dart 473:18           expect
+  test\inference\llm\task_f71a56dd_regression_test.dart 114:7  main.<fn>.<fn>
+  
+00:00 +5 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/inference/llm/task_f71a56dd_regression_test.dart: task tsk_dev_f71a56dd map response (live log 20260922-082720) does not accept two objects after literal-escape unwrapping
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/integration/phase_03_runtime_smoke_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/integration/phase_03_runtime_smoke_test.dart
+00:00 +0: Phase 3 integration smoke document.ocr completes through runtime shell with OCR stage
+00:00 +1: Phase 3 integration smoke text.summarize completes through ExecutionPlanRunner map-reduce shell
+00:00 +1 -1: Phase 3 integration smoke text.summarize completes through ExecutionPlanRunner map-reduce shell [E]
+  Expected: 'succeeded'
+    Actual: 'retryable'
+     Which: is different.
+            Expected: succeeded
+              Actual: retryable
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                         expect
+  package:flutter_test/src/widget_tester.dart 473:18      expect
+  test\integration\phase_03_runtime_smoke_test.dart 75:7  main.<fn>.<fn>
+  
+00:00 +1 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/integration/phase_03_runtime_smoke_test.dart: Phase 3 integration smoke text.summarize completes through ExecutionPlanRunner map-reduce shell
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/validation/literal_escape_json_recovery_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/validation/literal_escape_json_recovery_test.dart
+00:00 +0: literal-escape recovery content preservation f71 fixture hash unchanged and recovery flag set
+00:00 +1: literal-escape recovery content preservation preserves escaped quotes inside string values
+00:00 +2: literal-escape recovery content preservation preserves Windows paths and literal backslashes in values
+00:00 +3: literal-escape recovery content preservation preserves literal backslash-n token distinct from real newline
+00:00 +3 -1: literal-escape recovery content preservation preserves literal backslash-n token distinct from real newline [E]
+  Expected: 'Token uses \\n not a break'
+    Actual: 'Token uses \n'
+              ' not a break'
+     Which: is different.
+            Expected: ... ken uses \\n not a b ...
+              Actual: ... ken uses \n not a br ...
+                                    ^
+             Differ at offset 12
+  
+  package:matcher                                              expect
+  package:flutter_test/src/widget_tester.dart 473:18           expect
+  test\validation\literal_escape_json_recovery_test.dart 76:7  main.<fn>.<fn>
+  
+00:00 +3 -1: literal-escape recovery content preservation preserves real newline inside a value after unescape
+00:00 +3 -2: literal-escape recovery content preservation preserves real newline inside a value after unescape [E]
+  Expected: true
+    Actual: <false>
+  json_extract_no_object
+  
+  package:matcher                                              expect
+  package:flutter_test/src/widget_tester.dart 473:18           expect
+  test\validation\literal_escape_json_recovery_test.dart 87:7  main.<fn>.<fn>
+  
+00:00 +3 -2: literal-escape recovery content preservation preserves unicode escape sequences in values
+00:00 +4 -2: literal-escape recovery content preservation rejects truncated literal-escape payloads
+00:00 +5 -2: literal-escape recovery content preservation rejects multiple objects after unescape
+00:00 +6 -2: literal-escape recovery content preservation rejects mixed encoding with trailing prose after unescaped object
+00:00 +7 -2: literal-escape recovery content preservation does not apply recovery to already-valid JSON with escapes in values
+00:00 +8 -2: map stage blocks salvage-cut before literal-escape recovery non-map extraction may still salvage truncated JSON
+00:00 +9 -2: map stage blocks salvage-cut before literal-escape recovery map stage rejects salvage-cut even when truncated=false
+00:00 +9 -3: map stage blocks salvage-cut before literal-escape recovery map stage rejects salvage-cut even when truncated=false [E]
+  Expected: throws <Instance of 'WorkerError'>
+    Actual: <Instance of 'Future<Map<String, dynamic>>'>
+     Which: emitted {
+                      'summary': 'Deliveries were late.',
+                      'keyPoints': ['Order A184 arrived at 19:35', 'Refund is pending'],
+                      'mainComplaint': 'Late delivery'
+                    }
+  
+  package:matcher                                                expectLater
+  package:flutter_test/src/widget_tester.dart 507:8              expectLater
+  test\validation\literal_escape_json_recovery_test.dart 170:13  main.<fn>.<fn>
+  
+00:00 +9 -3: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/validation/literal_escape_json_recovery_test.dart: literal-escape recovery content preservation preserves literal backslash-n token distinct from real newline
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/validation/literal_escape_json_recovery_test.dart: literal-escape recovery content preservation preserves real newline inside a value after unescape
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/validation/literal_escape_json_recovery_test.dart: map stage blocks salvage-cut before literal-escape recovery map stage rejects salvage-cut even when truncated=false
+
+EXIT_CODE=1
+
+========== BASELINE flutter test --no-pub test/widget_test.dart ==========
+00:00 +0: loading D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/widget_test.dart
+00:00 +0: home shows readiness and download action
+GÚ…GÚ…GÚÌ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK GÚPGÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…
+The following assertion was thrown running a test:
+pumpAndSettle timed out
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:717:11)
+<asynchronous suspension>
+#1      TestAsyncUtils.guard.<anonymous closure> (package:flutter_test/src/test_async_utils.dart:130:27)
+<asynchronous suspension>
+#2      main.<anonymous closure> (file:///D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/widget_test.dart:8:5)
+<asynchronous suspension>
+#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  home shows readiness and download action
+GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…GÚ…
+00:01 +0 -1: home shows readiness and download action [E]
+  Test failed. See exception logs above.
+  The test description was: home shows readiness and download action
+  
+00:01 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/shakhsi/Edgemint/baseline-worktree-4ff88ad/src/apps/worker/test/widget_test.dart: home shows readiness and download action
+
+EXIT_CODE=1
+

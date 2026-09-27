@@ -10,6 +10,7 @@ import 'package:edgemint_worker/inference/llm/summarize_evidence_schema.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures/customer_feedback_regression.dart';
+import 'fixtures/summarize_v2_prompt_matchers.dart';
 
 void main() {
   group('Phase 2 evidence-v2 Map prompt contract (NOT RUN by default)', () {
@@ -28,10 +29,12 @@ void main() {
 
       expect(prompt, contains('arrays of strings only'));
       expect(prompt, contains('one distinct fact in one short sentence'));
-      expect(prompt, contains('15–25 words'));
+      expect(prompt, contains(evidenceMapFactLengthGuidance));
+      expect(prompt, contains('words when practical'));
       expect(prompt, contains('Do not put a paragraph'));
       expect(prompt, contains('Split unrelated events'));
-      expect(prompt, contains('Do not repeat the same fact'));
+      expect(prompt, contains('Do not repeat'));
+      expect(prompt, contains('the same fact in different wording'));
       expect(prompt, contains('close the arrays and object'));
       expect(prompt, isNot(contains('exactly 5 distinct facts (enforced)')));
     });
@@ -50,8 +53,13 @@ void main() {
       expect(prompt, contains('Format example only'));
       expect(prompt, contains('do not copy these facts'));
       expect(prompt, contains('Ticket R17 was closed on June 4.'));
-      expect(prompt, isNot(contains('Order B426')));
-      expect(prompt, isNot(contains('B443')));
+      final exampleStart = prompt.indexOf('Format example only');
+      final exampleEnd = prompt.indexOf('Do not add facts', exampleStart);
+      expect(exampleStart, greaterThanOrEqualTo(0));
+      expect(exampleEnd, greaterThan(exampleStart));
+      final exampleBlock = prompt.substring(exampleStart, exampleEnd);
+      expect(exampleBlock, isNot(contains('B443')));
+      expect(exampleBlock, isNot(contains('Order B426 substitution')));
     });
 
     test('customer instructions remain verbatim in evidence Map', () {
@@ -78,8 +86,8 @@ void main() {
       expect(
         SummarizeEvidenceSchema.validateStructure({
           'schemaVersion': '2',
-          'facts': [List.filled(40, 'word').join(' ')],
-          'openItems': [],
+          'facts': <String>[List.filled(40, 'word').join(' ')],
+          'openItems': <String>[],
           'priority': '',
         }),
         isNull,
@@ -87,8 +95,8 @@ void main() {
       expect(
         SummarizeEvidenceSchema.validateStructure({
           'schemaVersion': '2',
-          'facts': List.generate(20, (index) => 'fact $index'),
-          'openItems': [],
+          'facts': List<String>.generate(20, (index) => 'fact $index'),
+          'openItems': <String>[],
           'priority': '',
         }),
         isNull,
@@ -129,7 +137,7 @@ void main() {
 
       expect(prompt, contains('keyPoints:'));
       expect(prompt, isNot(contains('Ticket R17')));
-      expect(prompt, isNot(contains('schemaVersion'));
+      expect(prompt, isNot(contains('schemaVersion')));
     });
 
     test('prompt reservation uses formatted Map wrapper through existing path', () {

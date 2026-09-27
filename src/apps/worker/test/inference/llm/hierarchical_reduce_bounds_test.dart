@@ -7,6 +7,8 @@ import 'package:edgemint_worker/inference/llm/reduce_partial_envelope.dart';
 import 'package:edgemint_worker/inference/llm/semantic_merge_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fixtures/summarize_v2_prompt_matchers.dart';
+
 void main() {
   group('SemanticMergeValidator', () {
     test('treats group reduction as merge progress even when token mass grows', () {
@@ -145,7 +147,7 @@ void main() {
         contextBudget: QwenTaskProcessor().contextBudget,
         runPromptJson: (prompt, {required inferenceStage}) async {
           calls += 1;
-          if (prompt.contains('Combine the partial summaries into one final summary')) {
+          if (isFinalReducePrompt(prompt)) {
             return jsonDecode(
                   '{"summary":"Final merged summary","keyPoints":["alpha"],"missingOrUnclear":[]}',
                 )

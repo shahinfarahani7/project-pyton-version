@@ -1,0 +1,24 @@
+apiVersion: edgemint.io/v1
+kind: TaskResourceEnvelope
+metadata:
+  name: document-summarize
+  version: 1.0.0
+  status: active
+  owners:
+    - platform
+    - scheduling
+  description: OCR + hierarchical summarize envelope for document.summarize.
+spec:
+  taskType: document.summarize
+  runtimeClass: mediapipe_llm
+  requiredModelIds:
+    - paddleocr-mobile
+    - qwen2.5-0.5b
+  cpuUnits: 40
+  memoryReservationBytes: 1610612736
+  storageReservationBytes: 157286400
+  acceleratorUnits: 0
+  modelSessionUnits: 1
+  estimatedDurationMs: 240000
+  maximumParallelPerDevice: 1
+  exclusiveGroup: document_pipeline
