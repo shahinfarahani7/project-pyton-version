@@ -5,12 +5,14 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 import '../models/worker_model_catalog.dart';
 import '../models/worker_model_runtime_candidate.dart';
 import 'artifact_install_coordinator.dart';
+import 'gemma4_e4b_gpu_benchmark.dart';
 import 'inference_adapter.dart';
 import 'identity_lifecycle_tracer.dart';
 import 'model_artifact_verifier.dart';
 import 'model_runtime_manager.dart';
 import 'runtime_exceptions.dart';
 import 'runtime_exclusive_group_enforcer.dart';
+import 'worker_model_installer.dart';
 
 /// Gemma/Qwen LiteRT implementation of [ModelRuntimeManager].
 class GemmaModelRuntimeManager implements ModelRuntimeManager {
@@ -32,7 +34,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   String? _modelVersionId;
   int _openSessions = 0;
 
-  static const _maxTokens = WorkerModelCatalog.runtimeMaxTokens;
+  int get _residentMaxTokens => Gemma4E4bBenchmarkMode.residentMaxTokens;
 
   void _log(String message) {
     developer.log(message, name: 'EdgeMintModelRuntime');
@@ -88,12 +90,14 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
     _log(
       '[MODEL LOAD] profile=${WorkerModelCatalog.profileId} '
       'model=${WorkerModelCatalog.displayName} '
-      'backend=${_preferredBackend.name}',
+      'backend=${_preferredBackend.name}, maxTokens=$_residentMaxTokens',
     );
+
+    await WorkerModelInstaller.prepareForNativeInference(log: _log);
 
     try {
       _model = await FlutterGemma.getActiveModel(
-        maxTokens: _maxTokens,
+        maxTokens: _residentMaxTokens,
         preferredBackend: _preferredBackend,
       );
       IdentityLifecycleTracer.instance.recordNativeModelCreate(
@@ -101,7 +105,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       );
       _modelVersionId = artifact.modelVersionId;
       _state = ModelResidencyState.resident;
-      _log('[MODEL LOAD] successful maxTokens=$_maxTokens');
+      _log('[MODEL LOAD] successful maxTokens=$_residentMaxTokens');
     } catch (error, stackTrace) {
       _model = null;
       _modelVersionId = null;

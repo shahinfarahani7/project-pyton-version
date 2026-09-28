@@ -48,6 +48,9 @@ abstract final class WorkerModelCatalog {
 
   static const benchmarkContextTokens = 2048;
 
+  /// LiteRT `maxTokens` for Gemma4 E4B live benchmarks (KV budget).
+  static const benchmarkRuntimeMaxTokens = benchmarkContextTokens;
+
   static const benchmarkMaxOutputTokens = 256;
 
   static const approximateDownloadSize = '~3.7 GB';

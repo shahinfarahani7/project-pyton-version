@@ -4,6 +4,7 @@ import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../runtime/checkpoint_manager.dart';
+import '../../runtime/gemma4_e4b_gpu_benchmark.dart';
 import '../../telemetry/worker_task_metrics.dart';
 import 'ocr_pipeline_mixin.dart';
 import 'task_handler.dart';
@@ -40,7 +41,7 @@ class DirectPromptHandler with OcrPipelineMixin implements TaskHandler {
       parts.add(userText);
     }
 
-    if (request.input.imageBytes != null) {
+    if (!Gemma4E4bBenchmarkMode.active && request.input.imageBytes != null) {
       final ocr = await runOcr(request, ocrEngine, metrics);
       final ocrText = ocr.rawText.trim();
       if (ocrText.isNotEmpty) {

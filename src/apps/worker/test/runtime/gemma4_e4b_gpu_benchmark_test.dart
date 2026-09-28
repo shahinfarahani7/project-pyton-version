@@ -1,8 +1,20 @@
+import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:edgemint_worker/models/worker_model_runtime_candidate.dart';
 import 'package:edgemint_worker/runtime/gemma4_e4b_gpu_benchmark.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('Gemma4E4bGpuBenchmarkConfig', () {
+    test('defaults to 2048 context, concurrency 1, bounded output', () {
+      const config = Gemma4E4bGpuBenchmarkConfig();
+      expect(config.contextTokens, 2048);
+      expect(config.concurrency, 1);
+      expect(config.maxOutputTokens, 256);
+      expect(WorkerModelCatalog.benchmarkRuntimeMaxTokens, 2048);
+      expect(Gemma4E4bBenchmarkMode.concurrency, 1);
+    });
+  });
+
   group('gemma4BenchmarkOutputValid', () {
     test('accepts valid JSON schema', () {
       expect(

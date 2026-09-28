@@ -1,10 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
 
+import '../models/worker_model_catalog.dart';
 import '../models/worker_model_runtime_candidate.dart';
 import 'device_snapshot.dart';
 import 'gemma4_e4b_runtime_benchmark_fixture.dart';
 import 'worker_process_memory_telemetry.dart';
+
+/// True when a Gemma4 E4B live benchmark build flag is active (not production).
+abstract final class Gemma4E4bBenchmarkMode {
+  static const concurrency = 1;
+
+  static bool get active {
+    if (const bool.fromEnvironment('WORKER_GEMMA4_BENCHMARK', defaultValue: false)) {
+      return true;
+    }
+    return WorkerModelRuntimeCandidateRegistry.benchmarkOverrideFromEnvironment() !=
+        null;
+  }
+
+  /// LiteRT resident KV/context size: 2048 for benchmark, 4096 for production.
+  static int get residentMaxTokens => active
+      ? WorkerModelCatalog.benchmarkContextTokens
+      : WorkerModelCatalog.runtimeMaxTokens;
+}
 
 /// Controlled benchmark profile shared by Candidate A and Candidate G.
 class Gemma4E4bGpuBenchmarkConfig {

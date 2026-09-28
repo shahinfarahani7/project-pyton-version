@@ -350,10 +350,83 @@ abstract final class WorkerModelInstaller {
     if (imported != null && imported.isNotEmpty) {
       return imported;
     }
+    final dartCopy = await _copySharedStorageModelToAppPrivate(
+      sourcePath: path,
+      fileName: fileName,
+      log: log,
+    );
+    if (dartCopy != null && dartCopy.isNotEmpty) {
+      return dartCopy;
+    }
     log?.call(
       'Shared-storage import failed; native engine may not open $path',
     );
     return path;
+  }
+
+  static Future<String?> _copySharedStorageModelToAppPrivate({
+    required String sourcePath,
+    required String fileName,
+    void Function(String message)? log,
+  }) async {
+    if (kIsWeb || !Platform.isAndroid) {
+      return null;
+    }
+    try {
+      final source = File(sourcePath);
+      if (!await source.exists()) {
+        return null;
+      }
+      final filesDir = await _runtimeChannel.invokeMethod<String>('localStorePath');
+      if (filesDir == null || filesDir.isEmpty) {
+        return null;
+      }
+      final destDir = Directory('${File(filesDir).parent.path}/app_flutter');
+      if (!await destDir.exists()) {
+        await destDir.create(recursive: true);
+      }
+      final dest = File('${destDir.path}/$fileName');
+      if (await dest.exists() && await dest.length() >= await source.length()) {
+        log?.call('Using existing app-private model copy at ${dest.path}');
+        return dest.path;
+      }
+      log?.call('Copying model from $sourcePath to ${dest.path}');
+      await dest.writeAsBytes(await source.readAsBytes(), flush: true);
+      return dest.path;
+    } catch (error) {
+      log?.call('App-private model copy failed: $error');
+      return null;
+    }
+  }
+
+  /// Call before [FlutterGemma.getActiveModel] so LiteRT opens an app-private path.
+  static Future<void> prepareForNativeInference({
+    void Function(String message)? log,
+  }) async {
+    if (kIsWeb || !Platform.isAndroid) {
+      return;
+    }
+    await GemmaBootstrap.ensureInitialized();
+    final path = await _installedModelPath(WorkerModelCatalog.fileName);
+    if (path == null) {
+      return;
+    }
+    if (!_isExternalSharedStoragePath(path)) {
+      return;
+    }
+    log?.call(
+      'Model registry uses shared storage ($path); '
+      're-registering from app-private copy before native load',
+    );
+    final privatePath = await _resolvePathForNativeInference(path, log: log);
+    if (_isExternalSharedStoragePath(privatePath)) {
+      log?.call(
+        'Still on shared storage after import/copy; '
+        'LiteRT inference will likely fail',
+      );
+      return;
+    }
+    await _activateExistingFile(privatePath, log: log);
   }
 
   // ---------------------------------------------------------------------------
