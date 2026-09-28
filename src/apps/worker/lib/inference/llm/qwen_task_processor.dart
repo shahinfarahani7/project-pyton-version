@@ -1662,22 +1662,30 @@ class QwenTaskProcessor {
     String prompt, {
     required String signingKey,
     String? systemInstruction,
+    Uint8List? imageBytes,
+    int? maxOutputTokens,
   }) async {
     final reply = await _runPromptReply(
       prompt,
       signingKey: signingKey,
       systemInstruction: systemInstruction,
+      imageBytes: imageBytes,
+      maxOutputTokens: maxOutputTokens,
     );
     return reply.text;
   }
 
   /// Sends [userText] to the resident LLM with no task contract or JSON repair.
+  /// When [imageBytes] is set, uses Gemma 4 multimodal input (same resident model).
   Future<String> runDirectUserText(
     String userText, {
     required String signingKey,
+    Uint8List? imageBytes,
+    int? maxOutputTokens,
   }) async {
     final trimmed = userText.trim();
-    if (trimmed.isEmpty) {
+    final hasImage = imageBytes != null && imageBytes.isNotEmpty;
+    if (trimmed.isEmpty && !hasImage) {
       throw const WorkerError(
         code: WorkerErrorCode.invalidTask,
         message: 'Direct prompt text is empty',
@@ -1685,11 +1693,19 @@ class QwenTaskProcessor {
         stage: WorkerTaskStage.llm,
       );
     }
-    _log('[DIRECT USER PROMPT] chars=${trimmed.length}');
+    final prompt = trimmed.isEmpty
+        ? 'Describe this image and answer any question implied by the user.'
+        : trimmed;
+    _log(
+      '[DIRECT USER PROMPT] chars=${prompt.length} '
+      'imageBytes=${imageBytes?.length ?? 0}',
+    );
     return _runPrompt(
-      trimmed,
+      prompt,
       signingKey: signingKey,
       systemInstruction: '',
+      imageBytes: imageBytes,
+      maxOutputTokens: maxOutputTokens,
     );
   }
 
@@ -1697,15 +1713,18 @@ class QwenTaskProcessor {
     String prompt, {
     required String signingKey,
     String? systemInstruction,
+    Uint8List? imageBytes,
+    int? maxOutputTokens,
   }) async {
     final formatted = FormattedPromptBuilder.buildTaskPrompt(
       templateBody: prompt,
       systemInstruction:
           systemInstruction ?? _contextBudget.defaultSystemInstruction,
     );
+    final outputCap = maxOutputTokens ?? config.maxOutputTokens;
     _contextBudget.ensureDirectInferenceOrThrow(
       prompt: prompt,
-      maxOutputTokens: config.maxOutputTokens,
+      maxOutputTokens: outputCap,
     );
     final runner = _runner;
     if (runner != null) {
@@ -1723,10 +1742,22 @@ class QwenTaskProcessor {
       gemmaAdapter.usePortalPassthroughChat = true;
     }
     try {
-      final output = await _adapter.run(
-        inputBytes: Uint8List.fromList(utf8.encode(prompt)),
-        resumedState: null,
-      );
+      final InferenceOutput output;
+      if (gemmaAdapter != null &&
+          imageBytes != null &&
+          imageBytes.isNotEmpty) {
+        output = await gemmaAdapter.runUserPrompt(
+          prompt: prompt,
+          imageBytes: imageBytes,
+          resumedState: null,
+          maxOutputTokensOverride: outputCap,
+        );
+      } else {
+        output = await _adapter.run(
+          inputBytes: Uint8List.fromList(utf8.encode(prompt)),
+          resumedState: null,
+        );
+      }
       final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
       return _PromptReply(
         text: utf8.decode(output.resultBytes),

@@ -69,40 +69,64 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
   }) {
+    return runUserPrompt(
+      prompt: utf8.decode(inputBytes),
+      imageBytes: null,
+      resumedState: resumedState,
+      onProgress: onProgress,
+    );
+  }
+
+  /// Text-only or multimodal user turn through the resident Gemma model.
+  Future<InferenceOutput> runUserPrompt({
+    required String prompt,
+    Uint8List? imageBytes,
+    required Uint8List? resumedState,
+    Future<void> Function(int progressMilli)? onProgress,
+    int? maxOutputTokensOverride,
+  }) {
     return _runtime.withFreshSession(
-      stageId: 'inference',
+      stageId: imageBytes != null ? 'multimodal' : 'inference',
       body: () => _runInFreshSession(
-        inputBytes: inputBytes,
+        prompt: prompt,
+        imageBytes: imageBytes,
         resumedState: resumedState,
         onProgress: onProgress,
+        maxOutputTokensOverride: maxOutputTokensOverride,
       ),
     );
   }
 
   Future<InferenceOutput> _runInFreshSession({
-    required Uint8List inputBytes,
+    required String prompt,
+    Uint8List? imageBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    int? maxOutputTokensOverride,
   }) async {
     final model = _runtime.requireModel();
     final stopwatch = Stopwatch()..start();
-    final prompt = utf8.decode(inputBytes);
+    final outputTokenCap = maxOutputTokensOverride ?? maxOutputTokens;
+    final multimodal = imageBytes != null && imageBytes.isNotEmpty;
 
     _log(
       '[LLM START] model=${WorkerModelCatalog.displayName} '
-      'inputBytes=${inputBytes.length} promptChars=${prompt.length}',
+      'multimodal=$multimodal promptChars=${prompt.length} '
+      'imageBytes=${imageBytes?.length ?? 0}',
     );
     _log('[LLM REQUEST] prompt="${_preview(prompt)}"');
 
     try {
       await onProgress?.call(resumedState == null ? 100 : 500);
 
-      _log('[LLM SESSION] creating');
+      _log('[LLM SESSION] creating multimodal=$multimodal');
       final chat = await model.createChat(
         temperature: temperature,
         topK: topK,
         topP: topP,
-        maxOutputTokens: maxOutputTokens,
+        maxOutputTokens: outputTokenCap,
+        supportImage: multimodal,
+        modelType: multimodal ? ModelType.gemma4 : null,
         systemInstruction: usePortalPassthroughChat
             ? null
             : 'You are EdgeMint worker AI. '
@@ -111,11 +135,24 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       _log('[LLM SESSION] created');
 
       try {
-        await chat.addQueryChunk(Message.text(text: prompt, isUser: true));
+        if (multimodal) {
+          await chat.addQueryChunk(
+            Message.withImage(
+              text: prompt,
+              imageBytes: imageBytes,
+              isUser: true,
+            ),
+          );
+        } else {
+          await chat.addQueryChunk(Message.text(text: prompt, isUser: true));
+        }
         await onProgress?.call(700);
 
         _log('[LLM INFERENCE] generation started');
-        final generation = await _generateBounded(chat);
+        final generation = await _generateBounded(
+          chat,
+          maxOutputTokens: outputTokenCap,
+        );
         if (stopwatch.isRunning) {
           stopwatch.stop();
         }
@@ -138,12 +175,13 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
           metrics: {
             'backend': backend.name,
             'modelProfile': WorkerModelCatalog.profileId,
-            'inputBytes': inputBytes.length,
+            'inputBytes': multimodal ? imageBytes.length : utf8.encode(prompt).length,
             'outputChars': text.length,
             'elapsedMs': stopwatch.elapsedMilliseconds,
             'maxTokens': WorkerModelCatalog.runtimeMaxTokens,
             'stopReason': generation.stopReason,
-            'sessionStage': 'inference',
+            'sessionStage': multimodal ? 'multimodal' : 'inference',
+            'multimodal': multimodal,
           },
         );
       } finally {
@@ -177,9 +215,13 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   /// JSON object closes or the output budget is spent. The MediaPipe `.task`
   /// path ignores `maxOutputTokens`, so without this the model keeps decoding
   /// until it hits the sequence limit and returns truncated, repeated text.
-  Future<_BoundedGeneration> _generateBounded(InferenceChat chat) async {
+  Future<_BoundedGeneration> _generateBounded(
+    InferenceChat chat, {
+    int? maxOutputTokens,
+  }) async {
+    final tokenCap = maxOutputTokens ?? this.maxOutputTokens;
     final maxOutputChars =
-        (maxOutputTokens * const TokenEstimator().charactersPerToken).floor();
+        (tokenCap * const TokenEstimator().charactersPerToken).floor();
     final boundary = JsonObjectBoundaryScanner();
     final repetition = OutputRepetitionGuard();
     final buffer = StringBuffer();

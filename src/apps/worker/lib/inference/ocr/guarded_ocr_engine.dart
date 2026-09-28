@@ -12,6 +12,8 @@ class GuardedOcrEngine implements OcrEngine {
   final OcrEngine _delegate;
   final RuntimeExclusiveGroupEnforcer _exclusiveGroups;
 
+  OcrEngine get innerDelegate => _delegate;
+
   @override
   Future<bool> isReady() => _delegate.isReady();
 

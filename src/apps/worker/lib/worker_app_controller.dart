@@ -18,6 +18,7 @@ import 'inference/llm/summarize_diagnostic_map.dart';
 import 'inference/llm/diagnostic/summarize_map_evidence_diagnostic_fixture.dart';
 import 'inference/llm/diagnostic/facts_only_experiment.dart';
 import 'inference/llm/diagnostic/summarize_map_prompt_variant.dart';
+import 'inference/ocr/gemma_multimodal_ocr_engine.dart';
 import 'inference/ocr/guarded_ocr_engine.dart';
 import 'inference/ocr/fake_ocr_engine.dart';
 import 'inference/ocr/ocr_engine.dart';
@@ -55,6 +56,14 @@ import 'runtime/worker_model_installer.dart';
 
 enum ModelInstallPhase { idle, downloading, ready, failed }
 
+/// Default OCR uses the resident Gemma multimodal path; opt in to Paddle ONNX.
+abstract final class WorkerOcrBackendPolicy {
+  static const usePaddleOcr = bool.fromEnvironment(
+    'WORKER_USE_PADDLE_OCR',
+    defaultValue: false,
+  );
+}
+
 class WorkerAppController extends ChangeNotifier {
   WorkerAppController({
     WorkerConfig? config,
@@ -71,10 +80,6 @@ class WorkerAppController extends ChangeNotifier {
        _storagePressure = storagePressure ?? StoragePressureManager(),
        _encryptedStore = encryptedStore ?? InMemoryEncryptedStore() {
     _exclusiveGroups = RuntimeExclusiveGroupEnforcer();
-    _ocrEngineRef = OcrEngineRef(
-      _wrapOcrEngine(ocrEngine ?? PaddleOcrEngine()),
-    );
-
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
     );
@@ -95,6 +100,15 @@ class WorkerAppController extends ChangeNotifier {
           log: (message) =>
               WorkerPipelineLog.info(WorkerPipelineLog.exec, message),
         );
+    _ocrEngineRef = OcrEngineRef(
+      _wrapOcrEngine(
+        ocrEngine ??
+            (WorkerOcrBackendPolicy.usePaddleOcr
+                ? PaddleOcrEngine()
+                : GemmaMultimodalOcrEngine(_qwenProcessor)),
+      ),
+    );
+
     _accessTokenProvider = WorkerAccessTokenProvider(
       initialToken: _workerAccessToken,
       readToken: () => _runtimeAccessToken,
@@ -776,16 +790,25 @@ class WorkerAppController extends ChangeNotifier {
       }
 
       //
-      // Real OCR is independent from the LLM architecture.
+      // OCR: Gemma multimodal (default) or Paddle ONNX (WORKER_USE_PADDLE_OCR=true).
       //
-      _ocrEngineRef.delegate = _wrapOcrEngine(PaddleOcrEngine());
-
-      ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(
-        log: _logTask,
-      );
-
-      if (!ocrModelsReady) {
-        _logTask('PaddleOCR models are not installed on device');
+      if (WorkerOcrBackendPolicy.usePaddleOcr) {
+        _ocrEngineRef.delegate = _wrapOcrEngine(PaddleOcrEngine());
+        ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(
+          log: _logTask,
+        );
+        if (!ocrModelsReady) {
+          _logTask('PaddleOCR models are not installed on device');
+        }
+      } else {
+        _ocrEngineRef.delegate = _wrapOcrEngine(
+          GemmaMultimodalOcrEngine(_qwenProcessor),
+        );
+        ocrModelsReady = isGemmaReady;
+        _logTask(
+          'OCR uses ${WorkerModelCatalog.displayName} multimodal '
+          '(no separate Paddle bundle)',
+        );
       }
     } catch (error, stackTrace) {
       _logError('Device readiness probe failed', error, stackTrace);
@@ -1729,16 +1752,19 @@ class WorkerAppController extends ChangeNotifier {
       }
 
       if (await _assignmentNeedsOcr(assignment) && !ocrModelsReady) {
-        ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(
-          log: _logTask,
-        );
-
-        if (!ocrModelsReady && !usesDevMockInference) {
-          _logTask(
-            'OCR models not on device - '
-            'sideload with '
-            'tools/push_paddleocr_models_to_device.ps1',
+        if (WorkerOcrBackendPolicy.usePaddleOcr) {
+          ocrModelsReady = await PaddleOcrModelInstaller.verifyOnDevice(
+            log: _logTask,
           );
+          if (!ocrModelsReady && !usesDevMockInference) {
+            _logTask(
+              'OCR models not on device - '
+              'sideload with '
+              'tools/push_paddleocr_models_to_device.ps1',
+            );
+          }
+        } else {
+          ocrModelsReady = isGemmaReady;
         }
       }
 

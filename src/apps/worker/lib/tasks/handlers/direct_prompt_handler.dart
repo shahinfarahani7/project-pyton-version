@@ -4,13 +4,11 @@ import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../runtime/checkpoint_manager.dart';
-import '../../runtime/gemma4_e4b_gpu_benchmark.dart';
 import '../../telemetry/worker_task_metrics.dart';
-import 'ocr_pipeline_mixin.dart';
 import 'task_handler.dart';
 
-/// Sends portal intake to the on-device LLM without summarize/OCR contract shaping.
-class DirectPromptHandler with OcrPipelineMixin implements TaskHandler {
+/// Sends portal intake to the on-device Gemma model (text and/or image).
+class DirectPromptHandler implements TaskHandler {
   @override
   String get capability => 'text.direct.v1';
 
@@ -35,25 +33,14 @@ class DirectPromptHandler with OcrPipelineMixin implements TaskHandler {
       );
     }
 
-    final parts = <String>[];
-    final userText = request.input.text?.trim();
-    if (userText != null && userText.isNotEmpty) {
-      parts.add(userText);
-    }
+    final userText = request.input.text?.trim() ?? '';
+    final imageBytes = request.input.imageBytes;
+    final hasImage = imageBytes != null && imageBytes.isNotEmpty;
 
-    if (!Gemma4E4bBenchmarkMode.active && request.input.imageBytes != null) {
-      final ocr = await runOcr(request, ocrEngine, metrics);
-      final ocrText = ocr.rawText.trim();
-      if (ocrText.isNotEmpty) {
-        parts.add(ocrText);
-      }
-    }
-
-    final prompt = parts.join('\n\n').trim();
-    if (prompt.isEmpty) {
+    if (userText.isEmpty && !hasImage) {
       throw const WorkerError(
         code: WorkerErrorCode.invalidTask,
-        message: 'User prompt is required for text.direct.v1',
+        message: 'User prompt or image is required for text.direct.v1',
         retryable: false,
         stage: WorkerTaskStage.validation,
       );
@@ -61,8 +48,10 @@ class DirectPromptHandler with OcrPipelineMixin implements TaskHandler {
 
     final llmStart = DateTime.now();
     final modelTranscript = await qwenProcessor.runDirectUserText(
-      prompt,
+      userText,
       signingKey: signingKey,
+      imageBytes: hasImage ? imageBytes : null,
+      maxOutputTokens: 512,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
 
