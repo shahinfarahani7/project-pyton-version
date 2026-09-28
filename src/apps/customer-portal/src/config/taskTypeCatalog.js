@@ -160,6 +160,12 @@ export function mapTaskInputError(error) {
   if (haystack.includes('UNSUPPORTED_TASK_TYPE')) {
     return 'tasks.unsupportedTaskType';
   }
+  if (
+    haystack.includes('UNSUPPORTED_TASK_CONFIGURATION') &&
+    /unknown taskType/i.test(haystack)
+  ) {
+    return 'tasks.unsupportedTaskType';
+  }
   if (haystack.includes('INPUT_TEXT_REQUIRED')) {
     return 'tasks.inputTextRequired';
   }

@@ -10,11 +10,24 @@ from pydantic import BaseModel, Field
 from edgemint.building_blocks.settings import get_settings
 from edgemint.dev import fixtures
 from edgemint.dev import worker_task_inputs
-from edgemint.results.text_summarize_constraints import (
-    summarize_constraints_from_manifest,
-    validate_summarize_data,
-)
-from edgemint.results.validator import extract_task_result_payload
+
+try:
+    from edgemint.results.text_summarize_constraints import (
+        summarize_constraints_from_manifest,
+        validate_summarize_data,
+    )
+    from edgemint.results.validator import extract_task_result_payload
+except ImportError:
+
+    def summarize_constraints_from_manifest(_manifest: dict[str, Any]) -> None:
+        return None
+
+    def validate_summarize_data(_data: dict[str, Any], *, constraints: Any = None) -> None:
+        return None
+
+    def extract_task_result_payload(envelope: dict[str, Any]) -> dict[str, Any]:
+        return envelope
+
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter()

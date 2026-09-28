@@ -12,8 +12,10 @@ describe('resolveTaskTypeForIntake', () => {
     expect(resolveTaskTypeForIntake({ instructions: 'Summarize in Persian' })).toBe('text.direct');
   });
 
-  it('maps file intake to text.direct', () => {
-    const file = new File(['x'], 'scan.png', { type: 'image/png' });
-    expect(resolveTaskTypeForIntake({ file, instructions: '' })).toBe('text.direct');
+  it('maps image + instructions intake to text.direct', () => {
+    const file = new File(['x'], 'Screenshot.png', { type: 'image/png' });
+    expect(
+      resolveTaskTypeForIntake({ file, instructions: 'محتویات عکس چیه' }),
+    ).toBe('text.direct');
   });
 });

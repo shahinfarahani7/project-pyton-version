@@ -1,0 +1,77 @@
+apiVersion: edgemint.io/v1
+kind: TaskType
+metadata:
+  name: text-direct
+  version: 1.0.0
+  status: active
+  description: Direct on-device model prompt (portal intake passthrough)
+  labels:
+    domain: text
+    family: gemma
+  owners:
+  - product
+  - mobile
+spec:
+  code: text.direct
+  lifecycle: commercial-candidate
+  billing:
+    measure: total_token
+    quantum: 1000
+    rounding: ceil
+    minimumQuanta: 1
+  inputSchema:
+    type: object
+    required: []
+    properties:
+      inlineText:
+        type: string
+      instructions:
+        type: string
+      imageRef:
+        type: string
+    additionalProperties: true
+  outputSchema:
+    type: object
+    required:
+    - status
+    - data
+    properties:
+      status:
+        enum:
+        - succeeded
+        - partial
+        - failed
+      data:
+        type: object
+        required:
+        - rawText
+        properties:
+          rawText:
+            type: string
+          modelTranscript:
+            type: string
+      metrics:
+        type: object
+    additionalProperties: false
+  inputLimits:
+    maximumBytes: 10485760
+    allowedContentTypes:
+    - text/plain
+    - application/json
+    - image/png
+    - image/jpeg
+    - image/webp
+  requiredCapabilities:
+    minimumWorkerTier: T2
+    attestationRequired: false
+    secureNetworkRequired: false
+    maximumExecutionSeconds: 600
+  modelCandidates:
+  - modelRef: ModelProfile/gemma-4-e4b-it@1.0.0
+    priority: 1
+  verificationPolicyRef: VerificationPolicy/default-verification-v2@2.0.0
+  dataPolicyRef: DataPolicy/confidential-v2@2.0.0
+  defaultVerification: standard
+  retention:
+    inputHours: 24
+    resultHours: 24

@@ -1,0 +1,8 @@
+# Optional hotfix mounts for local dev when the api-gateway image is older than the repo.
+# Usage:
+#   docker compose -f compose.yaml -f compose.backend.yaml -f compose.portals.yaml -f compose.dev-hotfix.yaml up -d api-gateway
+services:
+  api-gateway:
+    volumes:
+      - ./src/backend/edgemint/results:/app/src/backend/edgemint/results:ro
+      - ./src/backend/edgemint/tasks:/app/src/backend/edgemint/tasks:ro

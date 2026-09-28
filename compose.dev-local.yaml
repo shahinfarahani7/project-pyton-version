@@ -1,0 +1,37 @@
+# Local dev bind mounts (matches typical compose.override.yaml + hotfix packages).
+# Set POSTGRES_PASSWORD to match your postgres volume (see .env.docker.example).
+#   $env:POSTGRES_PASSWORD="local-docker-secret"
+#   docker compose -f compose.yaml -f compose.backend.yaml -f compose.dev-local.yaml up -d api-gateway --no-deps
+services:
+  api-gateway:
+    # Older local api-gateway images omit python-multipart; file uploads need it before uvicorn starts.
+    user: "0:0"
+    command:
+      - sh
+      - -c
+      - >-
+        python -m pip install --no-cache-dir python-multipart==0.0.20 &&
+        exec python -m uvicorn edgemint.services.api_gateway:app
+        --host 0.0.0.0 --port 8080 --proxy-headers --no-server-header
+    volumes:
+      - ./dsl:/app/dsl:ro
+      - ./src/shared:/app/src/shared:ro
+      - ./src/backend/edgemint/tasks:/app/src/backend/edgemint/tasks:ro
+      - ./src/backend/edgemint/dev/dev_worker_api.py:/app/src/backend/edgemint/dev/dev_worker_api.py:ro
+      - ./src/backend/edgemint/dev/portal_api.py:/app/src/backend/edgemint/dev/portal_api.py:ro
+      - ./src/backend/edgemint/dev/task_type_catalog.py:/app/src/backend/edgemint/dev/task_type_catalog.py:ro
+      - ./src/backend/edgemint/dev/worker_task_inputs.py:/app/src/backend/edgemint/dev/worker_task_inputs.py:ro
+      - ./src/backend/edgemint/dev/worker_assignments.py:/app/src/backend/edgemint/dev/worker_assignments.py:ro
+      - ./src/backend/edgemint/dev/fixtures.py:/app/src/backend/edgemint/dev/fixtures.py:ro
+      - ./src/backend/edgemint/dev/task_events.py:/app/src/backend/edgemint/dev/task_events.py:ro
+      - ./src/backend/edgemint/dev/assignment_bridge.py:/app/src/backend/edgemint/dev/assignment_bridge.py:ro
+      - ./src/backend/edgemint/dev/dev_public_urls.py:/app/src/backend/edgemint/dev/dev_public_urls.py:ro
+      - ./src/backend/edgemint/services/api_gateway.py:/app/src/backend/edgemint/services/api_gateway.py:ro
+  worker-registry:
+    volumes:
+      - ./dsl:/app/dsl:ro
+      - ./src/shared:/app/src/shared:ro
+      - ./src/backend/edgemint:/app/src/backend/edgemint:ro
+  worker-gateway:
+    volumes:
+      - ./src/backend/edgemint/services/worker_gateway.py:/app/src/backend/edgemint/services/worker_gateway.py:ro

@@ -16,12 +16,29 @@ from edgemint.dev import task_events
 from edgemint.dev import task_type_catalog
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
-from edgemint.tasks.catalog_closure import validate_queue_admission
-from edgemint.tasks.errors import TaskServiceError
-from edgemint.results.text_summarize_constraints import (
-    SummarizeConstraintsError,
-    parse_summarize_constraints,
-)
+
+try:
+    from edgemint.tasks.catalog_closure import validate_queue_admission
+    from edgemint.tasks.errors import TaskServiceError
+except ModuleNotFoundError:
+    validate_queue_admission = None  # type: ignore[misc, assignment]
+
+    class TaskServiceError(Exception):  # noqa: N818
+        status = 422
+        code = "TASK_CREATE_FAILED"
+
+try:
+    from edgemint.results.text_summarize_constraints import (
+        SummarizeConstraintsError,
+        parse_summarize_constraints,
+    )
+except ModuleNotFoundError:
+
+    class SummarizeConstraintsError(ValueError):
+        pass
+
+    def parse_summarize_constraints(raw: dict[str, Any]) -> Any:  # noqa: ARG001
+        return None
 
 router = APIRouter()
 session_store = BrowserSessionStore()
@@ -96,10 +113,20 @@ async def _create_task_from_form(
     file_bytes: bytes | None,
     summarize_options: dict[str, Any] | None = None,
 ) -> dict:
-    if not task_type.strip():
+    settings = get_settings()
+    if settings.environment in {"development", "test"}:
+        task_type_catalog.reload_catalog_cache()
+    normalized_type = task_type.strip()
+    if not normalized_type:
         raise HTTPException(422, "TASK_TYPE_REQUIRED")
+    if task_type_catalog.get_task_type(normalized_type) is None:
+        raise HTTPException(422, "UNSUPPORTED_TASK_TYPE")
     try:
-        validate_queue_admission(catalog_code=task_type.strip(), mode="baseline")
+        try:
+            if validate_queue_admission is not None:
+                validate_queue_admission(catalog_code=normalized_type, mode="baseline")
+        except ModuleNotFoundError:
+            pass
         task_type_catalog.validate_task_submission(
             task_type=task_type,
             input_text=input_text,

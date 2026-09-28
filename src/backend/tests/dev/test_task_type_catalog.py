@@ -30,6 +30,18 @@ def test_validate_unknown_task_type() -> None:
         task_type_catalog.validate_task_submission(task_type="unknown.task")
 
 
+def test_validate_text_direct_accepts_image_and_instructions() -> None:
+    entry = task_type_catalog.validate_task_submission(
+        task_type="text.direct",
+        instructions="What is in this image?",
+        file_bytes=b"\x89PNG\r\n\x1a\n",
+        file_mime="image/png",
+        file_name="shot.png",
+    )
+    assert entry.value == "text.direct"
+    assert entry.input_mode == "document"
+
+
 def test_validate_allows_empty_input_for_dev_samples() -> None:
     entry = task_type_catalog.validate_task_submission(task_type="document.ocr")
     assert entry.value == "document.ocr"

@@ -158,11 +158,13 @@ export const portalApi = {
     if (inputFile) {
       const formData = new FormData();
       formData.append('taskType', taskType);
-      if (inputText) {
-        formData.append('inputText', inputText);
-      }
       if (instructions) {
         formData.append('instructions', instructions);
+      }
+      if (inputText) {
+        formData.append('inputText', inputText);
+      } else if (instructions) {
+        formData.append('inputText', instructions);
       }
       if (summarizeOptions) {
         formData.append('summarizeOptions', JSON.stringify(summarizeOptions));

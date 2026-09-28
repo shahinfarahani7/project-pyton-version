@@ -187,7 +187,7 @@ def _options_for(
         return {"maxOutputTokens": 512, "outputSchema": _FLEX_OUTPUT_SCHEMAS[task_type]}
     family = pipeline_family(task_type)
     if task_type == "text.direct":
-        return {"maxOutputTokens": 2048}
+        return {"maxOutputTokens": 256}
     if family == "document.extract":
         return {
             "languages": ["fa", "en"],

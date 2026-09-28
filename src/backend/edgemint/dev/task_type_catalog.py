@@ -94,6 +94,18 @@ def get_task_type(task_type: str) -> TaskTypeEntry | None:
     return _load_index().get(task_type)
 
 
+def reload_catalog_cache() -> None:
+    """Clear in-process catalog caches (dev/tests after catalog.json edits)."""
+    _load_index.cache_clear()
+    _load_categories_raw.cache_clear()
+    try:
+        from edgemint.tasks import catalog_closure
+
+        catalog_closure._load_task_type_dsl_index.cache_clear()
+    except Exception:
+        pass
+
+
 def supported_task_types() -> frozenset[str]:
     return frozenset(_load_index())
 

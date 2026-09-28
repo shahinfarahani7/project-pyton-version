@@ -121,6 +121,19 @@ abstract final class WorkerModelInstaller {
         // If an active identity already exists, do NOT instantiate
         // the model here. The inference adapter will do that.
         if (FlutterGemma.hasActiveModel()) {
+          if (_isExternalSharedStoragePath(path)) {
+            log?.call(
+              'Active model identity uses shared storage; '
+              're-registering from app-private copy',
+            );
+            final privatePath = await _resolvePathForNativeInference(
+              path,
+              log: log,
+            );
+            if (privatePath != path) {
+              await _activateExistingFile(privatePath, log: log);
+            }
+          }
           log?.call(
             '${WorkerModelCatalog.displayName} '
             'has an active inference identity',
@@ -303,6 +316,46 @@ abstract final class WorkerModelInstaller {
     return null;
   }
 
+  static bool _isExternalSharedStoragePath(String path) {
+    final normalized = path.replaceAll('\\', '/').toLowerCase();
+    if (normalized.startsWith('/data/')) {
+      return false;
+    }
+    return normalized.startsWith('/sdcard/') ||
+        normalized.startsWith('/storage/emulated/') ||
+        normalized.contains('/download/');
+  }
+
+  /// Native LiteRT opens the model with POSIX `open()`; shared storage paths
+  /// often fail even when Dart `File.exists()` succeeds on Android 10+.
+  static Future<String> _resolvePathForNativeInference(
+    String path, {
+    void Function(String message)? log,
+  }) async {
+    if (kIsWeb || !Platform.isAndroid || !_isExternalSharedStoragePath(path)) {
+      return path;
+    }
+    final fileName = path.replaceAll('\\', '/').split('/').last;
+    if (fileName.isEmpty) {
+      return path;
+    }
+    log?.call(
+      'Model on shared storage ($path); '
+      'importing to app-private storage for native inference',
+    );
+    final imported = await importSideloadedArtifact(
+      fileName: fileName,
+      log: log,
+    );
+    if (imported != null && imported.isNotEmpty) {
+      return imported;
+    }
+    log?.call(
+      'Shared-storage import failed; native engine may not open $path',
+    );
+    return path;
+  }
+
   // ---------------------------------------------------------------------------
   // Activate an already-existing file
   // ---------------------------------------------------------------------------
@@ -311,6 +364,7 @@ abstract final class WorkerModelInstaller {
     String path, {
     void Function(String message)? log,
   }) async {
+    path = await _resolvePathForNativeInference(path, log: log);
     final file = File(path);
 
     if (!await file.exists()) {
@@ -557,6 +611,7 @@ abstract final class WorkerModelInstaller {
     void Function(String message)? log,
   }) async {
     try {
+      path = await _resolvePathForNativeInference(path, log: log);
       final file = File(path);
 
       if (!await file.exists()) {
