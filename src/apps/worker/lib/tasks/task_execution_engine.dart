@@ -114,8 +114,9 @@ class TaskExecutionEngine {
     _running = true;
 
     try {
-      if (_ocrEngine is OcrEngineRef) {
-        (_ocrEngine as OcrEngineRef).bindSigningKeyIfSupported(signingKey);
+      final ocrRef = _ocrEngine;
+      if (ocrRef is OcrEngineRef) {
+        ocrRef.bindSigningKeyIfSupported(signingKey);
       }
       final request = _buildRequest(context);
       _enforceServerExecutionGrant(context.assignment);
@@ -519,8 +520,9 @@ class TaskExecutionEngine {
         return _toInferenceOutput(result);
       }
     } finally {
-      if (_ocrEngine is OcrEngineRef) {
-        (_ocrEngine as OcrEngineRef).unbindSigningKeyIfSupported();
+      final ocrRef = _ocrEngine;
+      if (ocrRef is OcrEngineRef) {
+        ocrRef.unbindSigningKeyIfSupported();
       }
       _running = false;
     }

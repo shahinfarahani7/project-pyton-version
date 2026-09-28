@@ -1735,18 +1735,13 @@ class QwenTaskProcessor {
       );
     }
     await ensureLoaded(signingKey: signingKey);
-    final gemmaAdapter = _adapter is GemmaLiteRtInferenceAdapter
-        ? _adapter as GemmaLiteRtInferenceAdapter
-        : null;
-    if (gemmaAdapter != null && systemInstruction == '') {
-      gemmaAdapter.usePortalPassthroughChat = true;
+    if (systemInstruction == '') {
+      _adapter.usePortalPassthroughChat = true;
     }
     try {
       final InferenceOutput output;
-      if (gemmaAdapter != null &&
-          imageBytes != null &&
-          imageBytes.isNotEmpty) {
-        output = await gemmaAdapter.runUserPrompt(
+      if (imageBytes != null && imageBytes.isNotEmpty) {
+        output = await _adapter.runUserPrompt(
           prompt: prompt,
           imageBytes: imageBytes,
           resumedState: null,
@@ -1765,7 +1760,9 @@ class QwenTaskProcessor {
         stopReason: stopReason,
       );
     } finally {
-      gemmaAdapter?.usePortalPassthroughChat = false;
+      if (systemInstruction == '') {
+        _adapter.usePortalPassthroughChat = false;
+      }
     }
   }
 
