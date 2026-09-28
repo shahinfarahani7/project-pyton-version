@@ -6,6 +6,7 @@ abstract final class TaskTypeMapper {
   static const documentSummarize = 'document.summarize.v1';
   static const textClassify = 'text.classify.v1';
   static const textSummarize = 'text.summarize.v1';
+  static const textDirect = 'text.direct.v1';
 
   static const documentImageQuality = 'quality.document_image';
   static const blurryImage = 'quality.blurry_image';
@@ -20,6 +21,7 @@ abstract final class TaskTypeMapper {
     documentSummarize,
     textClassify,
     textSummarize,
+    textDirect,
     documentImageQuality,
     blurryImage,
     duplicateImage,
@@ -33,6 +35,7 @@ abstract final class TaskTypeMapper {
     'document.classify': documentClassify,
     'document.summarize': documentSummarize,
     'text.summarize': textSummarize,
+    'text.direct': textDirect,
     'text.classify': textClassify,
   };
 
@@ -43,6 +46,7 @@ abstract final class TaskTypeMapper {
     documentSummarize: 'document.summarize',
     textClassify: 'text.classify',
     textSummarize: 'text.summarize',
+    textDirect: 'text.direct',
     visionAnalyze: 'image.classify',
     removeBackground: 'image.remove_background',
   };
@@ -103,6 +107,7 @@ abstract final class TaskTypeMapper {
       documentSummarize,
       textClassify,
       textSummarize,
+      textDirect,
       visionAnalyze,
     }.contains(type);
   }
@@ -128,6 +133,10 @@ abstract final class TaskTypeMapper {
 
     if (type == 'text.summarize') {
       return 'text.summarize';
+    }
+
+    if (type == 'text.direct') {
+      return 'text.direct';
     }
 
     if (_visionTypes.contains(type)) {
@@ -161,6 +170,7 @@ abstract final class TaskTypeMapper {
     'document.summarize' => documentSummarize,
     'vision.analyze' => visionAnalyze,
     'text.summarize' => textSummarize,
+    'text.direct' => textDirect,
     'text.classify' => textClassify,
     documentImageQuality => documentImageQuality,
     blurryImage => blurryImage,

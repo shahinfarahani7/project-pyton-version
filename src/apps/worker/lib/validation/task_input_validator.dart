@@ -87,8 +87,25 @@ abstract final class TaskInputValidator {
         request.type == TaskTypeMapper.textClassify && isFlex;
 
     if (needsText && !flexTextClassify && !request.input.hasText) {
+      if (request.type == TaskTypeMapper.textDirect &&
+          !request.input.hasText &&
+          !request.input.hasImage) {
+        return invalid(
+          'Text or image input is required for ${request.sourceTaskType}',
+        );
+      }
+      if (request.type != TaskTypeMapper.textDirect) {
+        return invalid(
+          'Text input is required for ${request.sourceTaskType}',
+        );
+      }
+    }
+
+    if (request.type == TaskTypeMapper.textDirect &&
+        !request.input.hasText &&
+        !request.input.hasImage) {
       return invalid(
-        'Text input is required for ${request.sourceTaskType}',
+        'Text or image input is required for ${request.sourceTaskType}',
       );
     }
 

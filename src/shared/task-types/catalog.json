@@ -71,6 +71,19 @@
           "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
         },
         {
+          "value": "text.direct",
+          "labelEn": "Direct model prompt",
+          "labelFa": "ارسال مستقیم به مدل",
+          "inputMode": "document",
+          "resourceEnvelopeRef": "TaskResourceEnvelope/text-summarize@1.0.0",
+          "retryClass": "stronger_worker",
+          "executable": true,
+          "retryPolicyRef": "RetryPolicyMatrix/task-retry-matrix-v1@1.0.0",
+          "checkpointEnabled": false,
+          "checkpointStrategy": "none",
+          "checkpointPolicyRef": "CheckpointPolicyMatrix/task-checkpoint-matrix-v1@1.0.0"
+        },
+        {
           "value": "text.classify",
           "labelEn": "Text classify",
           "labelFa": "طبقه‌بندی متن",

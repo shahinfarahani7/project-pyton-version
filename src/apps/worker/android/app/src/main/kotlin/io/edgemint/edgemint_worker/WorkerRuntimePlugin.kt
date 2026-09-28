@@ -1,5 +1,6 @@
 package io.edgemint.edgemint_worker
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -7,6 +8,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Build
+import android.os.Debug
 import android.os.Environment
 import android.os.PowerManager
 import io.flutter.embedding.engine.FlutterEngine
@@ -131,6 +133,7 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
         val thermal = readThermalState()
         val withinSchedule = true
         val available = consents.containsAll(REQUIRED_CONSENTS) && network != "offline"
+        val memory = readMemorySnapshot()
         return mapOf(
             "available" to available,
             "batteryPercent" to percent,
@@ -142,8 +145,35 @@ class WorkerRuntimePlugin(private val context: Context) : MethodChannel.MethodCa
             "freeStorageMb" to (context.filesDir.usableSpace / (1024 * 1024)).toInt(),
             "withinSchedule" to withinSchedule,
             "consentsGranted" to consents,
+            "deviceTotalRamMb" to memory["deviceTotalRamMb"],
+            "deviceAvailableRamMb" to memory["deviceAvailableRamMb"],
+            "lowMemory" to memory["lowMemory"],
+            "processPssKb" to memory["processPssKb"],
+            "processPrivateDirtyKb" to memory["processPrivateDirtyKb"],
+            "javaHeapKb" to memory["javaHeapKb"],
+            "nativeHeapKb" to memory["nativeHeapKb"],
         )
     }
+
+    private fun readMemorySnapshot(): Map<String, Any?> {
+        val activityManager =
+            context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+                ?: return emptyMap()
+        val info = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(info)
+        val debug = Debug.MemoryInfo()
+        Debug.getMemoryInfo(debug)
+        val totalMb = (info.totalMem / (1024 * 1024)).toInt()
+        val availMb = (info.availMem / (1024 * 1024)).toInt()
+        return mapOf(
+            "deviceTotalRamMb" to totalMb,
+            "deviceAvailableRamMb" to availMb,
+            "lowMemory" to info.lowMemory,
+            "processPssKb" to debug.totalPss,
+            "processPrivateDirtyKb" to debug.totalPrivateDirty,
+            "javaHeapKb" to debug.getMemoryStat("summary.java-heap")?.toIntOrNull(),
+            "nativeHeapKb" to debug.getMemoryStat("summary.native-heap")?.toIntOrNull(),
+        )
 
     private fun readConsents(): List<String> {
         val stored = consentPrefs(context).getStringSet(CONSENT_KEY, null)

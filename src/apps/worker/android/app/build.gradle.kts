@@ -27,6 +27,10 @@ android {
         versionName = flutter.versionName
     }
 
+    androidResources {
+        noCompress += listOf("litertlm", "safetensors", "task", "bin", "tflite")
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

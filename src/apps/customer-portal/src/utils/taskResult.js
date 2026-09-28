@@ -13,8 +13,11 @@ export function taskResultState(task) {
   const lifecycle = String(task?.lifecycleStatus ?? '').toLowerCase();
 
   if (['succeeded', 'completed'].includes(lifecycle)) {
-    if (task?.resultPreview) {
-      return { kind: 'text', text: task.resultPreview };
+    if (task?.modelTranscript || task?.resultPreview) {
+      return {
+        kind: 'text',
+        text: task.modelTranscript ?? task.resultPreview,
+      };
     }
     if (task?.resultArtifactUrl) {
       return { kind: 'file', url: task.resultArtifactUrl };
@@ -40,7 +43,7 @@ export function taskAwaitingResult(task) {
     return false;
   }
   if (['succeeded', 'completed'].includes(lifecycle)) {
-    return !(task?.resultPreview || task?.resultArtifactUrl);
+    return !(task?.modelTranscript || task?.resultPreview || task?.resultArtifactUrl);
   }
   return true;
 }

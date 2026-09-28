@@ -604,7 +604,8 @@ class AssignmentCoordinator {
     final outputKind = output.metrics['outputKind'];
     final structured = output.metrics['structuredResult'];
     final resultPreview = outputKind == 'json' && structured is Map
-        ? (structured['output']?['rawText'] as String? ??
+        ? (structured['output']?['modelTranscript'] as String? ??
+              structured['output']?['rawText'] as String? ??
               structured['output']?['data']?.toString() ??
               structured['error']?['message'] as String? ??
               'Structured task result ready')

@@ -42,6 +42,7 @@ import 'runtime/inference_adapter.dart';
 import 'runtime/storage_pressure_manager.dart';
 import 'runtime/switchable_inference_adapter.dart';
 import 'runtime/worker_access_token_provider.dart';
+import 'runtime/worker_process_memory_telemetry.dart';
 import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_pipeline_log.dart';
 import 'runtime/worker_content_diagnostics.dart';
@@ -1082,9 +1083,7 @@ class WorkerAppController extends ChangeNotifier {
       modelProgress = 0;
       notifyListeners();
 
-      await WorkerModelCatalog.installBuilder()
-          .fromAsset(bundledAsset)
-          .install();
+      await WorkerModelInstaller.installBundledAsset(log: _logTask);
 
       if (await WorkerModelInstaller.ensureReady(log: _logTask)) {
         _setModelReady();
@@ -1197,6 +1196,20 @@ class WorkerAppController extends ChangeNotifier {
     if (executionStatus.phase == ExecutionPhase.preparing &&
         (executionStatus.detail?.contains('Install') ?? false)) {
       executionStatus = const ExecutionStatus(phase: ExecutionPhase.idle);
+    }
+
+    unawaited(_recordModelReadyMemory());
+  }
+
+  Future<void> _recordModelReadyMemory() async {
+    try {
+      final snap = await _platform.readDeviceSnapshot();
+      WorkerProcessMemoryTelemetry.recordPhase(
+        'model_ready',
+        snap.toProcessMemorySnapshot(),
+      );
+    } catch (_) {
+      // Telemetry must not affect model readiness.
     }
   }
 
@@ -1313,7 +1326,7 @@ class WorkerAppController extends ChangeNotifier {
           '$bundledAsset',
         );
 
-        await installer.fromAsset(bundledAsset).install();
+        await WorkerModelInstaller.installBundledAsset(log: _logTask);
       } else {
         await _installFromNetworkWithFallback(installer, downloadUrl);
       }
@@ -2121,6 +2134,10 @@ class WorkerAppController extends ChangeNotifier {
 
       if (pipelineResult != null) {
         metrics['structuredResultJson'] = jsonEncode(pipelineResult.toJson());
+        final transcript = pipelineResult.output?['modelTranscript'];
+        if (transcript is String && transcript.trim().isNotEmpty) {
+          metrics['modelTranscript'] = transcript.trim();
+        }
       }
 
       final payload = <String, dynamic>{

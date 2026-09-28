@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_gemma/flutter_gemma.dart';
 
 import '../models/worker_model_catalog.dart';
+import '../models/worker_model_runtime_candidate.dart';
 import 'artifact_install_coordinator.dart';
 import 'inference_adapter.dart';
 import 'identity_lifecycle_tracer.dart';
@@ -78,7 +79,9 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
     _artifactVerifier.verifyOrThrow(artifact: artifact, signingKey: signingKey);
 
     if (artifact.digestSha256 != WorkerModelCatalog.installedDigestMarker &&
-        artifact.modelVersionId != WorkerModelCatalog.modelVersionId) {
+        !WorkerModelRuntimeCandidateRegistry.isKnownRuntimeModelVersionId(
+          artifact.modelVersionId,
+        )) {
       throw ModelIntegrityException('Unexpected model version for worker runtime');
     }
 

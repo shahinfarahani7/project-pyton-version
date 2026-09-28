@@ -7,7 +7,7 @@ from typing import Any
 
 from edgemint.dev.dev_public_urls import dev_api_public_base
 
-_WORKER_MODEL_VERSION_ID = "mdv_qwen2_5_1_5b"
+_WORKER_MODEL_VERSION_ID = "mdv_gemma_4_e4b_it"
 
 _pending: list[dict[str, Any]] = []
 _completed: list[str] = []

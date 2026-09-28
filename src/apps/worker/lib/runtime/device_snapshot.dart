@@ -1,3 +1,5 @@
+import 'worker_process_memory_telemetry.dart';
+
 enum ThermalState { normal, warm, throttled, critical }
 
 enum NetworkKind { wifi, cellular, offline, unknown }
@@ -14,6 +16,13 @@ class DeviceSnapshot {
     required this.consentsGranted,
     this.isEmulator = false,
     this.isX86Android = false,
+    this.deviceTotalRamMb,
+    this.deviceAvailableRamMb,
+    this.lowMemory,
+    this.processPssKb,
+    this.processPrivateDirtyKb,
+    this.javaHeapKb,
+    this.nativeHeapKb,
   });
 
   final bool available;
@@ -26,6 +35,25 @@ class DeviceSnapshot {
   final int freeStorageMb;
   final bool withinSchedule;
   final List<String> consentsGranted;
+  final int? deviceTotalRamMb;
+  final int? deviceAvailableRamMb;
+  final bool? lowMemory;
+  final int? processPssKb;
+  final int? processPrivateDirtyKb;
+  final int? javaHeapKb;
+  final int? nativeHeapKb;
+
+  ProcessMemorySnapshot toProcessMemorySnapshot() {
+    return ProcessMemorySnapshot(
+      deviceTotalRamMb: deviceTotalRamMb,
+      deviceAvailableRamMb: deviceAvailableRamMb,
+      lowMemory: lowMemory,
+      processPssKb: processPssKb,
+      processPrivateDirtyKb: processPrivateDirtyKb,
+      javaHeapKb: javaHeapKb,
+      nativeHeapKb: nativeHeapKb,
+    );
+  }
 
   DeviceSnapshot copyWith({
     bool? available,

@@ -45,6 +45,13 @@ class WorkerRuntimeChannel {
       withinSchedule: raw['withinSchedule'] as bool? ?? true,
       consentsGranted:
           (raw['consentsGranted'] as List<Object?>?)?.cast<String>() ?? const [],
+      deviceTotalRamMb: raw['deviceTotalRamMb'] as int?,
+      deviceAvailableRamMb: raw['deviceAvailableRamMb'] as int?,
+      lowMemory: raw['lowMemory'] as bool?,
+      processPssKb: raw['processPssKb'] as int?,
+      processPrivateDirtyKb: raw['processPrivateDirtyKb'] as int?,
+      javaHeapKb: raw['javaHeapKb'] as int?,
+      nativeHeapKb: raw['nativeHeapKb'] as int?,
     );
   }
 
@@ -67,6 +74,13 @@ class WorkerRuntimeChannel {
     required int freeStorageMb,
     required bool withinSchedule,
     required List<String> consentsGranted,
+    int? deviceTotalRamMb,
+    int? deviceAvailableRamMb,
+    bool? lowMemory,
+    int? processPssKb,
+    int? processPrivateDirtyKb,
+    int? javaHeapKb,
+    int? nativeHeapKb,
   }) {
     var emulator = isEmulator;
     var percent = batteryPercent;
@@ -86,6 +100,13 @@ class WorkerRuntimeChannel {
       freeStorageMb: freeStorageMb,
       withinSchedule: withinSchedule,
       consentsGranted: consentsGranted,
+      deviceTotalRamMb: deviceTotalRamMb,
+      deviceAvailableRamMb: deviceAvailableRamMb,
+      lowMemory: lowMemory,
+      processPssKb: processPssKb,
+      processPrivateDirtyKb: processPrivateDirtyKb,
+      javaHeapKb: javaHeapKb,
+      nativeHeapKb: nativeHeapKb,
     );
   }
 

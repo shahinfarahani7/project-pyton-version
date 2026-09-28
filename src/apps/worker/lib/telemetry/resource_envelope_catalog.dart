@@ -27,6 +27,12 @@ abstract final class ResourceEnvelopeCatalog {
       peakMemoryBytes: 1610612736,
       durationMs: 120000,
     ),
+    'text.direct': ResourceEnvelopeBaseline(
+      runtimeClass: 'mediapipe_llm',
+      cpuUnits: 40,
+      peakMemoryBytes: 1610612736,
+      durationMs: 180000,
+    ),
     'document.extract': ResourceEnvelopeBaseline(
       runtimeClass: 'mediapipe_llm',
       cpuUnits: 40,

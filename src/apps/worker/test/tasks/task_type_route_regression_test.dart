@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:edgemint_worker/runtime/execution_plan_runner.dart';
 import 'package:edgemint_worker/runtime/vision_runtime_catalog.dart';
+import 'package:edgemint_worker/tasks/handlers/direct_prompt_handler.dart';
 import 'package:edgemint_worker/tasks/handlers/document_handlers.dart';
 import 'package:edgemint_worker/tasks/handlers/lightweight_vision_handlers.dart';
 import 'package:edgemint_worker/tasks/handlers/ocr_extract_text_handler.dart';
@@ -126,6 +127,14 @@ void main() {
       requiresLlm: true,
       imageInput: false,
       expectMapReducePlan: true,
+    ),
+    _RouteRow(
+      publicId: 'text.direct',
+      internalCapability: TaskTypeMapper.textDirect,
+      handlerType: DirectPromptHandler,
+      requiresOcr: false,
+      requiresLlm: true,
+      imageInput: false,
     ),
     _RouteRow(
       publicId: 'image.classify',

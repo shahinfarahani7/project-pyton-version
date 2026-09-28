@@ -186,6 +186,8 @@ def _options_for(
     if task_type in _FLEX_OUTPUT_SCHEMAS:
         return {"maxOutputTokens": 512, "outputSchema": _FLEX_OUTPUT_SCHEMAS[task_type]}
     family = pipeline_family(task_type)
+    if task_type == "text.direct":
+        return {"maxOutputTokens": 2048}
     if family == "document.extract":
         return {
             "languages": ["fa", "en"],
@@ -228,6 +230,22 @@ def _flex_input_data(task_type: str, content_text: str | None) -> dict[str, Any]
     return _FLEX_SAMPLES[task_type]
 
 
+def _passthrough_body(
+    *,
+    content_text: str | None,
+    user_note: str | None,
+) -> str:
+    parts: list[str] = []
+    if user_note and user_note.strip():
+        parts.append(user_note.strip())
+    if content_text and content_text.strip():
+        text = content_text.strip()
+        if not parts or text not in parts[0]:
+            parts.append(text)
+    combined = "\n\n".join(parts)
+    return combined[:_MAX_TEXT_CHARS]
+
+
 def _prompt_for_custom(
     task_type: str,
     *,
@@ -236,6 +254,11 @@ def _prompt_for_custom(
     file_mime: str | None,
     user_note: str | None = None,
 ) -> str:
+    if task_type == "text.direct":
+        body = _passthrough_body(content_text=content_text, user_note=user_note)
+        if not body.strip():
+            return " "
+        return body
     note = f"\n\nUser note: {user_note.strip()}" if user_note and user_note.strip() else ""
     family = pipeline_family(task_type)
     if family in {"document.ocr", "document.extract"}:
@@ -365,11 +388,16 @@ def register_task(
     flex_data = _flex_input_data(task_type, content_text)
     if flex_data is not None:
         entry["inputData"] = flex_data
-    if user_note:
+    if user_note and task_type != "text.direct":
         entry["instructions"] = user_note
     if store_blob and task_id in _INPUT_BLOBS:
         entry["inputContentUrl"] = f"{_dev_api_base()}/v1/dev/worker/tasks/{task_id}/input/content"
-    if content_text:
+    if task_type == "text.direct":
+        passthrough = _passthrough_body(content_text=content_text, user_note=user_note)
+        if passthrough.strip():
+            entry["inputText"] = passthrough
+            entry["prompt"] = passthrough
+    elif content_text:
         entry["inputText"] = content_text
     _TASK_INPUTS[task_id] = entry
 
@@ -439,11 +467,27 @@ def record_output(
 ) -> None:
     from edgemint.dev import fixtures
 
+    model_transcript = result_text
+    if metrics:
+        structured_raw = metrics.get("structuredResultJson")
+        if isinstance(structured_raw, str) and structured_raw.strip():
+            try:
+                envelope = json.loads(structured_raw)
+                if isinstance(envelope, dict):
+                    output = envelope.get("output")
+                    if isinstance(output, dict):
+                        transcript = output.get("modelTranscript") or output.get("rawText")
+                        if isinstance(transcript, str) and transcript.strip():
+                            model_transcript = transcript.strip()
+            except json.JSONDecodeError:
+                pass
+
     existing = fixtures.dev_task_by_id(task_id)
     if existing is not None and existing.get("lifecycleStatus") == "succeeded":
         _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
         _TASK_INPUTS[task_id]["lastOutput"] = {
             "resultText": result_text[:_MAX_TEXT_CHARS],
+            "modelTranscript": model_transcript[:_MAX_TEXT_CHARS],
             "metrics": metrics or {},
             "hasResultFile": bool(result_file_bytes),
         }
@@ -468,13 +512,15 @@ def record_output(
         task_id,
         lifecycle_status="succeeded",
         execution_status="completed",
-        result_text=result_text,
+        result_text=model_transcript,
         result_artifact_url=result_artifact_url,
         result_mime_type=result_mime,
+        model_transcript=model_transcript,
     )
     _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
     _TASK_INPUTS[task_id]["lastOutput"] = {
         "resultText": result_text[:_MAX_TEXT_CHARS],
+        "modelTranscript": model_transcript[:_MAX_TEXT_CHARS],
         "metrics": metrics or {},
         "hasResultFile": bool(result_file_bytes),
     }

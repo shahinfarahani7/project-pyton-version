@@ -29,6 +29,17 @@ class ModelIntegrityException implements Exception {
   String toString() => 'ModelIntegrityException($reason)';
 }
 
+/// Raised before native LiteRT load when artifact format/engine mismatch.
+class ModelFormatUnsupportedException implements Exception {
+  ModelFormatUnsupportedException(this.code, [this.detail]);
+
+  final String code;
+  final String? detail;
+
+  @override
+  String toString() => 'ModelFormatUnsupportedException($code, $detail)';
+}
+
 class LeaseRevokedException implements Exception {
   const LeaseRevokedException();
 

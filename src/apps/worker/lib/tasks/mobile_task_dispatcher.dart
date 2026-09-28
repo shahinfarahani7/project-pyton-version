@@ -1,3 +1,4 @@
+import 'handlers/direct_prompt_handler.dart';
 import 'handlers/document_handlers.dart';
 import 'handlers/ocr_extract_text_handler.dart';
 import 'handlers/lightweight_vision_handlers.dart';
@@ -18,6 +19,7 @@ class MobileTaskDispatcher {
 
     // text.summarize -> Qwen only, no OCR
     TextSummarizeHandler(),
+    DirectPromptHandler(),
 
     TextClassifyHandler(),
     DocumentImageQualityHandler(),

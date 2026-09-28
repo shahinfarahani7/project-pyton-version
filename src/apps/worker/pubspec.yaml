@@ -25,5 +25,3 @@ dev_dependencies:
   test: ^1.25.0
 flutter:
   uses-material-design: true
-  assets:
-    - assets/models/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv4096.task

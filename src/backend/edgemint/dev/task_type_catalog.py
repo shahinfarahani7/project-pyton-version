@@ -99,6 +99,8 @@ def supported_task_types() -> frozenset[str]:
 
 
 def pipeline_family(task_type: str) -> str:
+    if task_type == "text.direct":
+        return "text.direct"
     if task_type.startswith("ocr.") or task_type == "document.ocr":
         return "document.ocr"
     if task_type.startswith("extract.") or task_type == "document.extract":
@@ -219,6 +221,8 @@ def enrich_task_row(row: dict[str, Any], *, locale: str = "en") -> dict[str, Any
             last_output = stored_manifest.get("lastOutput")
             if isinstance(last_output, dict) and last_output.get("resultText"):
                 enriched["resultText"] = str(last_output["resultText"])
+            if isinstance(last_output, dict) and last_output.get("modelTranscript"):
+                enriched["modelTranscript"] = str(last_output["modelTranscript"])
     return enriched
 
 

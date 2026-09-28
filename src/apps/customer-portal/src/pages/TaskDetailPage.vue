@@ -75,7 +75,11 @@ const sourceText = computed(
 );
 
 const resultText = computed(
-  () => task.value?.resultText ?? task.value?.resultPreview ?? '',
+  () =>
+    task.value?.modelTranscript ??
+    task.value?.resultText ??
+    task.value?.resultPreview ??
+    '',
 );
 
 onMounted(() => {
@@ -165,7 +169,10 @@ watch(taskId, () => {
         </div>
 
         <div v-if="resultState.kind === 'text'" class="em-result-summary">
-          <p class="em-result-summary__label">{{ t('tasks.resultPreview') }}</p>
+          <p class="em-result-summary__label">
+            {{ task.modelTranscript ? t('tasks.modelTranscript') : t('tasks.resultPreview') }}
+          </p>
+          <p v-if="task.modelTranscript" class="md-hint">{{ t('tasks.modelTranscriptHint') }}</p>
           <ExpandableText :text="resultText" :preview-chars="500" monospace />
         </div>
 

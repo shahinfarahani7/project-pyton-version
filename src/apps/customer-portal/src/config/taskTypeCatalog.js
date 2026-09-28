@@ -93,6 +93,19 @@ export function taskTypeNeedsFlexJson(value) {
   return entry?.inputMode === 'flex';
 }
 
+/**
+ * Pick a task type for simplified intake (no user-visible type picker).
+ * @param {{ file?: File | null, instructions?: string }} payload
+ * @returns {string | null}
+ */
+export function resolveTaskTypeForIntake({ file, instructions }) {
+  const note = typeof instructions === 'string' ? instructions.trim() : '';
+  if (file || note) {
+    return 'text.direct';
+  }
+  return null;
+}
+
 /** @param {string} value @param {string} locale */
 export function formatTaskType(value, locale) {
   const entry = getTaskType(value);

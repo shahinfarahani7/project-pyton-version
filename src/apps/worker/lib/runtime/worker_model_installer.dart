@@ -10,6 +10,8 @@ import 'artifact_install_coordinator.dart';
 import 'gemma_bootstrap.dart';
 import 'identity_lifecycle_tracer.dart';
 import 'model_download_verify_hook.dart';
+import 'worker_model_format_gate.dart';
+import 'runtime_exceptions.dart';
 
 /// Installs, restores, and registers the EdgeMint on-device model.
 ///
@@ -37,7 +39,53 @@ abstract final class WorkerModelInstaller {
     '/storage/emulated/0/Edgemint/models/${WorkerModelCatalog.fileName}',
     '/sdcard/Download/${WorkerModelCatalog.fileName}',
     '/storage/emulated/0/Download/${WorkerModelCatalog.fileName}',
+    '/sdcard/Edgemint/models/${WorkerModelCatalog.gpuFileName}',
+    '/storage/emulated/0/Edgemint/models/${WorkerModelCatalog.gpuFileName}',
+    '/sdcard/Download/${WorkerModelCatalog.gpuFileName}',
+    '/storage/emulated/0/Download/${WorkerModelCatalog.gpuFileName}',
   ];
+
+  static List<String> externalSideloadPathsFor(String fileName) => [
+        '/sdcard/Edgemint/models/$fileName',
+        '/storage/emulated/0/Edgemint/models/$fileName',
+        '/sdcard/Download/$fileName',
+        '/storage/emulated/0/Download/$fileName',
+      ];
+
+  /// Installs a validated `.litertlm` bundled asset when configured.
+  static Future<bool> installBundledAsset({
+    void Function(String message)? log,
+  }) async {
+    final assetPath = WorkerModelCatalog.bundledAssetFromEnvironment();
+    if (assetPath == null) {
+      return false;
+    }
+
+    final validation = await WorkerModelFormatGate.validateBundledAssetPath(
+      assetPath,
+    );
+    if (!validation.accepted) {
+      log?.call(
+        '${validation.reasonCode}: ${validation.detail}',
+      );
+      return false;
+    }
+
+    await GemmaBootstrap.ensureInitialized();
+
+    try {
+      await WorkerModelCatalog.installBuilder().fromAsset(assetPath).install();
+    } catch (error) {
+      log?.call('Bundled model registration failed: $error');
+      return false;
+    }
+
+    final path = await _installedModelPath(WorkerModelCatalog.fileName);
+    if (path == null) {
+      return false;
+    }
+    return _activateExistingFile(path, log: log);
+  }
 
   // ---------------------------------------------------------------------------
   // Ensure ready
@@ -273,6 +321,18 @@ abstract final class WorkerModelInstaller {
 
     final size = await file.length();
 
+    final format = await WorkerModelFormatGate.validateFileOnDisk(
+      expected: WorkerModelCatalog.activeRuntimeDescriptor,
+      filePath: path,
+    );
+    if (!format.accepted) {
+      log?.call('${format.reasonCode}: ${format.detail}');
+      throw ModelFormatUnsupportedException(
+        format.reasonCode,
+        format.detail,
+      );
+    }
+
     log?.call(
       'Activating ${WorkerModelCatalog.displayName} '
       'from existing file '
@@ -342,6 +402,62 @@ abstract final class WorkerModelInstaller {
   // ---------------------------------------------------------------------------
   // Android sideload import
   // ---------------------------------------------------------------------------
+
+  static Future<String?> importSideloadedArtifact({
+    required String fileName,
+    void Function(String message)? log,
+  }) async {
+    if (kIsWeb || !Platform.isAndroid) {
+      return null;
+    }
+    try {
+      log?.call('Checking Android sideload locations for $fileName');
+      final raw = await _runtimeChannel.invokeMethod<Map<Object?, Object?>>(
+        'importSideloadedModel',
+        {'fileName': fileName},
+      );
+      final path = raw?['path'] as String?;
+      if (path == null || path.isEmpty) {
+        log?.call('No sideloaded $fileName found');
+        return null;
+      }
+      return path;
+    } catch (error) {
+      log?.call('Native sideload import failed for $fileName: $error');
+      return null;
+    }
+  }
+
+  /// Benchmark-only activation for an alternate `.litertlm` artifact.
+  static Future<bool> activateBenchmarkArtifactFile(
+    String path, {
+    void Function(String message)? log,
+  }) async {
+    final file = File(path);
+    if (!await file.exists()) {
+      return false;
+    }
+    final fileName = file.uri.pathSegments.isNotEmpty
+        ? file.uri.pathSegments.last
+        : WorkerModelCatalog.fileName;
+    final expected =
+        WorkerModelCatalog.descriptorForArtifactFileName(fileName);
+    final format = await WorkerModelFormatGate.validateFileOnDisk(
+      expected: expected,
+      filePath: path,
+    );
+    if (!format.accepted) {
+      log?.call('${format.reasonCode}: ${format.detail}');
+      return false;
+    }
+    try {
+      await WorkerModelCatalog.installBuilder().fromFile(path).install();
+      return FlutterGemma.hasActiveModel();
+    } catch (error) {
+      log?.call('Benchmark artifact activation failed: $error');
+      return false;
+    }
+  }
 
   static Future<String?> _importViaPlatform({
     void Function(String message)? log,

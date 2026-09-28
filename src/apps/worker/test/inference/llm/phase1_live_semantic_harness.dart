@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
 import 'package:edgemint_worker/inference/llm/summarize_inference_stage.dart';
 import 'package:edgemint_worker/inference/llm/summarize_output_validator.dart';
 import 'package:edgemint_worker/inference/llm/summarize_task_constraints.dart';
 import 'package:edgemint_worker/models/worker_model_catalog.dart';
+import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/gemma_bootstrap.dart';
 import 'package:edgemint_worker/runtime/gemma_inference_adapter.dart';
 import 'package:edgemint_worker/runtime/gemma_model_runtime_manager.dart';
@@ -119,7 +120,7 @@ abstract final class Phase1LiveSemanticHarness {
     required String identity,
   }) {
     final utf8Bytes = utf8.encode(text);
-    final digest = sha256.convert(utf8Bytes).toHex();
+    final digest = sha256Hex(Uint8List.fromList(utf8Bytes));
     final verified = digest == task03494f44ObservedInputSha256 &&
         text.length == task03494f44ObservedInputChars;
     if (!verified) {

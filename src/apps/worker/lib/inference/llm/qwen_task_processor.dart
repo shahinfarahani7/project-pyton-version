@@ -36,7 +36,7 @@ import 'summarize_task_constraints.dart';
 class QwenInferenceConfig {
   const QwenInferenceConfig({
     this.contextSize = ContextBudgetProfile.qwenBaselineTotalContextTokens,
-    this.maxOutputTokens = ContextBudgetProfile.qwenBaselineOutputReserveTokens,
+    this.maxOutputTokens = WorkerModelCatalog.outputReserveTokens,
     this.temperature = 0.1,
     this.topP = 0.8,
     this.topK = 20,
@@ -1658,18 +1658,50 @@ class QwenTaskProcessor {
     }
   }
 
-  Future<String> _runPrompt(String prompt, {required String signingKey}) async {
-    final reply = await _runPromptReply(prompt, signingKey: signingKey);
+  Future<String> _runPrompt(
+    String prompt, {
+    required String signingKey,
+    String? systemInstruction,
+  }) async {
+    final reply = await _runPromptReply(
+      prompt,
+      signingKey: signingKey,
+      systemInstruction: systemInstruction,
+    );
     return reply.text;
+  }
+
+  /// Sends [userText] to the resident LLM with no task contract or JSON repair.
+  Future<String> runDirectUserText(
+    String userText, {
+    required String signingKey,
+  }) async {
+    final trimmed = userText.trim();
+    if (trimmed.isEmpty) {
+      throw const WorkerError(
+        code: WorkerErrorCode.invalidTask,
+        message: 'Direct prompt text is empty',
+        retryable: false,
+        stage: WorkerTaskStage.llm,
+      );
+    }
+    _log('[DIRECT USER PROMPT] chars=${trimmed.length}');
+    return _runPrompt(
+      trimmed,
+      signingKey: signingKey,
+      systemInstruction: '',
+    );
   }
 
   Future<_PromptReply> _runPromptReply(
     String prompt, {
     required String signingKey,
+    String? systemInstruction,
   }) async {
     final formatted = FormattedPromptBuilder.buildTaskPrompt(
       templateBody: prompt,
-      systemInstruction: _contextBudget.defaultSystemInstruction,
+      systemInstruction:
+          systemInstruction ?? _contextBudget.defaultSystemInstruction,
     );
     _contextBudget.ensureDirectInferenceOrThrow(
       prompt: prompt,
@@ -1684,18 +1716,26 @@ class QwenTaskProcessor {
       );
     }
     await ensureLoaded(signingKey: signingKey);
-    final output = await _adapter.run(
-      inputBytes: Uint8List.fromList(utf8.encode(prompt)),
-      resumedState: null,
-    );
-    final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
-    return _PromptReply(
-      text: utf8.decode(output.resultBytes),
-      // Both stops cut the reply before the model closed the object, so the
-      // trailing fields have to be completed locally.
-      truncated: stopReason == 'output_limit' || stopReason == 'repetition',
-      stopReason: stopReason,
-    );
+    final gemmaAdapter = _adapter is GemmaLiteRtInferenceAdapter
+        ? _adapter as GemmaLiteRtInferenceAdapter
+        : null;
+    if (gemmaAdapter != null && systemInstruction == '') {
+      gemmaAdapter.usePortalPassthroughChat = true;
+    }
+    try {
+      final output = await _adapter.run(
+        inputBytes: Uint8List.fromList(utf8.encode(prompt)),
+        resumedState: null,
+      );
+      final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
+      return _PromptReply(
+        text: utf8.decode(output.resultBytes),
+        truncated: stopReason == 'output_limit' || stopReason == 'repetition',
+        stopReason: stopReason,
+      );
+    } finally {
+      gemmaAdapter?.usePortalPassthroughChat = false;
+    }
   }
 
   String _enforceOutputLimit(String raw) {

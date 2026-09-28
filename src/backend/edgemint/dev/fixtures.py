@@ -371,6 +371,7 @@ def update_dev_task_execution(
     result_mime_type: str | None = None,
     failure_reason_code: str | None = None,
     failure_reason: str | None = None,
+    model_transcript: str | None = None,
 ) -> bool:
     updated = False
     workspace_id: UUID | None = None
@@ -389,6 +390,8 @@ def update_dev_task_execution(
                     stored = result_preview[:_MAX_STORED_TEXT_CHARS]
                     task["resultText"] = stored
                     task["resultPreview"] = stored[:_PREVIEW_RESULT_CHARS]
+                if model_transcript is not None:
+                    task["modelTranscript"] = model_transcript[:_MAX_STORED_TEXT_CHARS]
                 if result_artifact_url is not None:
                     task["resultArtifactUrl"] = result_artifact_url
                 if result_mime_type is not None:
@@ -413,6 +416,8 @@ def update_dev_task_execution(
                     stored = result_preview[:_MAX_STORED_TEXT_CHARS]
                     task["resultText"] = stored
                     task["resultPreview"] = stored[:_PREVIEW_RESULT_CHARS]
+                if model_transcript is not None:
+                    task["modelTranscript"] = model_transcript[:_MAX_STORED_TEXT_CHARS]
                 if result_artifact_url is not None:
                     task["resultArtifactUrl"] = result_artifact_url
                 if result_mime_type is not None:

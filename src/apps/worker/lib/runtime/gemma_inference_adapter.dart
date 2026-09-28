@@ -35,6 +35,9 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   final int topK;
   final double topP;
 
+  /// When true, omit the default EdgeMint system instruction (portal direct prompt).
+  bool usePortalPassthroughChat = false;
+
   ModelRuntimeManager get runtimeManager => _runtime;
 
   @override
@@ -100,9 +103,10 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         topK: topK,
         topP: topP,
         maxOutputTokens: maxOutputTokens,
-        systemInstruction:
-            'You are EdgeMint worker AI. '
-            'Answer concisely for the assigned task payload.',
+        systemInstruction: usePortalPassthroughChat
+            ? null
+            : 'You are EdgeMint worker AI. '
+                  'Answer concisely for the assigned task payload.',
       );
       _log('[LLM SESSION] created');
 

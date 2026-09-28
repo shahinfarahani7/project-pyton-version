@@ -1,1 +1,62 @@
 ﻿Resolving dependencies...
+Downloading packages...
+Got dependencies!
+Analyzing 26 items...                                           
+
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart'. Try removing the import directive - lib\runtime\assignment_coordinator.dart:3:8 - unnecessary_import
+warning - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator - lib\runtime\assignment_coordinator.dart:344:24 - unnecessary_non_null_assertion
+warning - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator - lib\runtime\assignment_coordinator.dart:512:33 - unnecessary_non_null_assertion
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:17:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:22:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:61:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:66:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:75:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:92:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:116:35 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:122:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:157:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:166:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:171:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_reduce_bounds_test.dart:210:33 - inference_failure_on_collection_literal
+warning - Unused import: 'package:edgemint_worker/inference/llm/reduce_partial_envelope.dart'. Try removing the import directive - test\inference\llm\hierarchical_summarize_pipeline_test.dart:9:8 - unused_import
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:23:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:32:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:51:25 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:78:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:83:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:110:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\hierarchical_summarize_pipeline_test.dart:115:33 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase1_prompt_contract_test.dart:63:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase1_prompt_contract_test.dart:77:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase1_prompt_contract_test.dart:92:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_evidence_strict_validation_test.dart:93:22 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_evidence_strict_validation_test.dart:105:18 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_evidence_strict_validation_test.dart:289:35 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_map_prompt_contract_test.dart:82:24 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\inference\llm\phase2_map_prompt_contract_test.dart:91:24 - inference_failure_on_collection_literal
+  error - Expected to find ')' - test\inference\llm\phase2_map_prompt_contract_test.dart:132:54 - expected_token
+  error - The named parameter 'policy' is required, but there's no corresponding argument. Try adding the required argument - test\inference\llm\qwen_map_truncation_policy_test.dart:15:19 - missing_required_argument
+  error - The named parameter 'mapStage' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'mapStage' - test\inference\llm\qwen_map_truncation_policy_test.dart:17:11 - undefined_named_parameter
+  error - The named parameter 'policy' is required, but there's no corresponding argument. Try adding the required argument - test\inference\llm\qwen_map_truncation_policy_test.dart:25:19 - missing_required_argument
+  error - The named parameter 'mapStage' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'mapStage' - test\inference\llm\qwen_map_truncation_policy_test.dart:27:11 - undefined_named_parameter
+warning - Unused import: 'package:edgemint_worker/inference/llm/hierarchical_summarize_pipeline.dart'. Try removing the import directive - test\runtime\checkpoint_manager_test.dart:3:8 - unused_import
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:22:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:33:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:42:27 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:48:25 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:69:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:120:31 - inference_failure_on_collection_literal
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\checkpoint_manager_test.dart:233:31 - inference_failure_on_collection_literal
+warning - Duplicate import. Try removing all but one import of the library - test\runtime\model_artifact_verifier_test.dart:9:8 - duplicate_import
+warning - The type argument(s) of 'List' can't be inferred. Use explicit type argument(s) for 'List' - test\runtime\worker_session_lifecycle_test.dart:63:70 - inference_failure_on_collection_literal
+warning - Unused import: 'package:edgemint_worker/contracts/worker_task_request.dart'. Try removing the import directive - test\tasks\task_execution_engine_test.dart:4:8 - unused_import
+warning - Unused import: 'package:edgemint_worker/contracts/worker_task_result.dart'. Try removing the import directive - test\tasks\task_execution_engine_test.dart:5:8 - unused_import
+warning - Unused import: 'package:edgemint_worker/tasks/task_type_mapper.dart'. Try removing the import directive - test\tasks\task_execution_engine_test.dart:11:8 - unused_import
+
+flutter : 49 issues found. (ran in 4.4s)
+At C:\Users\Admin\AppData\Local\Temp\ps-script-bca766e4-9e30-4c2b-9d77-3ac5b8d68a30.ps1:82 char:290
++ ... r/','' }; Set-Location $baseline; flutter analyze @paths 2>&1 | Out-F ...
++                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (49 issues found. (ran in 4.4s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

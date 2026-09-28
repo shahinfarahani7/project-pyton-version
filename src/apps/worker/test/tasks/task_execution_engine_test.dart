@@ -305,5 +305,44 @@ void main() {
       expect(runner.boundAssignmentId, isNull);
       expect(memory.openSessionCount, 0);
     });
+
+    test('text.direct returns raw model transcript', () async {
+      const modelReply = 'Plain model answer without JSON wrapping.';
+      final engine = TaskExecutionEngine(
+        ocrEngine: FakeOcrEngine(),
+        qwenProcessor: QwenTaskProcessor(
+          runner: (_) async => modelReply,
+        ),
+      );
+      final output = await engine.execute(
+        context: TaskExecutionContext(
+          assignment: WorkerAssignment(
+            assignmentId: 'asg-direct',
+            attemptId: 'att-direct',
+            revisionId: 'rev-direct',
+            leaseToken: 'lease',
+            fenceToken: 2,
+            leaseExpiresAt: DateTime.parse('2026-12-31T00:00:00Z'),
+            taskType: 'text.direct',
+            modelVersionId: 'mdv_qwen2_5_1_5b',
+            inputManifestUrl: 'http://example/manifest',
+            outputUploadUrl: 'http://example/output',
+            startDeadlineAt: DateTime.parse('2026-12-31T00:00:00Z'),
+            taskId: 'tsk-direct',
+          ),
+          manifest: {
+            'schemaVersion': '1.0',
+            'inputText': 'Hello model',
+          },
+          inputBytes: Uint8List.fromList(utf8.encode('Hello model')),
+          isImageInput: false,
+        ),
+        signingKey: 'sign',
+        freeStorageMb: 8192,
+      );
+      expect(output.metrics['taskStatus'], 'succeeded');
+      expect(engine.lastResult?.output?['modelTranscript'], modelReply);
+      expect(engine.lastResult?.output?['rawText'], modelReply);
+    });
   });
 }
