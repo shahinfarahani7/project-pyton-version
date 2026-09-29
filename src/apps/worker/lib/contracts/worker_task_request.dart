@@ -49,7 +49,8 @@ class WorkerTaskOptions {
   /// Asks `text.direct` to use the long-form output budget.
   final bool longForm;
 
-  /// When false, hitting the output cap is a failed result, not success.
+  /// When false, a structured task that hits the output cap fails.
+  /// Free-form text.direct still returns the partial text with truncated=true.
   final bool allowTruncatedOutput;
   final Map<String, dynamic>? outputSchema;
   final List<String>? allowedLabels;

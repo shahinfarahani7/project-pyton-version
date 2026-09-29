@@ -58,13 +58,43 @@ class DirectPromptHandler implements TaskHandler {
     developer.log(decision.logLine, name: 'EdgeMintTaskEngine');
 
     final llmStart = DateTime.now();
-    final generation = await qwenProcessor.runDirectUserGeneration(
-      userText,
-      signingKey: signingKey,
-      imageBytes: hasImage ? imageBytes : null,
-      maxOutputTokens: decision.effectiveOutputLimit,
+    final staged = await GemmaStagedDirectGeneration.run(
+      decision: decision,
+      prompt: userText,
+      generateStage: (stageIndex, stagePrompt) {
+        return qwenProcessor
+            .runDirectUserGeneration(
+              stagePrompt,
+              signingKey: signingKey,
+              imageBytes: stageIndex == 0 && hasImage ? imageBytes : null,
+              maxOutputTokens: decision.effectiveOutputLimit,
+            )
+            .then(
+              (receipt) => GemmaStagePiece(
+                text: receipt.text,
+                stopReason: receipt.stopReason,
+                generatedChunks: receipt.generatedChunks,
+                generatedTokens: receipt.generatedTokens,
+              ),
+            );
+      },
+    );
+    final generation = DirectGenerationReceipt(
+      text: staged.text,
+      stopReason: staged.stopReason,
+      configuredOutputLimit: decision.effectiveOutputLimit,
+      generatedChunks: staged.generatedChunks,
+      generatedTokens: staged.generatedTokens,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
+    developer.log(
+      decision.completionLog(
+        generatedChunks: generation.generatedChunks,
+        generatedTokens: generation.generatedTokens,
+        truncated: generation.hitOutputLimit,
+      ),
+      name: 'EdgeMintTaskEngine',
+    );
 
     return resultFor(
       request: request,
@@ -87,7 +117,13 @@ class DirectPromptHandler implements TaskHandler {
       'stopReason': generation.stopReason,
       'truncated': generation.hitOutputLimit,
     };
-    if (generation.hitOutputLimit && !request.options.allowTruncatedOutput) {
+    final freeForm = _freeFormTextDirect(request);
+    final partialSuccess = generation.hitOutputLimit &&
+        freeForm &&
+        generation.text.trim().isNotEmpty;
+    if (generation.hitOutputLimit &&
+        !partialSuccess &&
+        !request.options.allowTruncatedOutput) {
       return WorkerTaskResult(
         schemaVersion: request.schemaVersion,
         taskId: request.taskId,
@@ -112,5 +148,14 @@ class DirectPromptHandler implements TaskHandler {
       output: evidence,
       metrics: metrics.toJson(),
     );
+  }
+
+  /// Free-form text.direct has no output schema. A non-empty cap hit is a
+  /// truncated success. Structured contracts still fail when incomplete.
+  static bool _freeFormTextDirect(WorkerTaskRequest request) {
+    final options = request.options;
+    return options.outputSchema == null &&
+        options.summarize == null &&
+        (options.allowedLabels == null || options.allowedLabels!.isEmpty);
   }
 }

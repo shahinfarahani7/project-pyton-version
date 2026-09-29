@@ -8,31 +8,69 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('GemmaGenerationOutputLimit', () {
-    test('text.direct default is 512 and is separate from context 2048', () {
+    test('text.direct default is 256 and is separate from context 2048', () {
       expect(
         GemmaGenerationOutputLimit.forTextDirect(prompt: 'Say hello'),
-        512,
+        256,
       );
+      expect(GemmaGenerationOutputLimit.textDirect, 256);
       expect(GemmaGenerationOutputLimit.textDirect, isNot(2048));
+      expect(GemmaGenerationOutputLimit.textDirect, isNot(512));
     });
 
-    test('long-form text.direct uses 1024', () {
+    test('medium detail is 384 and explicitly extended is 512', () {
       expect(
         GemmaGenerationOutputLimit.forTextDirect(
-          prompt: 'Write a 5-page article about harbor logistics.',
+          prompt: 'Explain how ants farm aphids.',
         ),
-        GemmaGenerationOutputLimit.textDirectLongForm,
+        384,
       );
+      final detailed = GemmaGenerationOutputLimit.resolveTextDirect(
+        prompt: 'Give a very detailed extended answer about ants.',
+      );
+      expect(detailed.answerClass, 'detailed');
+      expect(detailed.effectiveOutputLimit, 512);
+      expect(detailed.staged, isFalse);
+    });
+
+    test('long-form is staged at 256 per session, not one 1024 session', () {
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(
+        prompt: 'Write a 5-page article about harbor logistics.',
+      );
+      expect(decision.answerClass, 'long-form');
+      expect(decision.staged, isTrue);
+      expect(decision.effectiveOutputLimit, 256);
+      expect(decision.effectiveOutputLimit, isNot(1024));
       expect(
         GemmaGenerationOutputLimit.forTextDirect(
           prompt: 'Hello',
           longForm: true,
         ),
-        1024,
+        256,
       );
     });
 
-    test('Persian 5-page article resolves to 1024 even when manifest sends legacy 256', () {
+    test('Persian example about ants is short, not long-form', () {
+      const prompt = 'در مورد پرورش مورچه یه مثاله بهم بده';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(
+        prompt: prompt,
+        explicitMaxOutputTokens: 256,
+        maxOutputTokensSpecified: true,
+      );
+
+      expect(decision.answerClass, 'short');
+      expect(decision.detectedLongForm, isFalse);
+      expect(decision.staged, isFalse);
+      expect(decision.effectiveOutputLimit, 256);
+      expect(decision.effectiveOutputLimit, isNot(512));
+      expect(decision.effectiveOutputLimit, isNot(1024));
+      expect(
+        GemmaGenerationOutputLimit.forTextDirect(prompt: prompt),
+        256,
+      );
+    });
+
+    test('Persian 5-page article is staged long-form even when manifest sends legacy 256', () {
       const prompt = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
       final decision = GemmaGenerationOutputLimit.resolveTextDirect(
         prompt: prompt,
@@ -40,39 +78,40 @@ void main() {
         maxOutputTokensSpecified: true,
       );
 
+      expect(decision.answerClass, 'long-form');
       expect(decision.detectedLongForm, isTrue);
-      expect(decision.requestedOutputLimit, 1024);
-      expect(decision.effectiveOutputLimit, 1024);
+      expect(decision.requestedOutputLimit, 256);
+      expect(decision.effectiveOutputLimit, 256);
+      expect(decision.staged, isTrue);
       expect(decision.source, 'long-form');
-      expect(
-        GemmaGenerationOutputLimit.forTextDirect(prompt: prompt),
-        1024,
-      );
+      expect(decision.effectiveOutputLimit, isNot(1024));
     });
 
-    test('explicit maxOutputTokens other than legacy 256 overrides long-form', () {
+    test('explicit maxOutputTokens other than legacy 256 overrides long-form in one session', () {
       final decision = GemmaGenerationOutputLimit.resolveTextDirect(
         prompt: 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه',
         explicitMaxOutputTokens: 768,
         maxOutputTokensSpecified: true,
       );
 
-      expect(decision.detectedLongForm, isTrue);
-      expect(decision.requestedOutputLimit, 1024);
+      expect(decision.answerClass, 'long-form');
+      expect(decision.requestedOutputLimit, 256);
       expect(decision.effectiveOutputLimit, 768);
+      expect(decision.staged, isFalse);
       expect(decision.source, 'explicit');
     });
 
-    test('normal text.direct stays 512 when the manifest still carries 256', () {
+    test('normal text.direct stays 256 when the manifest still carries 256', () {
       final decision = GemmaGenerationOutputLimit.resolveTextDirect(
         prompt: 'Say hello',
         explicitMaxOutputTokens: 256,
         maxOutputTokensSpecified: true,
       );
 
+      expect(decision.answerClass, 'short');
       expect(decision.detectedLongForm, isFalse);
-      expect(decision.effectiveOutputLimit, 512);
-      expect(decision.source, 'default');
+      expect(decision.effectiveOutputLimit, 256);
+      expect(decision.source, 'short');
     });
   });
 
@@ -143,7 +182,7 @@ void main() {
   });
 
   group('DirectPromptHandler truncation', () {
-    test('output-limit evidence is not a successful result', () {
+    test('free-form output-limit text is a truncated success', () {
       final result = DirectPromptHandler.resultFor(
         request: _request(),
         generation: const DirectGenerationReceipt(
@@ -156,11 +195,47 @@ void main() {
         metrics: WorkerTaskMetrics(),
       );
 
-      expect(result.status, WorkerResultStatus.failed);
+      expect(result.status, WorkerResultStatus.succeeded);
+      expect(result.error, isNull);
       expect(result.output?['truncated'], isTrue);
       expect(result.output?['stopReason'], 'OUTPUT_LIMIT');
+      expect(result.output?['stopReason'], isNot('EOS'));
       expect(result.output?['generatedChunks'], 256);
-      expect(result.error?.retryable, isFalse);
+    });
+
+    test('empty output-limit text still fails', () {
+      final result = DirectPromptHandler.resultFor(
+        request: _request(),
+        generation: const DirectGenerationReceipt(
+          text: '   ',
+          stopReason: GemmaGenerationOutputLimit.outputLimit,
+          configuredOutputLimit: 256,
+          generatedChunks: 256,
+          generatedTokens: 0,
+        ),
+        metrics: WorkerTaskMetrics(),
+      );
+
+      expect(result.status, WorkerResultStatus.failed);
+      expect(result.error?.code.name, 'outputSchemaMismatch');
+    });
+
+    test('structured output that hits the cap still fails', () {
+      final result = DirectPromptHandler.resultFor(
+        request: _request(outputSchema: const {'type': 'object'}),
+        generation: const DirectGenerationReceipt(
+          text: '{"summary":',
+          stopReason: GemmaGenerationOutputLimit.outputLimit,
+          configuredOutputLimit: 256,
+          generatedChunks: 256,
+          generatedTokens: 20,
+        ),
+        metrics: WorkerTaskMetrics(),
+      );
+
+      expect(result.status, WorkerResultStatus.failed);
+      expect(result.output?['stopReason'], 'OUTPUT_LIMIT');
+      expect(result.output?['truncated'], isTrue);
     });
 
     test('contract allowTruncatedOutput keeps the partial transcript successful', () {
@@ -198,6 +273,68 @@ void main() {
       expect(result.output?['truncated'], isFalse);
     });
   });
+
+  group('staged long-form', () {
+    test('continues in a new session after the stage cap and stops on EOS', () async {
+      const prompt = 'Write a 5-page article about ants.';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      expect(decision.staged, isTrue);
+      expect(decision.effectiveOutputLimit, 256);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          if (stageIndex == 0) {
+            expect(stagePrompt, prompt);
+            return const GemmaStagePiece(
+              text: 'Part one',
+              stopReason: GemmaGenerationOutputLimit.outputLimit,
+              generatedChunks: 256,
+              generatedTokens: 200,
+            );
+          }
+          expect(stagePrompt, contains('Continue'));
+          expect(stagePrompt, isNot(prompt));
+          return const GemmaStagePiece(
+            text: 'Part two',
+            stopReason: GemmaGenerationOutputLimit.eos,
+            generatedChunks: 40,
+            generatedTokens: 30,
+          );
+        },
+      );
+
+      expect(calls, 2);
+      expect(result.text, 'Part one\nPart two');
+      expect(result.stopReason, GemmaGenerationOutputLimit.eos);
+      expect(result.stopReason, isNot(GemmaGenerationOutputLimit.outputLimit));
+      expect(result.generatedChunks, 296);
+    });
+
+    test('a short example stays one session', () async {
+      const prompt = 'در مورد پرورش مورچه یه مثاله بهم بده';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      var calls = 0;
+      await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          return const GemmaStagePiece(
+            text: 'example',
+            stopReason: GemmaGenerationOutputLimit.eos,
+            generatedChunks: 8,
+            generatedTokens: 4,
+          );
+        },
+      );
+      expect(decision.answerClass, 'short');
+      expect(decision.staged, isFalse);
+      expect(calls, 1);
+    });
+  });
 }
 
 String _piece(int index) {
@@ -206,13 +343,19 @@ String _piece(int index) {
   return '$a$b';
 }
 
-WorkerTaskRequest _request({bool allowTruncatedOutput = false}) {
+WorkerTaskRequest _request({
+  bool allowTruncatedOutput = false,
+  Map<String, dynamic>? outputSchema,
+}) {
   return WorkerTaskRequest(
     schemaVersion: '1.0',
     taskId: 'tsk-direct',
     idempotencyKey: 'idem',
     type: 'text.direct.v1',
     input: const WorkerTaskInput(text: 'Write a 5-page article'),
-    options: WorkerTaskOptions(allowTruncatedOutput: allowTruncatedOutput),
+    options: WorkerTaskOptions(
+      allowTruncatedOutput: allowTruncatedOutput,
+      outputSchema: outputSchema,
+    ),
   );
 }

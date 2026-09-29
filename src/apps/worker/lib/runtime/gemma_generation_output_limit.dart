@@ -5,8 +5,19 @@ import '../validation/output_repetition_guard.dart';
 /// Output-generation cap for Gemma. This is separate from the LiteRT context
 /// window (`maxTokens` / KV cache, 2048 in benchmark mode).
 abstract final class GemmaGenerationOutputLimit {
-  static const textDirect = 512;
-  static const textDirectLongForm = 1024;
+  /// Short/default free-form answer. Also the per-stage cap for long-form.
+  static const textDirectShort = 256;
+
+  /// Medium answer: explain, elaborate, or a normally detailed reply.
+  static const textDirectMedium = 384;
+
+  /// Explicitly detailed or extended answer, still one session.
+  static const textDirectDetailed = 512;
+
+  /// Kept as the short/default cap. Not the long-form session size.
+  static const textDirect = textDirectShort;
+
+  static const longFormMaxStages = 4;
 
   static const eos = 'EOS';
   static const outputLimit = 'OUTPUT_LIMIT';
@@ -17,32 +28,59 @@ abstract final class GemmaGenerationOutputLimit {
   /// caller override; text.direct must not fall back to it after resolution.
   static const legacyCatalogCap = 256;
 
+  /// Classification, first match wins:
+  /// 1. long-form (article/essay/report/page count, or options.longForm)
+  ///    uses staged sessions of [textDirectShort], never one large session.
+  /// 2. explicitly detailed/extended → [textDirectDetailed] (512).
+  /// 3. medium/detailed → [textDirectMedium] (384).
+  /// 4. otherwise short/default → [textDirectShort] (256).
+  /// An explicit maxOutputTokens other than [legacyCatalogCap] replaces the
+  /// numeric cap and stays a single session.
   static GemmaOutputLimitDecision resolveTextDirect({
     required String prompt,
     int? explicitMaxOutputTokens,
     bool maxOutputTokensSpecified = false,
     bool longForm = false,
   }) {
-    final detectedLongForm = longForm || requestsLongForm(prompt);
-    final requested = detectedLongForm ? textDirectLongForm : textDirect;
+    final answerClass = classifyAnswer(prompt, longForm: longForm);
+    final requested = switch (answerClass) {
+      'medium' => textDirectMedium,
+      'detailed' => textDirectDetailed,
+      _ => textDirectShort,
+    };
     final specified = maxOutputTokensSpecified &&
         explicitMaxOutputTokens != null &&
         explicitMaxOutputTokens > 0 &&
         explicitMaxOutputTokens != legacyCatalogCap;
     if (specified) {
       return GemmaOutputLimitDecision(
-        detectedLongForm: detectedLongForm,
+        answerClass: answerClass,
         requestedOutputLimit: requested,
         effectiveOutputLimit: explicitMaxOutputTokens,
+        staged: false,
         source: 'explicit',
       );
     }
     return GemmaOutputLimitDecision(
-      detectedLongForm: detectedLongForm,
+      answerClass: answerClass,
       requestedOutputLimit: requested,
       effectiveOutputLimit: requested,
-      source: detectedLongForm ? 'long-form' : 'default',
+      staged: answerClass == 'long-form',
+      source: answerClass,
     );
+  }
+
+  static String classifyAnswer(String prompt, {bool longForm = false}) {
+    if (longForm || requestsLongForm(prompt)) {
+      return 'long-form';
+    }
+    if (requestsExplicitlyDetailed(prompt)) {
+      return 'detailed';
+    }
+    if (requestsMediumDetail(prompt)) {
+      return 'medium';
+    }
+    return 'short';
   }
 
   /// Text-only `text.direct` uses [textDirect] unless the prompt or options
@@ -60,6 +98,57 @@ abstract final class GemmaGenerationOutputLimit {
           (explicitMaxOutputTokens != null && explicitMaxOutputTokens != legacyCatalogCap),
       longForm: longForm,
     ).effectiveOutputLimit;
+  }
+
+  /// Explicitly detailed or extended. Checked before the medium cues so
+  /// "very detailed" and "با جزئیات زیاد" do not stop at 384.
+  static bool requestsExplicitlyDetailed(String prompt) {
+    final normalized = prompt.toLowerCase();
+    const english = [
+      'very detailed',
+      'in depth',
+      'in-depth',
+      'extended',
+      'comprehensive',
+      'lengthy',
+      'thorough',
+      'long answer',
+    ];
+    if (english.any((cue) => normalized.contains(cue))) {
+      return true;
+    }
+    const persian = [
+      'خیلی مفصل',
+      'با جزئیات زیاد',
+      'طولانی',
+      'گسترده',
+    ];
+    return persian.any((cue) => prompt.contains(cue));
+  }
+
+  /// A fuller answer that is not an article and not an explicit extended one.
+  static bool requestsMediumDetail(String prompt) {
+    final normalized = prompt.toLowerCase();
+    const english = [
+      'detailed',
+      'in detail',
+      'elaborate',
+      'explain',
+      'step by step',
+      'step-by-step',
+    ];
+    if (english.any((cue) => normalized.contains(cue))) {
+      return true;
+    }
+    const persian = [
+      'مفصل',
+      'با جزئیات',
+      'توضیح',
+      'شرح',
+      'قدم به قدم',
+      'مرحله به مرحله',
+    ];
+    return persian.any((cue) => prompt.contains(cue));
   }
 
   static bool requestsLongForm(String prompt) {
@@ -130,24 +219,110 @@ abstract final class GemmaGenerationOutputLimit {
 
 class GemmaOutputLimitDecision {
   const GemmaOutputLimitDecision({
-    required this.detectedLongForm,
+    required this.answerClass,
     required this.requestedOutputLimit,
     required this.effectiveOutputLimit,
+    required this.staged,
     required this.source,
   });
 
-  final bool detectedLongForm;
+  /// `short`, `medium`, `detailed`, or `long-form`.
+  final String answerClass;
   final int requestedOutputLimit;
   final int effectiveOutputLimit;
 
-  /// `explicit`, `long-form`, or `default`.
+  /// Long-form runs several sessions of [effectiveOutputLimit], not one large one.
+  final bool staged;
+
+  /// `explicit`, or the same value as [answerClass].
   final String source;
 
+  bool get detectedLongForm => answerClass == 'long-form';
+
   String get logLine =>
-      '[OUTPUT LIMIT] detectedLongForm=$detectedLongForm '
-      'requestedOutputLimit=$requestedOutputLimit '
+      '[OUTPUT LIMIT] answerClass=$answerClass '
       'effectiveOutputLimit=$effectiveOutputLimit '
+      'staged=$staged '
       'source=$source';
+
+  String completionLog({
+    required int generatedChunks,
+    required int generatedTokens,
+    required bool truncated,
+  }) =>
+      '[OUTPUT LIMIT] answerClass=$answerClass '
+      'effectiveOutputLimit=$effectiveOutputLimit '
+      'generatedChunks=$generatedChunks '
+      'generatedTokens=$generatedTokens '
+      'truncated=$truncated';
+}
+
+class GemmaStagePiece {
+  const GemmaStagePiece({
+    required this.text,
+    required this.stopReason,
+    required this.generatedChunks,
+    required this.generatedTokens,
+  });
+
+  final String text;
+  final String stopReason;
+  final int generatedChunks;
+  final int generatedTokens;
+
+  bool get hitOutputLimit => stopReason == GemmaGenerationOutputLimit.outputLimit;
+}
+
+/// Long-form continues in fresh sessions of the stage cap. Each session closes
+/// before the next one opens; the resident model is not reloaded here.
+class GemmaStagedDirectGeneration {
+  static Future<GemmaStagePiece> run({
+    required GemmaOutputLimitDecision decision,
+    required String prompt,
+    required Future<GemmaStagePiece> Function(int stageIndex, String stagePrompt) generateStage,
+    TokenEstimator estimator = const TokenEstimator(),
+  }) async {
+    if (!decision.staged) {
+      return generateStage(0, prompt);
+    }
+
+    final buffer = StringBuffer();
+    var generatedChunks = 0;
+    var stopReason = GemmaGenerationOutputLimit.eos;
+    for (var stage = 0; stage < GemmaGenerationOutputLimit.longFormMaxStages; stage++) {
+      final stagePrompt = stage == 0 ? prompt : continuationPrompt(prompt, buffer.toString());
+      final piece = await generateStage(stage, stagePrompt);
+      generatedChunks += piece.generatedChunks;
+      stopReason = piece.stopReason;
+      final addition = piece.text.trim();
+      if (addition.isEmpty) {
+        break;
+      }
+      if (buffer.isNotEmpty) {
+        buffer.write('\n');
+      }
+      buffer.write(addition);
+      if (!piece.hitOutputLimit) {
+        break;
+      }
+    }
+    final text = buffer.toString();
+    return GemmaStagePiece(
+      text: text,
+      stopReason: stopReason,
+      generatedChunks: generatedChunks,
+      generatedTokens: estimator.estimate(text),
+    );
+  }
+
+  static String continuationPrompt(String original, String soFar) {
+    const tailLimit = 1200;
+    final tail = soFar.length <= tailLimit ? soFar : soFar.substring(soFar.length - tailLimit);
+    return 'Continue the same answer. Do not repeat earlier text.\n\n'
+        'Request:\n$original\n\n'
+        'Answer so far ends with:\n$tail\n\n'
+        'Continue:';
+  }
 }
 
 class GemmaDecodePiece {
