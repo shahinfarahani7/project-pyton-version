@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:edgemint_worker/contracts/worker_error.dart';
-import 'package:edgemint_worker/runtime/gemma_multimodal_vision_runtime.dart';
+import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
+import 'package:edgemint_worker/runtime/gemma4_e4b_gpu_benchmark.dart';
+import 'package:edgemint_worker/runtime/gemma_inference_adapter.dart';
 import 'package:edgemint_worker/runtime/gemma_model_runtime_manager.dart';
 import 'package:edgemint_worker/runtime/inference_adapter.dart';
 import 'package:edgemint_worker/models/worker_model_catalog.dart';
@@ -40,13 +42,107 @@ void main() {
       expect(manager.configuredMaxNumImages, 0);
     });
 
-    test('image task reloads engine with supportImage and maxNumImages 1', () async {
-      await manager.ensureResident(artifact: artifact, signingKey: 'sign');
-      await manager.ensureMultimodalVisionEngine();
+    test('image task after text-only resident upgrades once', () async {
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: false,
+      );
+      expect(manager.lastCapabilityAction, 'load');
+      expect(manager.lastRequestedCapability, 'text');
+      expect(manager.lastResidentCapability, 'none');
+
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: true,
+      );
       expect(loader.calls.length, 2);
+      expect(loader.calls.first.supportImage, isFalse);
       expect(loader.calls.last.supportImage, isTrue);
       expect(loader.calls.last.maxNumImages, 1);
+      expect(loader.calls.last.maxTokens, Gemma4E4bBenchmarkMode.residentMaxTokens);
+      expect(manager.lastCapabilityAction, 'upgrade');
+      expect(manager.lastRequestedCapability, 'vision');
+      expect(manager.lastResidentCapability, 'text');
       expect(manager.visionExecutorLoaded, isTrue);
+      expect(manager.openSessionCount, 0);
+    });
+
+    test('first image task with no resident engine loads multimodal directly', () async {
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: true,
+      );
+      expect(loader.calls.length, 1);
+      expect(loader.calls.single.supportImage, isTrue);
+      expect(loader.calls.single.maxNumImages, 1);
+      expect(loader.calls.single.maxTokens, Gemma4E4bBenchmarkMode.residentMaxTokens);
+      expect(manager.lastRequestedCapability, 'vision');
+      expect(manager.lastResidentCapability, 'none');
+      expect(manager.lastCapabilityAction, 'load');
+      expect(manager.visionExecutorLoaded, isTrue);
+      expect(manager.openSessionCount, 0);
+
+      await manager.ensureMultimodalVisionEngine();
+      expect(loader.calls.length, 1);
+      expect(manager.lastCapabilityAction, 'reuse');
+    });
+
+    test('image task after multimodal resident engine does not reload', () async {
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: true,
+      );
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: true,
+      );
+      expect(loader.calls.length, 1);
+      expect(manager.lastRequestedCapability, 'vision');
+      expect(manager.lastResidentCapability, 'vision');
+      expect(manager.lastCapabilityAction, 'reuse');
+    });
+
+    test('text task after multimodal resident engine reuses without downgrade', () async {
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: true,
+      );
+      await manager.ensureResidentForAssignment(
+        artifact: artifact,
+        signingKey: 'sign',
+        enableVision: false,
+      );
+      expect(loader.calls.length, 1);
+      expect(loader.calls.single.supportImage, isTrue);
+      expect(manager.visionExecutorLoaded, isTrue);
+      expect(manager.lastRequestedCapability, 'text');
+      expect(manager.lastResidentCapability, 'vision');
+      expect(manager.lastCapabilityAction, 'reuse');
+    });
+
+    test('processor image preload loads vision once before session open', () async {
+      final processor = QwenTaskProcessor(
+        adapter: GemmaLiteRtInferenceAdapter(runtimeManager: manager),
+      );
+      await processor.ensureRuntimeResident(
+        signingKey: 'sign',
+        requireVision: true,
+      );
+      expect(loader.calls.length, 1);
+      expect(loader.calls.single.supportImage, isTrue);
+      expect(loader.calls.single.maxNumImages, 1);
+      expect(loader.calls.single.maxTokens, Gemma4E4bBenchmarkMode.residentMaxTokens);
+      expect(manager.openSessionCount, 0);
+
+      await manager.ensureMultimodalVisionEngine();
+      expect(loader.calls.length, 1);
+      expect(manager.lastCapabilityAction, 'reuse');
     });
 
     test('vision upgrade while session open is VISION_RUNTIME_NOT_READY', () async {

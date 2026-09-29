@@ -30,6 +30,9 @@ class WorkerTaskOptions {
     this.languages = const ['fa', 'en'],
     this.minOcrConfidence = 0.55,
     this.maxOutputTokens = 256,
+    this.maxOutputTokensSpecified = false,
+    this.longForm = false,
+    this.allowTruncatedOutput = false,
     this.outputSchema,
     this.allowedLabels,
     this.ocrOnly = false,
@@ -39,6 +42,15 @@ class WorkerTaskOptions {
   final List<String> languages;
   final double minOcrConfidence;
   final int maxOutputTokens;
+
+  /// True only when the task payload set `maxOutputTokens` explicitly.
+  final bool maxOutputTokensSpecified;
+
+  /// Asks `text.direct` to use the long-form output budget.
+  final bool longForm;
+
+  /// When false, hitting the output cap is a failed result, not success.
+  final bool allowTruncatedOutput;
   final Map<String, dynamic>? outputSchema;
   final List<String>? allowedLabels;
   final bool ocrOnly;
@@ -61,6 +73,9 @@ class WorkerTaskOptions {
           const ['fa', 'en'],
       minOcrConfidence: (json['minOcrConfidence'] as num?)?.toDouble() ?? 0.55,
       maxOutputTokens: (json['maxOutputTokens'] as num?)?.toInt() ?? 256,
+      maxOutputTokensSpecified: json.containsKey('maxOutputTokens'),
+      longForm: json['longForm'] == true,
+      allowTruncatedOutput: json['allowTruncatedOutput'] == true,
       outputSchema: json['outputSchema'] as Map<String, dynamic>?,
       allowedLabels: (json['allowedLabels'] as List<dynamic>?)
           ?.map((e) => e.toString())

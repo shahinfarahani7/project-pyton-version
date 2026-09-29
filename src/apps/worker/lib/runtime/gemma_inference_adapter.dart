@@ -4,22 +4,13 @@ import 'dart:typed_data';
 import 'package:flutter_gemma/flutter_gemma.dart';
 
 import '../contracts/worker_error.dart';
-import '../inference/llm/context_budget_manager.dart';
 import '../models/worker_model_catalog.dart';
-import '../validation/json_stream_boundary.dart';
-import '../validation/output_repetition_guard.dart';
+import 'gemma_generation_output_limit.dart';
 import 'gemma_multimodal_vision_runtime.dart';
 import 'gemma_model_runtime_manager.dart';
 import 'inference_adapter.dart';
 import 'model_runtime_manager.dart';
 import 'worker_pipeline_log.dart';
-
-class _BoundedGeneration {
-  const _BoundedGeneration({required this.text, required this.stopReason});
-
-  final String text;
-  final String stopReason;
-}
 
 /// Runs task prompts through the active on-device Gemma model.
 class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
@@ -62,7 +53,24 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     ModelArtifact artifact, {
     required String signingKey,
   }) {
-    return _runtime.ensureResident(artifact: artifact, signingKey: signingKey);
+    return loadResidentForInput(
+      artifact,
+      signingKey: signingKey,
+      enableVision: false,
+    );
+  }
+
+  /// Resident load that can start multimodal when the assignment image is already known.
+  Future<void> loadResidentForInput(
+    ModelArtifact artifact, {
+    required String signingKey,
+    required bool enableVision,
+  }) {
+    return _runtime.ensureResidentForAssignment(
+      artifact: artifact,
+      signingKey: signingKey,
+      enableVision: enableVision,
+    );
   }
 
   @override
@@ -175,14 +183,44 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         }
         await onProgress?.call(700);
 
-        _log('[LLM INFERENCE] generation started');
-        final generation = await _generateBounded(
-          chat,
-          maxOutputTokens: outputTokenCap,
+        _log(
+          '[LLM INFERENCE] generation started '
+          'configuredOutputLimit=$outputTokenCap',
+        );
+        final generation = await GemmaChunkGeneration.collect(
+          pieces: chat.generateChatResponseAsync().map(
+            (response) => switch (response) {
+              TextResponse(:final token) => GemmaDecodePiece(token),
+              ThinkingResponse(:final content) => GemmaDecodePiece(
+                content,
+                answer: false,
+              ),
+              FunctionCallResponse(:final name, :final args) =>
+                GemmaDecodePiece('$name($args)'),
+              ParallelFunctionCallResponse(:final calls) => GemmaDecodePiece(
+                calls.map((call) => '${call.name}(${call.args})').join(', '),
+              ),
+            },
+          ),
+          configuredOutputLimit: outputTokenCap,
+          onStop: () => _stopGeneration(chat),
         );
         if (stopwatch.isRunning) {
           stopwatch.stop();
         }
+        if (generation.stopReason == 'repetition') {
+          _log(
+            '[LLM REPETITION STOP] outputChars=${generation.text.length} '
+            'generatedChunks=${generation.generatedChunks} '
+            'cancelRequested=true',
+          );
+        }
+        _log(
+          '[LLM OUTPUT LIMIT] configuredOutputLimit=${generation.configuredOutputLimit} '
+          'generatedChunks=${generation.generatedChunks} '
+          'generatedTokens=${generation.generatedTokens} '
+          'stopReason=${generation.stopReason}',
+        );
         _log(
           '[LLM INFERENCE] generation completed '
           'elapsedMs=${stopwatch.elapsedMilliseconds} '
@@ -206,7 +244,11 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
             'outputChars': text.length,
             'elapsedMs': stopwatch.elapsedMilliseconds,
             'maxTokens': WorkerModelCatalog.runtimeMaxTokens,
+            'configuredOutputLimit': generation.configuredOutputLimit,
+            'generatedChunks': generation.generatedChunks,
+            'generatedTokens': generation.generatedTokens,
             'stopReason': generation.stopReason,
+            'truncated': generation.hitOutputLimit,
             'sessionStage': multimodal ? 'multimodal' : 'inference',
             'multimodal': multimodal,
           },
@@ -242,70 +284,6 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       }
       rethrow;
     }
-  }
-
-  /// Streams the reply and stops the native decode as soon as the requested
-  /// JSON object closes or the output budget is spent. The MediaPipe `.task`
-  /// path ignores `maxOutputTokens`, so without this the model keeps decoding
-  /// until it hits the sequence limit and returns truncated, repeated text.
-  Future<_BoundedGeneration> _generateBounded(
-    InferenceChat chat, {
-    int? maxOutputTokens,
-  }) async {
-    final tokenCap = maxOutputTokens ?? this.maxOutputTokens;
-    final maxOutputChars =
-        (tokenCap * const TokenEstimator().charactersPerToken).floor();
-    final boundary = JsonObjectBoundaryScanner();
-    final repetition = OutputRepetitionGuard();
-    final buffer = StringBuffer();
-    var stopReason = 'model_eos';
-    var stopRequested = false;
-
-    await for (final response in chat.generateChatResponseAsync()) {
-      // Tokens can still arrive after the stop is requested; the session stays
-      // busy until the stream completes, so the loop keeps draining instead of
-      // breaking out (closing a busy session throws IllegalStateException).
-      if (stopRequested) {
-        continue;
-      }
-
-      final fragment = switch (response) {
-        TextResponse(:final token) => token,
-        ThinkingResponse(:final content) => content,
-        FunctionCallResponse(:final name, :final args) => '$name($args)',
-        ParallelFunctionCallResponse(:final calls) => calls
-            .map((call) => '${call.name}(${call.args})')
-            .join(', '),
-      };
-      buffer.write(fragment);
-
-      // Reasoning text is not part of the answer object, so braces inside it
-      // must not end the turn early.
-      final answerFragment = response is ThinkingResponse ? '' : fragment;
-      if (boundary.feed(answerFragment)) {
-        stopReason = 'json_complete';
-      } else if (buffer.length >= maxOutputChars) {
-        stopReason = 'output_limit';
-      } else if (repetition.feed(answerFragment)) {
-        stopReason = 'repetition';
-        _log(
-          '[LLM REPETITION STOP] outputChars=${buffer.length} '
-          'windowChars=${repetition.windowChars} '
-          'minRepeats=${repetition.minRepeats} '
-          'localMatches=${repetition.lastTriggerMatchCount} '
-          'outputLength=${repetition.lastTriggerOutputLength} '
-          'window="${_preview(repetition.lastTriggerWindow ?? '', maxLength: 64)}" '
-          'cancelRequested=true',
-        );
-      } else {
-        continue;
-      }
-
-      stopRequested = true;
-      await _stopGeneration(chat);
-    }
-
-    return _BoundedGeneration(text: buffer.toString(), stopReason: stopReason);
   }
 
   Future<void> _stopGeneration(InferenceChat chat) async {

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import '../../contracts/worker_error.dart';
 import '../../models/worker_model_catalog.dart';
+import '../../runtime/gemma_generation_output_limit.dart';
 import '../../runtime/gemma_inference_adapter.dart';
 import '../../runtime/inference_adapter.dart';
 import '../../runtime/checkpoint_manager.dart';
@@ -60,11 +61,36 @@ class _PromptReply {
     required this.text,
     required this.truncated,
     this.stopReason = 'model_eos',
+    this.configuredOutputLimit = 0,
+    this.generatedChunks = 0,
+    this.generatedTokens = 0,
   });
 
   final String text;
   final bool truncated;
   final String stopReason;
+  final int configuredOutputLimit;
+  final int generatedChunks;
+  final int generatedTokens;
+}
+
+class DirectGenerationReceipt {
+  const DirectGenerationReceipt({
+    required this.text,
+    required this.stopReason,
+    required this.configuredOutputLimit,
+    required this.generatedChunks,
+    required this.generatedTokens,
+  });
+
+  final String text;
+  final String stopReason;
+  final int configuredOutputLimit;
+  final int generatedChunks;
+  final int generatedTokens;
+
+  bool get hitOutputLimit =>
+      stopReason == GemmaGenerationOutputLimit.outputLimit;
 }
 
 /// One shared budget for JSON repair, labeled fallback, compact, and constraint repair.
@@ -159,10 +185,13 @@ class QwenTaskProcessor {
     return '${normalized.substring(0, maxLength)}…';
   }
 
-  Future<void> ensureLoaded({required String signingKey}) async {
+  Future<void> ensureLoaded({
+    required String signingKey,
+    bool requireVision = false,
+  }) async {
     // Another task may have activated InternVL; always re-select the exact
     // verified Qwen artifact before text generation.
-    await _adapter.loadVerified(
+    await _adapter.loadResidentForInput(
       ModelArtifact(
         modelVersionId: WorkerModelCatalog.modelVersionId,
         digestSha256: WorkerModelCatalog.installedDigestMarker,
@@ -173,14 +202,18 @@ class QwenTaskProcessor {
         bytes: Uint8List.fromList([0]),
       ),
       signingKey: signingKey,
+      enableVision: requireVision,
     );
   }
 
-  Future<void> ensureRuntimeResident({required String signingKey}) async {
+  Future<void> ensureRuntimeResident({
+    required String signingKey,
+    bool requireVision = false,
+  }) async {
     if (_runner != null) {
       return;
     }
-    await ensureLoaded(signingKey: signingKey);
+    await ensureLoaded(signingKey: signingKey, requireVision: requireVision);
   }
 
   Future<Map<String, dynamic>> runJsonTask({
@@ -1709,6 +1742,45 @@ class QwenTaskProcessor {
     );
   }
 
+  Future<DirectGenerationReceipt> runDirectUserGeneration(
+    String userText, {
+    required String signingKey,
+    Uint8List? imageBytes,
+    int? maxOutputTokens,
+  }) async {
+    final trimmed = userText.trim();
+    final hasImage = imageBytes != null && imageBytes.isNotEmpty;
+    if (trimmed.isEmpty && !hasImage) {
+      throw const WorkerError(
+        code: WorkerErrorCode.invalidTask,
+        message: 'Direct prompt text is empty',
+        retryable: false,
+        stage: WorkerTaskStage.llm,
+      );
+    }
+    final prompt = trimmed.isEmpty
+        ? 'Describe this image and answer any question implied by the user.'
+        : trimmed;
+    _log(
+      '[DIRECT USER PROMPT] chars=${prompt.length} '
+      'imageBytes=${imageBytes?.length ?? 0}',
+    );
+    final reply = await _runPromptReply(
+      prompt,
+      signingKey: signingKey,
+      systemInstruction: '',
+      imageBytes: imageBytes,
+      maxOutputTokens: maxOutputTokens,
+    );
+    return DirectGenerationReceipt(
+      text: reply.text,
+      stopReason: reply.stopReason,
+      configuredOutputLimit: reply.configuredOutputLimit,
+      generatedChunks: reply.generatedChunks,
+      generatedTokens: reply.generatedTokens,
+    );
+  }
+
   Future<_PromptReply> _runPromptReply(
     String prompt, {
     required String signingKey,
@@ -1734,30 +1806,30 @@ class QwenTaskProcessor {
         stopReason: testRunnerTruncated ? testRunnerStopReason : 'model_eos',
       );
     }
-    await ensureLoaded(signingKey: signingKey);
+    final hasImage = imageBytes != null && imageBytes.isNotEmpty;
+    await ensureLoaded(signingKey: signingKey, requireVision: hasImage);
     if (systemInstruction == '') {
       _adapter.usePortalPassthroughChat = true;
     }
     try {
       final InferenceOutput output;
-      if (imageBytes != null && imageBytes.isNotEmpty) {
-        output = await _adapter.runUserPrompt(
-          prompt: prompt,
-          imageBytes: imageBytes,
-          resumedState: null,
-          maxOutputTokensOverride: outputCap,
-        );
-      } else {
-        output = await _adapter.run(
-          inputBytes: Uint8List.fromList(utf8.encode(prompt)),
-          resumedState: null,
-        );
-      }
+      output = await _adapter.runUserPrompt(
+        prompt: prompt,
+        imageBytes: hasImage ? imageBytes : null,
+        resumedState: null,
+        maxOutputTokensOverride: outputCap,
+      );
       final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
       return _PromptReply(
         text: utf8.decode(output.resultBytes),
-        truncated: stopReason == 'output_limit' || stopReason == 'repetition',
+        truncated: stopReason == 'output_limit' ||
+            stopReason == GemmaGenerationOutputLimit.outputLimit ||
+            stopReason == 'repetition',
         stopReason: stopReason,
+        configuredOutputLimit:
+            output.metrics['configuredOutputLimit'] as int? ?? outputCap,
+        generatedChunks: output.metrics['generatedChunks'] as int? ?? 0,
+        generatedTokens: output.metrics['generatedTokens'] as int? ?? 0,
       );
     } finally {
       if (systemInstruction == '') {

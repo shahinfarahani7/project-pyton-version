@@ -40,7 +40,10 @@ class GemmaMultimodalOcrEngine implements OcrEngine, OcrSigningKeyBinding {
   Future<bool> isReady() async {
     if (_processor.requiresNativeRuntime && _signingKey != null) {
       try {
-        await _processor.ensureRuntimeResident(signingKey: _signingKey!);
+        await _processor.ensureRuntimeResident(
+          signingKey: _signingKey!,
+          requireVision: true,
+        );
         return true;
       } catch (_) {
         return false;
@@ -54,7 +57,10 @@ class GemmaMultimodalOcrEngine implements OcrEngine, OcrSigningKeyBinding {
     if (!_processor.requiresNativeRuntime) {
       return;
     }
-    await _processor.ensureRuntimeResident(signingKey: _requireSigningKey());
+    await _processor.ensureRuntimeResident(
+      signingKey: _requireSigningKey(),
+      requireVision: true,
+    );
   }
 
   @override

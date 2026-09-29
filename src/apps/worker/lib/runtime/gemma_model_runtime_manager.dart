@@ -61,6 +61,36 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       ? GemmaLitertMultimodalVisionPolicy.multimodalMaxNumImages
       : GemmaLitertMultimodalVisionPolicy.textOnlyMaxNumImages;
 
+  @visibleForTesting
+  String? lastRequestedCapability;
+
+  @visibleForTesting
+  String? lastResidentCapability;
+
+  @visibleForTesting
+  String? lastCapabilityAction;
+
+  String get _residentCapabilityLabel {
+    if (_state != ModelResidencyState.resident || _model == null) {
+      return 'none';
+    }
+    return _visionExecutorLoaded ? 'vision' : 'text';
+  }
+
+  void _logCapabilityDecision({
+    required String requestedCapability,
+    required String residentCapability,
+    required String action,
+  }) {
+    lastRequestedCapability = requestedCapability;
+    lastResidentCapability = residentCapability;
+    lastCapabilityAction = action;
+    _log(
+      '[MODEL CAPABILITY] requestedCapability=$requestedCapability '
+      'residentCapability=$residentCapability action=$action',
+    );
+  }
+
   static Future<InferenceModel> _defaultActiveModelLoader({
     required int maxTokens,
     required PreferredBackend preferredBackend,
@@ -98,28 +128,55 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   Future<void> ensureResident({
     required ModelArtifact artifact,
     required String signingKey,
+  }) {
+    return ensureResidentForAssignment(
+      artifact: artifact,
+      signingKey: signingKey,
+      enableVision: false,
+    );
+  }
+
+  /// Loads or reuses the resident engine for the current assignment.
+  ///
+  /// When [enableVision] is true and nothing is resident, the first native
+  /// load is multimodal. A text-only resident engine is upgraded once.
+  /// A vision-capable resident engine is never downgraded.
+  Future<void> ensureResidentForAssignment({
+    required ModelArtifact artifact,
+    required String signingKey,
+    required bool enableVision,
   }) async {
     _lastArtifact = artifact;
     _lastSigningKey = signingKey;
 
-    if (_state == ModelResidencyState.resident &&
+    final requestedCapability = enableVision ? 'vision' : 'text';
+    final residentCapability = _residentCapabilityLabel;
+    final sameModel = _state == ModelResidencyState.resident &&
         _modelVersionId == artifact.modelVersionId &&
-        _model != null &&
-        !_visionExecutorLoaded) {
+        _model != null;
+
+    if (sameModel && (_visionExecutorLoaded || !enableVision)) {
+      _logCapabilityDecision(
+        requestedCapability: requestedCapability,
+        residentCapability: residentCapability,
+        action: 'reuse',
+      );
       _log(
-        '${GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(visionExecutorLoaded: false, multimodal: false)} '
+        '${GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(visionExecutorLoaded: _visionExecutorLoaded, multimodal: enableVision)} '
         'reuse modelVersionId=${artifact.modelVersionId}',
       );
       return;
     }
 
-    if (_state == ModelResidencyState.resident &&
-        _modelVersionId == artifact.modelVersionId &&
-        _model != null &&
-        _visionExecutorLoaded) {
-      _log(
-        '${GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(visionExecutorLoaded: true, multimodal: false)} '
-        'reuse modelVersionId=${artifact.modelVersionId}',
+    if (sameModel && enableVision && !_visionExecutorLoaded) {
+      _logCapabilityDecision(
+        requestedCapability: requestedCapability,
+        residentCapability: residentCapability,
+        action: 'upgrade',
+      );
+      await _upgradeResidentEngineToVision(
+        artifact: artifact,
+        signingKey: signingKey,
       );
       return;
     }
@@ -131,10 +188,15 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       await unload(reason: ModelUnloadReason.modelReplacement, force: true);
     }
 
+    _logCapabilityDecision(
+      requestedCapability: requestedCapability,
+      residentCapability: 'none',
+      action: 'load',
+    );
     await _loadResidentEngine(
       artifact: artifact,
       signingKey: signingKey,
-      enableVision: false,
+      enableVision: enableVision,
     );
   }
 
@@ -144,6 +206,11 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   /// not lazy-loaded per chat session on the current FFI bindings.
   Future<void> ensureMultimodalVisionEngine() async {
     if (_visionExecutorLoaded && _model != null) {
+      _logCapabilityDecision(
+        requestedCapability: 'vision',
+        residentCapability: 'vision',
+        action: 'reuse',
+      );
       _log(
         GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(
           visionExecutorLoaded: true,
@@ -159,17 +226,53 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       'engineMode=${_visionExecutorLoaded ? "multimodal" : "text-only"}',
     );
 
-    if (_openSessions > 0) {
-      throw GemmaLitertMultimodalVisionPolicy.visionRuntimeNotReady(
-        'Cannot upgrade LiteRT vision executor while $_openSessions session(s) are open',
-      );
-    }
-
     final artifact = _lastArtifact;
     final signingKey = _lastSigningKey;
     if (artifact == null || signingKey == null) {
       throw GemmaLitertMultimodalVisionPolicy.visionRuntimeNotReady(
         'Primary model must be resident before multimodal vision can load',
+      );
+    }
+
+    final residentCapability = _residentCapabilityLabel;
+    if (_state == ModelResidencyState.resident && _model != null) {
+      _logCapabilityDecision(
+        requestedCapability: 'vision',
+        residentCapability: residentCapability,
+        action: 'upgrade',
+      );
+      await _upgradeResidentEngineToVision(
+        artifact: artifact,
+        signingKey: signingKey,
+      );
+      return;
+    }
+
+    _logCapabilityDecision(
+      requestedCapability: 'vision',
+      residentCapability: 'none',
+      action: 'load',
+    );
+    await _loadResidentEngine(
+      artifact: artifact,
+      signingKey: signingKey,
+      enableVision: true,
+    );
+    _log(
+      GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(
+        visionExecutorLoaded: true,
+        multimodal: true,
+      ),
+    );
+  }
+
+  Future<void> _upgradeResidentEngineToVision({
+    required ModelArtifact artifact,
+    required String signingKey,
+  }) async {
+    if (_openSessions > 0) {
+      throw GemmaLitertMultimodalVisionPolicy.visionRuntimeNotReady(
+        'Cannot upgrade LiteRT vision executor while $_openSessions session(s) are open',
       );
     }
 

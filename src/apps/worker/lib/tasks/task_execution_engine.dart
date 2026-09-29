@@ -324,7 +324,10 @@ class TaskExecutionEngine {
             '[LLM RESIDENT LOAD] taskId=${request.taskId}',
             name: 'EdgeMintTaskEngine',
           );
-          await _qwenProcessor.ensureRuntimeResident(signingKey: signingKey);
+          await _qwenProcessor.ensureRuntimeResident(
+            signingKey: signingKey,
+            requireVision: context.isImageInput,
+          );
           developer.log(
             '[LLM RESIDENT READY] taskId=${request.taskId}',
             name: 'EdgeMintTaskEngine',

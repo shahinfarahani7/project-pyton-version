@@ -4,6 +4,7 @@ import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../runtime/checkpoint_manager.dart';
+import '../../runtime/gemma_generation_output_limit.dart';
 import '../../telemetry/worker_task_metrics.dart';
 import 'task_handler.dart';
 
@@ -46,23 +47,67 @@ class DirectPromptHandler implements TaskHandler {
       );
     }
 
+    final outputLimit = GemmaGenerationOutputLimit.forTextDirect(
+      prompt: userText,
+      explicitMaxOutputTokens: request.options.maxOutputTokensSpecified
+          ? request.options.maxOutputTokens
+          : null,
+      longForm: request.options.longForm,
+    );
+
     final llmStart = DateTime.now();
-    final modelTranscript = await qwenProcessor.runDirectUserText(
+    final generation = await qwenProcessor.runDirectUserGeneration(
       userText,
       signingKey: signingKey,
       imageBytes: hasImage ? imageBytes : null,
-      maxOutputTokens: 512,
+      maxOutputTokens: outputLimit,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
 
+    return resultFor(
+      request: request,
+      generation: generation,
+      metrics: metrics,
+    );
+  }
+
+  static WorkerTaskResult resultFor({
+    required WorkerTaskRequest request,
+    required DirectGenerationReceipt generation,
+    required WorkerTaskMetrics metrics,
+  }) {
+    final evidence = <String, dynamic>{
+      'rawText': generation.text,
+      'modelTranscript': generation.text,
+      'configuredOutputLimit': generation.configuredOutputLimit,
+      'generatedChunks': generation.generatedChunks,
+      'generatedTokens': generation.generatedTokens,
+      'stopReason': generation.stopReason,
+      'truncated': generation.hitOutputLimit,
+    };
+    if (generation.hitOutputLimit && !request.options.allowTruncatedOutput) {
+      return WorkerTaskResult(
+        schemaVersion: request.schemaVersion,
+        taskId: request.taskId,
+        status: WorkerResultStatus.failed,
+        output: evidence,
+        metrics: metrics.toJson(),
+        error: WorkerError(
+          code: WorkerErrorCode.outputSchemaMismatch,
+          message:
+              'Generation hit output limit '
+              '(${generation.generatedChunks}/${generation.configuredOutputLimit} chunks, '
+              'stopReason=${GemmaGenerationOutputLimit.outputLimit})',
+          retryable: false,
+          stage: WorkerTaskStage.llm,
+        ),
+      );
+    }
     return WorkerTaskResult(
       schemaVersion: request.schemaVersion,
       taskId: request.taskId,
       status: WorkerResultStatus.succeeded,
-      output: {
-        'rawText': modelTranscript,
-        'modelTranscript': modelTranscript,
-      },
+      output: evidence,
       metrics: metrics.toJson(),
     );
   }
