@@ -26,6 +26,7 @@ import '../tasks/task_type_mapper.dart';
 import '../telemetry/worker_task_metrics.dart';
 import '../validation/task_input_validator.dart';
 import 'mobile_task_dispatcher.dart';
+import 'task_execution_plan_policy.dart';
 
 class TaskExecutionContext {
   const TaskExecutionContext({
@@ -191,10 +192,13 @@ class TaskExecutionEngine {
       final usesMapReduceShell = plan.stages.any(
         (stage) => stage.operation == 'llm_map',
       );
-      final usesExecutionPlan =
-          VisionRuntimeCatalog.isVisionCapability(v1Type) ||
-          (requiresLlm && _qwenProcessor.requiresNativeRuntime) ||
-          (_executionPlanRunner != null && requiresLlm && usesMapReduceShell);
+      final usesExecutionPlan = TaskExecutionPlanPolicy.usesExecutionPlanShell(
+        v1Type: v1Type,
+        requiresLlm: requiresLlm,
+        requiresNativeRuntime: _qwenProcessor.requiresNativeRuntime,
+        usesMapReduceShell: usesMapReduceShell,
+        executionPlanRunnerInjected: _executionPlanRunner != null,
+      );
 
       if (requiresOcr &&
           requiresLlm &&

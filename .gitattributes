@@ -1,1 +1,2 @@
 database/sql/*.sql text eol=lf
+tools/*.sh text eol=lf

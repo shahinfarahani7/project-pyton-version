@@ -323,7 +323,11 @@ class ExecutionPlanRunner {
     if (!stage.requiresFreshSession) {
       return body();
     }
-    return _modelRuntime.withFreshSession(stageId: stage.name, body: body);
+    return _modelRuntime.withFreshSession(
+      stageId: stage.name,
+      sessionOwner: 'ExecutionPlanRunner.runStage:${stage.operation}',
+      body: body,
+    );
   }
 
   Future<T> runPlan<T>({

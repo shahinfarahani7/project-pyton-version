@@ -38,6 +38,7 @@ abstract class ModelRuntimeManager {
   Future<T> withFreshSession<T>({
     required String stageId,
     required Future<T> Function() body,
+    String? sessionOwner,
   });
 }
 
@@ -120,6 +121,7 @@ class InMemoryModelRuntimeManager implements ModelRuntimeManager {
   Future<T> withFreshSession<T>({
     required String stageId,
     required Future<T> Function() body,
+    String? sessionOwner,
   }) async {
     if (_state != ModelResidencyState.resident) {
       throw StateError('Model not resident');

@@ -153,6 +153,12 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       return;
     }
 
+    _log(
+      '[VISION UPGRADE] activeSessions=$_openSessions '
+      'visionExecutorLoaded=$_visionExecutorLoaded '
+      'engineMode=${_visionExecutorLoaded ? "multimodal" : "text-only"}',
+    );
+
     if (_openSessions > 0) {
       throw GemmaLitertMultimodalVisionPolicy.visionRuntimeNotReady(
         'Cannot upgrade LiteRT vision executor while $_openSessions session(s) are open',
@@ -175,6 +181,10 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       artifact: artifact,
       signingKey: signingKey,
       enableVision: true,
+    );
+    _log(
+      '[VISION UPGRADE] complete engineMode=multimodal '
+      'maxNumImages=${GemmaLitertMultimodalVisionPolicy.multimodalMaxNumImages}',
     );
     _log(
       GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(
@@ -305,17 +315,23 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   Future<T> withFreshSession<T>({
     required String stageId,
     required Future<T> Function() body,
+    String? sessionOwner,
   }) async {
     if (_state != ModelResidencyState.resident || _model == null) {
       throw StateError('Primary model is not resident');
     }
 
+    final owner = sessionOwner ?? stageId;
+    _log(
+      '[SESSION ACQUIRE] owner=$owner stage=$stageId '
+      'activeSessions=$_openSessions engineMode=${_visionExecutorLoaded ? "multimodal" : "text-only"}',
+    );
     _openSessions += 1;
     IdentityLifecycleTracer.instance.recordNativeSessionOpen(
       caller: 'GemmaModelRuntimeManager.withFreshSession',
       stageId: stageId,
     );
-    _log('[SESSION OPEN] stage=$stageId open=$_openSessions');
+    _log('[SESSION OPEN] stage=$stageId open=$_openSessions owner=$owner');
     Future<T> runBody() async {
       try {
         return await body();
@@ -325,7 +341,11 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
           caller: 'GemmaModelRuntimeManager.withFreshSession',
           stageId: stageId,
         );
-        _log('[SESSION CLOSE] stage=$stageId open=$_openSessions');
+        _log(
+          '[SESSION RELEASE] owner=$owner stage=$stageId '
+          'activeSessions=$_openSessions',
+        );
+        _log('[SESSION CLOSE] stage=$stageId open=$_openSessions owner=$owner');
       }
     }
 

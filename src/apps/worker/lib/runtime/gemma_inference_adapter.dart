@@ -113,6 +113,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
 
     return _runtime.withFreshSession(
       stageId: multimodal ? 'multimodal' : 'inference',
+      sessionOwner: 'GemmaLiteRtInferenceAdapter.runUserPrompt',
       body: () => _runInFreshSession(
         prompt: prompt,
         imageBytes: imageBytes,
