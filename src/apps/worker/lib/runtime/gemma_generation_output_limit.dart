@@ -13,29 +13,90 @@ abstract final class GemmaGenerationOutputLimit {
   static const cancelled = 'CANCELLED';
   static const error = 'ERROR';
 
+  /// Retired catalog default injected into every dev manifest. It is not a
+  /// caller override; text.direct must not fall back to it after resolution.
+  static const legacyCatalogCap = 256;
+
+  static GemmaOutputLimitDecision resolveTextDirect({
+    required String prompt,
+    int? explicitMaxOutputTokens,
+    bool maxOutputTokensSpecified = false,
+    bool longForm = false,
+  }) {
+    final detectedLongForm = longForm || requestsLongForm(prompt);
+    final requested = detectedLongForm ? textDirectLongForm : textDirect;
+    final specified = maxOutputTokensSpecified &&
+        explicitMaxOutputTokens != null &&
+        explicitMaxOutputTokens > 0 &&
+        explicitMaxOutputTokens != legacyCatalogCap;
+    if (specified) {
+      return GemmaOutputLimitDecision(
+        detectedLongForm: detectedLongForm,
+        requestedOutputLimit: requested,
+        effectiveOutputLimit: explicitMaxOutputTokens,
+        source: 'explicit',
+      );
+    }
+    return GemmaOutputLimitDecision(
+      detectedLongForm: detectedLongForm,
+      requestedOutputLimit: requested,
+      effectiveOutputLimit: requested,
+      source: detectedLongForm ? 'long-form' : 'default',
+    );
+  }
+
   /// Text-only `text.direct` uses [textDirect] unless the prompt or options
   /// ask for a long article.
   static int forTextDirect({
     required String prompt,
     int? explicitMaxOutputTokens,
+    bool maxOutputTokensSpecified = false,
     bool longForm = false,
   }) {
-    if (explicitMaxOutputTokens != null && explicitMaxOutputTokens > 0) {
-      return explicitMaxOutputTokens;
-    }
-    if (longForm || requestsLongForm(prompt)) {
-      return textDirectLongForm;
-    }
-    return textDirect;
+    return resolveTextDirect(
+      prompt: prompt,
+      explicitMaxOutputTokens: explicitMaxOutputTokens,
+      maxOutputTokensSpecified: maxOutputTokensSpecified ||
+          (explicitMaxOutputTokens != null && explicitMaxOutputTokens != legacyCatalogCap),
+      longForm: longForm,
+    ).effectiveOutputLimit;
   }
 
   static bool requestsLongForm(String prompt) {
-    final text = prompt.toLowerCase();
-    return text.contains('long-form') ||
-        text.contains('long form') ||
-        text.contains('article') ||
-        text.contains('essay') ||
-        RegExp(r'\b\d+\s*-?\s*pages?\b').hasMatch(text);
+    final normalized = _normalizeDigits(prompt).toLowerCase();
+    if (normalized.contains('long-form') ||
+        normalized.contains('long form') ||
+        normalized.contains('article') ||
+        normalized.contains('essay') ||
+        normalized.contains('report') ||
+        normalized.contains('مقاله') ||
+        normalized.contains('گزارش') ||
+        normalized.contains('انشا')) {
+      return true;
+    }
+    return RegExp(r'\b\d+\s*-?\s*pages?\b').hasMatch(normalized) ||
+        RegExp(r'\d+\s*صفحه').hasMatch(normalized);
+  }
+
+  static String _normalizeDigits(String text) {
+    const persian = '۰۱۲۳۴۵۶۷۸۹';
+    const arabicIndic = '٠١٢٣٤٥٦٧٨٩';
+    final buffer = StringBuffer();
+    for (final rune in text.runes) {
+      final char = String.fromCharCode(rune);
+      final persianIndex = persian.indexOf(char);
+      if (persianIndex >= 0) {
+        buffer.write(persianIndex);
+        continue;
+      }
+      final arabicIndex = arabicIndic.indexOf(char);
+      if (arabicIndex >= 0) {
+        buffer.write(arabicIndex);
+        continue;
+      }
+      buffer.write(char);
+    }
+    return buffer.toString();
   }
 
   /// Native LiteRT stops the stream when `maxOutputTokens` chunks are emitted
@@ -65,6 +126,28 @@ abstract final class GemmaGenerationOutputLimit {
         return provisional;
     }
   }
+}
+
+class GemmaOutputLimitDecision {
+  const GemmaOutputLimitDecision({
+    required this.detectedLongForm,
+    required this.requestedOutputLimit,
+    required this.effectiveOutputLimit,
+    required this.source,
+  });
+
+  final bool detectedLongForm;
+  final int requestedOutputLimit;
+  final int effectiveOutputLimit;
+
+  /// `explicit`, `long-form`, or `default`.
+  final String source;
+
+  String get logLine =>
+      '[OUTPUT LIMIT] detectedLongForm=$detectedLongForm '
+      'requestedOutputLimit=$requestedOutputLimit '
+      'effectiveOutputLimit=$effectiveOutputLimit '
+      'source=$source';
 }
 
 class GemmaDecodePiece {

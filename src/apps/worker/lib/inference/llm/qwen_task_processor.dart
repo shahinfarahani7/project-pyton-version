@@ -1794,6 +1794,11 @@ class QwenTaskProcessor {
           systemInstruction ?? _contextBudget.defaultSystemInstruction,
     );
     final outputCap = maxOutputTokens ?? config.maxOutputTokens;
+    _log(
+      '[OUTPUT LIMIT] effectiveOutputLimit=$outputCap '
+      'adapterDefault=${_adapter.maxOutputTokens} '
+      'source=${maxOutputTokens == null ? "adapter-default" : "caller"}',
+    );
     _contextBudget.ensureDirectInferenceOrThrow(
       prompt: prompt,
       maxOutputTokens: outputCap,

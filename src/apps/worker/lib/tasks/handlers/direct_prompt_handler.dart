@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import '../../contracts/worker_error.dart';
 import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
@@ -47,20 +49,20 @@ class DirectPromptHandler implements TaskHandler {
       );
     }
 
-    final outputLimit = GemmaGenerationOutputLimit.forTextDirect(
+    final decision = GemmaGenerationOutputLimit.resolveTextDirect(
       prompt: userText,
-      explicitMaxOutputTokens: request.options.maxOutputTokensSpecified
-          ? request.options.maxOutputTokens
-          : null,
+      explicitMaxOutputTokens: request.options.maxOutputTokens,
+      maxOutputTokensSpecified: request.options.maxOutputTokensSpecified,
       longForm: request.options.longForm,
     );
+    developer.log(decision.logLine, name: 'EdgeMintTaskEngine');
 
     final llmStart = DateTime.now();
     final generation = await qwenProcessor.runDirectUserGeneration(
       userText,
       signingKey: signingKey,
       imageBytes: hasImage ? imageBytes : null,
-      maxOutputTokens: outputLimit,
+      maxOutputTokens: decision.effectiveOutputLimit,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
 

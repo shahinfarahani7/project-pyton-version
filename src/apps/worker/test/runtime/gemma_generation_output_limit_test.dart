@@ -32,14 +32,47 @@ void main() {
       );
     });
 
-    test('explicit maxOutputTokens overrides the task default', () {
-      expect(
-        GemmaGenerationOutputLimit.forTextDirect(
-          prompt: 'Write a 5-page article',
-          explicitMaxOutputTokens: 768,
-        ),
-        768,
+    test('Persian 5-page article resolves to 1024 even when manifest sends legacy 256', () {
+      const prompt = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(
+        prompt: prompt,
+        explicitMaxOutputTokens: 256,
+        maxOutputTokensSpecified: true,
       );
+
+      expect(decision.detectedLongForm, isTrue);
+      expect(decision.requestedOutputLimit, 1024);
+      expect(decision.effectiveOutputLimit, 1024);
+      expect(decision.source, 'long-form');
+      expect(
+        GemmaGenerationOutputLimit.forTextDirect(prompt: prompt),
+        1024,
+      );
+    });
+
+    test('explicit maxOutputTokens other than legacy 256 overrides long-form', () {
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(
+        prompt: 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه',
+        explicitMaxOutputTokens: 768,
+        maxOutputTokensSpecified: true,
+      );
+
+      expect(decision.detectedLongForm, isTrue);
+      expect(decision.requestedOutputLimit, 1024);
+      expect(decision.effectiveOutputLimit, 768);
+      expect(decision.source, 'explicit');
+    });
+
+    test('normal text.direct stays 512 when the manifest still carries 256', () {
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(
+        prompt: 'Say hello',
+        explicitMaxOutputTokens: 256,
+        maxOutputTokensSpecified: true,
+      );
+
+      expect(decision.detectedLongForm, isFalse);
+      expect(decision.effectiveOutputLimit, 512);
+      expect(decision.source, 'default');
     });
   });
 

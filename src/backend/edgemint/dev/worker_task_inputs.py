@@ -187,7 +187,10 @@ def _options_for(
         return {"maxOutputTokens": 512, "outputSchema": _FLEX_OUTPUT_SCHEMAS[task_type]}
     family = pipeline_family(task_type)
     if task_type == "text.direct":
-        return {"maxOutputTokens": 256}
+        # Output length is chosen on the worker from the prompt. Do not inject
+        # the retired 256 catalog cap; that value was treated as an explicit
+        # override and blocked long-form resolution.
+        return {"languages": ["fa", "en"], "minOcrConfidence": 0.55}
     if family == "document.extract":
         return {
             "languages": ["fa", "en"],
