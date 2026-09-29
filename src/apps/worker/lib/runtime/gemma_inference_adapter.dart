@@ -3,10 +3,12 @@ import 'dart:typed_data';
 
 import 'package:flutter_gemma/flutter_gemma.dart';
 
+import '../contracts/worker_error.dart';
 import '../inference/llm/context_budget_manager.dart';
 import '../models/worker_model_catalog.dart';
 import '../validation/json_stream_boundary.dart';
 import '../validation/output_repetition_guard.dart';
+import 'gemma_multimodal_vision_runtime.dart';
 import 'gemma_model_runtime_manager.dart';
 import 'inference_adapter.dart';
 import 'model_runtime_manager.dart';
@@ -84,9 +86,33 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
     int? maxOutputTokensOverride,
-  }) {
+  }) async {
+    final multimodal = imageBytes != null && imageBytes.isNotEmpty;
+    if (multimodal) {
+      try {
+        await _runtime.ensureMultimodalVisionEngine();
+      } on WorkerError {
+        rethrow;
+      } catch (error) {
+        final classified = GemmaLitertMultimodalVisionPolicy.classifyInferenceFailure(
+          error,
+        );
+        if (classified != null) {
+          throw classified;
+        }
+        rethrow;
+      }
+    } else {
+      _log(
+        GemmaLitertMultimodalVisionPolicy.visionRuntimeLogLine(
+          visionExecutorLoaded: _runtime.visionExecutorLoaded,
+          multimodal: false,
+        ),
+      );
+    }
+
     return _runtime.withFreshSession(
-      stageId: imageBytes != null ? 'multimodal' : 'inference',
+      stageId: multimodal ? 'multimodal' : 'inference',
       body: () => _runInFreshSession(
         prompt: prompt,
         imageBytes: imageBytes,
@@ -207,6 +233,12 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         error,
         stackTrace,
       );
+      final classified = GemmaLitertMultimodalVisionPolicy.classifyInferenceFailure(
+        error,
+      );
+      if (classified != null) {
+        throw classified;
+      }
       rethrow;
     }
   }

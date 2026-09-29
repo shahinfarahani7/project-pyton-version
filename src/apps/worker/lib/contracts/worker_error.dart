@@ -11,6 +11,7 @@ enum WorkerErrorCode {
   deadlineExceeded,
   cancelled,
   outOfMemoryRisk,
+  visionRuntimeNotReady,
   internalError,
 }
 
@@ -59,6 +60,7 @@ class WorkerError {
         'DEADLINE_EXCEEDED' => WorkerErrorCode.deadlineExceeded,
         'CANCELLED' => WorkerErrorCode.cancelled,
         'OUT_OF_MEMORY_RISK' => WorkerErrorCode.outOfMemoryRisk,
+        'VISION_RUNTIME_NOT_READY' => WorkerErrorCode.visionRuntimeNotReady,
         _ => WorkerErrorCode.internalError,
       },
       message: json?['message'] as String? ?? fallbackMessage,
@@ -85,6 +87,7 @@ class WorkerError {
     WorkerErrorCode.deadlineExceeded => 'DEADLINE_EXCEEDED',
     WorkerErrorCode.cancelled => 'CANCELLED',
     WorkerErrorCode.outOfMemoryRisk => 'OUT_OF_MEMORY_RISK',
+    WorkerErrorCode.visionRuntimeNotReady => 'VISION_RUNTIME_NOT_READY',
     WorkerErrorCode.internalError => 'INTERNAL_ERROR',
   };
 

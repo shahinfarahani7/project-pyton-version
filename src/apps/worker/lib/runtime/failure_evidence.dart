@@ -208,6 +208,8 @@ class FailureEvidenceMapper {
         WorkerErrorCode.imageTooLarge ||
         WorkerErrorCode.imageDecodeFailed =>
           const _MappedFailure(ClosedFailureCode.inputRuntimeUnsupported, false),
+        WorkerErrorCode.visionRuntimeNotReady =>
+          const _MappedFailure(ClosedFailureCode.modelUnavailable, true),
         WorkerErrorCode.internalError =>
           const _MappedFailure(ClosedFailureCode.runtimeCrash, true),
       };
