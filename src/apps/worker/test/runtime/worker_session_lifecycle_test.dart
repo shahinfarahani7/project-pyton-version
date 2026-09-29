@@ -7,16 +7,24 @@ import 'package:edgemint_worker/runtime/device_snapshot.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/worker_session_lifecycle.dart';
 import 'package:edgemint_worker/runtime/worker_session_store.dart' show WorkerSessionRecord, WorkerSessionStore;
+import 'package:edgemint_worker/worker_app_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 class _EnrollmentMockClient extends http.BaseClient {
-  _EnrollmentMockClient({this.refreshShouldRejectExpired = false});
+  _EnrollmentMockClient({
+    this.refreshShouldRejectExpired = false,
+    this.preferenceUnauthorizedRemaining = 0,
+    this.rejectRegistration = false,
+  });
 
   final http.Client _inner = http.Client();
   int registerCalls = 0;
   int refreshCalls = 0;
+  int preferenceGets = 0;
   final bool refreshShouldRejectExpired;
+  int preferenceUnauthorizedRemaining;
+  final bool rejectRegistration;
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
@@ -30,6 +38,12 @@ class _EnrollmentMockClient extends http.BaseClient {
     }
     if (path.endsWith('/workers/register')) {
       registerCalls += 1;
+      if (rejectRegistration) {
+        return Future.value(_jsonResponse(request, 401, {
+          'code': 'AUTH_INVALID_CREDENTIAL',
+          'title': 'Invalid credentials',
+        }));
+      }
       return Future.value(_jsonResponse(request, 201, {
         'workerId': 'wrk_auto',
         'deviceId': 'dev_auto',
@@ -62,6 +76,14 @@ class _EnrollmentMockClient extends http.BaseClient {
       }));
     }
     if (path.endsWith('/worker-preferences') && request.method == 'GET') {
+      preferenceGets += 1;
+      if (preferenceUnauthorizedRemaining > 0) {
+        preferenceUnauthorizedRemaining -= 1;
+        return Future.value(_jsonResponse(request, 401, {
+          'code': 'AUTH_INVALID_CREDENTIAL',
+          'title': 'Invalid credentials',
+        }));
+      }
       return Future.value(_jsonResponse(request, 200, {
         'version': 1,
         'availability': 'unavailable',
@@ -259,5 +281,177 @@ void main() {
 
     api.close();
     mock.close();
+  });
+
+  const snapshot = DeviceSnapshot(
+    available: true,
+    batteryPercent: 100,
+    isCharging: true,
+    isEmulator: true,
+    isX86Android: true,
+    thermalState: ThermalState.normal,
+    network: NetworkKind.wifi,
+    freeStorageMb: 4096,
+    withinSchedule: true,
+    consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
+  );
+
+  Future<WorkerSessionLifecycle> openLifecycle(
+    _EnrollmentMockClient mock,
+    WorkerSessionStore store,
+  ) async {
+    final api = WorkerApiClient(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: mock,
+      onAudit: ({required method, required path, required status}) {},
+    );
+    return WorkerSessionLifecycle(
+      api: api,
+      store: store,
+      platform: NoopWorkerRuntimeChannel(),
+    );
+  }
+
+  test('valid stored credential is reused without re-enrollment', () async {
+    final mock = _EnrollmentMockClient();
+    final store = WorkerSessionStore(InMemoryEncryptedStore());
+    final lifecycle = await openLifecycle(mock, store);
+    await store.writeSession(
+      WorkerSessionRecord(
+        workerId: 'wrk_auto',
+        deviceId: 'dev_auto',
+        accessToken: 'token-valid',
+        expiresAt: DateTime.now().toUtc().add(const Duration(days: 2)),
+        installationId: 'inst_existing',
+        benchmarkSubmitted: true,
+      ),
+    );
+
+    final session = await lifecycle.ensureSession(snapshotOverride: snapshot);
+    expect(session.accessToken, 'token-valid');
+    expect(mock.registerCalls, 0);
+    expect(mock.refreshCalls, 0);
+    expect(mock.preferenceGets, 1);
+
+    mock.close();
+  });
+
+  test('non-expired server-revoked credential re-enrolls once and retries bootstrap', () async {
+    final mock = _EnrollmentMockClient(preferenceUnauthorizedRemaining: 1);
+    final store = WorkerSessionStore(InMemoryEncryptedStore());
+    final lifecycle = await openLifecycle(mock, store);
+    await store.writeSession(
+      WorkerSessionRecord(
+        workerId: 'wrk_old',
+        deviceId: 'dev_old',
+        accessToken: 'token-revoked',
+        expiresAt: DateTime.now().toUtc().add(const Duration(days: 2)),
+        installationId: 'inst_existing',
+        benchmarkSubmitted: true,
+      ),
+    );
+
+    final session = await lifecycle.ensureSession(snapshotOverride: snapshot);
+    expect(session.accessToken, 'token-auto');
+    expect(mock.registerCalls, 1);
+    expect(mock.refreshCalls, 0);
+    expect(mock.preferenceGets, 2);
+    expect((await store.readSession())?.accessToken, 'token-auto');
+
+    final again = await lifecycle.ensureSession(snapshotOverride: snapshot);
+    expect(again.accessToken, 'token-auto');
+    expect(mock.registerCalls, 1);
+
+    mock.close();
+  });
+
+  test('re-enrollment failure stops without another enrollment attempt', () async {
+    final mock = _EnrollmentMockClient(
+      preferenceUnauthorizedRemaining: 1,
+      rejectRegistration: true,
+    );
+    final store = WorkerSessionStore(InMemoryEncryptedStore());
+    final lifecycle = await openLifecycle(mock, store);
+    await store.writeSession(
+      WorkerSessionRecord(
+        workerId: 'wrk_old',
+        deviceId: 'dev_old',
+        accessToken: 'token-revoked',
+        expiresAt: DateTime.now().toUtc().add(const Duration(days: 2)),
+        installationId: 'inst_existing',
+        benchmarkSubmitted: true,
+      ),
+    );
+
+    await expectLater(
+      lifecycle.ensureSession(snapshotOverride: snapshot),
+      throwsA(isA<WorkerAuthRecoveryFailed>()),
+    );
+    expect(mock.registerCalls, 1);
+    expect(await store.readSession(), isNull);
+
+    mock.close();
+  });
+
+  test('bootstrap retry that is still unauthorized does not loop re-enrollment', () async {
+    final mock = _EnrollmentMockClient(preferenceUnauthorizedRemaining: 2);
+    final store = WorkerSessionStore(InMemoryEncryptedStore());
+    final lifecycle = await openLifecycle(mock, store);
+    await store.writeSession(
+      WorkerSessionRecord(
+        workerId: 'wrk_old',
+        deviceId: 'dev_old',
+        accessToken: 'token-revoked',
+        expiresAt: DateTime.now().toUtc().add(const Duration(days: 2)),
+        installationId: 'inst_existing',
+        benchmarkSubmitted: true,
+      ),
+    );
+
+    await expectLater(
+      lifecycle.ensureSession(snapshotOverride: snapshot),
+      throwsA(
+        isA<WorkerAuthRecoveryFailed>().having(
+          (error) => error.message,
+          'message',
+          contains('rejected again after re-enrollment'),
+        ),
+      ),
+    );
+    expect(mock.registerCalls, 1);
+    expect(mock.preferenceGets, 2);
+    expect(await store.readSession(), isNull);
+
+    mock.close();
+  });
+
+  test('assignment loop does not start before auth is valid', () {
+    expect(
+      WorkerAssignmentLoopGate.mayStart(available: true, authenticated: false),
+      isFalse,
+    );
+    expect(
+      WorkerAssignmentLoopGate.mayStart(available: true, authenticated: true),
+      isTrue,
+    );
+    expect(
+      WorkerAssignmentLoopGate.mayStart(available: false, authenticated: true),
+      isFalse,
+    );
+
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:9')),
+      encryptedStore: InMemoryEncryptedStore(),
+      platform: NoopWorkerRuntimeChannel(),
+    );
+    addTearDown(controller.dispose);
+    expect(controller.workerEnrolled, isFalse);
+    controller.startAutoAssignmentLoop();
+    expect(controller.debugAssignmentLoopGeneration, 0);
+
+    controller.workerEnrolled = true;
+    controller.startAutoAssignmentLoop();
+    expect(controller.debugAssignmentLoopGeneration, 1);
+    controller.stopAutoAssignmentLoop();
   });
 }

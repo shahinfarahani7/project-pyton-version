@@ -318,10 +318,14 @@ class WorkerAppController extends ChangeNotifier {
   bool _enrollmentPermanentlyBlocked = false;
   DateTime? _nextEnrollmentAttemptAt;
   int _enrollmentAttempts = 0;
+  Timer? _enrollmentRetryTimer;
 
   static const _maxEnrollmentRetries = 5;
 
   int _assignmentLoopGeneration = 0;
+
+  @visibleForTesting
+  int get debugAssignmentLoopGeneration => _assignmentLoopGeneration;
 
   String get workerId => _runtimeWorkerId;
 
@@ -624,7 +628,17 @@ class WorkerAppController extends ChangeNotifier {
     notifyListeners();
 
     if (available) {
-      startAutoAssignmentLoop();
+      if (WorkerAssignmentLoopGate.mayStart(
+        available: available,
+        authenticated: hasManualCredentials || workerEnrolled,
+      )) {
+        startAutoAssignmentLoop();
+      } else {
+        _logTask(
+          'Auto-assignment loop not started — worker auth is not valid',
+          phase: WorkerPipelineLog.assign,
+        );
+      }
     }
 
     _logTask(
@@ -671,6 +685,16 @@ class WorkerAppController extends ChangeNotifier {
 
   void startAutoAssignmentLoop() {
     if (_disposed || !available) {
+      return;
+    }
+    if (!WorkerAssignmentLoopGate.mayStart(
+      available: available,
+      authenticated: hasManualCredentials || workerEnrolled,
+    )) {
+      _logTask(
+        'Auto-assignment loop not started — worker auth is not valid',
+        phase: WorkerPipelineLog.assign,
+      );
       return;
     }
 
@@ -928,6 +952,12 @@ class WorkerAppController extends ChangeNotifier {
         'Heartbeat ready (lastSeq=$_lastHeartbeatSequence)',
         phase: WorkerPipelineLog.heartbeat,
       );
+    } on WorkerAuthRecoveryFailed catch (error) {
+      workerEnrolled = false;
+      _enrollmentPermanentlyBlocked = true;
+      _nextEnrollmentAttemptAt = null;
+      enrollmentMessage = error.message;
+      _logError('Worker authentication recovery failed', error);
     } on WorkerApiException catch (error) {
       workerEnrolled = false;
       _enrollmentAttempts += 1;
@@ -961,7 +991,43 @@ class WorkerAppController extends ChangeNotifier {
       _logError('Worker enrollment failed', error, stackTrace);
     }
 
+    _armEnrollmentRetry();
     notifyListeners();
+  }
+
+  void _armEnrollmentRetry() {
+    _enrollmentRetryTimer?.cancel();
+    _enrollmentRetryTimer = null;
+    final nextAttempt = _nextEnrollmentAttemptAt;
+    if (nextAttempt == null ||
+        _enrollmentPermanentlyBlocked ||
+        workerEnrolled ||
+        _disposed) {
+      return;
+    }
+    final delay = nextAttempt.difference(DateTime.now());
+    _enrollmentRetryTimer = Timer(
+      delay.isNegative ? Duration.zero : delay,
+      () {
+        unawaited(_retryEnrollmentAfterBackoff());
+      },
+    );
+  }
+
+  Future<void> _retryEnrollmentAfterBackoff() async {
+    if (_disposed || _enrollmentPermanentlyBlocked || workerEnrolled) {
+      return;
+    }
+    await _ensureWorkerSession();
+    if (_disposed) {
+      return;
+    }
+    if (WorkerAssignmentLoopGate.mayStart(
+      available: available,
+      authenticated: hasManualCredentials || workerEnrolled,
+    )) {
+      startAutoAssignmentLoop();
+    }
   }
 
   Future<void> _refreshSessionIfNeeded() async {
@@ -2324,6 +2390,7 @@ class WorkerAppController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _enrollmentRetryTimer?.cancel();
 
     stopAutoAssignmentLoop();
 

@@ -9,6 +9,25 @@ import 'worker_enrollment_payload.dart';
 import 'worker_pipeline_log.dart';
 import 'worker_session_store.dart';
 
+/// Thrown when a rejected credential cannot be replaced by one re-enrollment.
+class WorkerAuthRecoveryFailed implements Exception {
+  WorkerAuthRecoveryFailed(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'WorkerAuthRecoveryFailed($message)';
+}
+
+/// Assignment polling must wait until bootstrap has a server-accepted credential.
+abstract final class WorkerAssignmentLoopGate {
+  static bool mayStart({
+    required bool available,
+    required bool authenticated,
+  }) =>
+      available && authenticated;
+}
+
 /// Production-safe worker auto-enrollment and session refresh.
 class WorkerSessionLifecycle {
   WorkerSessionLifecycle({
@@ -34,54 +53,143 @@ class WorkerSessionLifecycle {
     var session = await _store.readSession();
     WorkerPipelineLog.info(
       WorkerPipelineLog.enroll,
+      '[AUTH] storedCredentialPresent=${session != null}',
+    );
+    WorkerPipelineLog.info(
+      WorkerPipelineLog.enroll,
       session == null
           ? 'No persisted session — registering new worker device'
           : 'Loaded session workerId=${session.workerId} expired=${session.isExpired}',
     );
 
     if (session != null && !session.isExpired && !session.expiresWithin(sessionRefreshWindow)) {
-      await _ensureBenchmarkAndPreferences(session, snapshot);
-      return (await _store.readSession()) ?? session;
+      return _completeAuthenticatedBootstrap(
+        session,
+        snapshot,
+        allowCredentialRecovery: true,
+      );
     }
 
     if (session != null && !session.isExpired) {
-      session = await _refreshSession(session);
+      try {
+        session = await _refreshSession(session);
+      } on WorkerApiException catch (error) {
+        if (error.code != 'AUTH_INVALID_CREDENTIAL') {
+          rethrow;
+        }
+        WorkerPipelineLog.info(
+          WorkerPipelineLog.enroll,
+          '[AUTH] credentialRejectedByServer',
+        );
+        await _store.clearSession();
+        return _reEnrollAndRetryBootstrap(snapshot);
+      }
       await _store.writeSession(session);
-      await _ensureBenchmarkAndPreferences(session, snapshot);
-      return (await _store.readSession()) ?? session;
+      return _completeAuthenticatedBootstrap(
+        session,
+        snapshot,
+        allowCredentialRecovery: true,
+      );
     }
 
     if (session != null && session.isExpired) {
       try {
         session = await _refreshSession(session);
         await _store.writeSession(session);
-        await _ensureBenchmarkAndPreferences(session, snapshot);
-        return (await _store.readSession()) ?? session;
+        return _completeAuthenticatedBootstrap(
+          session,
+          snapshot,
+          allowCredentialRecovery: true,
+        );
       } on WorkerApiException catch (error) {
         if (error.code != 'AUTH_INVALID_CREDENTIAL') {
           rethrow;
         }
+        WorkerPipelineLog.info(
+          WorkerPipelineLog.enroll,
+          '[AUTH] credentialRejectedByServer',
+        );
         await _store.clearSession();
+        return _reEnrollAndRetryBootstrap(snapshot);
       }
     }
 
     session = await _registerNewDevice(snapshot);
     await _store.writeSession(session);
-    await _ensureBenchmarkAndPreferences(session, snapshot);
-    return (await _store.readSession()) ?? session;
+    return _completeAuthenticatedBootstrap(
+      session,
+      snapshot,
+      allowCredentialRecovery: true,
+    );
   }
 
-  Future<WorkerSessionRecord> _registerNewDevice(DeviceSnapshot snapshot) async {
+  Future<WorkerSessionRecord> _completeAuthenticatedBootstrap(
+    WorkerSessionRecord session,
+    DeviceSnapshot snapshot, {
+    required bool allowCredentialRecovery,
+  }) async {
+    try {
+      await _ensureBenchmarkAndPreferences(session, snapshot);
+      return (await _store.readSession()) ?? session;
+    } on WorkerApiException catch (error) {
+      if (error.code != 'AUTH_INVALID_CREDENTIAL') {
+        rethrow;
+      }
+      WorkerPipelineLog.info(
+        WorkerPipelineLog.enroll,
+        '[AUTH] credentialRejectedByServer',
+      );
+      await _store.clearSession();
+      if (!allowCredentialRecovery) {
+        throw WorkerAuthRecoveryFailed(
+          'Worker credential was rejected again after re-enrollment',
+        );
+      }
+      return _reEnrollAndRetryBootstrap(snapshot);
+    }
+  }
+
+  Future<WorkerSessionRecord> _reEnrollAndRetryBootstrap(DeviceSnapshot snapshot) async {
+    WorkerPipelineLog.info(WorkerPipelineLog.enroll, '[AUTH] reEnrollmentStarted');
+    final WorkerSessionRecord enrolled;
+    try {
+      enrolled = await _registerNewDevice(snapshot, reenrollment: true);
+    } on WorkerApiException catch (error) {
+      if (error.code == 'AUTH_INVALID_CREDENTIAL') {
+        throw WorkerAuthRecoveryFailed(
+          'Worker re-enrollment was rejected (${error.code})',
+        );
+      }
+      rethrow;
+    }
+    await _store.writeSession(enrolled);
+    WorkerPipelineLog.info(WorkerPipelineLog.enroll, '[AUTH] reEnrollmentSucceeded');
+    final recovered = await _completeAuthenticatedBootstrap(
+      enrolled,
+      snapshot,
+      allowCredentialRecovery: false,
+    );
+    WorkerPipelineLog.info(WorkerPipelineLog.enroll, '[AUTH] bootstrapRetrySucceeded');
+    return recovered;
+  }
+
+  Future<WorkerSessionRecord> _registerNewDevice(
+    DeviceSnapshot snapshot, {
+    bool reenrollment = false,
+  }) async {
     final installationId = await _store.readOrCreateInstallationId();
+    final attempt = reenrollment
+        ? '-re-${DateTime.now().toUtc().microsecondsSinceEpoch}'
+        : '';
     final challenge = await _api.createDeviceChallenge(
       installationId: installationId,
-      idempotencyKey: 'challenge-$installationId',
-      requestId: 'challenge-$installationId',
+      idempotencyKey: 'challenge-$installationId$attempt',
+      requestId: 'challenge-$installationId$attempt',
     );
 
     final registration = await _api.registerWorkerDevice(
-      idempotencyKey: 'register-$installationId',
-      requestId: 'register-$installationId',
+      idempotencyKey: 'register-$installationId$attempt',
+      requestId: 'register-$installationId$attempt',
       payload: WorkerEnrollmentPayload.registration(
         installationId: installationId,
         challengeId: challenge.challengeId,
