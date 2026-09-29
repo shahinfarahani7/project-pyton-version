@@ -22,6 +22,8 @@ CLOSED_WORKER_FAILURE_CODES: frozenset[str] = frozenset(
         "MODEL_EXECUTION_FAILED",
         "OS_PROCESS_TERMINATED",
         "INPUT_RUNTIME_UNSUPPORTED",
+        "INPUT_FETCH_TIMEOUT",
+        "INPUT_UNAVAILABLE",
         "CONTEXT_BUDGET_EXCEEDED",
         # After execution (Section 41)
         "RESULT_INVALID_JSON",
@@ -57,6 +59,8 @@ _RETRYABLE_CODES: frozenset[str] = frozenset(
         "LEASE_EXPIRED",
         "DELIVERY_TIMEOUT",
         "START_TIMEOUT",
+        "INPUT_FETCH_TIMEOUT",
+        "INPUT_UNAVAILABLE",
         "INSUFFICIENT_MEMORY",
         "INSUFFICIENT_STORAGE",
         "RUNTIME_OUT_OF_MEMORY",

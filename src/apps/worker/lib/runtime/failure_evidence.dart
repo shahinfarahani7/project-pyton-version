@@ -27,6 +27,8 @@ abstract final class ClosedFailureCode {
   static const modelExecutionFailed = 'MODEL_EXECUTION_FAILED';
   static const osProcessTerminated = 'OS_PROCESS_TERMINATED';
   static const inputRuntimeUnsupported = 'INPUT_RUNTIME_UNSUPPORTED';
+  static const inputFetchTimeout = 'INPUT_FETCH_TIMEOUT';
+  static const inputUnavailable = 'INPUT_UNAVAILABLE';
   static const contextBudgetExceeded = 'CONTEXT_BUDGET_EXCEEDED';
   static const checkpointIncompatible = 'CHECKPOINT_INCOMPATIBLE';
   static const resultInvalidJson = 'RESULT_INVALID_JSON';
@@ -213,6 +215,14 @@ class FailureEvidenceMapper {
         WorkerErrorCode.internalError =>
           const _MappedFailure(ClosedFailureCode.runtimeCrash, true),
       };
+    }
+    if (error is InputFetchException) {
+      return _MappedFailure(
+        error.timedOut
+            ? ClosedFailureCode.inputFetchTimeout
+            : ClosedFailureCode.inputUnavailable,
+        true,
+      );
     }
     if (error is AssignmentRejectedException) {
       return _MappedFailure(error.failureCode, error.retryable);

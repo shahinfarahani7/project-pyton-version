@@ -20,6 +20,24 @@ class StaleFenceException implements Exception {
   String toString() => 'StaleFenceException(expected=$expected, actual=$actual)';
 }
 
+/// Input manifest or content could not be fetched from the task URL.
+class InputFetchException implements Exception {
+  const InputFetchException.timeout(this.target)
+      : timedOut = true,
+        statusCode = null;
+
+  const InputFetchException.unavailable(this.target, {this.statusCode}) : timedOut = false;
+
+  final Uri target;
+  final bool timedOut;
+  final int? statusCode;
+
+  @override
+  String toString() => timedOut
+      ? 'InputFetchException(timeout $target)'
+      : 'InputFetchException(unavailable $target status=$statusCode)';
+}
+
 class ModelIntegrityException implements Exception {
   ModelIntegrityException(this.reason);
 

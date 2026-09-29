@@ -236,4 +236,31 @@ void main() {
       isNull,
     );
   });
+
+  test('maps input fetch timeout to retryable INPUT_FETCH_TIMEOUT', () {
+    final evidence = mapper.map(
+      assignment: _assignment(),
+      error: InputFetchException.timeout(Uri.parse('http://172.20.34.71:8080/input')),
+      executionTime: const Duration(seconds: 15),
+    );
+
+    expect(evidence?.failureCode, ClosedFailureCode.inputFetchTimeout);
+    expect(evidence?.failureCode, isNot(ClosedFailureCode.runtimeCrash));
+    expect(evidence?.retryable, isTrue);
+  });
+
+  test('maps unreachable input to retryable INPUT_UNAVAILABLE', () {
+    final evidence = mapper.map(
+      assignment: _assignment(),
+      error: InputFetchException.unavailable(
+        Uri.parse('http://172.20.34.71:8080/input'),
+        statusCode: 404,
+      ),
+      executionTime: Duration.zero,
+    );
+
+    expect(evidence?.failureCode, ClosedFailureCode.inputUnavailable);
+    expect(evidence?.failureCode, isNot(ClosedFailureCode.runtimeCrash));
+    expect(evidence?.retryable, isTrue);
+  });
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -38,6 +39,7 @@ import 'runtime/gemma_inference_adapter.dart';
 import 'runtime/identity_lifecycle_tracer.dart';
 import 'runtime/model_download_verify_hook.dart';
 import 'runtime/process_lifecycle_coordinator.dart';
+import 'runtime/runtime_exceptions.dart';
 import 'runtime/runtime_exclusive_group_enforcer.dart';
 import 'runtime/inference_adapter.dart';
 import 'runtime/storage_pressure_manager.dart';
@@ -1986,6 +1988,31 @@ class WorkerAppController extends ChangeNotifier {
     );
   }
 
+  Future<http.Response> _fetchAssignmentResource(
+    Uri url, {
+    Map<String, String>? headers,
+    required Duration timeout,
+  }) async {
+    try {
+      final response = await _http.get(url, headers: headers).timeout(timeout);
+      if (response.statusCode != 200) {
+        throw InputFetchException.unavailable(
+          url,
+          statusCode: response.statusCode,
+        );
+      }
+      return response;
+    } on InputFetchException {
+      rethrow;
+    } on TimeoutException {
+      throw InputFetchException.timeout(url);
+    } on http.ClientException {
+      throw InputFetchException.unavailable(url);
+    } on SocketException {
+      throw InputFetchException.unavailable(url);
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Assignment input
   // ---------------------------------------------------------------------------
@@ -2010,17 +2037,11 @@ class WorkerAppController extends ChangeNotifier {
       headers['Authorization'] = 'Bearer $token';
     }
 
-    final response = await _http
-        .get(manifestUrl, headers: headers)
-        .timeout(const Duration(seconds: 15));
-
-    if (response.statusCode != 200) {
-      throw StateError(
-        'Input manifest unavailable '
-        '(HTTP ${response.statusCode}) '
-        'for ${assignment.taskId}',
-      );
-    }
+    final response = await _fetchAssignmentResource(
+      manifestUrl,
+      headers: headers,
+      timeout: const Duration(seconds: 15),
+    );
 
     final manifest = jsonDecode(response.body) as Map<String, dynamic>;
 
@@ -2095,16 +2116,10 @@ class WorkerAppController extends ChangeNotifier {
         'downloading=$resolvedContentUrl',
       );
 
-      final mediaResponse = await _http
-          .get(resolvedContentUrl)
-          .timeout(const Duration(seconds: 30));
-
-      if (mediaResponse.statusCode != 200) {
-        throw StateError(
-          'Input content unavailable '
-          '(HTTP ${mediaResponse.statusCode})',
-        );
-      }
+      final mediaResponse = await _fetchAssignmentResource(
+        resolvedContentUrl,
+        timeout: const Duration(seconds: 30),
+      );
 
       inputBytes = mediaResponse.bodyBytes;
 
@@ -2124,16 +2139,10 @@ class WorkerAppController extends ChangeNotifier {
           'downloading=$resolvedCompareUrl',
         );
 
-        final compareResponse = await _http
-            .get(resolvedCompareUrl)
-            .timeout(const Duration(seconds: 30));
-
-        if (compareResponse.statusCode != 200) {
-          throw StateError(
-            'Compare input unavailable '
-            '(HTTP ${compareResponse.statusCode})',
-          );
-        }
+        final compareResponse = await _fetchAssignmentResource(
+          resolvedCompareUrl,
+          timeout: const Duration(seconds: 30),
+        );
 
         compareImageBytes = compareResponse.bodyBytes;
 
