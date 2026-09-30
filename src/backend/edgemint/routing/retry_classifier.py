@@ -55,6 +55,7 @@ _NO_RETRY: frozenset[str] = frozenset(
         "RESULT_SCHEMA_MISMATCH",
         "RESULT_SIGNATURE_INVALID",
         "NETWORK_POLICY_MISMATCH",
+        "LONG_FORM_INCOMPLETE",
     }
 )
 

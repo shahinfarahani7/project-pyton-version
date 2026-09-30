@@ -29,6 +29,7 @@ abstract final class ClosedFailureCode {
   static const inputRuntimeUnsupported = 'INPUT_RUNTIME_UNSUPPORTED';
   static const inputFetchTimeout = 'INPUT_FETCH_TIMEOUT';
   static const inputUnavailable = 'INPUT_UNAVAILABLE';
+  static const longFormIncomplete = 'LONG_FORM_INCOMPLETE';
   static const contextBudgetExceeded = 'CONTEXT_BUDGET_EXCEEDED';
   static const checkpointIncompatible = 'CHECKPOINT_INCOMPATIBLE';
   static const resultInvalidJson = 'RESULT_INVALID_JSON';
@@ -200,6 +201,8 @@ class FailureEvidenceMapper {
           const _MappedFailure(ClosedFailureCode.resultInvalidJson, false),
         WorkerErrorCode.outputSchemaMismatch =>
           const _MappedFailure(ClosedFailureCode.resultSchemaMismatch, false),
+        WorkerErrorCode.longFormIncomplete =>
+          const _MappedFailure(ClosedFailureCode.longFormIncomplete, false),
         WorkerErrorCode.ocrNoText =>
           const _MappedFailure(ClosedFailureCode.ocrEmptyResult, true),
         WorkerErrorCode.ocrLowConfidence =>

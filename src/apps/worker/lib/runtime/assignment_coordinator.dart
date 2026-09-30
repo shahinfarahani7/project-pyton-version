@@ -534,7 +534,9 @@ class AssignmentCoordinator {
       'progress=${output.progressMilli} metrics=${jsonEncode(output.metrics)}',
     );
     final taskStatus = output.metrics['taskStatus'] as String?;
-    if (taskStatus != null && taskStatus != WorkerResultStatus.succeeded.name) {
+    if (taskStatus != null &&
+        taskStatus != WorkerResultStatus.succeeded.name &&
+        taskStatus != WorkerResultStatus.succeededWithTruncation.name) {
       final structured = output.metrics['structuredResult'];
       final errorMap = structured is Map<String, dynamic>
           ? structured['error'] as Map<String, dynamic>?

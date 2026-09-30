@@ -8,6 +8,7 @@ enum WorkerErrorCode {
   ocrLowConfidence,
   llmInvalidJson,
   outputSchemaMismatch,
+  longFormIncomplete,
   deadlineExceeded,
   cancelled,
   outOfMemoryRisk,
@@ -19,11 +20,17 @@ enum WorkerTaskStage { validation, ocr, llm, submit }
 
 enum WorkerResultStatus {
   succeeded,
+  succeededWithTruncation,
   rejected,
   failed,
   retryable,
   cancelled,
-  timedOut,
+  timedOut;
+
+  String get wireName => switch (this) {
+    WorkerResultStatus.succeededWithTruncation => 'SUCCEEDED_WITH_TRUNCATION',
+    _ => name.toUpperCase(),
+  };
 }
 
 class WorkerError {
@@ -57,6 +64,7 @@ class WorkerError {
         'OCR_LOW_CONFIDENCE' => WorkerErrorCode.ocrLowConfidence,
         'LLM_INVALID_JSON' => WorkerErrorCode.llmInvalidJson,
         'OUTPUT_SCHEMA_MISMATCH' => WorkerErrorCode.outputSchemaMismatch,
+        'LONG_FORM_INCOMPLETE' => WorkerErrorCode.longFormIncomplete,
         'DEADLINE_EXCEEDED' => WorkerErrorCode.deadlineExceeded,
         'CANCELLED' => WorkerErrorCode.cancelled,
         'OUT_OF_MEMORY_RISK' => WorkerErrorCode.outOfMemoryRisk,
@@ -84,6 +92,7 @@ class WorkerError {
     WorkerErrorCode.ocrLowConfidence => 'OCR_LOW_CONFIDENCE',
     WorkerErrorCode.llmInvalidJson => 'LLM_INVALID_JSON',
     WorkerErrorCode.outputSchemaMismatch => 'OUTPUT_SCHEMA_MISMATCH',
+    WorkerErrorCode.longFormIncomplete => 'LONG_FORM_INCOMPLETE',
     WorkerErrorCode.deadlineExceeded => 'DEADLINE_EXCEEDED',
     WorkerErrorCode.cancelled => 'CANCELLED',
     WorkerErrorCode.outOfMemoryRisk => 'OUT_OF_MEMORY_RISK',

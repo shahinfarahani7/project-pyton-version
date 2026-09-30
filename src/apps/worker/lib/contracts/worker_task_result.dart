@@ -64,7 +64,7 @@ class WorkerTaskResult {
   Map<String, dynamic> toJson() => {
         'schemaVersion': schemaVersion,
         'taskId': taskId,
-        'status': status.name.toUpperCase(),
+        'status': status.wireName,
         'output': output,
         'metrics': metrics,
         'modelInfo': modelInfo,

@@ -91,7 +91,7 @@ class DirectPromptHandler implements TaskHandler {
       decision.completionLog(
         generatedChunks: generation.generatedChunks,
         generatedTokens: generation.generatedTokens,
-        truncated: generation.hitOutputLimit,
+        truncated: decision.staged ? staged.truncated : generation.hitOutputLimit,
       ),
       name: 'EdgeMintTaskEngine',
     );
@@ -100,6 +100,7 @@ class DirectPromptHandler implements TaskHandler {
       request: request,
       generation: generation,
       metrics: metrics,
+      truncated: decision.staged ? staged.truncated : null,
     );
   }
 
@@ -107,7 +108,11 @@ class DirectPromptHandler implements TaskHandler {
     required WorkerTaskRequest request,
     required DirectGenerationReceipt generation,
     required WorkerTaskMetrics metrics,
+    bool? truncated,
   }) {
+    final reportedTruncated = truncated ??
+        (generation.hitOutputLimit ||
+            generation.stopReason == GemmaGenerationOutputLimit.longFormStageLimit);
     final evidence = <String, dynamic>{
       'rawText': generation.text,
       'modelTranscript': generation.text,
@@ -115,9 +120,46 @@ class DirectPromptHandler implements TaskHandler {
       'generatedChunks': generation.generatedChunks,
       'generatedTokens': generation.generatedTokens,
       'stopReason': generation.stopReason,
-      'truncated': generation.hitOutputLimit,
+      'truncated': reportedTruncated,
     };
     final freeForm = _freeFormTextDirect(request);
+    if (truncated == false) {
+      return WorkerTaskResult(
+        schemaVersion: request.schemaVersion,
+        taskId: request.taskId,
+        status: WorkerResultStatus.succeeded,
+        output: evidence,
+        metrics: metrics.toJson(),
+      );
+    }
+    final stageLimited =
+        generation.stopReason == GemmaGenerationOutputLimit.longFormStageLimit;
+    if (stageLimited) {
+      if (freeForm || request.options.allowTruncatedOutput) {
+        return WorkerTaskResult(
+          schemaVersion: request.schemaVersion,
+          taskId: request.taskId,
+          status: WorkerResultStatus.succeededWithTruncation,
+          output: evidence,
+          metrics: metrics.toJson(),
+        );
+      }
+      return WorkerTaskResult(
+        schemaVersion: request.schemaVersion,
+        taskId: request.taskId,
+        status: WorkerResultStatus.failed,
+        output: evidence,
+        metrics: metrics.toJson(),
+        error: WorkerError(
+          code: WorkerErrorCode.longFormIncomplete,
+          message:
+              'Long-form generation reached the stage safety limit '
+              'while the text was still incomplete',
+          retryable: false,
+          stage: WorkerTaskStage.llm,
+        ),
+      );
+    }
     final partialSuccess = generation.hitOutputLimit &&
         freeForm &&
         generation.text.trim().isNotEmpty;

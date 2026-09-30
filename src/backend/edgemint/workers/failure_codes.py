@@ -24,6 +24,7 @@ CLOSED_WORKER_FAILURE_CODES: frozenset[str] = frozenset(
         "INPUT_RUNTIME_UNSUPPORTED",
         "INPUT_FETCH_TIMEOUT",
         "INPUT_UNAVAILABLE",
+        "LONG_FORM_INCOMPLETE",
         "CONTEXT_BUDGET_EXCEEDED",
         # After execution (Section 41)
         "RESULT_INVALID_JSON",

@@ -335,6 +335,150 @@ void main() {
       expect(decision.staged, isFalse);
       expect(calls, 1);
     });
+
+    test('an incomplete fourth stage is not final success and another stage runs', () async {
+      const fragment = '* **مشاهده:** در هفته‌های اول، کلونی را';
+      expect(LongFormCompletion.textIsIncomplete(fragment), isTrue);
+      const user = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+      var calls = 0;
+      await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          if (stageIndex < 4) {
+            return GemmaStagePiece(
+              text: stageIndex == 3 ? fragment : 'بخش $stageIndex هنوز ادامه دارد',
+              stopReason: GemmaGenerationOutputLimit.outputLimit,
+              generatedChunks: 256,
+              generatedTokens: 30,
+            );
+          }
+          return const GemmaStagePiece(
+            text: 'کلونی را آرام نگه دارید.',
+            stopReason: GemmaGenerationOutputLimit.eos,
+            generatedChunks: 8,
+            generatedTokens: 6,
+          );
+        },
+      );
+      expect(calls, greaterThan(4));
+
+      var limitedCalls = 0;
+      final limited = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        hardMaxStages: 4,
+        generateStage: (stageIndex, stagePrompt) async {
+          limitedCalls += 1;
+          return GemmaStagePiece(
+            text: stageIndex == 3 ? fragment : 'بخش $stageIndex هنوز ادامه دارد',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 30,
+          );
+        },
+      );
+      expect(limitedCalls, 4);
+      expect(limited.complete, isFalse);
+      expect(limited.truncated, isTrue);
+      expect(limited.stopReason, GemmaGenerationOutputLimit.longFormStageLimit);
+      final result = DirectPromptHandler.resultFor(
+        request: _request(),
+        generation: DirectGenerationReceipt(
+          text: limited.text,
+          stopReason: limited.stopReason,
+          configuredOutputLimit: 256,
+          generatedChunks: limited.generatedChunks,
+          generatedTokens: limited.generatedTokens,
+        ),
+        metrics: WorkerTaskMetrics(),
+      );
+      expect(result.status, isNot(WorkerResultStatus.succeeded));
+      expect(result.status, WorkerResultStatus.succeededWithTruncation);
+      expect(result.output?['truncated'], isTrue);
+      expect(result.output?['stopReason'], 'LONG_FORM_STAGE_LIMIT');
+      expect(result.toJson()['status'], 'SUCCEEDED_WITH_TRUNCATION');
+    });
+
+    test('a structured long-form cut off at the hard limit fails', () {
+      final result = DirectPromptHandler.resultFor(
+        request: _request(outputSchema: const {'type': 'object'}),
+        generation: const DirectGenerationReceipt(
+          text: '* **مشاهده:** در هفته‌های اول، کلونی را',
+          stopReason: GemmaGenerationOutputLimit.longFormStageLimit,
+          configuredOutputLimit: 256,
+          generatedChunks: 1024,
+          generatedTokens: 800,
+        ),
+        metrics: WorkerTaskMetrics(),
+      );
+      expect(result.status, WorkerResultStatus.failed);
+      expect(result.error?.codeName, 'LONG_FORM_INCOMPLETE');
+    });
+
+    test('EOS on a finished sentence stops before maxStages', () async {
+      const user = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          return const GemmaStagePiece(
+            text: 'کلونی پایدار شد.',
+            stopReason: GemmaGenerationOutputLimit.eos,
+            generatedChunks: 12,
+            generatedTokens: 8,
+          );
+        },
+      );
+      expect(calls, 1);
+      expect(calls, lessThan(GemmaGenerationOutputLimit.longFormMaxStages));
+      expect(result.complete, isTrue);
+      expect(result.truncated, isFalse);
+      expect(result.stopReason, GemmaGenerationOutputLimit.eos);
+      expect(GemmaGenerationOutputLimit.longFormMaxStages, 6);
+      expect(GemmaGenerationOutputLimit.longFormHardMaxStages, 8);
+    });
+
+    test('a finished sentence stops even when the stage hit OUTPUT_LIMIT', () async {
+      const user = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+      var calls = 0;
+      final staged = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          return const GemmaStagePiece(
+            text: 'کلونی پایدار شد.',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 40,
+          );
+        },
+      );
+      expect(calls, 1);
+      expect(staged.complete, isTrue);
+      expect(staged.truncated, isFalse);
+      final result = DirectPromptHandler.resultFor(
+        request: _request(),
+        generation: DirectGenerationReceipt(
+          text: staged.text,
+          stopReason: staged.stopReason,
+          configuredOutputLimit: 256,
+          generatedChunks: staged.generatedChunks,
+          generatedTokens: staged.generatedTokens,
+        ),
+        metrics: WorkerTaskMetrics(),
+        truncated: staged.truncated,
+      );
+      expect(result.status, WorkerResultStatus.succeeded);
+      expect(result.output?['truncated'], isFalse);
+    });
   });
 }
 
