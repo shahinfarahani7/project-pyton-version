@@ -5,6 +5,7 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 
 import '../contracts/worker_error.dart';
 import '../models/worker_model_catalog.dart';
+import 'device_inference_plan.dart';
 import 'gemma_generation_output_limit.dart';
 import 'gemma_multimodal_vision_runtime.dart';
 import 'gemma_model_runtime_manager.dart';
@@ -94,6 +95,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
     int? maxOutputTokensOverride,
+    double? temperature,
+    double? topP,
   }) async {
     final multimodal = imageBytes != null && imageBytes.isNotEmpty;
     if (multimodal) {
@@ -128,6 +131,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         resumedState: resumedState,
         onProgress: onProgress,
         maxOutputTokensOverride: maxOutputTokensOverride,
+        temperature: temperature,
+        topP: topP,
       ),
     );
   }
@@ -138,6 +143,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
     int? maxOutputTokensOverride,
+    double? temperature,
+    double? topP,
   }) async {
     final model = _runtime.requireModel();
     final stopwatch = Stopwatch()..start();
@@ -156,9 +163,9 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
 
       _log('[LLM SESSION] creating multimodal=$multimodal');
       final chat = await model.createChat(
-        temperature: temperature,
+        temperature: temperature ?? this.temperature,
         topK: topK,
-        topP: topP,
+        topP: topP ?? this.topP,
         maxOutputTokens: outputTokenCap,
         supportImage: multimodal,
         modelType: multimodal ? ModelType.gemma4 : null,
@@ -243,7 +250,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
             'inputBytes': multimodal ? imageBytes.length : utf8.encode(prompt).length,
             'outputChars': text.length,
             'elapsedMs': stopwatch.elapsedMilliseconds,
-            'maxTokens': WorkerModelCatalog.runtimeMaxTokens,
+            'maxTokens': DeviceInferencePlan.instance.contextTokensForResidentLoad() ??
+                WorkerModelCatalog.runtimeMaxTokens,
             'configuredOutputLimit': generation.configuredOutputLimit,
             'generatedChunks': generation.generatedChunks,
             'generatedTokens': generation.generatedTokens,

@@ -6,6 +6,8 @@ import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../runtime/checkpoint_manager.dart';
+import '../../runtime/device_inference_plan.dart';
+import '../../runtime/device_inference_policy_config.dart';
 import '../../runtime/gemma_generation_output_limit.dart';
 import '../../telemetry/worker_task_metrics.dart';
 import 'task_handler.dart';
@@ -56,18 +58,52 @@ class DirectPromptHandler implements TaskHandler {
       longForm: request.options.longForm,
     );
     developer.log(decision.logLine, name: 'EdgeMintTaskEngine');
+    final taskType = request.sourceTaskType.isNotEmpty
+        ? request.sourceTaskType
+        : request.type;
+    final selection = DeviceInferencePlan.instance.selectionFor(
+      taskType: taskType,
+      wantsVision: hasImage,
+    );
+    if (selection != null && hasImage && !selection.multimodalEligible) {
+      throw WorkerError(
+        code: WorkerErrorCode.modelNotAvailable,
+        message: 'Multimodal inference is not admitted for this device',
+        retryable: false,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+    if (selection != null && !selection.admitted) {
+      throw WorkerError(
+        code: WorkerErrorCode.modelNotAvailable,
+        message: 'No model is admitted for this device (${selection.reason})',
+        retryable: false,
+        stage: WorkerTaskStage.validation,
+      );
+    }
+    final stageOutputLimit = selection?.selectedOutputLimit(decision.answerClass) ??
+        decision.effectiveOutputLimit;
+    final sampling = selection == null
+        ? null
+        : GenerationSampling.forAnswerClass(decision.answerClass);
 
     final llmStart = DateTime.now();
     final staged = await GemmaStagedDirectGeneration.run(
       decision: decision,
       prompt: userText,
+      maxStages: selection?.maxStages,
+      hardMaxStages: selection?.hardMaxStages,
+      executionBudget: decision.staged ? selection?.longFormBudget : null,
+      readSignals: DeviceInferencePlan.instance.readSignals,
       generateStage: (stageIndex, stagePrompt) {
         return qwenProcessor
             .runDirectUserGeneration(
               stagePrompt,
               signingKey: signingKey,
               imageBytes: stageIndex == 0 && hasImage ? imageBytes : null,
-              maxOutputTokens: decision.effectiveOutputLimit,
+              maxOutputTokens: stageOutputLimit,
+              temperature: sampling?.temperature,
+              topP: sampling?.topP,
             )
             .then(
               (receipt) => GemmaStagePiece(
@@ -82,7 +118,7 @@ class DirectPromptHandler implements TaskHandler {
     final generation = DirectGenerationReceipt(
       text: staged.text,
       stopReason: staged.stopReason,
-      configuredOutputLimit: decision.effectiveOutputLimit,
+      configuredOutputLimit: stageOutputLimit,
       generatedChunks: staged.generatedChunks,
       generatedTokens: staged.generatedTokens,
     );

@@ -7,6 +7,7 @@ import '../contracts/worker_error.dart';
 import '../models/worker_model_catalog.dart';
 import '../models/worker_model_runtime_candidate.dart';
 import 'artifact_install_coordinator.dart';
+import 'device_inference_plan.dart';
 import 'gemma4_e4b_gpu_benchmark.dart';
 import 'gemma_multimodal_vision_runtime.dart';
 import 'inference_adapter.dart';
@@ -51,7 +52,15 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
   ModelArtifact? _lastArtifact;
   String? _lastSigningKey;
 
-  int get _residentMaxTokens => Gemma4E4bBenchmarkMode.residentMaxTokens;
+  int? _loadedContextTokens;
+
+  int get _residentMaxTokens {
+    if (_state == ModelResidencyState.resident && _loadedContextTokens != null) {
+      return _loadedContextTokens!;
+    }
+    return DeviceInferencePlan.instance.contextTokensForResidentLoad() ??
+        Gemma4E4bBenchmarkMode.residentMaxTokens;
+  }
 
   @visibleForTesting
   bool get visionExecutorLoaded => _visionExecutorLoaded;
@@ -340,6 +349,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       );
       _modelVersionId = artifact.modelVersionId;
       _state = ModelResidencyState.resident;
+      _loadedContextTokens = _residentMaxTokens;
       _visionExecutorLoaded = enableVision;
       _log('[MODEL LOAD] successful maxTokens=$_residentMaxTokens');
       if (!enableVision) {
@@ -354,6 +364,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       _model = null;
       _modelVersionId = null;
       _state = ModelResidencyState.unloaded;
+      _loadedContextTokens = null;
       _visionExecutorLoaded = false;
       developer.log(
         '[MODEL LOAD] failed: $error',
@@ -385,6 +396,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       _model = null;
       _modelVersionId = null;
       _state = ModelResidencyState.unloaded;
+      _loadedContextTokens = null;
       _visionExecutorLoaded = false;
       return;
     }
@@ -411,6 +423,7 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
     } finally {
       _openSessions = 0;
       _state = ModelResidencyState.unloaded;
+      _loadedContextTokens = null;
     }
   }
 

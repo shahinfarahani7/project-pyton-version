@@ -31,8 +31,10 @@ import 'runtime/assignment_coordinator.dart';
 import 'runtime/assignment_output_upload_coordinator.dart';
 import 'runtime/checkpoint_manager.dart';
 import 'runtime/dev_mock_inference_adapter.dart';
+import 'runtime/device_inference_plan.dart';
 import 'runtime/device_snapshot.dart';
 import 'runtime/encrypted_store.dart';
+import 'runtime/model_admission_policy.dart';
 import 'runtime/execution_status.dart';
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/gemma_inference_adapter.dart';
@@ -176,6 +178,9 @@ class WorkerAppController extends ChangeNotifier {
       final path = await platform.localStorePath();
       if (path != null && path.isNotEmpty) {
         store = await PersistentEncryptedStore.open(path);
+        DeviceInferencePlan.instance.useStore(
+          FileAdmissionCacheStore(File('$path/model_admission_cache.json')),
+        );
       }
     } catch (error, stackTrace) {
       WorkerPipelineLog.error(
@@ -772,6 +777,7 @@ class WorkerAppController extends ChangeNotifier {
         ThermalState.throttled => 'Throttled',
         ThermalState.critical => 'Critical',
       };
+      DeviceInferencePlan.instance.publishFromSnapshot(snapshot);
 
       if (isEmulator) {
         _logTask(

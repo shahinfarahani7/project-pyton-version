@@ -231,6 +231,9 @@ class WorkerRuntimePlugin(
         val memory =
             readMemorySnapshot()
 
+        val cpu =
+            readCpuSnapshot()
+
         return mapOf(
             "available" to available,
             "batteryPercent" to percent,
@@ -257,6 +260,19 @@ class WorkerRuntimePlugin(
 
             "lowMemory" to
                     memory["lowMemory"],
+
+            "lowMemoryThresholdMb" to
+                    memory["lowMemoryThresholdMb"],
+
+            "cpuCoreCount" to cpu["cpuCoreCount"],
+            "cpuArchitecture" to cpu["cpuArchitecture"],
+            "cpuAbi" to cpu["cpuAbi"],
+            "cpuPartIds" to cpu["cpuPartIds"],
+            "cpuImplementerIds" to cpu["cpuImplementerIds"],
+            "perCoreMaxFrequencyMHz" to cpu["perCoreMaxFrequencyMHz"],
+            "highestCoreMaxFrequencyMHz" to cpu["highestCoreMaxFrequencyMHz"],
+            "performanceCoreCount" to cpu["performanceCoreCount"],
+            "efficiencyCoreCount" to cpu["efficiencyCoreCount"],
 
             "processPssKb" to
                     memory["processPssKb"],
@@ -301,9 +317,16 @@ class WorkerRuntimePlugin(
                             (1024L * 1024L)
                     ).toInt()
 
+        val thresholdMb =
+            (
+                    info.threshold /
+                            (1024L * 1024L)
+                    ).toInt()
+
         return mapOf(
             "deviceTotalRamMb" to totalMb,
             "deviceAvailableRamMb" to availMb,
+            "lowMemoryThresholdMb" to thresholdMb,
             "lowMemory" to info.lowMemory,
 
             "processPssKb" to
@@ -326,7 +349,90 @@ class WorkerRuntimePlugin(
                         )
                         ?.toIntOrNull(),
         )
-    } // <-- THIS BRACE WAS MISSING
+    }
+
+    private fun readCpuSnapshot(): Map<String, Any?> {
+        val partIds = linkedSetOf<Int>()
+        val implementers = linkedSetOf<Int>()
+        var architecture: String? = null
+        try {
+            File("/proc/cpuinfo").bufferedReader().useLines { lines ->
+                for (line in lines) {
+                    val separator = line.indexOf(':')
+                    if (separator < 0) {
+                        continue
+                    }
+                    val key = line.substring(0, separator).trim().lowercase()
+                    val value = line.substring(separator + 1).trim()
+                    when (key) {
+                        "cpu architecture" -> if (architecture == null) architecture = value
+                        "cpu implementer" -> parseCpuId(value)?.let(implementers::add)
+                        "cpu part" -> parseCpuId(value)?.let(partIds::add)
+                    }
+                }
+            }
+        } catch (_: Exception) {
+            // cpuinfo is not readable on this runtime.
+        }
+
+        val coreCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+        val frequencies = ArrayList<Int>()
+        val probedCores = coreCount.coerceAtMost(32)
+        for (index in 0 until probedCores) {
+            readCoreMaxMhz(index)?.let(frequencies::add)
+        }
+        val highest = frequencies.maxOrNull()
+        val performance = if (highest == null) {
+            null
+        } else {
+            frequencies.count { it >= highest * 0.85 }
+        }
+        val efficiency = if (highest == null || performance == null) {
+            null
+        } else {
+            frequencies.size - performance
+        }
+        val abi = Build.SUPPORTED_ABIS.firstOrNull()
+
+        return mapOf(
+            "cpuCoreCount" to coreCount,
+            "cpuArchitecture" to (architecture ?: abi),
+            "cpuAbi" to abi,
+            "cpuPartIds" to partIds.toList(),
+            "cpuImplementerIds" to implementers.toList(),
+            "perCoreMaxFrequencyMHz" to frequencies,
+            "highestCoreMaxFrequencyMHz" to highest,
+            "performanceCoreCount" to performance,
+            "efficiencyCoreCount" to efficiency,
+        )
+    }
+
+    private fun readCoreMaxMhz(index: Int): Int? {
+        val paths = listOf(
+            "/sys/devices/system/cpu/cpu$index/cpufreq/cpuinfo_max_freq",
+            "/sys/devices/system/cpu/cpu$index/cpufreq/scaling_max_freq",
+        )
+        for (path in paths) {
+            try {
+                val khz = File(path).readText().trim().toLongOrNull() ?: continue
+                if (khz > 0L) {
+                    return (khz / 1000L).toInt()
+                }
+            } catch (_: Exception) {
+                // This core does not expose a frequency file.
+            }
+        }
+        return null
+    }
+
+    private fun parseCpuId(raw: String): Int? {
+        val text = raw.trim().lowercase()
+        return if (text.startsWith("0x")) {
+            text.removePrefix("0x").toIntOrNull(16)
+        } else {
+            text.toIntOrNull() ?: text.toIntOrNull(16)
+        }
+    }
 
     private fun readConsents(): List<String> {
         val stored =

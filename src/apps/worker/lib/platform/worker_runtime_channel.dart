@@ -47,7 +47,17 @@ class WorkerRuntimeChannel {
           (raw['consentsGranted'] as List<Object?>?)?.cast<String>() ?? const [],
       deviceTotalRamMb: raw['deviceTotalRamMb'] as int?,
       deviceAvailableRamMb: raw['deviceAvailableRamMb'] as int?,
+      lowMemoryThresholdMb: raw['lowMemoryThresholdMb'] as int?,
       lowMemory: raw['lowMemory'] as bool?,
+      cpuCoreCount: raw['cpuCoreCount'] as int?,
+      cpuArchitecture: raw['cpuArchitecture'] as String?,
+      cpuAbi: raw['cpuAbi'] as String?,
+      cpuPartIds: _intList(raw['cpuPartIds']),
+      cpuImplementerIds: _intList(raw['cpuImplementerIds']),
+      perCoreMaxFrequencyMHz: _intList(raw['perCoreMaxFrequencyMHz']),
+      highestCoreMaxFrequencyMHz: raw['highestCoreMaxFrequencyMHz'] as int?,
+      performanceCoreCount: raw['performanceCoreCount'] as int?,
+      efficiencyCoreCount: raw['efficiencyCoreCount'] as int?,
       processPssKb: raw['processPssKb'] as int?,
       processPrivateDirtyKb: raw['processPrivateDirtyKb'] as int?,
       javaHeapKb: raw['javaHeapKb'] as int?,
@@ -76,7 +86,17 @@ class WorkerRuntimeChannel {
     required List<String> consentsGranted,
     int? deviceTotalRamMb,
     int? deviceAvailableRamMb,
+    int? lowMemoryThresholdMb,
     bool? lowMemory,
+    int? cpuCoreCount,
+    String? cpuArchitecture,
+    String? cpuAbi,
+    List<int> cpuPartIds = const [],
+    List<int> cpuImplementerIds = const [],
+    List<int> perCoreMaxFrequencyMHz = const [],
+    int? highestCoreMaxFrequencyMHz,
+    int? performanceCoreCount,
+    int? efficiencyCoreCount,
     int? processPssKb,
     int? processPrivateDirtyKb,
     int? javaHeapKb,
@@ -102,7 +122,17 @@ class WorkerRuntimeChannel {
       consentsGranted: consentsGranted,
       deviceTotalRamMb: deviceTotalRamMb,
       deviceAvailableRamMb: deviceAvailableRamMb,
+      lowMemoryThresholdMb: lowMemoryThresholdMb,
       lowMemory: lowMemory,
+      cpuCoreCount: cpuCoreCount,
+      cpuArchitecture: cpuArchitecture,
+      cpuAbi: cpuAbi,
+      cpuPartIds: cpuPartIds,
+      cpuImplementerIds: cpuImplementerIds,
+      perCoreMaxFrequencyMHz: perCoreMaxFrequencyMHz,
+      highestCoreMaxFrequencyMHz: highestCoreMaxFrequencyMHz,
+      performanceCoreCount: performanceCoreCount,
+      efficiencyCoreCount: efficiencyCoreCount,
       processPssKb: processPssKb,
       processPrivateDirtyKb: processPrivateDirtyKb,
       javaHeapKb: javaHeapKb,
@@ -138,6 +168,21 @@ class WorkerRuntimeChannel {
       withinSchedule: true,
       consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
     );
+  }
+
+  List<int> _intList(Object? raw) {
+    if (raw is! List) {
+      return const [];
+    }
+    final values = <int>[];
+    for (final item in raw) {
+      if (item is int) {
+        values.add(item);
+      } else if (item is num) {
+        values.add(item.toInt());
+      }
+    }
+    return values;
   }
 
   ThermalState _thermal(String? value) {

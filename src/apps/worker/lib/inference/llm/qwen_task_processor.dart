@@ -1747,6 +1747,8 @@ class QwenTaskProcessor {
     required String signingKey,
     Uint8List? imageBytes,
     int? maxOutputTokens,
+    double? temperature,
+    double? topP,
   }) async {
     final trimmed = userText.trim();
     final hasImage = imageBytes != null && imageBytes.isNotEmpty;
@@ -1771,6 +1773,8 @@ class QwenTaskProcessor {
       systemInstruction: '',
       imageBytes: imageBytes,
       maxOutputTokens: maxOutputTokens,
+      temperature: temperature,
+      topP: topP,
     );
     return DirectGenerationReceipt(
       text: reply.text,
@@ -1787,6 +1791,8 @@ class QwenTaskProcessor {
     String? systemInstruction,
     Uint8List? imageBytes,
     int? maxOutputTokens,
+    double? temperature,
+    double? topP,
   }) async {
     final formatted = FormattedPromptBuilder.buildTaskPrompt(
       templateBody: prompt,
@@ -1823,6 +1829,8 @@ class QwenTaskProcessor {
         imageBytes: hasImage ? imageBytes : null,
         resumedState: null,
         maxOutputTokensOverride: outputCap,
+        temperature: temperature,
+        topP: topP,
       );
       final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
       return _PromptReply(

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../runtime/device_inference_plan.dart';
 import '../../runtime/execution_status.dart';
 import '../../inference/llm/diagnostic/summarize_map_evidence_diagnostic_fixture.dart';
 import '../../inference/llm/diagnostic/summarize_map_prompt_variant.dart';
@@ -708,6 +710,7 @@ class _ReadinessPanel extends StatelessWidget {
             value: controller.modelPhase == ModelInstallPhase.ready ? 'Ready' : 'Pending',
             icon: Icons.view_in_ar,
           ),
+          if (kDebugMode) ..._debugHardwareRows(),
           const SizedBox(height: 8),
           const WorkerLineChart(
             values: [0.94, 0.95, 0.955, 0.96, 0.962, 0.963, 0.965],
@@ -717,6 +720,72 @@ class _ReadinessPanel extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<Widget> _debugHardwareRows() {
+    final profile = DeviceInferencePlan.instance.profile;
+    final selection = DeviceInferencePlan.instance.textSelection;
+    String show(Object? value) => value == null ? 'unknown' : '$value';
+    return [
+      const SizedBox(height: 8),
+      WorkerReadinessRow(label: 'RAM Total', value: show(profile?.totalRamMb), icon: Icons.memory),
+      WorkerReadinessRow(label: 'RAM Available', value: show(profile?.availableRamMb), icon: Icons.memory),
+      WorkerReadinessRow(
+        label: 'RAM Tier',
+        value: profile?.ramTier.name.toUpperCase() ?? 'unknown',
+        icon: Icons.memory,
+      ),
+      WorkerReadinessRow(
+        label: 'CPU Architecture',
+        value: show(profile?.cpuArchitecture),
+        icon: Icons.developer_board,
+      ),
+      WorkerReadinessRow(
+        label: 'CPU Core Count',
+        value: show(profile?.cpuCoreCount),
+        icon: Icons.developer_board,
+      ),
+      WorkerReadinessRow(
+        label: 'CPU Max Frequency',
+        value: show(profile?.highestCoreMaxFrequencyMHz),
+        icon: Icons.speed,
+      ),
+      WorkerReadinessRow(
+        label: 'CPU Class',
+        value: profile?.cpuClass.name ?? 'unknown',
+        icon: Icons.developer_board,
+      ),
+      WorkerReadinessRow(
+        label: 'Final Device Tier',
+        value: profile?.hardwareTier.name.toUpperCase() ?? 'unknown',
+        icon: Icons.tune,
+      ),
+      WorkerReadinessRow(
+        label: 'Selected Model',
+        value: selection?.selectedModelId ?? 'unknown',
+        icon: Icons.view_in_ar,
+      ),
+      WorkerReadinessRow(
+        label: 'Context',
+        value: show(selection?.selectedContextTokens),
+        icon: Icons.short_text,
+      ),
+      WorkerReadinessRow(
+        label: 'Per-stage',
+        value: show(selection?.perStageOutput),
+        icon: Icons.short_text,
+      ),
+      WorkerReadinessRow(
+        label: 'Hard stages',
+        value: show(selection?.hardMaxStages),
+        icon: Icons.short_text,
+      ),
+      WorkerReadinessRow(
+        label: 'Memory Budget',
+        value: show(selection?.memoryBudgetMb),
+        icon: Icons.memory,
+      ),
+    ];
   }
 }
 

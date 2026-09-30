@@ -18,7 +18,17 @@ class DeviceSnapshot {
     this.isX86Android = false,
     this.deviceTotalRamMb,
     this.deviceAvailableRamMb,
+    this.lowMemoryThresholdMb,
     this.lowMemory,
+    this.cpuCoreCount,
+    this.cpuArchitecture,
+    this.cpuAbi,
+    this.cpuPartIds = const [],
+    this.cpuImplementerIds = const [],
+    this.perCoreMaxFrequencyMHz = const [],
+    this.highestCoreMaxFrequencyMHz,
+    this.performanceCoreCount,
+    this.efficiencyCoreCount,
     this.processPssKb,
     this.processPrivateDirtyKb,
     this.javaHeapKb,
@@ -37,7 +47,17 @@ class DeviceSnapshot {
   final List<String> consentsGranted;
   final int? deviceTotalRamMb;
   final int? deviceAvailableRamMb;
+  final int? lowMemoryThresholdMb;
   final bool? lowMemory;
+  final int? cpuCoreCount;
+  final String? cpuArchitecture;
+  final String? cpuAbi;
+  final List<int> cpuPartIds;
+  final List<int> cpuImplementerIds;
+  final List<int> perCoreMaxFrequencyMHz;
+  final int? highestCoreMaxFrequencyMHz;
+  final int? performanceCoreCount;
+  final int? efficiencyCoreCount;
   final int? processPssKb;
   final int? processPrivateDirtyKb;
   final int? javaHeapKb;
@@ -66,6 +86,19 @@ class DeviceSnapshot {
     List<String>? consentsGranted,
     bool? isEmulator,
     bool? isX86Android,
+    int? deviceTotalRamMb,
+    int? deviceAvailableRamMb,
+    int? lowMemoryThresholdMb,
+    bool? lowMemory,
+    int? cpuCoreCount,
+    String? cpuArchitecture,
+    String? cpuAbi,
+    List<int>? cpuPartIds,
+    List<int>? cpuImplementerIds,
+    List<int>? perCoreMaxFrequencyMHz,
+    int? highestCoreMaxFrequencyMHz,
+    int? performanceCoreCount,
+    int? efficiencyCoreCount,
   }) {
     return DeviceSnapshot(
       available: available ?? this.available,
@@ -78,6 +111,24 @@ class DeviceSnapshot {
       freeStorageMb: freeStorageMb ?? this.freeStorageMb,
       withinSchedule: withinSchedule ?? this.withinSchedule,
       consentsGranted: consentsGranted ?? this.consentsGranted,
+      deviceTotalRamMb: deviceTotalRamMb ?? this.deviceTotalRamMb,
+      deviceAvailableRamMb: deviceAvailableRamMb ?? this.deviceAvailableRamMb,
+      lowMemoryThresholdMb: lowMemoryThresholdMb ?? this.lowMemoryThresholdMb,
+      lowMemory: lowMemory ?? this.lowMemory,
+      cpuCoreCount: cpuCoreCount ?? this.cpuCoreCount,
+      cpuArchitecture: cpuArchitecture ?? this.cpuArchitecture,
+      cpuAbi: cpuAbi ?? this.cpuAbi,
+      cpuPartIds: cpuPartIds ?? this.cpuPartIds,
+      cpuImplementerIds: cpuImplementerIds ?? this.cpuImplementerIds,
+      perCoreMaxFrequencyMHz: perCoreMaxFrequencyMHz ?? this.perCoreMaxFrequencyMHz,
+      highestCoreMaxFrequencyMHz:
+          highestCoreMaxFrequencyMHz ?? this.highestCoreMaxFrequencyMHz,
+      performanceCoreCount: performanceCoreCount ?? this.performanceCoreCount,
+      efficiencyCoreCount: efficiencyCoreCount ?? this.efficiencyCoreCount,
+      processPssKb: processPssKb,
+      processPrivateDirtyKb: processPrivateDirtyKb,
+      javaHeapKb: javaHeapKb,
+      nativeHeapKb: nativeHeapKb,
     );
   }
 }

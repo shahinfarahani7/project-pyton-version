@@ -1,26 +1,29 @@
 import '../inference/llm/context_budget_manager.dart';
 import '../validation/json_stream_boundary.dart';
 import '../validation/output_repetition_guard.dart';
+import 'device_inference_policy_config.dart';
 import 'gemma_stage_merger.dart';
+import 'long_form_execution_budget.dart';
 import 'worker_pipeline_log.dart';
 
 /// Output-generation cap for Gemma. This is separate from the LiteRT context
 /// window (`maxTokens` / KV cache, 2048 in benchmark mode).
 abstract final class GemmaGenerationOutputLimit {
   /// Short/default free-form answer. Also the per-stage cap for long-form.
-  static const textDirectShort = 256;
+  /// The number lives in [TierPolicyTable.t2], the central device lookup.
+  static final textDirectShort = const TierPolicyTable().t2.shortOutput;
 
   /// Medium answer: explain, elaborate, or a normally detailed reply.
-  static const textDirectMedium = 384;
+  static final textDirectMedium = const TierPolicyTable().t2.mediumOutput;
 
   /// Explicitly detailed or extended answer, still one session.
-  static const textDirectDetailed = 512;
+  static final textDirectDetailed = const TierPolicyTable().t2.detailedOutput;
 
   /// Kept as the short/default cap. Not the long-form session size.
-  static const textDirect = textDirectShort;
+  static final textDirect = textDirectShort;
 
-  static const longFormMaxStages = 6;
-  static const longFormHardMaxStages = 8;
+  static final longFormMaxStages = const TierPolicyTable().t2.maxStages;
+  static final longFormHardMaxStages = const TierPolicyTable().t2.hardMaxStages;
 
   static const eos = 'EOS';
   static const outputLimit = 'OUTPUT_LIMIT';
@@ -392,13 +395,19 @@ class GemmaStagedDirectGeneration {
     TokenEstimator estimator = const TokenEstimator(),
     int? maxStages,
     int? hardMaxStages,
+    LongFormExecutionBudget? executionBudget,
+    LongFormRuntimeSignals Function()? readSignals,
   }) async {
     if (!decision.staged) {
       return generateStage(0, prompt);
     }
 
-    final stageBudget = maxStages ?? GemmaGenerationOutputLimit.longFormMaxStages;
-    final hardBudget = hardMaxStages ?? GemmaGenerationOutputLimit.longFormHardMaxStages;
+    final stageBudget = maxStages ??
+        executionBudget?.maxStages ??
+        GemmaGenerationOutputLimit.longFormMaxStages;
+    final hardBudget = hardMaxStages ??
+        executionBudget?.hardMaxStages ??
+        GemmaGenerationOutputLimit.longFormHardMaxStages;
     final safetyLimit = hardBudget < 1 ? 1 : hardBudget;
 
     var accumulated = '';
@@ -413,6 +422,28 @@ class GemmaStagedDirectGeneration {
     );
     var stagesUsed = 0;
     for (var stage = 0; stage < safetyLimit; stage++) {
+      if (stage > 0 && executionBudget != null) {
+        final gate = executionBudget.evaluate(
+          stageIndex: stage,
+          stageCount: stage,
+          signals: readSignals?.call() ?? executionBudget.initialSignals,
+        );
+        if (!gate.shouldContinue) {
+          final incomplete = LongFormCompletion.textIsIncomplete(accumulated);
+          completion = LongFormCompletionDecision(
+            endedIncomplete: incomplete,
+            shouldContinue: false,
+            complete: !incomplete,
+            truncated: incomplete,
+            finalStopReason: incomplete
+                ? GemmaGenerationOutputLimit.longFormStageLimit
+                : stopReason,
+            maxStages: stageBudget,
+            hardMaxStages: safetyLimit,
+          );
+          break;
+        }
+      }
       final previousEndedIncomplete = stage > 0 &&
           LongFormCompletion.textIsIncomplete(accumulated);
       final tail = stage == 0
