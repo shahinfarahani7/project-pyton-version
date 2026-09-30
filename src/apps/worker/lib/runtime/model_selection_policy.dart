@@ -84,10 +84,13 @@ class ModelSelection {
   int selectedOutputLimit(String answerClass) => outputFor(answerClass);
 
   String configLog() =>
-      '[DEVICE CONFIG] model=$selectedModelId backend=$selectedBackend '
-      'context=$selectedContextTokens '
-      'short=$shortOutputTokens medium=$mediumOutputTokens '
-      'detailed=$detailedOutputTokens longStage=$perStageOutput '
+      '[DEVICE CONFIG] tier=${hardwareTier.name.toUpperCase()} '
+      'model=$selectedModelId backend=$selectedBackend '
+      'contextTokens=$selectedContextTokens context=$selectedContextTokens '
+      'shortOutput=$shortOutputTokens short=$shortOutputTokens '
+      'mediumOutput=$mediumOutputTokens medium=$mediumOutputTokens '
+      'detailedOutput=$detailedOutputTokens detailed=$detailedOutputTokens '
+      'longFormPerStage=$perStageOutput longStage=$perStageOutput '
       'maxStages=$maxStages hardMaxStages=$hardMaxStages '
       'vision=$maxImages memoryBudgetMb=${memoryBudgetMb ?? 'unknown'}';
 
@@ -165,14 +168,24 @@ class ModelSelectionPolicy {
       if (!model.supportsText && request.taskType.startsWith('text.')) {
         continue;
       }
-      final context = _contextFor(device, model, tierPolicy);
-      final result = admission.evaluate(
-        device: device,
-        model: model,
-        contextTokens: context,
-        visionRequested: request.wantsVision,
-      );
-      evaluations[result] = model;
+      final preferred = _contextFor(device, model, tierPolicy);
+      ModelAdmissionResult? fitted;
+      for (final context in _contextsToTry(preferred)) {
+        final result = admission.evaluate(
+          device: device,
+          model: model,
+          contextTokens: context,
+          visionRequested: request.wantsVision,
+        );
+        if (result.admitted) {
+          fitted = result;
+          break;
+        }
+        fitted ??= result;
+      }
+      if (fitted != null && fitted.admitted) {
+        evaluations[fitted] = model;
+      }
     }
 
     final admitted = evaluations.entries.where((entry) => entry.key.admitted).toList();
@@ -200,9 +213,11 @@ class ModelSelectionPolicy {
     final model = chosen?.value ?? InferenceModelCatalog.gemma4E4bGpu;
     final admissionResult = chosen?.key;
     final admittedOk = admissionResult?.admitted ?? false;
-    var perStage = tierPolicy.perStageOutput;
-    var hard = tierPolicy.hardMaxStages;
-    var maxStages = tierPolicy.maxStages;
+    final fittedContext = admittedOk ? admissionResult!.selectedContextTokens : tierPolicy.contextTokens;
+    final effective = _downgradedPolicy(tierPolicy, fittedContext);
+    var perStage = effective.perStageOutput;
+    var hard = effective.hardMaxStages;
+    var maxStages = effective.maxStages;
     final promoted = (device.hardwareTier == HardwareTier.t4 ||
             device.hardwareTier == HardwareTier.t5) &&
         admissionResult?.riskLevel == AdmissionRisk.low &&
@@ -213,7 +228,7 @@ class ModelSelectionPolicy {
     if (promoted && perStage < config.tiers.promotedPerStageOutput) {
       perStage = config.tiers.promotedPerStageOutput;
     }
-    var context = _contextFor(device, model, tierPolicy);
+    var context = fittedContext;
     if (admittedOk) {
       context = admissionResult!.selectedContextTokens;
     }
@@ -224,29 +239,32 @@ class ModelSelectionPolicy {
     var budget = LongFormExecutionBudget(
       maxStages: maxStages,
       hardMaxStages: hard,
-      maxElapsedMs: tierPolicy.maxElapsedMs,
-      minimumLeaseRemainingMs: tierPolicy.minimumLeaseRemainingMs,
-      minimumBatteryPercent: tierPolicy.minimumBatteryPercent,
-      maximumThermalState: tierPolicy.maximumThermalState,
+      maxElapsedMs: effective.maxElapsedMs,
+      minimumLeaseRemainingMs: effective.minimumLeaseRemainingMs,
+      minimumBatteryPercent: effective.minimumBatteryPercent,
+      maximumThermalState: effective.maximumThermalState,
       multimodalEligible: admittedOk &&
           (admissionResult?.visionEligible ?? false) &&
-          !tierPolicy.multimodalRestricted,
+          !effective.multimodalRestricted,
     );
     if (health != null) {
       budget = budget.degrade(health, config: config, tierTable: config.tiers);
       hard = budget.hardMaxStages;
       maxStages = budget.maxStages;
     }
+    final downgraded = admittedOk && fittedContext < tierPolicy.contextTokens;
     final reason = admittedOk
-        ? (admissionResult!.reasons.isEmpty ? 'admitted' : admissionResult.reasons.join(','))
+        ? (downgraded
+            ? 'context_downgraded_to_$fittedContext'
+            : (admissionResult!.reasons.isEmpty ? 'admitted' : admissionResult.reasons.join(',')))
         : 'no_admitted_model';
     final selection = ModelSelection(
       selectedModelId: admittedOk ? model.modelId : 'none',
       selectedBackend: admittedOk ? admissionResult!.selectedBackend : 'none',
       selectedContextTokens: context,
-      shortOutputTokens: tierPolicy.shortOutput,
-      mediumOutputTokens: tierPolicy.mediumOutput,
-      detailedOutputTokens: tierPolicy.detailedOutput,
+      shortOutputTokens: effective.shortOutput,
+      mediumOutputTokens: effective.mediumOutput,
+      detailedOutputTokens: effective.detailedOutput,
       perStageOutput: perStage,
       maxStages: maxStages,
       hardMaxStages: hard,
@@ -259,9 +277,9 @@ class ModelSelectionPolicy {
         availableRamMb: device.availableRamMb,
         totalRamMb: device.totalRamMb,
       ),
-      maxImages: tierPolicy.maxImages,
-      parallelInference: tierPolicy.parallelInference,
-      residentModels: tierPolicy.residentModels,
+      maxImages: effective.maxImages,
+      parallelInference: effective.parallelInference,
+      residentModels: effective.residentModels,
       reason: reason,
       admitted: admittedOk,
       multimodalEligible: budget.multimodalEligible,
@@ -273,6 +291,36 @@ class ModelSelectionPolicy {
       selection.logLine(taskType: request.taskType),
     );
     return selection;
+  }
+
+  List<int> _contextsToTry(int preferred) {
+    const ladder = [4096, 3072, 2048, 1536, 1024];
+    final contexts = <int>[];
+    if (preferred > 0) {
+      contexts.add(preferred);
+    }
+    for (final context in ladder) {
+      if (context < preferred && !contexts.contains(context)) {
+        contexts.add(context);
+      }
+    }
+    return contexts;
+  }
+
+  /// Lower output and stage limits when memory only fits a smaller context.
+  TierExecutionPolicy _downgradedPolicy(TierExecutionPolicy current, int context) {
+    if (context >= current.contextTokens) {
+      return current;
+    }
+    final table = config.tiers;
+    TierExecutionPolicy? best;
+    for (final policy in [table.t0, table.t1, table.t2, table.t3, table.t4, table.t5]) {
+      if (policy.contextTokens <= context &&
+          (best == null || policy.contextTokens > best.contextTokens)) {
+        best = policy;
+      }
+    }
+    return best ?? table.t0;
   }
 
   TierExecutionPolicy _policyFor(DeviceCapabilityProfile device) {

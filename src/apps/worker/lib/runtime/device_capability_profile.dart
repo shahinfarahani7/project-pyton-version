@@ -145,15 +145,26 @@ class DeviceCapabilityProfile {
   double? get thermalDelta => benchmark?.thermalDeltaC;
 
   String hardwareLog() =>
-      '[DEVICE HARDWARE] ram=${display(totalRamMb)} '
+      '[DEVICE HARDWARE] totalRamMb=${display(totalRamMb)} '
       'availableRamMb=${display(availableRamMb)} '
-      'cpuClass=${cpuClass.name} '
-      'cpuParts=${cpuPartIds.isEmpty ? 'unknown' : cpuPartIds.map((part) => '0x${part.toRadixString(16)}').join(',')} '
-      'frequency=${display(cpuMaxFrequencyMHz)} '
+      'ram=${display(totalRamMb)} '
+      'ramTier=${ramTier.name.toUpperCase()} '
       'cpuArchitecture=${display(cpuArchitecture)} '
-      'cpuCoreCount=${display(cpuCoreCount)}';
+      'cpuCoreCount=${display(cpuCoreCount)} '
+      'cpuPartIds=${cpuPartIds.isEmpty ? 'unknown' : cpuPartIds.map((part) => '0x${part.toRadixString(16)}').join(',')} '
+      'cpuParts=${cpuPartIds.isEmpty ? 'unknown' : cpuPartIds.map((part) => '0x${part.toRadixString(16)}').join(',')} '
+      'cpuMaxMHz=${display(cpuMaxFrequencyMHz)} '
+      'frequency=${display(cpuMaxFrequencyMHz)} '
+      'performanceCores=${display(performanceCoreCount)} '
+      'cpuClass=${cpuClass.name}';
 
   String tierLog() =>
+      '[DEVICE TIER] ramTier=${ramTier.name.toUpperCase()} '
+      'cpuTier=${cpuTier.name.toUpperCase()} '
+      'finalTier=${hardwareTier.name.toUpperCase()} '
+      'reason=${DeviceTierClassifier.reason(this)}';
+
+  String lookupLog() =>
       '[DEVICE LOOKUP] ramTier=${ramTier.name.toUpperCase()} '
       'cpuTier=${cpuTier.name.toUpperCase()} '
       'finalTier=${hardwareTier.name.toUpperCase()} '

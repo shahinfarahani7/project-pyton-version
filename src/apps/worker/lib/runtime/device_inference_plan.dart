@@ -34,6 +34,7 @@ class DeviceInferencePlan {
     profile = next;
     WorkerPipelineLog.info(WorkerPipelineLog.boot, next.hardwareLog());
     WorkerPipelineLog.info(WorkerPipelineLog.boot, next.tierLog());
+    WorkerPipelineLog.info(WorkerPipelineLog.boot, next.lookupLog());
     WorkerPipelineLog.info(WorkerPipelineLog.boot, next.profileLog());
     textSelection = _select(taskType: 'text.direct', wantsVision: false);
     final selection = textSelection;

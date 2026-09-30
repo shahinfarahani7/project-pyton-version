@@ -66,19 +66,17 @@ class DirectPromptHandler implements TaskHandler {
       wantsVision: hasImage,
     );
     if (selection != null && hasImage && !selection.multimodalEligible) {
-      throw WorkerError(
-        code: WorkerErrorCode.modelNotAvailable,
-        message: 'Multimodal inference is not admitted for this device',
-        retryable: false,
-        stage: WorkerTaskStage.validation,
+      developer.log(
+        '[DEVICE CONFIG] vision restricted reason=${selection.reason}; '
+        'resident model stays loaded',
+        name: 'EdgeMintTaskEngine',
       );
     }
     if (selection != null && !selection.admitted) {
-      throw WorkerError(
-        code: WorkerErrorCode.modelNotAvailable,
-        message: 'No model is admitted for this device (${selection.reason})',
-        retryable: false,
-        stage: WorkerTaskStage.validation,
+      developer.log(
+        '[MODEL ADMISSION] admitted=false reason=${selection.reason}; '
+        'resident model stays loaded',
+        name: 'EdgeMintTaskEngine',
       );
     }
     final stageOutputLimit = selection?.selectedOutputLimit(decision.answerClass) ??

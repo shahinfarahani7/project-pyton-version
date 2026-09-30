@@ -74,6 +74,22 @@ void main() {
     expect(pressured, HardwareTier.t4);
   });
 
+  test('tight free RAM keeps Gemma by lowering context instead of dropping the model', () {
+    final device = measured(
+      totalRamMb: 6144,
+      availableRamMb: 2200,
+      cpuPartIds: const [0xD41],
+    );
+    final chosen = selection.select(
+      device: device,
+      request: const ModelSelectionRequest(taskType: 'text.direct'),
+    );
+    expect(chosen.admitted, isTrue);
+    expect(chosen.selectedModelId, gemma.modelId);
+    expect(chosen.selectedContextTokens, 1024);
+    expect(chosen.reason, 'context_downgraded_to_1024');
+  });
+
   test('safe memory budget keeps a system reserve', () {
     const memory = MemorySafetyConfig();
     expect(
@@ -138,7 +154,8 @@ void main() {
     expect(device.hardwareLog(), contains('[DEVICE HARDWARE]'));
     expect(device.hardwareLog(), contains('ram=6144'));
     expect(device.hardwareLog(), contains('cpuClass=c2'));
-    expect(device.tierLog(), contains('[DEVICE LOOKUP]'));
+    expect(device.tierLog(), contains('[DEVICE TIER]'));
+    expect(device.lookupLog(), contains('[DEVICE LOOKUP]'));
     expect(device.tierLog(), contains('ramTier=T2'));
     expect(device.tierLog(), contains('finalTier=T2'));
     expect(chosen.configLog(), contains('context=2048'));
