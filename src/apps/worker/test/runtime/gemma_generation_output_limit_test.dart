@@ -295,8 +295,9 @@ void main() {
               generatedTokens: 200,
             );
           }
-          expect(stagePrompt, contains('Continue'));
-          expect(stagePrompt, isNot(prompt));
+          expect(stagePrompt, contains('ادامه'));
+          expect(stagePrompt, contains('Part one'));
+          expect(stagePrompt.length, lessThan(800));
           return const GemmaStagePiece(
             text: 'Part two',
             stopReason: GemmaGenerationOutputLimit.eos,
@@ -307,7 +308,7 @@ void main() {
       );
 
       expect(calls, 2);
-      expect(result.text, 'Part one\nPart two');
+      expect(result.text, 'Part one Part two');
       expect(result.stopReason, GemmaGenerationOutputLimit.eos);
       expect(result.stopReason, isNot(GemmaGenerationOutputLimit.outputLimit));
       expect(result.generatedChunks, 296);

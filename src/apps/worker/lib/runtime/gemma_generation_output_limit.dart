@@ -1,6 +1,8 @@
 import '../inference/llm/context_budget_manager.dart';
 import '../validation/json_stream_boundary.dart';
 import '../validation/output_repetition_guard.dart';
+import 'gemma_stage_merger.dart';
+import 'worker_pipeline_log.dart';
 
 /// Output-generation cap for Gemma. This is separate from the LiteRT context
 /// window (`maxTokens` / KV cache, 2048 in benchmark mode).
@@ -286,42 +288,106 @@ class GemmaStagedDirectGeneration {
       return generateStage(0, prompt);
     }
 
-    final buffer = StringBuffer();
+    var accumulated = '';
     var generatedChunks = 0;
     var stopReason = GemmaGenerationOutputLimit.eos;
     for (var stage = 0; stage < GemmaGenerationOutputLimit.longFormMaxStages; stage++) {
-      final stagePrompt = stage == 0 ? prompt : continuationPrompt(prompt, buffer.toString());
+      final previousEndedIncomplete = stage > 0 &&
+          GemmaStageMerger.endedIncomplete(
+            accumulated,
+            hitOutputLimit: true,
+          );
+      final tail = stage == 0
+          ? ''
+          : GemmaStageMerger.continuationTail(
+              accumulated,
+              endedIncomplete: previousEndedIncomplete,
+            );
+      final stagePrompt = stage == 0
+          ? prompt
+          : GemmaStageMerger.continuationPrompt(original: prompt, tail: tail);
       final piece = await generateStage(stage, stagePrompt);
       generatedChunks += piece.generatedChunks;
       stopReason = piece.stopReason;
-      final addition = piece.text.trim();
-      if (addition.isEmpty) {
+      if (piece.text.trim().isEmpty) {
+        _logStage(
+          stageIndex: stage,
+          stageInputTailChars: tail.length,
+          stageOutputChars: piece.text.length,
+          overlapRemovedChars: 0,
+          duplicateBlocksRemoved: 0,
+          previousEndedIncomplete: previousEndedIncomplete,
+          stageStopReason: piece.stopReason,
+        );
         break;
       }
-      if (buffer.isNotEmpty) {
-        buffer.write('\n');
+      final merge = stage == 0
+          ? GemmaStageMerge(
+              text: piece.text.trimRight(),
+              overlapRemovedChars: 0,
+              duplicateBlocksRemoved: 0,
+            )
+          : GemmaStageMerger.merge(
+              previousText: accumulated,
+              nextText: piece.text,
+              previousEndedIncomplete: previousEndedIncomplete,
+            );
+      _logStage(
+        stageIndex: stage,
+        stageInputTailChars: tail.length,
+        stageOutputChars: piece.text.length,
+        overlapRemovedChars: merge.overlapRemovedChars,
+        duplicateBlocksRemoved: merge.duplicateBlocksRemoved,
+        previousEndedIncomplete: previousEndedIncomplete,
+        stageStopReason: piece.stopReason,
+      );
+      if (stage > 0 && merge.text == accumulated) {
+        break;
       }
-      buffer.write(addition);
+      accumulated = merge.text;
       if (!piece.hitOutputLimit) {
         break;
       }
     }
-    final text = buffer.toString();
     return GemmaStagePiece(
-      text: text,
+      text: accumulated,
       stopReason: stopReason,
       generatedChunks: generatedChunks,
-      generatedTokens: estimator.estimate(text),
+      generatedTokens: estimator.estimate(accumulated),
+    );
+  }
+
+  static void _logStage({
+    required int stageIndex,
+    required int stageInputTailChars,
+    required int stageOutputChars,
+    required int overlapRemovedChars,
+    required int duplicateBlocksRemoved,
+    required bool previousEndedIncomplete,
+    required String stageStopReason,
+  }) {
+    WorkerPipelineLog.info(
+      WorkerPipelineLog.exec,
+      '[STAGE MERGE] stageIndex=$stageIndex '
+      'stageInputTailChars=$stageInputTailChars '
+      'stageOutputChars=$stageOutputChars '
+      'overlapRemovedChars=$overlapRemovedChars '
+      'duplicateBlocksRemoved=$duplicateBlocksRemoved '
+      'previousEndedIncomplete=$previousEndedIncomplete '
+      'stageStopReason=$stageStopReason',
     );
   }
 
   static String continuationPrompt(String original, String soFar) {
-    const tailLimit = 1200;
-    final tail = soFar.length <= tailLimit ? soFar : soFar.substring(soFar.length - tailLimit);
-    return 'Continue the same answer. Do not repeat earlier text.\n\n'
-        'Request:\n$original\n\n'
-        'Answer so far ends with:\n$tail\n\n'
-        'Continue:';
+    final incomplete = GemmaStageMerger.endedIncomplete(
+      soFar,
+      hitOutputLimit: true,
+    );
+    final tail = GemmaStageMerger.continuationTail(
+      soFar,
+      endedIncomplete: incomplete,
+    );
+    return GemmaStageMerger.continuationPrompt(original: original, tail: tail);
   }
 }
 
