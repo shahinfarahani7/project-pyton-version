@@ -77,7 +77,7 @@ void main() {
   test('tight free RAM keeps Gemma by lowering context instead of dropping the model', () {
     final device = measured(
       totalRamMb: 6144,
-      availableRamMb: 2200,
+      availableRamMb: 1600,
       cpuPartIds: const [0xD41],
     );
     final chosen = selection.select(
@@ -86,16 +86,35 @@ void main() {
     );
     expect(chosen.admitted, isTrue);
     expect(chosen.selectedModelId, gemma.modelId);
-    expect(chosen.selectedContextTokens, 1024);
-    expect(chosen.reason, 'context_downgraded_to_1024');
+    expect(chosen.selectedContextTokens, 1536);
+    expect(chosen.reason, 'context_downgraded_to_1536');
   });
 
   test('safe memory budget keeps a system reserve', () {
     const memory = MemorySafetyConfig();
+    expect(memory.maxFreeResourceFraction, 0.75);
     expect(
       memory.safeBudgetMb(availableRamMb: 3072, totalRamMb: 6144),
-      1536,
+      2304,
     );
+    expect(
+      memory.safeBudgetMb(availableRamMb: 2932, totalRamMb: 7398),
+      2199,
+    );
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 2932,
+      cpuPartIds: const [0xD41],
+    );
+    final chosen = selection.select(
+      device: device,
+      request: const ModelSelectionRequest(taskType: 'text.direct'),
+    );
+    expect(chosen.memoryBudgetMb, 2199);
+    const ladder = [2048, 1536, 1024];
+    final fitting = ladder.firstWhere((context) => gemma.peakForContext(context) < 2199);
+    expect(chosen.admitted, isTrue);
+    expect(chosen.selectedContextTokens, fitting);
     expect(memory.safeBudgetMb(availableRamMb: null, totalRamMb: 6144), isNull);
   });
 
@@ -121,7 +140,7 @@ void main() {
       totalRamMb: 8192,
       availableRamMb: 4000,
       decode: 2.2,
-      peakRssMb: 1800,
+      peakRssMb: 2600,
       cpuPartIds: const [0xD41],
     );
     final result = policy.evaluate(device: near, model: gemma, contextTokens: 2048);

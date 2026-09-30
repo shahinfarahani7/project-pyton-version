@@ -397,6 +397,16 @@ class ModelAdmissionPolicy {
     if (admitted && reasons.isEmpty) {
       reasons.add('admitted');
     }
+    WorkerPipelineLog.info(
+      WorkerPipelineLog.model,
+      '[MODEL ADMISSION MEMORY] contextTokens=$requested '
+      'availableRamMb=${device.availableRamMb ?? 'unknown'} '
+      'availableRamRatio=${config.memory.maxFreeResourceFraction} '
+      'memoryBudgetMb=${budget ?? 'unknown'} '
+      'estimatedRequiredMb=$peak '
+      'admitted=$admitted '
+      'reason=${reasons.join(',')}',
+    );
     return _finish(
       device: device,
       model: model,

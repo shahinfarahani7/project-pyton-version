@@ -60,7 +60,7 @@ class DeviceTierThresholds {
 
 class MemorySafetyConfig {
   const MemorySafetyConfig({
-    this.maxFreeResourceFraction = 0.50,
+    this.maxFreeResourceFraction = 0.75,
     this.systemReserveMb = 1536,
     this.mediumRiskRatio = 0.70,
     this.highRiskRatio = 0.85,
@@ -73,7 +73,7 @@ class MemorySafetyConfig {
 
   double get availableFactor => maxFreeResourceFraction;
 
-  /// min(availableRam * 0.50, totalRam - systemReserve).
+  /// min(availableRam * 0.75, totalRam - systemReserve).
   /// Null when either RAM figure was not probed.
   int? safeBudgetMb({required int? availableRamMb, required int? totalRamMb}) {
     if (availableRamMb == null || totalRamMb == null) {
