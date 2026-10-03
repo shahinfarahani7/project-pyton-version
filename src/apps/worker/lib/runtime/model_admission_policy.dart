@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../models/worker_model_catalog.dart';
 import 'device_capability_profile.dart';
 import 'device_inference_policy_config.dart';
+import 'device_snapshot.dart';
 import 'worker_pipeline_log.dart';
 
 enum AdmissionRisk { low, medium, high }
@@ -60,6 +62,8 @@ class ModelAdmissionResult {
     required this.modelId,
     this.visionEligible = false,
     this.reusedBenchmark = false,
+    this.admissionPhase = 'PRE_MODEL_LOAD',
+    this.fullPeakRecheck = true,
   });
 
   final bool admitted;
@@ -70,6 +74,8 @@ class ModelAdmissionResult {
   final String modelId;
   final bool visionEligible;
   final bool reusedBenchmark;
+  final String admissionPhase;
+  final bool fullPeakRecheck;
 
   String logLine() =>
       '[MODEL ADMISSION] model=$modelId admitted=$admitted '
@@ -85,6 +91,8 @@ class ModelAdmissionResult {
         'modelId': modelId,
         'visionEligible': visionEligible,
         'reusedBenchmark': reusedBenchmark,
+        'admissionPhase': admissionPhase,
+        'fullPeakRecheck': fullPeakRecheck,
       };
 
   static ModelAdmissionResult fromJson(Map<String, Object?> json) {
@@ -97,6 +105,8 @@ class ModelAdmissionResult {
       modelId: json['modelId'] as String? ?? '',
       visionEligible: json['visionEligible'] == true,
       reusedBenchmark: json['reusedBenchmark'] == true,
+      admissionPhase: json['admissionPhase'] as String? ?? 'PRE_MODEL_LOAD',
+      fullPeakRecheck: json['fullPeakRecheck'] != false,
     );
   }
 }
@@ -288,6 +298,7 @@ class ModelAdmissionPolicy {
     int? contextTokens,
     DeviceBenchmarkMetrics? benchmark,
     bool visionRequested = false,
+    ResidentEngineIdentity? residentEngine,
   }) {
     final requested = contextTokens ?? model.recommendedContextTokens;
     final observed = benchmark ?? _benchmarkForContext(device, model, requested);
@@ -309,6 +320,16 @@ class ModelAdmissionPolicy {
         reasons: reasons,
         visionEligible: false,
       );
+    }
+
+    final residentReuse = _residentReuse(
+      device: device,
+      model: model,
+      requested: requested,
+      resident: residentEngine,
+    );
+    if (residentReuse != null) {
+      return residentReuse;
     }
 
     final cached = ramImproved
@@ -349,6 +370,10 @@ class ModelAdmissionPolicy {
         comparison: 'cached',
         admitted: reused.admitted,
         reasons: reused.reasons,
+        phase: 'PRE_MODEL_LOAD',
+        residentCompatible: false,
+        residentContextTokens: residentEngine?.contextTokens,
+        fullPeakRecheck: true,
       );
       WorkerPipelineLog.info(WorkerPipelineLog.model, reused.logLine());
       return reused;
@@ -441,9 +466,13 @@ class ModelAdmissionPolicy {
       peakForContextMb: model.peakForContext(requested),
       peak: peak,
       benchmarkStatus: observed == null ? 'none' : 'matched',
-      comparison: budget == null ? 'budget == null' : 'peak >= budget',
+      comparison: budget == null ? 'budget == null' : '$peak >= $budget',
       admitted: admitted,
       reasons: reasons,
+      phase: 'PRE_MODEL_LOAD',
+      residentCompatible: false,
+      residentContextTokens: residentEngine?.contextTokens,
+      fullPeakRecheck: true,
     );
     WorkerPipelineLog.info(
       WorkerPipelineLog.model,
@@ -468,6 +497,72 @@ class ModelAdmissionPolicy {
     );
   }
 
+  ModelAdmissionResult? _residentReuse({
+    required DeviceCapabilityProfile device,
+    required ModelDescriptor model,
+    required int requested,
+    required ResidentEngineIdentity? resident,
+  }) {
+    if (resident == null ||
+        !resident.sameEngine(model, config.runtimeVersion) ||
+        requested > resident.contextTokens) {
+      return null;
+    }
+    final reasons = <String>[];
+    if (!resident.healthy) {
+      reasons.add('engine_unhealthy');
+    }
+    if (device.isLowMemory == true) {
+      reasons.add('android_low_memory');
+    }
+    if (device.thermalState == ThermalState.critical) {
+      reasons.add('thermal_critical');
+    }
+    final floor = config.memory.residentSessionSafetyFloorMb;
+    final available = device.availableRamMb;
+    if (available != null && available < floor) {
+      reasons.add('resident_session_safety_floor');
+    }
+    final admitted = reasons.isEmpty;
+    if (admitted) {
+      reasons.add('resident_model_reuse');
+    }
+    final budget = config.memory.safeBudgetMb(
+      availableRamMb: device.availableRamMb,
+      totalRamMb: device.totalRamMb,
+    );
+    _trace(
+      model: model,
+      contextTokens: requested,
+      device: device,
+      budget: budget,
+      observedPeakRssMb: null,
+      peakForContextMb: model.peakForContext(requested),
+      peak: null,
+      benchmarkStatus: 'resident',
+      comparison: 'fullPeakRecheck=false',
+      admitted: admitted,
+      reasons: reasons,
+      phase: 'POST_MODEL_LOAD',
+      residentCompatible: true,
+      residentContextTokens: resident.contextTokens,
+      fullPeakRecheck: false,
+      incrementalSafetyRequiredMb: floor,
+    );
+    return _finish(
+      device: device,
+      model: model,
+      contextTokens: requested,
+      admitted: admitted,
+      risk: admitted ? AdmissionRisk.low : AdmissionRisk.high,
+      reasons: reasons,
+      visionEligible: admitted && model.supportsVision,
+      admissionPhase: 'POST_MODEL_LOAD',
+      fullPeakRecheck: false,
+      storeInCache: false,
+    );
+  }
+
   void _trace({
     required ModelDescriptor model,
     required int contextTokens,
@@ -480,12 +575,20 @@ class ModelAdmissionPolicy {
     required String comparison,
     required bool admitted,
     required List<String> reasons,
+    required String phase,
+    required bool residentCompatible,
+    required int? residentContextTokens,
+    required bool fullPeakRecheck,
+    int? incrementalSafetyRequiredMb,
   }) {
     WorkerPipelineLog.info(
       WorkerPipelineLog.model,
       '[MODEL ADMISSION TRACE] '
+      'phase=$phase '
       'model=${model.modelId} '
       'contextTokens=$contextTokens '
+      'residentCompatible=$residentCompatible '
+      'residentContextTokens=${residentContextTokens ?? 'none'} '
       'totalRamMb=${device.totalRamMb ?? 'unknown'} '
       'availableRamMb=${device.availableRamMb ?? 'unknown'} '
       'availableRamRatio=${config.memory.maxFreeResourceFraction} '
@@ -493,8 +596,9 @@ class ModelAdmissionPolicy {
       'observedPeakRssMb=${observedPeakRssMb ?? 'null'} '
       'peakForContext=$peakForContextMb '
       'peak=${peak ?? 'not_recomputed'} '
+      'fullPeakRecheck=$fullPeakRecheck '
+      'incrementalSafetyRequiredMb=${incrementalSafetyRequiredMb ?? 'none'} '
       'benchmarkStatus=$benchmarkStatus '
-      'residentModelLoaded=not_consulted '
       'comparison=$comparison '
       'admitted=$admitted '
       'reasons=$reasons',
@@ -572,6 +676,9 @@ class ModelAdmissionPolicy {
     required List<String> reasons,
     required bool visionEligible,
     bool benchmarkFailedHard = false,
+    String admissionPhase = 'PRE_MODEL_LOAD',
+    bool fullPeakRecheck = true,
+    bool storeInCache = true,
   }) {
     final result = ModelAdmissionResult(
       admitted: admitted,
@@ -581,6 +688,8 @@ class ModelAdmissionPolicy {
       reasons: reasons,
       modelId: model.modelId,
       visionEligible: admitted && visionEligible,
+      admissionPhase: admissionPhase,
+      fullPeakRecheck: fullPeakRecheck,
     );
     if (benchmarkFailedHard) {
       cache?.writeOom(
@@ -589,18 +698,79 @@ class ModelAdmissionPolicy {
         availableRamMb: device.availableRamMb,
       );
     }
-    cache?.write(
-      fingerprint: device.fingerprint,
-      modelSha256: model.artifactSha256,
-      runtimeVersion: config.runtimeVersion,
-      appVersion: config.appVersion,
-      contextTokens: contextTokens,
-      availableRamMb: device.availableRamMb,
-      totalRamMb: device.totalRamMb,
-      maxFreeResourceFraction: config.memory.maxFreeResourceFraction,
-      result: result,
-    );
+    if (storeInCache) {
+      cache?.write(
+        fingerprint: device.fingerprint,
+        modelSha256: model.artifactSha256,
+        runtimeVersion: config.runtimeVersion,
+        appVersion: config.appVersion,
+        contextTokens: contextTokens,
+        availableRamMb: device.availableRamMb,
+        totalRamMb: device.totalRamMb,
+        maxFreeResourceFraction: config.memory.maxFreeResourceFraction,
+        result: result,
+      );
+    }
     WorkerPipelineLog.info(WorkerPipelineLog.model, result.logLine());
     return result;
+  }
+}
+
+/// Identity of the engine [GemmaModelRuntimeManager] currently holds.
+///
+/// Built only from fields recorded at load. A missing engine is null.
+class ResidentEngineIdentity {
+  const ResidentEngineIdentity({
+    required this.modelVersionId,
+    required this.modelSha256,
+    required this.backend,
+    required this.contextTokens,
+    required this.runtimeVersion,
+    required this.healthy,
+  });
+
+  final String modelVersionId;
+  final String modelSha256;
+  final String backend;
+  final int contextTokens;
+  final String runtimeVersion;
+  final bool healthy;
+
+  /// The loaded LiteRT window is a ceiling: a smaller request reuses it.
+  /// A larger request needs a new load and stays on PRE_MODEL_LOAD.
+  bool serves({
+    required ModelDescriptor model,
+    required int requestedContext,
+    required String runtimeVersion,
+  }) {
+    return healthy &&
+        sameEngine(model, runtimeVersion) &&
+        requestedContext <= contextTokens;
+  }
+
+  bool sameEngine(ModelDescriptor model, String runtimeVersion) {
+    if (this.runtimeVersion != runtimeVersion) {
+      return false;
+    }
+    if (!_sameBackend(backend, model.preferredBackend)) {
+      return false;
+    }
+    if (modelSha256 == model.artifactSha256 || modelVersionId == model.modelId) {
+      return true;
+    }
+    return modelVersionId == WorkerModelCatalog.modelVersionId &&
+        modelSha256 == WorkerModelCatalog.installedDigestMarker &&
+        (model.modelId == WorkerModelCatalog.modelVersionId ||
+            model.modelId == WorkerModelCatalog.gpuModelVersionId) &&
+        (model.artifactSha256 == WorkerModelCatalog.knownGeneralArtifactSha256 ||
+            model.artifactSha256 == WorkerModelCatalog.knownGpuArtifactSha256);
+  }
+
+  static bool _sameBackend(String resident, String requested) {
+    if (resident == requested) {
+      return true;
+    }
+    const gpu = {'gpu', 'GPU', 'GPU/OpenCL'};
+    return gpu.contains(resident) && gpu.contains(requested);
   }
 }

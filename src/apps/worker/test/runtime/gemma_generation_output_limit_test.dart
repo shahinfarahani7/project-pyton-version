@@ -1,7 +1,9 @@
 import 'package:edgemint_worker/contracts/worker_task_request.dart';
 import 'package:edgemint_worker/contracts/worker_task_result.dart';
 import 'package:edgemint_worker/inference/llm/qwen_task_processor.dart';
+import 'package:edgemint_worker/runtime/device_snapshot.dart';
 import 'package:edgemint_worker/runtime/gemma_generation_output_limit.dart';
+import 'package:edgemint_worker/runtime/long_form_execution_budget.dart';
 import 'package:edgemint_worker/tasks/handlers/direct_prompt_handler.dart';
 import 'package:edgemint_worker/telemetry/worker_task_metrics.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -287,7 +289,7 @@ void main() {
         generateStage: (stageIndex, stagePrompt) async {
           calls += 1;
           if (stageIndex == 0) {
-            expect(stagePrompt, prompt);
+            expect(stagePrompt, startsWith(prompt));
             return const GemmaStagePiece(
               text: 'Part one',
               stopReason: GemmaGenerationOutputLimit.outputLimit,
@@ -297,7 +299,7 @@ void main() {
           }
           expect(stagePrompt, contains('ادامه'));
           expect(stagePrompt, contains('Part one'));
-          expect(stagePrompt.length, lessThan(800));
+          expect(stagePrompt.length, lessThan(2500));
           return const GemmaStagePiece(
             text: 'Part two',
             stopReason: GemmaGenerationOutputLimit.eos,
@@ -444,7 +446,7 @@ void main() {
       expect(GemmaGenerationOutputLimit.longFormHardMaxStages, 8);
     });
 
-    test('a finished sentence stops even when the stage hit OUTPUT_LIMIT', () async {
+    test('a finished sentence does not complete the document on OUTPUT_LIMIT', () async {
       const user = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
       final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
       var calls = 0;
@@ -453,17 +455,18 @@ void main() {
         prompt: user,
         generateStage: (stageIndex, stagePrompt) async {
           calls += 1;
-          return const GemmaStagePiece(
-            text: 'کلونی پایدار شد.',
+          return GemmaStagePiece(
+            text: 'بخش $stageIndex تمام شد.',
             stopReason: GemmaGenerationOutputLimit.outputLimit,
             generatedChunks: 256,
             generatedTokens: 40,
           );
         },
       );
-      expect(calls, 1);
-      expect(staged.complete, isTrue);
-      expect(staged.truncated, isFalse);
+      expect(calls, GemmaGenerationOutputLimit.longFormHardMaxStages);
+      expect(staged.complete, isFalse);
+      expect(staged.truncated, isTrue);
+      expect(staged.stopReason, GemmaGenerationOutputLimit.longFormStageLimit);
       final result = DirectPromptHandler.resultFor(
         request: _request(),
         generation: DirectGenerationReceipt(
@@ -476,8 +479,122 @@ void main() {
         metrics: WorkerTaskMetrics(),
         truncated: staged.truncated,
       );
-      expect(result.status, WorkerResultStatus.succeeded);
-      expect(result.output?['truncated'], isFalse);
+      expect(result.status, WorkerResultStatus.succeededWithTruncation);
+      expect(result.output?['truncated'], isTrue);
+    });
+
+    test('elapsed grows across stages and a short lease blocks the next stage', () async {
+      const user = 'یه مقاله در مورد مورچه بده که ۵ صفحه بشه';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+      var elapsed = 0;
+      final seen = <int>[];
+      final budget = LongFormExecutionBudget(
+        maxStages: 6,
+        hardMaxStages: 4,
+        maxElapsedMs: 20 * 60 * 1000,
+        minimumLeaseRemainingMs: 60000,
+        minimumBatteryPercent: 20,
+        maximumThermalState: ThermalState.normal,
+      );
+      await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        executionBudget: budget,
+        hardMaxStages: 4,
+        readElapsedMs: () {
+          seen.add(elapsed);
+          return elapsed;
+        },
+        generateStage: (stageIndex, stagePrompt) async {
+          elapsed += 90000;
+          return GemmaStagePiece(
+            text: 'fragment $stageIndex continues',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 20,
+          );
+        },
+      );
+      expect(seen.length, greaterThanOrEqualTo(2));
+      expect(seen[1], greaterThan(seen[0]));
+      if (seen.length > 2) {
+        expect(seen[2], greaterThan(seen[1]));
+      }
+
+      var calls = 0;
+      final leased = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        executionBudget: LongFormExecutionBudget(
+          maxStages: 6,
+          hardMaxStages: 8,
+          maxElapsedMs: 20 * 60 * 1000,
+          minimumLeaseRemainingMs: 60000,
+          minimumBatteryPercent: 20,
+          maximumThermalState: ThermalState.normal,
+          initialSignals: const LongFormRuntimeSignals(leaseRemainingMs: 1000),
+        ),
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          return const GemmaStagePiece(
+            text: 'کلونی را',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 20,
+          );
+        },
+      );
+      expect(calls, 1);
+      expect(leased.stopReason, GemmaGenerationOutputLimit.leaseBudgetExhausted);
+      expect(leased.truncated, isTrue);
+      expect(leased.complete, isFalse);
+    });
+
+    test('section progress moves forward and does not repeat a closed section', () async {
+      const user = 'در مورد مورچه یه مقاله جامع و کامل بده';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+      final prompts = <String>[];
+      await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        hardMaxStages: 3,
+        generateStage: (stageIndex, stagePrompt) async {
+          prompts.add(stagePrompt);
+          return GemmaStagePiece(
+            text: 'بخش $stageIndex تمام شد.',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 40,
+            generatedTokens: 20,
+          );
+        },
+      );
+      expect(prompts[0], contains('Current section:\n- مقدمه'));
+      expect(prompts[1], contains('Completed sections:\n- مقدمه'));
+      expect(prompts[1], contains('Current section:\n- تعریف و دامنه'));
+      expect(prompts[1], isNot(contains('Current section:\n- مقدمه')));
+      expect(prompts[2], contains('- مقدمه'));
+      expect(prompts[2], contains('- تعریف و دامنه'));
+      expect(prompts[2], contains('Current section:\n- ساختار'));
+    });
+
+    test('the completion marker is removed and finishes the document', () async {
+      const user = 'Write a full report about rivers.';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+      final staged = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: user,
+        generateStage: (stageIndex, stagePrompt) async {
+          return const GemmaStagePiece(
+            text: 'The report ends here.\n<EDGEMINT_DONE>',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 20,
+            generatedTokens: 10,
+          );
+        },
+      );
+      expect(staged.complete, isTrue);
+      expect(staged.text, isNot(contains('<EDGEMINT_DONE>')));
+      expect(staged.truncated, isFalse);
     });
   });
 }

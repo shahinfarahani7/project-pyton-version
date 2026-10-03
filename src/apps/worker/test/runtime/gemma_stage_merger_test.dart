@@ -94,7 +94,7 @@ void main() {
         }
         expect(stagePrompt, contains('بستر را به'));
         expect(stagePrompt, isNot(contains('آماده‌سازی بستر')));
-        expect(stagePrompt.length, lessThan(user.length + 500));
+        expect(stagePrompt.length, lessThan(user.length + 1400));
         return const GemmaStagePiece(
           text: next,
           stopReason: GemmaGenerationOutputLimit.eos,

@@ -17,6 +17,10 @@ class DeviceInferencePlan {
   DeviceCapabilityProfile? profile;
   ModelSelection? textSelection;
   LongFormRuntimeSignals signals = const LongFormRuntimeSignals();
+  DateTime? assignmentLeaseExpiresAt;
+
+  /// Reads [GemmaModelRuntimeManager.residentIdentity]. Tests leave this null.
+  ResidentEngineIdentity? Function()? readResidentEngine;
 
   void debugReset() {
     config = const DeviceInferencePolicyConfig();
@@ -24,6 +28,8 @@ class DeviceInferencePlan {
     profile = null;
     textSelection = null;
     signals = const LongFormRuntimeSignals();
+    assignmentLeaseExpiresAt = null;
+    readResidentEngine = null;
   }
 
   void useStore(AdmissionCacheStore store) {
@@ -77,7 +83,21 @@ class DeviceInferencePlan {
     return _select(taskType: taskType, wantsVision: wantsVision);
   }
 
-  LongFormRuntimeSignals readSignals() => signals;
+  void noteAssignmentLease(DateTime leaseExpiresAt) {
+    assignmentLeaseExpiresAt = leaseExpiresAt.toUtc();
+  }
+
+  LongFormRuntimeSignals readSignals() {
+    final lease = assignmentLeaseExpiresAt;
+    final remaining = lease?.difference(DateTime.now().toUtc()).inMilliseconds;
+    return LongFormRuntimeSignals(
+      elapsedMs: signals.elapsedMs,
+      leaseRemainingMs: remaining ?? signals.leaseRemainingMs,
+      batteryPercent: signals.batteryPercent,
+      isCharging: signals.isCharging,
+      thermalState: signals.thermalState,
+    );
+  }
 
   void noteHealth(RuntimeHealthSample sample) {
     final current = textSelection;
@@ -125,6 +145,7 @@ class DeviceInferencePlan {
         taskType: taskType,
         wantsVision: wantsVision,
       ),
+      residentEngine: readResidentEngine?.call(),
     );
   }
 }

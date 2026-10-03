@@ -4,6 +4,7 @@ import '../validation/output_repetition_guard.dart';
 import 'device_inference_policy_config.dart';
 import 'gemma_stage_merger.dart';
 import 'long_form_execution_budget.dart';
+import 'long_form_section_plan.dart';
 import 'worker_pipeline_log.dart';
 
 /// Output-generation cap for Gemma. This is separate from the LiteRT context
@@ -28,6 +29,7 @@ abstract final class GemmaGenerationOutputLimit {
   static const eos = 'EOS';
   static const outputLimit = 'OUTPUT_LIMIT';
   static const longFormStageLimit = 'LONG_FORM_STAGE_LIMIT';
+  static const leaseBudgetExhausted = 'LEASE_BUDGET_EXHAUSTED';
   static const cancelled = 'CANCELLED';
   static const error = 'ERROR';
 
@@ -300,18 +302,20 @@ class LongFormCompletion {
     required int stagesUsed,
     required int maxStages,
     required int hardMaxStages,
+    bool completionMarkerFound = false,
+    bool plannedSectionsComplete = false,
   }) {
     final eos = stopReason == GemmaGenerationOutputLimit.eos || stopReason == 'model_eos';
     final hitLimit = stopReason == GemmaGenerationOutputLimit.outputLimit ||
         stopReason == 'output_limit';
-    final endedIncomplete = !eos && textIsIncomplete(text);
-    final shouldContinue = hitLimit && endedIncomplete && stagesUsed < hardMaxStages;
-    final complete = !endedIncomplete;
-    final truncated = endedIncomplete && !shouldContinue;
+    final documentComplete = eos || completionMarkerFound || plannedSectionsComplete;
+    final endedIncomplete = !documentComplete && textIsIncomplete(text);
+    final shouldContinue = !documentComplete && hitLimit && stagesUsed < hardMaxStages;
+    final truncated = !documentComplete && !shouldContinue && text.trim().isNotEmpty;
     return LongFormCompletionDecision(
       endedIncomplete: endedIncomplete,
       shouldContinue: shouldContinue,
-      complete: complete,
+      complete: documentComplete,
       truncated: truncated,
       finalStopReason: truncated ? GemmaGenerationOutputLimit.longFormStageLimit : stopReason,
       maxStages: maxStages,
@@ -397,6 +401,7 @@ class GemmaStagedDirectGeneration {
     int? hardMaxStages,
     LongFormExecutionBudget? executionBudget,
     LongFormRuntimeSignals Function()? readSignals,
+    int Function()? readElapsedMs,
   }) async {
     if (!decision.staged) {
       return generateStage(0, prompt);
@@ -421,23 +426,36 @@ class GemmaStagedDirectGeneration {
       hardMaxStages: safetyLimit,
     );
     var stagesUsed = 0;
+    final progress = LongFormSectionProgress(LongFormSectionPlan.sectionsFor(prompt));
+    final executionClock = Stopwatch()..start();
+    int elapsedNow() => readElapsedMs?.call() ?? executionClock.elapsedMilliseconds;
     for (var stage = 0; stage < safetyLimit; stage++) {
       if (stage > 0 && executionBudget != null) {
+        final base = readSignals?.call() ?? executionBudget.initialSignals;
         final gate = executionBudget.evaluate(
           stageIndex: stage,
           stageCount: stage,
-          signals: readSignals?.call() ?? executionBudget.initialSignals,
+          signals: LongFormRuntimeSignals(
+            elapsedMs: elapsedNow(),
+            leaseRemainingMs: base.leaseRemainingMs,
+            batteryPercent: base.batteryPercent,
+            isCharging: base.isCharging,
+            thermalState: base.thermalState,
+          ),
         );
         if (!gate.shouldContinue) {
           final incomplete = LongFormCompletion.textIsIncomplete(accumulated);
+          final leaseStop = gate.reason == 'lease_budget_exhausted';
           completion = LongFormCompletionDecision(
             endedIncomplete: incomplete,
             shouldContinue: false,
-            complete: !incomplete,
-            truncated: incomplete,
-            finalStopReason: incomplete
-                ? GemmaGenerationOutputLimit.longFormStageLimit
-                : stopReason,
+            complete: false,
+            truncated: incomplete || leaseStop,
+            finalStopReason: leaseStop
+                ? GemmaGenerationOutputLimit.leaseBudgetExhausted
+                : (incomplete
+                    ? GemmaGenerationOutputLimit.longFormStageLimit
+                    : stopReason),
             maxStages: stageBudget,
             hardMaxStages: safetyLimit,
           );
@@ -452,18 +470,23 @@ class GemmaStagedDirectGeneration {
               accumulated,
               endedIncomplete: previousEndedIncomplete,
             );
-      final stagePrompt = stage == 0
-          ? prompt
-          : GemmaStageMerger.continuationPrompt(original: prompt, tail: tail);
+      final stagePrompt = _stagePrompt(
+        stage: stage,
+        original: prompt,
+        tail: tail,
+        progress: progress,
+      );
       final piece = await generateStage(stage, stagePrompt);
+      final markerFound = LongFormSectionPlan.containsMarker(piece.text);
+      final cleanedText = LongFormSectionPlan.stripMarker(piece.text);
       generatedChunks += piece.generatedChunks;
-      stopReason = piece.stopReason;
+      stopReason = markerFound ? GemmaGenerationOutputLimit.eos : piece.stopReason;
       stagesUsed = stage + 1;
-      if (piece.text.trim().isEmpty) {
+      if (cleanedText.trim().isEmpty && !markerFound) {
         _logStage(
           stageIndex: stage,
           stageInputTailChars: tail.length,
-          stageOutputChars: piece.text.length,
+          stageOutputChars: cleanedText.length,
           overlapRemovedChars: 0,
           duplicateBlocksRemoved: 0,
           previousEndedIncomplete: previousEndedIncomplete,
@@ -471,52 +494,59 @@ class GemmaStagedDirectGeneration {
         );
         completion = LongFormCompletion.evaluate(
           text: accumulated,
-          stopReason: piece.stopReason,
+          stopReason: stopReason,
           stagesUsed: stagesUsed,
           maxStages: stageBudget,
           hardMaxStages: safetyLimit,
+          completionMarkerFound: markerFound,
+          plannedSectionsComplete: progress.plannedSectionsComplete,
         );
         WorkerPipelineLog.info(WorkerPipelineLog.exec, completion.logLine(stage, piece.stopReason));
         break;
       }
       final merge = stage == 0
           ? GemmaStageMerge(
-              text: piece.text.trimRight(),
+              text: cleanedText.trimRight(),
               overlapRemovedChars: 0,
               duplicateBlocksRemoved: 0,
             )
           : GemmaStageMerger.merge(
               previousText: accumulated,
-              nextText: piece.text,
+              nextText: cleanedText,
               previousEndedIncomplete: previousEndedIncomplete,
             );
       _logStage(
         stageIndex: stage,
         stageInputTailChars: tail.length,
-        stageOutputChars: piece.text.length,
+        stageOutputChars: cleanedText.length,
         overlapRemovedChars: merge.overlapRemovedChars,
         duplicateBlocksRemoved: merge.duplicateBlocksRemoved,
         previousEndedIncomplete: previousEndedIncomplete,
         stageStopReason: piece.stopReason,
       );
       final madeProgress = stage == 0 || merge.text != accumulated;
-      accumulated = merge.text;
+      accumulated = LongFormSectionPlan.stripMarker(merge.text);
+      if (!markerFound) {
+        progress.advanceIfSectionClosed(cleanedText);
+      }
       completion = LongFormCompletion.evaluate(
         text: accumulated,
-        stopReason: piece.stopReason,
+        stopReason: stopReason,
         stagesUsed: stagesUsed,
         maxStages: stageBudget,
         hardMaxStages: safetyLimit,
+        completionMarkerFound: markerFound,
+        plannedSectionsComplete: progress.plannedSectionsComplete,
       );
       final shouldContinue = completion.shouldContinue && madeProgress;
       final logged = LongFormCompletionDecision(
         endedIncomplete: completion.endedIncomplete,
         shouldContinue: shouldContinue,
         complete: completion.complete,
-        truncated: completion.endedIncomplete && !shouldContinue,
-        finalStopReason: completion.endedIncomplete && !shouldContinue
+        truncated: !completion.complete && !shouldContinue,
+        finalStopReason: !completion.complete && !shouldContinue
             ? GemmaGenerationOutputLimit.longFormStageLimit
-            : piece.stopReason,
+            : stopReason,
         maxStages: stageBudget,
         hardMaxStages: safetyLimit,
       );
@@ -561,6 +591,22 @@ class GemmaStagedDirectGeneration {
       'previousEndedIncomplete=$previousEndedIncomplete '
       'stageStopReason=$stageStopReason',
     );
+  }
+
+  static String _stagePrompt({
+    required int stage,
+    required String original,
+    required String tail,
+    required LongFormSectionProgress progress,
+  }) {
+    final markerLine =
+        'When and only when the entire requested document is truly complete, '
+        'append exactly:\n${LongFormSectionPlan.marker}';
+    if (stage == 0) {
+      return '$original\n\n${progress.promptBlock()}\n$markerLine';
+    }
+    final stitched = GemmaStageMerger.continuationPrompt(original: original, tail: tail);
+    return '$stitched\n\n${progress.promptBlock()}\n$markerLine';
   }
 
   static String continuationPrompt(String original, String soFar) {

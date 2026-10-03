@@ -8,6 +8,7 @@ import '../models/worker_model_catalog.dart';
 import '../models/worker_model_runtime_candidate.dart';
 import 'artifact_install_coordinator.dart';
 import 'device_inference_plan.dart';
+import 'model_admission_policy.dart';
 import 'gemma4_e4b_gpu_benchmark.dart';
 import 'gemma_multimodal_vision_runtime.dart';
 import 'inference_adapter.dart';
@@ -123,6 +124,33 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
 
   @override
   String? get residentModelVersionId => _modelVersionId;
+
+  /// Null unless the native engine is resident. Fields come from the load
+  /// that set [_state], not from a guessed flag.
+  ResidentEngineIdentity? get residentIdentity {
+    final version = _modelVersionId;
+    final artifact = _lastArtifact;
+    final context = _loadedContextTokens;
+    if (_state != ModelResidencyState.resident ||
+        _model == null ||
+        version == null ||
+        artifact == null ||
+        context == null) {
+      return null;
+    }
+    final selected = DeviceInferencePlan.instance.textSelection?.selectedBackend;
+    final backend = selected != null && selected.isNotEmpty && selected != 'none'
+        ? selected
+        : _preferredBackend.name;
+    return ResidentEngineIdentity(
+      modelVersionId: version,
+      modelSha256: artifact.digestSha256,
+      backend: backend,
+      contextTokens: context,
+      runtimeVersion: DeviceInferencePlan.instance.config.runtimeVersion,
+      healthy: true,
+    );
+  }
 
   @override
   int get openSessionCount => _openSessions;

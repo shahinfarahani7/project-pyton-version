@@ -64,12 +64,18 @@ class MemorySafetyConfig {
     this.systemReserveMb = 1536,
     this.mediumRiskRatio = 0.70,
     this.highRiskRatio = 0.85,
+    this.residentSessionSafetyFloorMb = 512,
   });
 
   final double maxFreeResourceFraction;
   final int systemReserveMb;
   final double mediumRiskRatio;
   final double highRiskRatio;
+
+  /// Free RAM that must remain to open one more session while the matching
+  /// model is already resident. Same 512 MB quantum as [DeviceInferencePolicyConfig.visionHeadroomMb].
+  /// This is not the model peak.
+  final int residentSessionSafetyFloorMb;
 
   double get availableFactor => maxFreeResourceFraction;
 

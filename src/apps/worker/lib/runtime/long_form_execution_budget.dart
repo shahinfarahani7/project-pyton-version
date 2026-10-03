@@ -82,6 +82,23 @@ class LongFormExecutionBudget {
   final bool rejectHeavierModels;
   final LongFormRuntimeSignals initialSignals;
 
+  /// Wall-clock estimate for one more stage, taken from this budget's own
+  /// elapsed ceiling and hard stage count.
+  int get estimatedNextStageMs {
+    final stages = hardMaxStages < 1 ? 1 : hardMaxStages;
+    return maxElapsedMs ~/ stages;
+  }
+
+  /// Lease margin already stored on the tier policy.
+  int get submissionSafetyMarginMs => minimumLeaseRemainingMs;
+
+  bool leaseMarginFits(int? leaseRemainingMs) {
+    if (leaseRemainingMs == null) {
+      return true;
+    }
+    return estimatedNextStageMs + submissionSafetyMarginMs < leaseRemainingMs;
+  }
+
   int thermalRank(ThermalState state) => switch (state) {
         ThermalState.normal => 0,
         ThermalState.warm => 1,
@@ -114,8 +131,8 @@ class LongFormExecutionBudget {
       return (false, 'elapsed');
     }
     final lease = signals.leaseRemainingMs;
-    if (lease != null && lease <= minimumLeaseRemainingMs) {
-      return (false, 'lease');
+    if (!leaseMarginFits(lease)) {
+      return (false, 'lease_budget_exhausted');
     }
     final thermal = signals.thermalState;
     if (thermal != null && thermalRank(thermal) > thermalRank(maximumThermalState)) {

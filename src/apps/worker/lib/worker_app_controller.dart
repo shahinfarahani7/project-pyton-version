@@ -87,6 +87,7 @@ class WorkerAppController extends ChangeNotifier {
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
     );
+    DeviceInferencePlan.instance.readResidentEngine = () => _runtimeManager.residentIdentity;
     const inferenceConfig = QwenInferenceConfig();
     _primaryInferenceAdapter = GemmaLiteRtInferenceAdapter(
       runtimeManager: _runtimeManager,

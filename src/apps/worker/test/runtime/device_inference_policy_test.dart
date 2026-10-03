@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:edgemint_worker/runtime/device_capability_profile.dart';
 import 'package:edgemint_worker/runtime/device_inference_policy_config.dart';
 import 'package:edgemint_worker/runtime/device_snapshot.dart';
@@ -28,6 +29,7 @@ void main() {
     bool engineLoadFailed = false,
     bool nativeOom = false,
     bool lowMemory = false,
+    bool? isLowMemory,
     String model = 'TEST',
     List<int> cpuPartIds = const [],
     String? modelSha256 =
@@ -39,6 +41,7 @@ void main() {
       totalRamMb: totalRamMb,
       availableRamMb: availableRamMb,
       lowMemoryThresholdMb: 800,
+      isLowMemory: isLowMemory,
       cpuArchitecture: 'arm64-v8a',
       cpuPartIds: cpuPartIds,
       gpuAvailable: gpu,
@@ -116,6 +119,118 @@ void main() {
     expect(chosen.admitted, isTrue);
     expect(chosen.selectedContextTokens, fitting);
     expect(memory.safeBudgetMb(availableRamMb: null, totalRamMb: 6144), isNull);
+  });
+
+  ResidentEngineIdentity liveGemma({int contextTokens = 2048, bool healthy = true}) {
+    return ResidentEngineIdentity(
+      modelVersionId: gemma.modelId,
+      modelSha256: gemma.artifactSha256,
+      backend: gemma.preferredBackend,
+      contextTokens: contextTokens,
+      runtimeVersion: 'litert-lm-gemma4',
+      healthy: healthy,
+    );
+  }
+
+  test('pre-load admission admits Gemma 2048 when peak is below budget 2154', () {
+    const memory = MemorySafetyConfig();
+    final budget = memory.safeBudgetMb(availableRamMb: 2872, totalRamMb: 7398);
+    expect(budget, 2154);
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 2872,
+      cpuPartIds: const [0xD41],
+    );
+    expect(device.hardwareTier, HardwareTier.t2);
+    final result = policy.evaluate(device: device, model: gemma, contextTokens: 2048);
+    expect(result.admissionPhase, 'PRE_MODEL_LOAD');
+    expect(result.fullPeakRecheck, isTrue);
+    expect(result.reasons.contains('memory_budget_exceeded'), gemma.peakForContext(2048) >= budget!);
+    expect(result.admitted, isTrue);
+  });
+
+  test('a resident 2048 engine stays selected after its own RAM use', () {
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 672,
+      cpuPartIds: const [0xD41],
+    );
+    final resident = liveGemma();
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 2048,
+      residentEngine: resident,
+    );
+    expect(result.admissionPhase, 'POST_MODEL_LOAD');
+    expect(result.fullPeakRecheck, isFalse);
+    expect(result.reasons, contains('resident_model_reuse'));
+    expect(result.reasons, isNot(contains('memory_budget_exceeded')));
+    expect(result.admitted, isTrue);
+    final chosen = selection.select(
+      device: device,
+      request: const ModelSelectionRequest(taskType: 'text.direct'),
+      residentEngine: resident,
+    );
+    expect(chosen.hardwareTier, HardwareTier.t2);
+    expect(chosen.selectedModelId, gemma.modelId);
+    expect(chosen.selectedModelId, isNot('none'));
+    expect(chosen.selectedContextTokens, 2048);
+    expect(chosen.admitted, isTrue);
+    final installed = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 2048,
+      residentEngine: const ResidentEngineIdentity(
+        modelVersionId: WorkerModelCatalog.modelVersionId,
+        modelSha256: WorkerModelCatalog.installedDigestMarker,
+        backend: 'gpu',
+        contextTokens: 2048,
+        runtimeVersion: 'litert-lm-gemma4',
+        healthy: true,
+      ),
+    );
+    expect(installed.admissionPhase, 'POST_MODEL_LOAD');
+    expect(installed.admitted, isTrue);
+    expect(installed.reasons, contains('resident_model_reuse'));
+  });
+
+  test('a larger context than the resident window uses pre-load admission', () {
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 672,
+      cpuPartIds: const [0xD41],
+    );
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 3072,
+      residentEngine: liveGemma(),
+    );
+    expect(result.admissionPhase, 'PRE_MODEL_LOAD');
+    expect(result.fullPeakRecheck, isTrue);
+    expect(result.reasons, contains('memory_budget_exceeded'));
+    expect(result.reasons, isNot(contains('resident_model_reuse')));
+  });
+
+  test('android low memory blocks resident reuse without a full-peak reject', () {
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 672,
+      cpuPartIds: const [0xD41],
+      isLowMemory: true,
+    );
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 2048,
+      residentEngine: liveGemma(),
+    );
+    expect(result.admissionPhase, 'POST_MODEL_LOAD');
+    expect(result.fullPeakRecheck, isFalse);
+    expect(result.admitted, isFalse);
+    expect(result.reasons, contains('android_low_memory'));
+    expect(result.reasons, isNot(contains('memory_budget_exceeded')));
   });
 
   test('7398/2960 admits Gemma at 2048 because peakForContext is below budget 2220', () {
@@ -392,7 +507,7 @@ void main() {
       stageCount: 1,
       signals: const LongFormRuntimeSignals(
         elapsedMs: 1000,
-        leaseRemainingMs: 120000,
+        leaseRemainingMs: 400000,
         batteryPercent: 80,
         thermalState: ThermalState.critical,
       ),
@@ -404,7 +519,7 @@ void main() {
       stageCount: 1,
       signals: const LongFormRuntimeSignals(
         elapsedMs: 1000,
-        leaseRemainingMs: 120000,
+        leaseRemainingMs: 400000,
         batteryPercent: 80,
         thermalState: ThermalState.normal,
       ),
@@ -441,14 +556,14 @@ void main() {
     expect(calls, 1);
     expect(result.complete, isFalse);
     expect(result.truncated, isTrue);
-    expect(result.stopReason, GemmaGenerationOutputLimit.longFormStageLimit);
+    expect(result.stopReason, GemmaGenerationOutputLimit.leaseBudgetExhausted);
     final gate = budget.evaluate(
       stageIndex: 1,
       stageCount: 1,
       signals: budget.initialSignals,
     );
     expect(gate.shouldContinue, isFalse);
-    expect(gate.reason, 'lease');
+    expect(gate.reason, 'lease_budget_exhausted');
   });
 
   test('runtime health can lower the stage ceiling without a new admission', () {

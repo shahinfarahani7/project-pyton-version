@@ -13,6 +13,7 @@ import '../inference/ocr/ocr_engine.dart';
 import '../inference/ocr/ocr_models.dart';
 import '../models/worker_model_catalog.dart';
 import '../models/worker_vision_model_catalog.dart';
+import '../runtime/device_inference_plan.dart';
 import '../runtime/device_tier_policy.dart';
 import '../runtime/inference_adapter.dart';
 import '../runtime/assignment_event_reporter.dart';
@@ -377,6 +378,10 @@ class TaskExecutionEngine {
           'ocr=$requiresOcr '
           'llm=$requiresLlm',
           name: 'EdgeMintTaskEngine',
+        );
+
+        DeviceInferencePlan.instance.noteAssignmentLease(
+          context.assignment.leaseExpiresAt,
         );
 
         Future<WorkerTaskResult> invokeHandler() => handler.handle(

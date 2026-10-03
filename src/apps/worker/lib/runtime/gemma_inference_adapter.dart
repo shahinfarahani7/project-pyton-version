@@ -175,6 +175,21 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
                   'Answer concisely for the assigned task payload.',
       );
       _log('[LLM SESSION] created');
+      final passedTemperature = temperature ?? this.temperature;
+      final passedTopP = topP ?? this.topP;
+      final override = temperature != null || topP != null;
+      _log(
+        '[SAMPLING CONFIG] '
+        'requestedTemperature=${temperature ?? 'none'} '
+        'requestedTopP=${topP ?? 'none'} '
+        'effectiveTemperature=unverified '
+        'effectiveTopP=unverified '
+        'effectiveTopK=unverified '
+        'passedTemperature=$passedTemperature '
+        'passedTopP=$passedTopP '
+        'passedTopK=$topK '
+        'source=${override ? 'session_override' : 'engine_default'}',
+      );
 
       try {
         if (multimodal) {

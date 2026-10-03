@@ -158,6 +158,7 @@ class ModelSelectionPolicy {
     required DeviceCapabilityProfile device,
     required ModelSelectionRequest request,
     RuntimeHealthSample? health,
+    ResidentEngineIdentity? residentEngine,
   }) {
     final tierPolicy = _policyFor(device);
     final evaluations = <ModelAdmissionResult, ModelDescriptor>{};
@@ -176,6 +177,7 @@ class ModelSelectionPolicy {
           model: model,
           contextTokens: context,
           visionRequested: request.wantsVision,
+          residentEngine: residentEngine,
         );
         if (result.admitted) {
           fitted = result;

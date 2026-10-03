@@ -167,7 +167,8 @@ class DirectPromptHandler implements TaskHandler {
       );
     }
     final stageLimited =
-        generation.stopReason == GemmaGenerationOutputLimit.longFormStageLimit;
+        generation.stopReason == GemmaGenerationOutputLimit.longFormStageLimit ||
+        generation.stopReason == GemmaGenerationOutputLimit.leaseBudgetExhausted;
     if (stageLimited) {
       if (freeForm || request.options.allowTruncatedOutput) {
         return WorkerTaskResult(
