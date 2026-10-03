@@ -1,3 +1,5 @@
+import 'long_form_section_plan.dart';
+
 /// Deterministic join of two long-form stages. Comparison ignores only
 /// surrounding whitespace, repeated newlines, and markdown spacing. The
 /// emitted text is the original model text with a duplicate prefix removed.
@@ -63,6 +65,8 @@ abstract final class GemmaStageMerger {
     required String previousText,
     required String nextText,
     required bool previousEndedIncomplete,
+    List<String> completedSectionTitles = const [],
+    List<String> plannedSectionTitles = const [],
   }) {
     if (nextText.trim().isEmpty) {
       return GemmaStageMerge(
@@ -72,7 +76,16 @@ abstract final class GemmaStageMerger {
       );
     }
 
-    final stripped = _stripDuplicateLeadingBlocks(previousText, nextText);
+    final withoutRepeatedSections = LongFormSectionPlan.removeDuplicateSections(
+      text: nextText,
+      plannedSections: plannedSectionTitles,
+      completedSections: completedSectionTitles,
+      previousText: previousText,
+    );
+    final stripped = _stripDuplicateLeadingBlocks(
+      previousText,
+      withoutRepeatedSections.text,
+    );
     final overlap = _longestOverlapChars(
       previous: previousText,
       next: stripped.text,
@@ -87,7 +100,8 @@ abstract final class GemmaStageMerger {
     return GemmaStageMerge(
       text: joined,
       overlapRemovedChars: overlap,
-      duplicateBlocksRemoved: stripped.removedBlocks,
+      duplicateBlocksRemoved:
+          stripped.removedBlocks + withoutRepeatedSections.removedSections,
     );
   }
 

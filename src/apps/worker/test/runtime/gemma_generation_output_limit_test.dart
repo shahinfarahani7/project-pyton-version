@@ -561,7 +561,11 @@ void main() {
         generateStage: (stageIndex, stagePrompt) async {
           prompts.add(stagePrompt);
           return GemmaStagePiece(
-            text: 'بخش $stageIndex تمام شد.',
+            text: switch (stageIndex) {
+              0 => 'مقدمه\nمورچه‌ها اجتماعی هستند.\n\nتعریف و دامنه\nدامنه، کلونی است.',
+              1 => 'ساختار\nبدن سه بخش دارد.',
+              _ => 'فرایند\nغذایابی ادامه دارد.',
+            },
             stopReason: GemmaGenerationOutputLimit.outputLimit,
             generatedChunks: 40,
             generatedTokens: 20,

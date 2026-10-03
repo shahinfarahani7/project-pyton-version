@@ -477,8 +477,12 @@ class GemmaStagedDirectGeneration {
         progress: progress,
       );
       final piece = await generateStage(stage, stagePrompt);
-      final markerFound = LongFormSectionPlan.containsMarker(piece.text);
-      final cleanedText = LongFormSectionPlan.stripMarker(piece.text);
+      final markerFound = LongFormOutputSanitizer.hasRealCompletionMarker(piece.text);
+      final cleanedText = LongFormOutputSanitizer.sanitize(
+        LongFormSectionPlan.stripMarker(piece.text),
+        originalPrompt: prompt,
+        plannedSections: progress.plannedSections,
+      );
       generatedChunks += piece.generatedChunks;
       stopReason = markerFound ? GemmaGenerationOutputLimit.eos : piece.stopReason;
       stagesUsed = stage + 1;
@@ -504,16 +508,24 @@ class GemmaStagedDirectGeneration {
         WorkerPipelineLog.info(WorkerPipelineLog.exec, completion.logLine(stage, piece.stopReason));
         break;
       }
+      final prepared = LongFormSectionPlan.removeDuplicateSections(
+        text: cleanedText,
+        plannedSections: progress.plannedSections,
+        completedSections: progress.completedSections,
+        previousText: accumulated,
+      );
       final merge = stage == 0
           ? GemmaStageMerge(
-              text: cleanedText.trimRight(),
+              text: prepared.text.trimRight(),
               overlapRemovedChars: 0,
-              duplicateBlocksRemoved: 0,
+              duplicateBlocksRemoved: prepared.removedSections,
             )
           : GemmaStageMerger.merge(
               previousText: accumulated,
-              nextText: cleanedText,
+              nextText: prepared.text,
               previousEndedIncomplete: previousEndedIncomplete,
+              completedSectionTitles: progress.completedSections,
+              plannedSectionTitles: progress.plannedSections,
             );
       _logStage(
         stageIndex: stage,
@@ -525,9 +537,13 @@ class GemmaStagedDirectGeneration {
         stageStopReason: piece.stopReason,
       );
       final madeProgress = stage == 0 || merge.text != accumulated;
-      accumulated = LongFormSectionPlan.stripMarker(merge.text);
+      accumulated = LongFormOutputSanitizer.sanitize(
+        LongFormSectionPlan.stripMarker(merge.text),
+        originalPrompt: prompt,
+        plannedSections: progress.plannedSections,
+      );
       if (!markerFound) {
-        progress.advanceIfSectionClosed(cleanedText);
+        progress.observe(prepared.text);
       }
       completion = LongFormCompletion.evaluate(
         text: accumulated,
