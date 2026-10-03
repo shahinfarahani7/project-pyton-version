@@ -118,6 +118,81 @@ void main() {
     expect(memory.safeBudgetMb(availableRamMb: null, totalRamMb: 6144), isNull);
   });
 
+  test('7398/2960 admits Gemma at 2048 because peakForContext is below budget 2220', () {
+    const memory = MemorySafetyConfig();
+    final budget = memory.safeBudgetMb(availableRamMb: 2960, totalRamMb: 7398);
+    expect(budget, 2220);
+    expect((2960 * memory.maxFreeResourceFraction).floor(), 2220);
+    expect(7398 - memory.systemReserveMb, 5862);
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 2960,
+      cpuPartIds: const [0xD41],
+    );
+    expect(device.cpuClass, CpuClass.c2);
+    expect(device.ramTier, RamTier.t2);
+    expect(device.hardwareTier, HardwareTier.t2);
+    expect(device.benchmark, isNull);
+    for (final context in [2048, 1536, 1024]) {
+      final result = policy.evaluate(device: device, model: gemma, contextTokens: context);
+      final peak = gemma.peakForContext(context);
+      expect(result.reasons.contains('memory_budget_exceeded'), peak >= budget!);
+      expect(result.admitted, peak < budget);
+      expect(result.reusedBenchmark, isFalse);
+    }
+    final chosen = selection.select(
+      device: device,
+      request: const ModelSelectionRequest(taskType: 'text.direct'),
+    );
+    expect(chosen.memoryBudgetMb, 2220);
+    expect(chosen.selectedContextTokens, 2048);
+    expect(chosen.admitted, isTrue);
+    expect(chosen.reason, isNot(contains('memory_budget_exceeded')));
+  });
+
+  test('memory_budget_exceeded is recomputed when available RAM or the free fraction changes', () {
+    final store = MemoryAdmissionCacheStore();
+    const oldConfig = DeviceInferencePolicyConfig(
+      memory: MemorySafetyConfig(maxFreeResourceFraction: 0.50),
+    );
+    final oldAdmission = ModelAdmissionPolicy(
+      config: oldConfig,
+      cache: AdmissionResultCache(store: store),
+    );
+    final tight = measured(
+      totalRamMb: 7398,
+      availableRamMb: 2000,
+      cpuPartIds: const [0xD41],
+    );
+    final tightBudget = oldConfig.memory.safeBudgetMb(
+      availableRamMb: 2000,
+      totalRamMb: 7398,
+    );
+    expect(tightBudget, 1000);
+    for (final context in [2048, 1536, 1024]) {
+      final result = oldAdmission.evaluate(device: tight, model: gemma, contextTokens: context);
+      final peak = gemma.peakForContext(context);
+      expect(result.reasons.contains('memory_budget_exceeded'), peak >= tightBudget!);
+      expect(result.admitted, peak < tightBudget);
+    }
+    final current = ModelAdmissionPolicy(cache: AdmissionResultCache(store: store));
+    final now = measured(
+      totalRamMb: 7398,
+      availableRamMb: 2960,
+      cpuPartIds: const [0xD41],
+    );
+    expect(now.fingerprint, tight.fingerprint);
+    final again = current.evaluate(device: now, model: gemma, contextTokens: 2048);
+    expect(again.reusedBenchmark, isFalse);
+    expect(again.reasons, isNot(contains('benchmark_reused')));
+    expect(again.reasons.contains('memory_budget_exceeded'), gemma.peakForContext(2048) >= 2220);
+    expect(again.admitted, isTrue);
+    final sameRam = current.evaluate(device: now, model: gemma, contextTokens: 2048);
+    expect(sameRam.reusedBenchmark, isTrue);
+    expect(sameRam.reasons, contains('benchmark_reused'));
+    expect(sameRam.admitted, isTrue);
+  });
+
   test('insufficient RAM rejects the model and a fitting device admits it', () {
     final tight = measured(totalRamMb: 2048, availableRamMb: 800, decode: 2.2);
     final rejected = policy.evaluate(device: tight, model: gemma, contextTokens: 2048);
@@ -467,6 +542,9 @@ void main() {
       runtimeVersion: 'litert-lm-gemma4',
       appVersion: 'dev',
       contextTokens: 2048,
+      availableRamMb: 2960,
+      totalRamMb: 7398,
+      maxFreeResourceFraction: 0.75,
       result: saved,
     );
     final restored = AdmissionResultCache(
@@ -477,6 +555,9 @@ void main() {
       runtimeVersion: 'litert-lm-gemma4',
       appVersion: 'dev',
       contextTokens: 2048,
+      availableRamMb: 2960,
+      totalRamMb: 7398,
+      maxFreeResourceFraction: 0.75,
     );
     expect(restored?.admitted, isTrue);
     expect(restored?.selectedContextTokens, 2048);
@@ -489,6 +570,9 @@ void main() {
         runtimeVersion: 'other-runtime',
         appVersion: 'dev',
         contextTokens: 2048,
+        availableRamMb: 2960,
+        totalRamMb: 7398,
+        maxFreeResourceFraction: 0.75,
       ),
       isNull,
     );

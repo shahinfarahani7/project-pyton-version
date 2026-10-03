@@ -175,8 +175,12 @@ class AdmissionResultCache {
     required String runtimeVersion,
     required String appVersion,
     required int contextTokens,
+    required int? availableRamMb,
+    required int? totalRamMb,
+    required double maxFreeResourceFraction,
   }) =>
-      '$fingerprint|$modelSha256|$runtimeVersion|$appVersion|$contextTokens';
+      '$fingerprint|$modelSha256|$runtimeVersion|$appVersion|$contextTokens|'
+      '${availableRamMb ?? 'null'}|${totalRamMb ?? 'null'}|$maxFreeResourceFraction';
 
   static String oomKey({
     required String fingerprint,
@@ -190,6 +194,9 @@ class AdmissionResultCache {
     required String runtimeVersion,
     required String appVersion,
     required int contextTokens,
+    required int? availableRamMb,
+    required int? totalRamMb,
+    required double maxFreeResourceFraction,
   }) {
     final raw = _store.read(
       cacheKey(
@@ -198,6 +205,9 @@ class AdmissionResultCache {
         runtimeVersion: runtimeVersion,
         appVersion: appVersion,
         contextTokens: contextTokens,
+        availableRamMb: availableRamMb,
+        totalRamMb: totalRamMb,
+        maxFreeResourceFraction: maxFreeResourceFraction,
       ),
     );
     if (raw == null || raw.isEmpty) {
@@ -216,6 +226,9 @@ class AdmissionResultCache {
     required String runtimeVersion,
     required String appVersion,
     required int contextTokens,
+    required int? availableRamMb,
+    required int? totalRamMb,
+    required double maxFreeResourceFraction,
     required ModelAdmissionResult result,
   }) {
     _store.write(
@@ -225,6 +238,9 @@ class AdmissionResultCache {
         runtimeVersion: runtimeVersion,
         appVersion: appVersion,
         contextTokens: contextTokens,
+        availableRamMb: availableRamMb,
+        totalRamMb: totalRamMb,
+        maxFreeResourceFraction: maxFreeResourceFraction,
       ),
       jsonEncode(result.toJson()),
     );
@@ -303,6 +319,9 @@ class ModelAdmissionPolicy {
             runtimeVersion: config.runtimeVersion,
             appVersion: config.appVersion,
             contextTokens: requested,
+            availableRamMb: device.availableRamMb,
+            totalRamMb: device.totalRamMb,
+            maxFreeResourceFraction: config.memory.maxFreeResourceFraction,
           );
     if (cached != null) {
       final reused = ModelAdmissionResult(
@@ -314,6 +333,22 @@ class ModelAdmissionPolicy {
         modelId: cached.modelId,
         visionEligible: cached.visionEligible,
         reusedBenchmark: true,
+      );
+      _trace(
+        model: model,
+        contextTokens: requested,
+        device: device,
+        budget: config.memory.safeBudgetMb(
+          availableRamMb: device.availableRamMb,
+          totalRamMb: device.totalRamMb,
+        ),
+        observedPeakRssMb: observed?.peakRssMb,
+        peakForContextMb: model.peakForContext(requested),
+        peak: null,
+        benchmarkStatus: 'cache_hit',
+        comparison: 'cached',
+        admitted: reused.admitted,
+        reasons: reused.reasons,
       );
       WorkerPipelineLog.info(WorkerPipelineLog.model, reused.logLine());
       return reused;
@@ -397,13 +432,26 @@ class ModelAdmissionPolicy {
     if (admitted && reasons.isEmpty) {
       reasons.add('admitted');
     }
+    _trace(
+      model: model,
+      contextTokens: requested,
+      device: device,
+      budget: budget,
+      observedPeakRssMb: observed?.peakRssMb,
+      peakForContextMb: model.peakForContext(requested),
+      peak: peak,
+      benchmarkStatus: observed == null ? 'none' : 'matched',
+      comparison: budget == null ? 'budget == null' : 'peak >= budget',
+      admitted: admitted,
+      reasons: reasons,
+    );
     WorkerPipelineLog.info(
       WorkerPipelineLog.model,
       '[MODEL ADMISSION MEMORY] contextTokens=$requested '
       'availableRamMb=${device.availableRamMb ?? 'unknown'} '
       'availableRamRatio=${config.memory.maxFreeResourceFraction} '
       'memoryBudgetMb=${budget ?? 'unknown'} '
-      'estimatedRequiredMb=$peak '
+      'peak=$peak '
       'admitted=$admitted '
       'reason=${reasons.join(',')}',
     );
@@ -417,6 +465,39 @@ class ModelAdmissionPolicy {
       visionEligible: visionEligible && !visionRequested ? visionEligible : visionEligible,
       benchmarkFailedHard: observed != null &&
           (observed.nativeOom || observed.lowMemoryOrLmk),
+    );
+  }
+
+  void _trace({
+    required ModelDescriptor model,
+    required int contextTokens,
+    required DeviceCapabilityProfile device,
+    required int? budget,
+    required int? observedPeakRssMb,
+    required int peakForContextMb,
+    required int? peak,
+    required String benchmarkStatus,
+    required String comparison,
+    required bool admitted,
+    required List<String> reasons,
+  }) {
+    WorkerPipelineLog.info(
+      WorkerPipelineLog.model,
+      '[MODEL ADMISSION TRACE] '
+      'model=${model.modelId} '
+      'contextTokens=$contextTokens '
+      'totalRamMb=${device.totalRamMb ?? 'unknown'} '
+      'availableRamMb=${device.availableRamMb ?? 'unknown'} '
+      'availableRamRatio=${config.memory.maxFreeResourceFraction} '
+      'memoryBudgetMb=${budget ?? 'unknown'} '
+      'observedPeakRssMb=${observedPeakRssMb ?? 'null'} '
+      'peakForContext=$peakForContextMb '
+      'peak=${peak ?? 'not_recomputed'} '
+      'benchmarkStatus=$benchmarkStatus '
+      'residentModelLoaded=not_consulted '
+      'comparison=$comparison '
+      'admitted=$admitted '
+      'reasons=$reasons',
     );
   }
 
@@ -514,6 +595,9 @@ class ModelAdmissionPolicy {
       runtimeVersion: config.runtimeVersion,
       appVersion: config.appVersion,
       contextTokens: contextTokens,
+      availableRamMb: device.availableRamMb,
+      totalRamMb: device.totalRamMb,
+      maxFreeResourceFraction: config.memory.maxFreeResourceFraction,
       result: result,
     );
     WorkerPipelineLog.info(WorkerPipelineLog.model, result.logLine());
