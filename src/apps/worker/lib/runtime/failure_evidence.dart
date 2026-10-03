@@ -3,6 +3,7 @@ import '../contracts/worker_error.dart';
 import '../inference/llm/context_budget_manager.dart';
 import '../inference/llm/hierarchical_reduce_bounds.dart';
 import '../inference/llm/semantic_merge_validator.dart';
+import 'network_transport.dart';
 import 'resume_grant.dart';
 import 'assignment_receiver.dart';
 import 'device_constraints.dart';
@@ -40,6 +41,7 @@ abstract final class ClosedFailureCode {
   static const goldenValidationFailed = 'GOLDEN_VALIDATION_FAILED';
   static const resourcePressure = 'RESOURCE_PRESSURE';
   static const workerDisconnected = 'WORKER_DISCONNECTED';
+  static const networkUnavailable = 'NETWORK_UNAVAILABLE';
   static const leaseExpired = 'LEASE_EXPIRED';
   static const resultValidationFailed = 'RESULT_VALIDATION_FAILED';
   static const ocrEmptyResult = 'OCR_EMPTY_RESULT';
@@ -129,6 +131,9 @@ class FailureEvidenceMapper {
   }
 
   _MappedFailure? _mapCodeAndRetry(Object error) {
+    if (NetworkFailure.isTransport(error)) {
+      return const _MappedFailure(ClosedFailureCode.networkUnavailable, true);
+    }
     if (error is RuntimeSafetyException) {
       return switch (error.verdict.reason) {
         RuntimeSafetyReason.thermalCritical ||

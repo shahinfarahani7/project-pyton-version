@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'encrypted_store.dart';
 
-/// Durable outbox for assignment complete payloads awaiting server ACK.
+/// Durable outbox for started, progress, checkpoint, result upload, complete, and fail.
 class ResultSubmissionOutbox {
   ResultSubmissionOutbox({required EncryptedStore store, this.storageKey = 'result_outbox_v1'})
       : _store = store;
@@ -22,6 +22,17 @@ class ResultSubmissionOutbox {
   Future<void> ack(String idempotencyKey) async {
     final entries = await _load();
     entries.remove(idempotencyKey);
+    await _persist(entries);
+  }
+
+  Future<void> markOutcome(String idempotencyKey, String outcome) async {
+    final entries = await _load();
+    final current = entries[idempotencyKey];
+    if (current == null) {
+      return;
+    }
+    current['outcome'] = outcome;
+    entries[idempotencyKey] = current;
     await _persist(entries);
   }
 

@@ -26,6 +26,7 @@ import 'encrypted_store.dart';
 import 'execution_policy.dart';
 import 'execution_status.dart';
 import 'failure_evidence.dart';
+import 'network_transport.dart';
 import 'inference_adapter.dart';
 import '../telemetry/execution_cost_feedback.dart';
 import '../telemetry/worker_task_metrics.dart';
@@ -271,11 +272,18 @@ class AssignmentCoordinator {
         resume: resume,
       );
     } catch (error) {
-      await _submitFailureEvidence(
+      if (NetworkFailure.isTransport(error)) {
+        _emit(_status.copyWith(serverSync: ServerSyncState.pending));
+        return;
+      }
+      final failureReportDeferred = await _submitFailureEvidence(
         assignment: assignment,
         error: error,
         startedAt: startedAt,
       );
+      if (failureReportDeferred) {
+        return;
+      }
       rethrow;
     }
   }
@@ -396,14 +404,29 @@ class AssignmentCoordinator {
     }
 
     _log('[START REQUEST] assignmentId=${assignment.assignmentId}');
-    await _api.reportAssignmentStarted(
-      assignmentId: assignment.assignmentId,
-      accessToken: _accessToken,
-      leaseToken: assignment.leaseToken,
-      fenceToken: assignment.fenceToken,
+    final started = await _deliverServerOperation(
+      kind: 'started',
       idempotencyKey: 'start-${assignment.attemptId}',
+      assignment: assignment,
+      body: {
+        'leaseToken': assignment.leaseToken,
+        'fenceToken': assignment.fenceToken,
+      },
+      send: () => _api.reportAssignmentStarted(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+        leaseToken: assignment.leaseToken,
+        fenceToken: assignment.fenceToken,
+        idempotencyKey: 'start-${assignment.attemptId}',
+      ),
     );
-    _log('[START RESPONSE] assignment accepted by worker-gateway');
+    if (started) {
+      _log('[START RESPONSE] assignment accepted by worker-gateway');
+    } else {
+      _log(
+        '[START DEFERRED] network unavailable; local inference continues',
+      );
+    }
     await _assignmentInbox.markAcked(
       assignment.assignmentId,
       fenceToken: assignment.fenceToken,
@@ -474,17 +497,24 @@ class AssignmentCoordinator {
       );
       if (progressMilli - lastReportedProgress >=
           ExecutionPolicy.minimumProgressDeltaMilli) {
-        await _api.progressAssignment(
-          assignmentId: assignment.assignmentId,
-          accessToken: _accessToken,
+        final progressBody = {
+          'leaseToken': assignment.leaseToken,
+          'fenceToken': assignment.fenceToken,
+          'sequence': progressMilli,
+          'stage': usePipeline ? 'pipeline' : 'infer',
+          'progressBps': progressMilli * 10,
+        };
+        await _deliverServerOperation(
+          kind: 'progress',
           idempotencyKey: 'progress-${assignment.attemptId}-$progressMilli',
-          body: {
-            'leaseToken': assignment.leaseToken,
-            'fenceToken': assignment.fenceToken,
-            'sequence': progressMilli,
-            'stage': usePipeline ? 'pipeline' : 'infer',
-            'progressBps': progressMilli * 10,
-          },
+          assignment: assignment,
+          body: progressBody,
+          send: () => _api.progressAssignment(
+            assignmentId: assignment.assignmentId,
+            accessToken: _accessToken,
+            idempotencyKey: 'progress-${assignment.attemptId}-$progressMilli',
+            body: progressBody,
+          ),
         );
         lastReportedProgress = progressMilli;
         await _writeCheckpoint(
@@ -507,6 +537,13 @@ class AssignmentCoordinator {
         assignment: assignment,
         accessToken: _accessToken,
         inputSha256: bundle.inputDigest,
+        onTransportDeferred: (kind, idempotencyKey, body) => deferServerOperation(
+          kind: kind,
+          idempotencyKey: idempotencyKey,
+          assignment: assignment,
+          body: body,
+          outcome: 'UNKNOWN_OUTCOME',
+        ),
       );
       output = await _taskEngine.execute(
         context: TaskExecutionContext(
@@ -588,21 +625,6 @@ class AssignmentCoordinator {
       'metrics': completionMetrics,
       'signature': signature,
     };
-    await _resultOutbox.enqueue(idempotencyKey, completeBody);
-    try {
-      await _api.completeAssignment(
-        assignmentId: assignment.assignmentId,
-        accessToken: _accessToken,
-        idempotencyKey: idempotencyKey,
-        body: completeBody,
-      );
-      await _resultOutbox.ack(idempotencyKey);
-    } catch (_) {
-      rethrow;
-    }
-
-    await _cleanup(assignment);
-    await _platform.stopForegroundService();
     final outputKind = output.metrics['outputKind'];
     final structured = output.metrics['structuredResult'];
     final resultPreview = outputKind == 'json' && structured is Map
@@ -614,6 +636,37 @@ class AssignmentCoordinator {
         : outputKind == 'image'
         ? (output.metrics['resultSummary'] as String? ?? 'Image output ready')
         : utf8.decode(output.resultBytes);
+    final completed = await _deliverServerOperation(
+      kind: 'complete',
+      idempotencyKey: idempotencyKey,
+      assignment: assignment,
+      body: completeBody,
+      send: () => _api.completeAssignment(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+        idempotencyKey: idempotencyKey,
+        body: completeBody,
+      ),
+    );
+    if (!completed) {
+      _stopLeaseRenewal();
+      _emit(
+        _status.copyWith(
+          phase: ExecutionPhase.completed,
+          progressMilli: 1000,
+          detail: resultPreview,
+          taskType: assignment.taskType,
+          assignmentId: assignment.assignmentId,
+          taskId: assignment.taskId,
+          serverSync: ServerSyncState.pending,
+        ),
+      );
+      return;
+    }
+
+    await _cleanup(assignment);
+    await _platform.stopForegroundService();
+    final stillPending = await hasPendingServerSync();
     _emit(
       _status.copyWith(
         phase: ExecutionPhase.completed,
@@ -622,6 +675,9 @@ class AssignmentCoordinator {
         taskType: assignment.taskType,
         assignmentId: assignment.assignmentId,
         taskId: assignment.taskId,
+        serverSync: stillPending
+            ? ServerSyncState.pending
+            : ServerSyncState.idle,
       ),
     );
   }
@@ -646,7 +702,7 @@ class AssignmentCoordinator {
     _emit(_status.copyWith(phase: ExecutionPhase.paused));
   }
 
-  Future<void> _submitFailureEvidence({
+  Future<bool> _submitFailureEvidence({
     required WorkerAssignment assignment,
     required Object error,
     required DateTime startedAt,
@@ -660,21 +716,39 @@ class AssignmentCoordinator {
       executionTime: DateTime.now().difference(startedAt),
       checkpointId: checkpoint?.encryptedBlobRef,
     );
-    if (evidence == null) {
-      return;
+    if (evidence == null || NetworkFailure.isTransport(error)) {
+      if (NetworkFailure.isTransport(error)) {
+        _emit(_status.copyWith(serverSync: ServerSyncState.pending));
+        return true;
+      }
+      return false;
     }
+    final failKey = 'fail-${assignment.attemptId}-${evidence.failureCode}';
+    final failBody = evidence.toFailRequest(leaseToken: assignment.leaseToken);
+    var deferred = false;
     try {
       _log(
         '[FAILURE REQUEST] assignmentId=${assignment.assignmentId} '
         'code=${evidence.failureCode} retryable=${evidence.retryable}',
       );
-      await _api.failAssignment(
-        assignmentId: assignment.assignmentId,
-        accessToken: _accessToken,
-        idempotencyKey: 'fail-${assignment.attemptId}-${evidence.failureCode}',
-        body: evidence.toFailRequest(leaseToken: assignment.leaseToken),
+      final delivered = await _deliverServerOperation(
+        kind: 'fail',
+        idempotencyKey: failKey,
+        assignment: assignment,
+        body: failBody,
+        send: () => _api.failAssignment(
+          assignmentId: assignment.assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: failKey,
+          body: failBody,
+        ),
       );
-      _log('[FAILURE RESPONSE] worker-gateway accepted failure evidence');
+      deferred = !delivered;
+      if (delivered) {
+        _log('[FAILURE RESPONSE] worker-gateway accepted failure evidence');
+      } else {
+        _emit(_status.copyWith(serverSync: ServerSyncState.unknownOutcome));
+      }
     } finally {
       _storagePressure.clearActiveAssignment();
       if (_assignmentStarted) {
@@ -691,6 +765,7 @@ class AssignmentCoordinator {
         ),
       );
     }
+    return deferred;
   }
 
   Future<void> abandon(
@@ -734,19 +809,26 @@ class AssignmentCoordinator {
       savedAt: DateTime.now(),
     );
     await _checkpointStore.save(record, encrypted);
-    await _api.checkpointAssignment(
-      assignmentId: assignment.assignmentId,
-      accessToken: _accessToken,
+    final checkpointBody = {
+      'leaseToken': assignment.leaseToken,
+      'fenceToken': assignment.fenceToken,
+      'sequence': progressMilli,
+      'modelVersionId': assignment.modelVersionId,
+      'inputSha256': bundle.inputDigest,
+      'checkpointSha256': record.runtimeStateDigest,
+      'encryptedBlobRef': ref,
+    };
+    await _deliverServerOperation(
+      kind: 'checkpoint',
       idempotencyKey: 'checkpoint-${assignment.attemptId}-$progressMilli',
-      body: {
-        'leaseToken': assignment.leaseToken,
-        'fenceToken': assignment.fenceToken,
-        'sequence': progressMilli,
-        'modelVersionId': assignment.modelVersionId,
-        'inputSha256': bundle.inputDigest,
-        'checkpointSha256': record.runtimeStateDigest,
-        'encryptedBlobRef': ref,
-      },
+      assignment: assignment,
+      body: checkpointBody,
+      send: () => _api.checkpointAssignment(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+        idempotencyKey: 'checkpoint-${assignment.attemptId}-$progressMilli',
+        body: checkpointBody,
+      ),
     );
   }
 
@@ -778,7 +860,10 @@ class AssignmentCoordinator {
           sequence: _leaseRenewSequence,
           idempotencyKey: 'renew-${assignment.attemptId}-$_leaseRenewSequence',
         );
-      } catch (_) {
+      } catch (error) {
+        if (NetworkFailure.isTransport(error)) {
+          return;
+        }
         _cancelRequested = true;
       }
     });
@@ -879,6 +964,193 @@ class AssignmentCoordinator {
     return taskMetrics;
   }
 
+  Future<bool> hasPendingServerSync() async {
+    final pending = await _resultOutbox.pending();
+    return pending.isNotEmpty;
+  }
+
+  Future<void> deferServerOperation({
+    required String kind,
+    required String idempotencyKey,
+    required WorkerAssignment assignment,
+    required Map<String, dynamic> body,
+    String outcome = 'pending',
+    bool reassigned = false,
+  }) async {
+    await _resultOutbox.enqueue(idempotencyKey, {
+      'kind': kind,
+      'assignmentId': assignment.assignmentId,
+      'leaseExpiresAt': assignment.leaseExpiresAt.toUtc().toIso8601String(),
+      'outcome': outcome,
+      'reassigned': reassigned,
+      'body': body,
+    });
+  }
+
+  /// Replays durable server operations. Returns false when the network is still down.
+  Future<bool> flushPendingServerSync({DateTime? now}) async {
+    final clock = (now ?? DateTime.now()).toUtc();
+    final pending = await _resultOutbox.pending();
+    for (final entry in pending.entries) {
+      final payload = entry.value;
+      final kind = payload['kind'] as String? ?? 'complete';
+      if (kind == 'resultUpload') {
+        continue;
+      }
+      final leaseRaw = payload['leaseExpiresAt'] as String?;
+      final lease = leaseRaw == null ? null : DateTime.tryParse(leaseRaw);
+      final decision = AssignmentSyncReconciler.decide(
+        kind: kind,
+        leaseExpiresAt: lease,
+        now: clock,
+        reassigned: payload['reassigned'] == true,
+      );
+      if (decision == SyncReplay.dropWithoutComplete) {
+        await _resultOutbox.ack(entry.key);
+        continue;
+      }
+      try {
+        await _replayServerOperation(entry.key, payload);
+        await _resultOutbox.ack(entry.key);
+      } on WorkerApiException catch (error) {
+        if (error.statusCode == 409 || error.statusCode == 410) {
+          await _resultOutbox.ack(entry.key);
+          continue;
+        }
+        return true;
+      } catch (error) {
+        if (NetworkFailure.isTransport(error)) {
+          await _resultOutbox.markOutcome(entry.key, 'UNKNOWN_OUTCOME');
+          return false;
+        }
+        return true;
+      }
+    }
+    final left = await _resultOutbox.pending();
+    if (left.isEmpty && _status.serverSync != ServerSyncState.idle) {
+      _emit(_status.copyWith(serverSync: ServerSyncState.idle));
+    }
+    return true;
+  }
+
+  Future<List<PendingResultUpload>> pendingResultUploads() async {
+    final pending = await _resultOutbox.pending();
+    final uploads = <PendingResultUpload>[];
+    for (final entry in pending.entries) {
+      if (entry.value['kind'] != 'resultUpload') {
+        continue;
+      }
+      final body = entry.value['body'];
+      if (body is! Map) {
+        continue;
+      }
+      final decoded = Map<String, dynamic>.from(body);
+      final payload = decoded['payload'];
+      uploads.add(
+        PendingResultUpload(
+          idempotencyKey: entry.key,
+          uploadUrl: decoded['uploadUrl'] as String? ?? '',
+          payload: payload is Map
+              ? Map<String, dynamic>.from(payload)
+              : const {},
+        ),
+      );
+    }
+    return uploads;
+  }
+
+  Future<void> ackServerSync(String idempotencyKey) =>
+      _resultOutbox.ack(idempotencyKey);
+
+  Future<bool> _deliverServerOperation({
+    required String kind,
+    required String idempotencyKey,
+    required WorkerAssignment assignment,
+    required Map<String, dynamic> body,
+    required Future<void> Function() send,
+  }) async {
+    await deferServerOperation(
+      kind: kind,
+      idempotencyKey: idempotencyKey,
+      assignment: assignment,
+      body: body,
+    );
+    try {
+      await send();
+      await _resultOutbox.ack(idempotencyKey);
+      return true;
+    } on WorkerApiException catch (error) {
+      if (error.statusCode == 409 || error.statusCode == 410) {
+        await _resultOutbox.ack(idempotencyKey);
+        return true;
+      }
+      rethrow;
+    } catch (error) {
+      if (NetworkFailure.isTransport(error)) {
+        await _resultOutbox.markOutcome(idempotencyKey, 'UNKNOWN_OUTCOME');
+        return false;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _replayServerOperation(
+    String idempotencyKey,
+    Map<String, dynamic> payload,
+  ) async {
+    final kind = payload['kind'] as String? ?? 'complete';
+    final assignmentId = payload['assignmentId'] as String? ?? '';
+    final body = _operationBody(payload);
+    switch (kind) {
+      case 'started':
+        await _api.reportAssignmentStarted(
+          assignmentId: assignmentId,
+          accessToken: _accessToken,
+          leaseToken: body['leaseToken'] as String,
+          fenceToken: (body['fenceToken'] as num).toInt(),
+          idempotencyKey: idempotencyKey,
+        );
+      case 'progress':
+        await _api.progressAssignment(
+          assignmentId: assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: idempotencyKey,
+          body: body,
+        );
+      case 'checkpoint':
+        await _api.checkpointAssignment(
+          assignmentId: assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: idempotencyKey,
+          body: body,
+        );
+      case 'fail':
+        await _api.failAssignment(
+          assignmentId: assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: idempotencyKey,
+          body: body,
+        );
+      case 'complete':
+        await _api.completeAssignment(
+          assignmentId: assignmentId,
+          accessToken: _accessToken,
+          idempotencyKey: idempotencyKey,
+          body: body,
+        );
+      default:
+        return;
+    }
+  }
+
+  Map<String, dynamic> _operationBody(Map<String, dynamic> payload) {
+    final body = payload['body'];
+    if (body is Map) {
+      return Map<String, dynamic>.from(body);
+    }
+    return payload;
+  }
+
   static Future<AssignmentInputBundle> _defaultInputLoader(
     WorkerAssignment assignment,
   ) async {
@@ -902,6 +1174,18 @@ class AssignmentCoordinator {
       ),
     );
   }
+}
+
+class PendingResultUpload {
+  const PendingResultUpload({
+    required this.idempotencyKey,
+    required this.uploadUrl,
+    required this.payload,
+  });
+
+  final String idempotencyKey;
+  final String uploadUrl;
+  final Map<String, dynamic> payload;
 }
 
 class ResumeDecision {

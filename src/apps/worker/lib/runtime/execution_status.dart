@@ -1,3 +1,5 @@
+enum ServerSyncState { idle, pending, unknownOutcome }
+
 enum ExecutionPhase {
   idle,
   waitingForAssignment,
@@ -20,6 +22,7 @@ class ExecutionStatus {
     this.progressMilli = 0,
     this.detail,
     this.visibleToUser = true,
+    this.serverSync = ServerSyncState.idle,
   });
 
   final ExecutionPhase phase;
@@ -29,6 +32,7 @@ class ExecutionStatus {
   final int progressMilli;
   final String? detail;
   final bool visibleToUser;
+  final ServerSyncState serverSync;
 
   ExecutionStatus copyWith({
     ExecutionPhase? phase,
@@ -38,6 +42,7 @@ class ExecutionStatus {
     int? progressMilli,
     String? detail,
     bool? visibleToUser,
+    ServerSyncState? serverSync,
   }) {
     return ExecutionStatus(
       phase: phase ?? this.phase,
@@ -47,6 +52,7 @@ class ExecutionStatus {
       progressMilli: progressMilli ?? this.progressMilli,
       detail: detail ?? this.detail,
       visibleToUser: visibleToUser ?? this.visibleToUser,
+      serverSync: serverSync ?? this.serverSync,
     );
   }
 }

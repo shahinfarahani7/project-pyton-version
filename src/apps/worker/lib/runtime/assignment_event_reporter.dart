@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../api/worker_api_client.dart';
 import '../api/worker_assignment_models.dart';
+import 'network_transport.dart';
 import 'checkpoint_manager.dart';
 import 'execution_plan_runner.dart';
 import 'execution_policy.dart';
@@ -20,6 +21,7 @@ class AssignmentEventReporter {
     required String accessToken,
     required String inputSha256,
     TransportRecoveryJournal? transportJournal,
+    this.onTransportDeferred,
   })  : _api = api,
         _assignment = assignment,
         _accessToken = accessToken,
@@ -31,6 +33,11 @@ class AssignmentEventReporter {
   final String _accessToken;
   final String _inputSha256;
   final TransportRecoveryJournal _transportJournal;
+  final Future<void> Function(
+    String kind,
+    String idempotencyKey,
+    Map<String, dynamic> body,
+  )? onTransportDeferred;
 
   TransportRecoveryJournal get transportJournal => _transportJournal;
 
@@ -76,14 +83,20 @@ class AssignmentEventReporter {
         recordedAt: DateTime.now().toUtc(),
       ),
     );
-    await _api.progressAssignment(
-      assignmentId: _assignment.assignmentId,
-      accessToken: _accessToken,
+    final delivered = await _sendOrDefer(
+      kind: 'progress',
       idempotencyKey: idempotencyKey,
       body: body,
+      send: () => _api.progressAssignment(
+        assignmentId: _assignment.assignmentId,
+        accessToken: _accessToken,
+        idempotencyKey: idempotencyKey,
+        body: body,
+      ),
     );
-    _transportJournal.acknowledge(idempotencyKey);
-    _lastReportedProgressMilli = event.progressMilli;
+    if (delivered) {
+      _lastReportedProgressMilli = event.progressMilli;
+    }
   }
 
   Future<void> reportChunkCheckpoint(ChunkCheckpointRecord record) async {
@@ -112,13 +125,36 @@ class AssignmentEventReporter {
         recordedAt: DateTime.now().toUtc(),
       ),
     );
-    await _api.checkpointAssignment(
-      assignmentId: _assignment.assignmentId,
-      accessToken: _accessToken,
+    await _sendOrDefer(
+      kind: 'checkpoint',
       idempotencyKey: idempotencyKey,
       body: body,
+      send: () => _api.checkpointAssignment(
+        assignmentId: _assignment.assignmentId,
+        accessToken: _accessToken,
+        idempotencyKey: idempotencyKey,
+        body: body,
+      ),
     );
-    _transportJournal.acknowledge(idempotencyKey);
+  }
+
+  Future<bool> _sendOrDefer({
+    required String kind,
+    required String idempotencyKey,
+    required Map<String, dynamic> body,
+    required Future<void> Function() send,
+  }) async {
+    try {
+      await send();
+      _transportJournal.acknowledge(idempotencyKey);
+      return true;
+    } catch (error) {
+      if (NetworkFailure.isTransport(error)) {
+        await onTransportDeferred?.call(kind, idempotencyKey, body);
+        return false;
+      }
+      rethrow;
+    }
   }
 
   Future<int> retransmitPendingTransport() => _transportJournal.retransmitPending();

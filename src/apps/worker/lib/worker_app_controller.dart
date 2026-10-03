@@ -36,6 +36,7 @@ import 'runtime/device_snapshot.dart';
 import 'runtime/encrypted_store.dart';
 import 'runtime/model_admission_policy.dart';
 import 'runtime/execution_status.dart';
+import 'runtime/network_transport.dart';
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/gemma_inference_adapter.dart';
 import 'runtime/identity_lifecycle_tracer.dart';
@@ -331,6 +332,9 @@ class WorkerAppController extends ChangeNotifier {
   static const _maxEnrollmentRetries = 5;
 
   int _assignmentLoopGeneration = 0;
+  final ConnectivitySession _connectivity = ConnectivitySession();
+
+  ConnectivityState get connectivityState => _connectivity.state;
 
   @visibleForTesting
   int get debugAssignmentLoopGeneration => _assignmentLoopGeneration;
@@ -733,6 +737,20 @@ class WorkerAppController extends ChangeNotifier {
         continue;
       }
 
+      if (_connectivity.state != ConnectivityState.online) {
+        final delay = _connectivity.beginReconnect();
+        _logTask(
+          'Reconnect in ${delay.inSeconds}s '
+          '(attempt ${_connectivity.attempt + 1})',
+          phase: WorkerPipelineLog.assign,
+        );
+        notifyListeners();
+        await Future<void>.delayed(delay);
+        if (_disposed || generation != _assignmentLoopGeneration || !available) {
+          break;
+        }
+      }
+
       await _processNextAssignment(
         announceEmptyQueue: false,
         waitSeconds: _assignmentLongPollSeconds,
@@ -740,6 +758,10 @@ class WorkerAppController extends ChangeNotifier {
 
       if (_disposed || generation != _assignmentLoopGeneration || !available) {
         break;
+      }
+
+      if (_connectivity.state != ConnectivityState.online) {
+        continue;
       }
 
       await Future<void>.delayed(_assignmentPollInterval);
@@ -1689,12 +1711,21 @@ class WorkerAppController extends ChangeNotifier {
       );
 
       if (!backendOnline) {
+        if (_connectivity.state == ConnectivityState.reconnecting) {
+          _connectivity.stillOffline();
+        } else {
+          _connectivity.lost();
+        }
         _logTask(
           'Assignment aborted - '
           'backend offline',
         );
 
         return;
+      }
+
+      if (_connectivity.state != ConnectivityState.online) {
+        _connectivity.restored();
       }
 
       if (!hasManualCredentials && !workerEnrolled) {
@@ -1711,6 +1742,40 @@ class WorkerAppController extends ChangeNotifier {
       await _refreshSessionIfNeeded();
 
       await _sendHeartbeatIfConfigured();
+
+      if (await _coordinator.hasPendingServerSync()) {
+        _logTask(
+          'Pending server sync; reconcile before assignments:next',
+          phase: WorkerPipelineLog.assign,
+        );
+        final flushed = await _coordinator.flushPendingServerSync();
+        final uploadsLeft = await _flushDeferredResultUploads();
+        if (!flushed || uploadsLeft) {
+          if (_connectivity.state == ConnectivityState.reconnecting) {
+            _connectivity.stillOffline();
+          } else {
+            _connectivity.lost();
+          }
+          executionStatus = executionStatus.copyWith(
+            serverSync: ServerSyncState.pending,
+          );
+          notifyListeners();
+          return;
+        }
+        if (await _coordinator.hasPendingServerSync()) {
+          _logTask(
+            'Server sync still pending; assignments:next skipped',
+            phase: WorkerPipelineLog.assign,
+          );
+          return;
+        }
+        if (executionStatus.serverSync != ServerSyncState.idle) {
+          executionStatus = executionStatus.copyWith(
+            serverSync: ServerSyncState.idle,
+          );
+          notifyListeners();
+        }
+      }
 
       if (!available) {
         _logTask(
@@ -1871,6 +1936,20 @@ class WorkerAppController extends ChangeNotifier {
 
       lastSync = _formatNow();
     } catch (error, stackTrace) {
+      if (NetworkFailure.isTransport(error)) {
+        executionStatus = executionStatus.copyWith(
+          serverSync: ServerSyncState.pending,
+        );
+        _connectivity.lost();
+        _logError(
+          'Assignment sync deferred; execution state kept',
+          error,
+          stackTrace,
+        );
+        lastSync = _formatNow();
+        notifyListeners();
+        return;
+      }
       _logError('Assignment run failed', error, stackTrace);
 
       modelError = '$error';
@@ -2357,6 +2436,12 @@ class WorkerAppController extends ChangeNotifier {
             continue;
           }
           _logError('Output upload timed out', error, stackTrace);
+          await _deferResultUpload(
+            assignment,
+            uploadUrl: uploadUrl,
+            payload: payload,
+            outcome: 'UNKNOWN_OUTCOME',
+          );
           _outputUploadCoordinator.releaseInFlight(assignmentId);
           return false;
         }
@@ -2366,9 +2451,80 @@ class WorkerAppController extends ChangeNotifier {
       return false;
     } catch (error, stackTrace) {
       _logError('Output upload failed', error, stackTrace);
+      if (NetworkFailure.isTransport(error)) {
+        await _deferResultUpload(
+          assignment,
+          uploadUrl: _resolveDevServiceUrl(assignment.outputUploadUrl),
+          payload: {
+            'resultText': resultText,
+            'metrics': {
+              'taskType': assignment.taskType,
+              'taskId': assignment.taskId,
+              'assignmentId': assignment.assignmentId,
+            },
+          },
+          outcome: 'UNKNOWN_OUTCOME',
+        );
+      }
       _outputUploadCoordinator.releaseInFlight(assignmentId);
       return false;
     }
+  }
+
+  Future<void> _deferResultUpload(
+    WorkerAssignment assignment, {
+    required Uri uploadUrl,
+    required Map<String, dynamic> payload,
+    required String outcome,
+  }) async {
+    await _coordinator.deferServerOperation(
+      kind: 'resultUpload',
+      idempotencyKey: 'result-upload-${assignment.attemptId}',
+      assignment: assignment,
+      body: {
+        'uploadUrl': uploadUrl.toString(),
+        'payload': payload,
+      },
+      outcome: outcome,
+    );
+    executionStatus = executionStatus.copyWith(
+      serverSync: outcome == 'UNKNOWN_OUTCOME'
+          ? ServerSyncState.unknownOutcome
+          : ServerSyncState.pending,
+    );
+    _connectivity.lost();
+    notifyListeners();
+  }
+
+  Future<bool> _flushDeferredResultUploads() async {
+    final pending = await _coordinator.pendingResultUploads();
+    var stillPending = false;
+    for (final upload in pending) {
+      try {
+        final response = await _http
+            .post(
+              Uri.parse(upload.uploadUrl),
+              headers: const {'Content-Type': 'application/json'},
+              body: jsonEncode(upload.payload),
+            )
+            .timeout(const Duration(seconds: 15));
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          await _coordinator.ackServerSync(upload.idempotencyKey);
+          continue;
+        }
+        if (response.statusCode == 409 || response.statusCode == 410) {
+          await _coordinator.ackServerSync(upload.idempotencyKey);
+          continue;
+        }
+        stillPending = true;
+      } catch (error) {
+        stillPending = true;
+        if (NetworkFailure.isTransport(error)) {
+          break;
+        }
+      }
+    }
+    return stillPending;
   }
 
   // ---------------------------------------------------------------------------

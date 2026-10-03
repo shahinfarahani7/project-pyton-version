@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:edgemint_worker/api/worker_api_client.dart';
@@ -15,6 +16,7 @@ import 'package:edgemint_worker/runtime/device_snapshot.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/execution_status.dart';
 import 'package:edgemint_worker/runtime/inference_adapter.dart';
+import 'package:edgemint_worker/runtime/result_submission_outbox.dart';
 import 'package:edgemint_worker/runtime/model_artifact_verifier.dart';
 import 'package:edgemint_worker/runtime/result_signer.dart';
 import 'package:edgemint_worker/runtime/runtime_exceptions.dart';
@@ -63,10 +65,15 @@ class _ExecutionMockClient extends http.BaseClient {
   int startedCalls = 0;
   int failCalls = 0;
   bool abandonCalled = false;
+  int completeHttpStatus = 202;
+  final Map<String, int> transportFailuresLeft = {};
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     final path = request.url.path;
+    if (_consumeTransportFailure(path)) {
+      return Future.error(const SocketException('No route to host'));
+    }
     if (path.endsWith('/assignments:inboxBootstrap')) {
       return _json(200, {
         'workerDeviceId': 'dev_test',
@@ -93,6 +100,11 @@ class _ExecutionMockClient extends http.BaseClient {
     }
     if (path.endsWith(':complete')) {
       completeCalls += 1;
+      if (completeHttpStatus >= 400) {
+        return _json(completeHttpStatus, {
+          'code': 'ASSIGNMENT_ALREADY_COMPLETE',
+        });
+      }
       return _receipt('completeAssignment');
     }
     if (path.endsWith(':fail')) {
@@ -104,6 +116,17 @@ class _ExecutionMockClient extends http.BaseClient {
       return _receipt('abandonAssignment');
     }
     return Future.error(UnimplementedError('Unexpected path: $path'));
+  }
+
+  bool _consumeTransportFailure(String path) {
+    for (final suffix in transportFailuresLeft.keys.toList()) {
+      final left = transportFailuresLeft[suffix] ?? 0;
+      if (left > 0 && path.endsWith(suffix)) {
+        transportFailuresLeft[suffix] = left - 1;
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<http.StreamedResponse> _json(
@@ -543,4 +566,203 @@ void main() {
     );
     expect(WorkerRoutes.executionRoutes.length, 10);
   });
+
+  test('progress transport failure does not stop local inference', () async {
+    final mockHttp = _ExecutionMockClient()
+      ..transportFailuresLeft[':progress'] = 8;
+    final store = InMemoryEncryptedStore();
+    final inference = _RunCountingInference();
+    final coordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      ),
+      store: store,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: inference,
+    );
+    final assignment = await coordinator.pollAssignment();
+    await coordinator.executeAssignment(assignment!);
+    expect(inference.runs, 1);
+    expect(mockHttp.completeCalls, 1);
+    expect(mockHttp.failCalls, 0);
+    expect(coordinator.status.phase, ExecutionPhase.completed);
+    expect(coordinator.status.phase, isNot(ExecutionPhase.failed));
+    mockHttp.transportFailuresLeft.clear();
+    expect(await coordinator.flushPendingServerSync(), isTrue);
+    expect(await coordinator.hasPendingServerSync(), isFalse);
+  });
+
+  test('complete transport failure keeps a local result for later sync', () async {
+    final mockHttp = _ExecutionMockClient()
+      ..transportFailuresLeft[':complete'] = 1;
+    final store = InMemoryEncryptedStore();
+    final inference = _RunCountingInference();
+    final coordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      ),
+      store: store,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: inference,
+    );
+    final assignment = await coordinator.pollAssignment();
+    await coordinator.executeAssignment(assignment!);
+    expect(coordinator.status.phase, ExecutionPhase.completed);
+    expect(coordinator.status.serverSync, ServerSyncState.pending);
+    expect(mockHttp.failCalls, 0);
+    final pending = await ResultSubmissionOutbox(store: store).pending();
+    expect(pending['complete-att_test']?['kind'], 'complete');
+    expect(pending['complete-att_test']?['outcome'], 'UNKNOWN_OUTCOME');
+    expect(pending['complete-att_test']?['body'], isA<Map>());
+    await coordinator.executeAssignment(assignment);
+    expect(inference.runs, 1);
+    expect(await coordinator.flushPendingServerSync(), isTrue);
+    expect(mockHttp.completeCalls, 1);
+    expect(await coordinator.hasPendingServerSync(), isFalse);
+    expect(coordinator.status.serverSync, ServerSyncState.idle);
+  });
+
+  test('failAssignment transport failure stays pending and does not escape', () async {
+    final mockHttp = _ExecutionMockClient()..transportFailuresLeft[':fail'] = 1;
+    final inference = _RunCountingInference()
+      ..failure = StateError('engine crashed');
+    final coordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      ),
+      store: InMemoryEncryptedStore(),
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: inference,
+    );
+    final assignment = await coordinator.pollAssignment();
+    await coordinator.executeAssignment(assignment!);
+    expect(coordinator.status.phase, ExecutionPhase.failed);
+    expect(coordinator.status.serverSync, ServerSyncState.unknownOutcome);
+    expect(mockHttp.failCalls, 0);
+    expect(await coordinator.hasPendingServerSync(), isTrue);
+    expect(await coordinator.flushPendingServerSync(), isTrue);
+    expect(mockHttp.failCalls, 1);
+    expect(await coordinator.hasPendingServerSync(), isFalse);
+  });
+
+  test('process restart flushes a pending result without running inference', () async {
+    final failingHttp = _ExecutionMockClient()
+      ..transportFailuresLeft[':complete'] = 1;
+    final store = InMemoryEncryptedStore();
+    final firstInference = _RunCountingInference();
+    final first = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: failingHttp,
+      ),
+      store: store,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: firstInference,
+    );
+    final assignment = await first.pollAssignment();
+    await first.executeAssignment(assignment!);
+    expect(firstInference.runs, 1);
+    expect(first.status.serverSync, ServerSyncState.pending);
+
+    final restartedHttp = _ExecutionMockClient();
+    final restartedInference = _RunCountingInference();
+    final restarted = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: restartedHttp,
+      ),
+      store: store,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: restartedInference,
+    );
+    expect(await restarted.flushPendingServerSync(), isTrue);
+    expect(restartedInference.runs, 0);
+    expect(restartedHttp.completeCalls, 1);
+    expect(await restarted.hasPendingServerSync(), isFalse);
+  });
+
+  test('expired or reassigned lease is not completed again', () async {
+    final mockHttp = _ExecutionMockClient();
+    final store = InMemoryEncryptedStore();
+    final outbox = ResultSubmissionOutbox(store: store);
+    await outbox.enqueue('complete-att_test', {
+      'kind': 'complete',
+      'assignmentId': 'asg_test',
+      'leaseExpiresAt': '2020-01-01T00:00:00.000Z',
+      'outcome': 'UNKNOWN_OUTCOME',
+      'reassigned': false,
+      'body': {'resultSha256': 'abc'},
+    });
+    await outbox.enqueue('complete-reassigned', {
+      'kind': 'complete',
+      'assignmentId': 'asg_other',
+      'leaseExpiresAt': '2099-01-01T00:00:00.000Z',
+      'outcome': 'pending',
+      'reassigned': true,
+      'body': {'resultSha256': 'def'},
+    });
+    final coordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      ),
+      store: store,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: _RunCountingInference(),
+    );
+    expect(
+      await coordinator.flushPendingServerSync(now: DateTime.utc(2026, 1, 1)),
+      isTrue,
+    );
+    expect(mockHttp.completeCalls, 0);
+    expect(await coordinator.hasPendingServerSync(), isFalse);
+  });
+
+  test('server already completed is acknowledged without another execution', () async {
+    final mockHttp = _ExecutionMockClient()..completeHttpStatus = 409;
+    final inference = _RunCountingInference();
+    final coordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      ),
+      store: InMemoryEncryptedStore(),
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: inference,
+    );
+    final assignment = await coordinator.pollAssignment();
+    await coordinator.executeAssignment(assignment!);
+    expect(coordinator.status.phase, ExecutionPhase.completed);
+    expect(mockHttp.failCalls, 0);
+    expect(inference.runs, 1);
+    await coordinator.executeAssignment(assignment);
+    expect(inference.runs, 1);
+    expect(await coordinator.hasPendingServerSync(), isFalse);
+  });
+}
+
+class _RunCountingInference extends StubInferenceAdapter {
+  int runs = 0;
+  Object? failure;
+
+  @override
+  Future<InferenceOutput> run({
+    required Uint8List inputBytes,
+    required Uint8List? resumedState,
+    Future<void> Function(int progressMilli)? onProgress,
+  }) async {
+    runs += 1;
+    final crash = failure;
+    if (crash != null) {
+      throw crash;
+    }
+    return super.run(
+      inputBytes: inputBytes,
+      resumedState: resumedState,
+      onProgress: onProgress,
+    );
+  }
 }
