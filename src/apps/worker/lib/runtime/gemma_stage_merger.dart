@@ -9,7 +9,11 @@ abstract final class GemmaStageMerger {
   static const overlapWindowChars = 480;
 
   /// Shorter matches are left in place so ordinary words are not deleted.
+  /// Partial-word recovery does not use this floor.
   static const minimumOverlapChars = 8;
+
+  /// Whole-word overlaps shorter than this are not treated as a cut token.
+  static const minimumPartialWordChars = 3;
 
   /// Continuation context cap. Incomplete fragments and the last one or two
   /// blocks are cut to this length from the end.
@@ -112,14 +116,38 @@ abstract final class GemmaStageMerger {
     );
   }
 
+  static const _overlapStopwords = <String>{
+    'و',
+    'در',
+    'از',
+    'با',
+    'به',
+    'را',
+    'که',
+    'یا',
+    'and',
+    'or',
+    'of',
+    'the',
+    'a',
+    'an',
+    'to',
+    'for',
+  };
+
   static GemmaStageMerge _stitch({
     required String previous,
     required String next,
     required bool previousEndedIncomplete,
   }) {
-    var left = _stripBoundaryEllipsis(previous, trailing: true);
+    var left = previous;
     var right = _stripBoundaryEllipsis(next, trailing: false);
-    final boundary = _boundaryKind(left);
+    if (previousEndedIncomplete) {
+      left = _stripBoundaryEllipsis(left, trailing: true);
+      right = _stripPostHeadingEllipsis(right);
+    }
+    var boundary = _boundaryKind(left);
+    final nextIsBlock = _startsNewBlock(right);
     final charOverlap = _longestOverlapChars(previous: left, next: right);
     var overlapWords = 0;
     var partialWordRecovered = false;
@@ -127,25 +155,28 @@ abstract final class GemmaStageMerger {
     if (charOverlap > 0) {
       right = right.substring(charOverlap);
       duplicatePrefixRemoved = true;
-    } else if (boundary != 'heading' && boundary != 'list_item') {
+    } else if (boundary != 'heading' && boundary != 'list_item' && !nextIsBlock) {
       final words = _duplicateLeadingWordCount(left, right);
       if (words > 0 && (boundary != 'complete_sentence' || words >= 2)) {
         right = _dropLeadingTokens(right, words);
         overlapWords = words;
         duplicatePrefixRemoved = true;
+        boundary = words >= 2 ? 'repeated_phrase' : 'repeated_word';
       } else {
         final glued = _recoverPartialWord(left, right);
         if (glued != null) {
           left = glued.previous;
           right = glued.next;
           partialWordRecovered = true;
+          duplicatePrefixRemoved = true;
+          boundary = 'partial_word';
         }
       }
     }
     final joined = _join(
       previous: left,
       next: right,
-      previousEndedIncomplete: previousEndedIncomplete || partialWordRecovered,
+      previousEndedIncomplete: previousEndedIncomplete && !_endsSentence(left),
       overlapRemovedChars: charOverlap > 0 || partialWordRecovered ? 1 : 0,
     );
     final text = partialWordRecovered ? '$left$right' : joined;
@@ -181,9 +212,45 @@ abstract final class GemmaStageMerger {
 
   static String _stripBoundaryEllipsis(String text, {required bool trailing}) {
     final pattern = trailing
-        ? RegExp(r'(?:[ \t]*\.{3}|[ \t]*…)[ \t]*$')
+        ? RegExp(r'(?:[ \t]*\.{3}|[ \t]*…)[ \t]*\r?\n?$')
         : RegExp(r'^(?:[ \t]*\.{3}|[ \t]*…)[ \t]*');
     return text.replaceFirst(pattern, '');
+  }
+
+  /// Drops a leading ellipsis on the first body line after a heading that
+  /// opens the next stage. Ellipsis later in the stage stays.
+  static String _stripPostHeadingEllipsis(String next) {
+    final lines = next.split('\n');
+    var headingIndex = -1;
+    for (var index = 0; index < lines.length; index++) {
+      if (lines[index].trim().isEmpty) {
+        continue;
+      }
+      if (_startsNewBlock(lines[index])) {
+        headingIndex = index;
+      }
+      break;
+    }
+    if (headingIndex < 0) {
+      return next;
+    }
+    for (var index = headingIndex + 1; index < lines.length; index++) {
+      if (lines[index].trim().isEmpty) {
+        continue;
+      }
+      lines[index] = lines[index].replaceFirst(RegExp(r'^[ \t]*(?:\.{3}|…)[ \t]*'), '');
+      break;
+    }
+    return lines.join('\n');
+  }
+
+  static bool _endsSentence(String text) {
+    final trimmed = text.trimRight();
+    if (trimmed.isEmpty) {
+      return false;
+    }
+    const terminators = {'.', '!', '?', '؟', '。'};
+    return terminators.contains(trimmed[trimmed.length - 1]);
   }
 
   static int _duplicateLeadingWordCount(String previous, String next) {
@@ -209,9 +276,16 @@ abstract final class GemmaStageMerger {
           break;
         }
       }
-      if (same) {
-        return count;
+      if (!same) {
+        continue;
       }
+      if (count == 1 &&
+          _overlapStopwords.contains(
+            LongFormSectionPlan.normalizeHeading(previousTokens.last),
+          )) {
+        continue;
+      }
+      return count;
     }
     return 0;
   }
@@ -235,13 +309,47 @@ abstract final class GemmaStageMerger {
     final continuation = first.group(1)!;
     final foldedFragment = LongFormSectionPlan.normalizeHeading(fragment);
     final foldedContinuation = LongFormSectionPlan.normalizeHeading(continuation);
-    if (foldedFragment.length < 2 ||
-        foldedContinuation.length <= foldedFragment.length ||
-        !foldedContinuation.startsWith(foldedFragment)) {
+    if (!_overlapStopwords.contains(foldedFragment) &&
+        foldedFragment.length >= minimumPartialWordChars &&
+        foldedContinuation.length > foldedFragment.length &&
+        foldedContinuation.startsWith(foldedFragment)) {
+      final cut = trimmed.substring(0, trimmed.length - fragment.length);
+      return _GluedWord(cut, next.trimLeft());
+    }
+    return _recoverRepeatedSuffix(trimmed, next.trimLeft(), fragment, continuation);
+  }
+
+  /// Previous token ends with the next token, as in `پروانه‌پَر` + `پَر)`.
+  /// A short grammatical word is not removed unless punctuation or ZWNJ shows
+  /// the next token is the repeated tail of a cut word.
+  static _GluedWord? _recoverRepeatedSuffix(
+    String previous,
+    String next,
+    String previousToken,
+    String nextToken,
+  ) {
+    final core = nextToken.replaceFirst(
+      RegExp(r'''^[()\[\]{}«»"'“”‹›.,:;!?؟،؛…]+|[()\[\]{}«»"'“”‹›.,:;!?؟،؛…]+$'''),
+      '',
+    );
+    if (core.isEmpty ||
+        !previousToken.endsWith(core) ||
+        previousToken.length <= core.length) {
       return null;
     }
-    final cut = trimmed.substring(0, trimmed.length - fragment.length);
-    return _GluedWord(cut, next.trimLeft());
+    final folded = LongFormSectionPlan.normalizeHeading(core);
+    if (folded.length < 2 || _overlapStopwords.contains(folded)) {
+      return null;
+    }
+    final attachedPunctuation = core != nextToken;
+    final compoundBreak = previousToken.contains('\u200c') || previousToken.contains('\u200d');
+    if (!attachedPunctuation && !compoundBreak && core.length < minimumPartialWordChars) {
+      return null;
+    }
+    if (!next.startsWith(core)) {
+      return null;
+    }
+    return _GluedWord(previous, next.substring(core.length));
   }
 
   static String _capTail(String text) {
@@ -249,29 +357,44 @@ abstract final class GemmaStageMerger {
     if (trimmed.length <= continuationTailMaxChars) {
       return trimmed;
     }
+    final sentence = _unfinishedSentence(trimmed);
+    if (sentence.isNotEmpty &&
+        sentence.length <= continuationTailMaxChars &&
+        sentence.length < trimmed.length) {
+      return sentence;
+    }
+    final paragraph = _lastParagraph(trimmed);
+    if (paragraph.isNotEmpty &&
+        paragraph.length <= continuationTailMaxChars &&
+        paragraph.length < trimmed.length) {
+      return paragraph;
+    }
     var window = trimmed.substring(trimmed.length - continuationTailMaxChars);
-    final sentenceStart = _lastSentenceStart(window);
-    if (sentenceStart > 0) {
-      window = window.substring(sentenceStart);
-    } else {
-      final space = window.indexOf(RegExp(r'\s'));
-      if (space > 0 && space < 48) {
-        window = window.substring(space + 1);
-      }
+    final space = window.indexOf(RegExp(r'\s'));
+    if (space >= 0 && space < 48) {
+      window = window.substring(space + 1);
     }
     return window.trimLeft();
   }
 
-  static int _lastSentenceStart(String window) {
-    final matches = RegExp(r'[.!?؟。][ \t]*').allMatches(window);
+  static String _unfinishedSentence(String text) {
+    final matches = RegExp(r'[.!?؟。][ \t]*').allMatches(text);
     if (matches.isEmpty) {
-      return -1;
+      return text;
     }
     final last = matches.last;
-    if (last.end >= window.length) {
-      return -1;
+    if (last.end >= text.length) {
+      return '';
     }
-    return last.end;
+    return text.substring(last.end).trimLeft();
+  }
+
+  static String _lastParagraph(String text) {
+    final parts = text.split(RegExp(r'\n[ \t]*\n'));
+    if (parts.isEmpty) {
+      return '';
+    }
+    return parts.last.trim();
   }
 
   static String _join({
@@ -290,7 +413,7 @@ abstract final class GemmaStageMerger {
       return previous + next;
     }
     if (previousEndedIncomplete && !_startsNewBlock(next)) {
-      if (_endsWithSpace(previous) || _startsWithSpace(next)) {
+      if (_endsWithSpace(previous) || _startsWithSpace(next) || _joinsWithoutSpace(previous, next)) {
         return previous + next;
       }
       return '$previous $next';
@@ -304,9 +427,27 @@ abstract final class GemmaStageMerger {
 
   static bool _startsWithSpace(String text) => text.isNotEmpty && _isSpace(text[0]);
 
+  static bool _joinsWithoutSpace(String previous, String next) {
+    if (previous.isEmpty || next.isEmpty) {
+      return false;
+    }
+    const openers = {'«', '“', '(', '[', '‹', '{'};
+    const closers = {'»', '”', ')', ']', '›', '}', '،', ',', ':', '؛', '.', '!', '?', '؟'};
+    return openers.contains(previous[previous.length - 1]) || closers.contains(next[0]);
+  }
+
   static bool _startsNewBlock(String text) {
-    final line = text.trimLeft().split('\n').first;
-    return _isHeadingLine(line) || _isListLine(line);
+    final line = text.trimLeft().split('\n').first.trim();
+    return _isHeadingLine(line) || _isListLine(line) || _isColonHeading(line);
+  }
+
+  static bool _isColonHeading(String line) {
+    final trimmed = line.trim();
+    if (!trimmed.endsWith(':') && !trimmed.endsWith('：')) {
+      return false;
+    }
+    final tokens = trimmed.split(RegExp(r'\s+')).where((token) => token.isNotEmpty).length;
+    return tokens > 0 && tokens <= 8;
   }
 
   static _Strip _stripDuplicateLeadingBlocks(String previous, String next) {

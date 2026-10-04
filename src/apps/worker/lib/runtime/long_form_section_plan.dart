@@ -152,6 +152,50 @@ class LongFormSectionPlan {
     return lines[cursor].trim().isNotEmpty;
   }
 
+  /// Rewrites a main heading to `## canonicalTitle` when the existing matcher
+  /// maps it to a planned section. Subsection headings (`###` and deeper) stay.
+  static String canonicalizeMainHeadings(
+    String text, {
+    required List<String> plannedSections,
+  }) {
+    if (plannedSections.isEmpty || text.isEmpty) {
+      return text;
+    }
+    final lines = text.split('\n');
+    final rewritten = <String>[];
+    for (var index = 0; index < lines.length; index++) {
+      final raw = lines[index];
+      final level = _markdownLevel(raw);
+      if (level != null && level >= 3) {
+        rewritten.add(raw);
+        continue;
+      }
+      if (!isStructuralHeading(lines, index)) {
+        rewritten.add(raw);
+        continue;
+      }
+      final match = LongFormSectionMatcher.match(
+        generatedHeading: raw,
+        plannedSections: plannedSections,
+        fromIndex: 0,
+      );
+      if (!match.isMatch) {
+        rewritten.add(raw);
+        continue;
+      }
+      rewritten.add('## ${match.matchedCanonicalTitle}');
+    }
+    return rewritten.join('\n');
+  }
+
+  static int? _markdownLevel(String raw) {
+    final match = RegExp(r'^(#{1,6})[ \t]+\S').firstMatch(raw.trim());
+    if (match == null) {
+      return null;
+    }
+    return match.group(1)!.length;
+  }
+
   static LongFormSectionCleanup removeDuplicateSections({
     required String text,
     required List<String> plannedSections,
@@ -161,6 +205,7 @@ class LongFormSectionPlan {
     if (plannedSections.isEmpty) {
       return LongFormSectionCleanup(text, 0);
     }
+    text = canonicalizeMainHeadings(text, plannedSections: plannedSections);
     final currentIndex = completedSections.length > plannedSections.length
         ? plannedSections.length
         : completedSections.length;

@@ -291,11 +291,11 @@ void main() {
     expect(staged.text, isNot(contains('تعریف دوباره آمده است')));
     expect(staged.text, isNot(contains('ساختار دوباره آمده است')));
     expect(
-      staged.text.split('\n').where((line) => line.trim() == 'تعریف و دامنه'),
+      staged.text.split('\n').where((line) => line.trim() == '## تعریف و دامنه'),
       hasLength(1),
     );
     expect(
-      staged.text.split('\n').where((line) => line.trim() == 'ساختار'),
+      staged.text.split('\n').where((line) => line.trim() == '## ساختار'),
       hasLength(1),
     );
 
@@ -546,5 +546,186 @@ void main() {
       metrics: WorkerTaskMetrics(),
     );
     expect(result.toJson()['status'], 'SUCCEEDED_WITH_TRUNCATION');
+  });
+
+  test('A: a cut word is replaced by its continuation', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'مورچ',
+      nextText: 'مورچه‌ها...',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'مورچه‌ها...');
+    expect(merge.partialWordRecovered, isTrue);
+    expect(merge.text, isNot(contains('مورچ مورچ')));
+  });
+
+  test('B: a repeated word ending is not appended again', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'پروانه‌پَر',
+      nextText: 'پَر) و پاها',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'پروانه‌پَر) و پاها');
+    expect(merge.partialWordRecovered, isTrue);
+    expect(merge.text, isNot(contains('پروانه‌پَر پَر')));
+  });
+
+  test('C: two finished sentences stay separate', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'مورچه‌ها اجتماعی هستند.',
+      nextText: 'آن‌ها لانه می‌سازند.',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, contains('مورچه‌ها اجتماعی هستند.'));
+    expect(merge.text, contains('آن‌ها لانه می‌سازند.'));
+    expect(merge.text, isNot(contains('هستند. آن')));
+    expect(merge.partialWordRecovered, isFalse);
+    expect(merge.duplicatePrefixRemoved, isFalse);
+  });
+
+  test('D: a short common word does not delete the next content', () {
+    final persian = GemmaStageMerger.merge(
+      previousText: 'کار در',
+      nextText: 'درمان و پیشگیری ادامه دارد.',
+      previousEndedIncomplete: true,
+    );
+    expect(persian.text, contains('کار در'));
+    expect(persian.text, contains('درمان'));
+    expect(persian.partialWordRecovered, isFalse);
+
+    final english = GemmaStageMerger.merge(
+      previousText: 'Scope and',
+      nextText: 'android tooling stays.',
+      previousEndedIncomplete: true,
+    );
+    expect(english.text, contains('and android'));
+    expect(english.partialWordRecovered, isFalse);
+
+    final article = GemmaStageMerger.merge(
+      previousText: 'Read the',
+      nextText: 'theater doors open later.',
+      previousEndedIncomplete: true,
+    );
+    expect(article.text, contains('the theater'));
+    expect(article.partialWordRecovered, isFalse);
+  });
+
+  test('E: a matched main heading becomes the canonical title', () {
+    const plan = ['مقدمه', 'اثرها و رابطه‌ها', 'جمع‌بندی'];
+    final match = LongFormSectionMatcher.match(
+      generatedHeading: 'اثرها و رابطه‌ها در اکوسیستم',
+      plannedSections: plan,
+      fromIndex: 0,
+    );
+    expect(match.isMatch, isTrue);
+    expect(match.matchedCanonicalTitle, 'اثرها و رابطه‌ها');
+    final text = LongFormSectionPlan.canonicalizeMainHeadings(
+      '## اثرها و رابطه‌ها در اکوسیستم\nرابطه شکار و همزیستی.',
+      plannedSections: plan,
+    );
+    expect(text.split('\n').first, '## اثرها و رابطه‌ها');
+    expect(text, contains('رابطه شکار و همزیستی.'));
+    expect(text, isNot(contains('در اکوسیستم')));
+
+    const synonym = 'تأثیرات و روابط';
+    final synonymMatch = LongFormSectionMatcher.match(
+      generatedHeading: synonym,
+      plannedSections: plan,
+      fromIndex: 0,
+    );
+    final synonymText = LongFormSectionPlan.canonicalizeMainHeadings(
+      '## $synonym\nبدنهٔ بخش.',
+      plannedSections: plan,
+    );
+    if (synonymMatch.isMatch && synonymMatch.matchedCanonicalTitle == 'اثرها و رابطه‌ها') {
+      expect(synonymText.split('\n').first, '## اثرها و رابطه‌ها');
+    } else {
+      expect(synonymText, contains(synonym));
+    }
+  });
+
+  test('F: a subsection heading is not promoted to the main title', () {
+    const plan = ['اثرها و رابطه‌ها'];
+    final text = LongFormSectionPlan.canonicalizeMainHeadings(
+      '### اثرها و رابطه‌ها در طبیعت\n'
+      'توضیح زیرمجموعه.\n'
+      '\n'
+      '### تأثیرات اکولوژیکی\n'
+      'جزئیات.',
+      plannedSections: plan,
+    );
+    expect(text, contains('### اثرها و رابطه‌ها در طبیعت'));
+    expect(text, contains('### تأثیرات اکولوژیکی'));
+    expect(text.split('\n').where((line) => line.trim() == '## اثرها و رابطه‌ها'), isEmpty);
+  });
+
+  test('G: a repeated canonical variant keeps the new body', () {
+    const plan = ['مقدمه', 'اثرها و رابطه‌ها', 'جمع‌بندی'];
+    final merge = GemmaStageMerger.merge(
+      previousText: '## مقدمه\nشروع متن.\n\n## اثرها و رابطه‌ها\nپاراگراف اول.',
+      nextText: '## اثرها و رابطه‌ها در زیستگاه\nپاراگراف دوم.',
+      previousEndedIncomplete: false,
+      completedSectionTitles: const ['مقدمه'],
+      plannedSectionTitles: plan,
+    );
+    expect(merge.text, contains('پاراگراف اول.'));
+    expect(merge.text, contains('پاراگراف دوم.'));
+    expect('## اثرها و رابطه‌ها'.allMatches(merge.text), hasLength(1));
+    expect(merge.text, isNot(contains('در زیستگاه')));
+  });
+
+  test('H: forward progression, sanitizer, and hard max stay unchanged', () {
+    final progress = LongFormSectionProgress(const ['مقدمه', 'تعریف', 'ساختار', 'فرایند']);
+    progress.observe('فرایند\nروند کار.');
+    progress.observe('ساختار اجتماعی\nتوضیح کوتاه.');
+    expect(progress.currentSection, 'فرایند');
+    expect(progress.completedSections, ['مقدمه', 'تعریف', 'ساختار']);
+    expect(GemmaGenerationOutputLimit.longFormHardMaxStages, 8);
+
+    final cleaned = LongFormOutputSanitizer.sanitize(
+      'متن مقاله.\n'
+      'درخواست:\n'
+      '$prompt\n'
+      'Continue only from the current unfinished point.\n'
+      'When and only when the entire requested document is truly complete, append exactly:\n'
+      '<EDGEMINT_DONE>',
+      originalPrompt: prompt,
+      plannedSections: LongFormSectionPlan.persianSections,
+    );
+    expect(cleaned, contains('متن مقاله.'));
+    expect(cleaned, isNot(contains('درخواست:')));
+    expect(cleaned, isNot(contains('Continue only')));
+    expect(cleaned, isNot(contains('When and only when')));
+    expect(cleaned, isNot(contains('<EDGEMINT_DONE>')));
+    expect(cleaned, isNot(contains(prompt)));
+  });
+
+  test('quote and heading boundaries do not invent a join', () {
+    final quote = GemmaStageMerger.merge(
+      previousText: 'در حالی که «',
+      nextText: 'کار و دفاع ادامه دارد.',
+      previousEndedIncomplete: true,
+    );
+    expect(quote.text, contains('«کار'));
+    expect(quote.text, isNot(contains('« کار')));
+
+    final heading = GemmaStageMerger.merge(
+      previousText: 'محیط (مان',
+      nextText: 'تأثیرات و روابط:\n...تغییر ساختار محیط',
+      previousEndedIncomplete: true,
+    );
+    expect(heading.text, isNot(contains('مان تأثیرات')));
+    expect(heading.text, isNot(contains('...')));
+    expect(heading.text, contains('تأثیرات و روابط:'));
+    expect(heading.text, contains('تغییر ساختار محیط'));
+  });
+
+  test('continuation tail starts at the unfinished sentence', () {
+    final filler = List.filled(90, 'کلمه').join(' ');
+    final text = '$filler. این جمله ناقص ادامه دارد';
+    expect(text.length, greaterThan(GemmaStageMerger.continuationTailMaxChars));
+    final tail = GemmaStageMerger.continuationTail(text, endedIncomplete: true);
+    expect(tail, 'این جمله ناقص ادامه دارد');
+    expect(tail.length, lessThanOrEqualTo(GemmaStageMerger.continuationTailMaxChars));
   });
 }
