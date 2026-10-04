@@ -319,4 +319,232 @@ void main() {
     );
     expect(result.toJson()['status'], 'SUCCEEDED_WITH_TRUNCATION');
   });
+
+  test('A: exact heading matches the planned section', () {
+    for (final heading in ['## ساختار', '**ساختار**', '۳. ساختار', 'ساختار']) {
+      expect(LongFormSectionPlan.normalizeHeading(heading), 'ساختار');
+    }
+    final match = LongFormSectionMatcher.match(
+      generatedHeading: '## ساختار',
+      plannedSections: LongFormSectionPlan.persianSections,
+      fromIndex: 0,
+    );
+    expect(match.isMatch, isTrue);
+    expect(match.matchType, 'exact');
+    expect(match.matchedCanonicalTitle, 'ساختار');
+    expect(match.matchedSectionIndex, 2);
+  });
+
+  test('B: an expanded heading maps to the planned section', () {
+    final progress = LongFormSectionProgress(LongFormSectionPlan.persianSections);
+    progress.observe('مقدمه\nشروع متن.\n\nتعریف و دامنه\nدامنه.\n\nساختار\nبدن.');
+    progress.observe('فرایند تکامل اجتماعی\nجامعه در طول زمان شکل می‌گیرد.');
+    expect(progress.currentSection, 'فرایند');
+    expect(progress.completedSections, contains('ساختار'));
+    final match = LongFormSectionMatcher.match(
+      generatedHeading: 'فرایند حیات و تکامل جامعه',
+      plannedSections: LongFormSectionPlan.persianSections,
+      fromIndex: progress.currentIndex,
+    );
+    expect(match.matchedCanonicalTitle, 'فرایند');
+    expect(match.matchType, 'prefix');
+  });
+
+  test('C: English expanded headings map without a topic list', () {
+    final performance = LongFormSectionMatcher.match(
+      generatedHeading: '## Performance and Query Optimization',
+      plannedSections: const [
+        'Architecture',
+        'Execution',
+        'Performance',
+        'Security',
+        'Conclusion',
+      ],
+      fromIndex: 0,
+    );
+    expect(performance.matchedCanonicalTitle, 'Performance');
+    expect(performance.matchType, 'prefix');
+
+    final security = LongFormSectionMatcher.match(
+      generatedHeading: 'Security and Access Control',
+      plannedSections: const ['Architecture', 'Security', 'Conclusion'],
+      fromIndex: 0,
+    );
+    expect(security.matchedCanonicalTitle, 'Security');
+
+    final diagnosis = LongFormSectionMatcher.match(
+      generatedHeading: '## روش‌های تشخیص بیماری',
+      plannedSections: const ['مقدمه', 'علائم', 'تشخیص', 'درمان', 'پیشگیری'],
+      fromIndex: 0,
+    );
+    expect(diagnosis.matchedCanonicalTitle, 'تشخیص');
+
+    final revenue = LongFormSectionMatcher.match(
+      generatedHeading: '### Key Revenue Drivers',
+      plannedSections: const ['Overview', 'Revenue', 'Costs', 'Risks', 'Next Steps'],
+      fromIndex: 0,
+    );
+    expect(revenue.matchedCanonicalTitle, 'Revenue');
+    expect(revenue.score, greaterThanOrEqualTo(SectionMatchThresholds.minimumScore));
+  });
+
+  test('D: matching does not move backward', () {
+    const plan = ['مقدمه', 'تعریف', 'ساختار', 'فرایند', 'سازوکار', 'جمع‌بندی'];
+    final progress = LongFormSectionProgress(plan);
+    progress.observe('فرایند\nروند کار.');
+    expect(progress.currentSection, 'فرایند');
+    progress.observe('ساختار اجتماعی\nتوضیح کوتاه.');
+    expect(progress.currentSection, 'فرایند');
+    expect(progress.completedSections, ['مقدمه', 'تعریف', 'ساختار']);
+  });
+
+  test('E: a prose mention is not a heading', () {
+    final progress = LongFormSectionProgress(const ['مقدمه', 'ساختار', 'فرایند']);
+    progress.observe('در بخش بعد درباره ساختار صحبت می‌کنیم.');
+    expect(progress.currentSection, 'مقدمه');
+    expect(progress.completedSections, isEmpty);
+  });
+
+  test('F: several real headings in one stage move to the furthest', () {
+    final progress = LongFormSectionProgress(
+      const ['مقدمه', 'تعریف', 'ساختار', 'فرایند'],
+    );
+    progress.observe('تعریف\nمعنی موضوع.\n\nساختار\nاجزای موضوع.');
+    expect(progress.completedSections, ['مقدمه', 'تعریف']);
+    expect(progress.currentSection, 'ساختار');
+  });
+
+  test('G: a completed canonical section is dropped until the next heading', () {
+    const plan = ['مقدمه', 'تعریف', 'ساختار', 'فرایند'];
+    final merge = GemmaStageMerger.merge(
+      previousText: 'مقدمه\nشروع.\n\nتعریف\nتعریف اول.',
+      nextText: '## تعریف\nrepeated content\n\n## ساختار\nnew content',
+      previousEndedIncomplete: false,
+      completedSectionTitles: const ['مقدمه', 'تعریف'],
+      plannedSectionTitles: plan,
+    );
+    expect(merge.text, isNot(contains('repeated content')));
+    expect(merge.text, contains('## ساختار'));
+    expect(merge.text, contains('new content'));
+  });
+
+  test('H: continuation of the current section keeps new text', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: '## ساختار\nparagraph A',
+      nextText: '## ساختار\nparagraph B',
+      previousEndedIncomplete: true,
+      completedSectionTitles: const ['مقدمه', 'تعریف و دامنه'],
+      plannedSectionTitles: LongFormSectionPlan.persianSections,
+    );
+    expect(merge.text, contains('paragraph A'));
+    expect(merge.text, contains('paragraph B'));
+    expect('## ساختار'.allMatches(merge.text), hasLength(1));
+  });
+
+  test('I: a cut word is completed instead of duplicated', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'حشرات مورچ',
+      nextText: 'مورچه‌ها اجتماعی هستند.',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'حشرات مورچه‌ها اجتماعی هستند.');
+    expect(merge.partialWordRecovered, isTrue);
+    expect(merge.text, isNot(contains('مورچ مورچ')));
+  });
+
+  test('J: a repeated boundary word is not doubled', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'بدن دارای ساختار',
+      nextText: 'ساختار اجتماعی پیچیده‌ای دارد.',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'بدن دارای ساختار اجتماعی پیچیده‌ای دارد.');
+    expect(merge.duplicatePrefixRemoved, isTrue);
+    expect(merge.text, isNot(contains('ساختار ساختار')));
+  });
+
+  test('boundary ellipsis from the stitch is not kept', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'Insecta ...',
+      nextText: '...به‌شمار می‌روند.',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, isNot(contains('...')));
+    expect(merge.text, 'Insecta به‌شمار می‌روند.');
+  });
+
+  test('K: sanitizer still removes planner instructions', () {
+    final cleaned = LongFormOutputSanitizer.sanitize(
+      'مقدمه\n'
+      'متن مقاله.\n'
+      'درخواست:\n'
+      'یک مقاله جامع در مورد مورچه بده\n'
+      'ادامهٔ متن:\n'
+      'Completed sections:\n'
+      '- مقدمه\n'
+      'Current section:\n'
+      '- ساختار\n'
+      'Remaining sections:\n'
+      '- فرایند\n'
+      'Continue only from the current unfinished point.\n'
+      'When and only when the entire requested document is truly complete, append exactly:\n'
+      '<EDGEMINT_DONE>\n'
+      'ادامه واقعی.',
+      originalPrompt: prompt,
+      plannedSections: LongFormSectionPlan.persianSections,
+    );
+    expect(cleaned, contains('متن مقاله.'));
+    expect(cleaned, contains('ادامه واقعی.'));
+    expect(cleaned, isNot(contains('درخواست:')));
+    expect(cleaned, isNot(contains('ادامهٔ متن:')));
+    expect(cleaned, isNot(contains('Completed sections:')));
+    expect(cleaned, isNot(contains('Current section:')));
+    expect(cleaned, isNot(contains('Remaining sections:')));
+    expect(cleaned, isNot(contains('Continue only')));
+    expect(cleaned, isNot(contains('When and only when')));
+    expect(cleaned, isNot(contains('<EDGEMINT_DONE>')));
+    expect(cleaned, isNot(contains(prompt)));
+  });
+
+  test('L: eight unfinished stages still truncate', () async {
+    const user = 'Write a full report about rivers.';
+    final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: user);
+    var calls = 0;
+    final staged = await GemmaStagedDirectGeneration.run(
+      decision: decision,
+      prompt: user,
+      generateStage: (stageIndex, stagePrompt) async {
+        calls += 1;
+        return GemmaStagePiece(
+          text: 'Section fragment $stageIndex continues',
+          stopReason: GemmaGenerationOutputLimit.outputLimit,
+          generatedChunks: 256,
+          generatedTokens: 20,
+        );
+      },
+    );
+    expect(calls, 8);
+    expect(staged.complete, isFalse);
+    expect(staged.truncated, isTrue);
+    expect(staged.stopReason, GemmaGenerationOutputLimit.longFormStageLimit);
+    final result = DirectPromptHandler.resultFor(
+      request: WorkerTaskRequest(
+        schemaVersion: '1.0',
+        taskId: 'tsk-limit',
+        idempotencyKey: 'idem-limit',
+        type: 'text.direct.v1',
+        input: const WorkerTaskInput(text: user),
+        options: const WorkerTaskOptions(),
+      ),
+      generation: DirectGenerationReceipt(
+        text: staged.text,
+        stopReason: staged.stopReason,
+        configuredOutputLimit: 256,
+        generatedChunks: staged.generatedChunks,
+        generatedTokens: staged.generatedTokens,
+      ),
+      metrics: WorkerTaskMetrics(),
+    );
+    expect(result.toJson()['status'], 'SUCCEEDED_WITH_TRUNCATION');
+  });
 }
