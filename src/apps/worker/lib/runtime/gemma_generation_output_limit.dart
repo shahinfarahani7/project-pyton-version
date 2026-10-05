@@ -513,6 +513,7 @@ class GemmaStagedDirectGeneration {
         plannedSections: progress.plannedSections,
         completedSections: progress.completedSections,
         previousText: accumulated,
+        currentSectionIndex: progress.currentIndex,
       );
       final merge = stage == 0
           ? GemmaStageMerge(
@@ -526,6 +527,7 @@ class GemmaStagedDirectGeneration {
               previousEndedIncomplete: previousEndedIncomplete,
               completedSectionTitles: progress.completedSections,
               plannedSectionTitles: progress.plannedSections,
+              currentSectionIndex: progress.currentIndex,
             );
       _logStage(
         stageIndex: stage,

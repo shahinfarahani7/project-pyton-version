@@ -72,6 +72,7 @@ abstract final class GemmaStageMerger {
     required bool previousEndedIncomplete,
     List<String> completedSectionTitles = const [],
     List<String> plannedSectionTitles = const [],
+    int? currentSectionIndex,
   }) {
     if (nextText.trim().isEmpty) {
       return GemmaStageMerge(
@@ -86,6 +87,7 @@ abstract final class GemmaStageMerger {
       plannedSections: plannedSectionTitles,
       completedSections: completedSectionTitles,
       previousText: previousText,
+      currentSectionIndex: currentSectionIndex,
     );
     final stripped = _stripDuplicateLeadingBlocks(
       previousText,
@@ -99,10 +101,13 @@ abstract final class GemmaStageMerger {
     WorkerPipelineLog.info(
       WorkerPipelineLog.exec,
       '[STAGE STITCH] previousBoundary=${stitch.previousBoundary} '
+      'nextBoundary=${stitch.nextBoundary} '
+      'strategy=${stitch.strategy} '
+      'rollbackChars=${stitch.rollbackChars} '
       'overlapChars=${stitch.overlapRemovedChars} '
-      'overlapWords=${stitch.overlapWords} '
       'partialWordRecovered=${stitch.partialWordRecovered} '
-      'duplicatePrefixRemoved=${stitch.duplicatePrefixRemoved}',
+      'openPunctuationRecovered=${stitch.openPunctuationRecovered} '
+      'headingGuardTriggered=${stitch.headingGuardTriggered}',
     );
     return GemmaStageMerge(
       text: stitch.text,
@@ -113,6 +118,11 @@ abstract final class GemmaStageMerger {
       partialWordRecovered: stitch.partialWordRecovered,
       duplicatePrefixRemoved: stitch.duplicatePrefixRemoved,
       previousBoundary: stitch.previousBoundary,
+      nextBoundary: stitch.nextBoundary,
+      strategy: stitch.strategy,
+      rollbackChars: stitch.rollbackChars,
+      openPunctuationRecovered: stitch.openPunctuationRecovered,
+      headingGuardTriggered: stitch.headingGuardTriggered,
     );
   }
 
@@ -148,13 +158,23 @@ abstract final class GemmaStageMerger {
     }
     var boundary = _boundaryKind(left);
     final nextIsBlock = _startsNewBlock(right);
+    if (previousEndedIncomplete && nextIsBlock) {
+      final guarded = _joinGuardedHeading(previous: left, next: right, previousBoundary: boundary);
+      if (guarded != null) {
+        return guarded;
+      }
+    }
     final charOverlap = _longestOverlapChars(previous: left, next: right);
     var overlapWords = 0;
     var partialWordRecovered = false;
     var duplicatePrefixRemoved = false;
+    var strategy = 'plain_append';
+    var nextBoundary = nextIsBlock ? 'next_starts_with_heading' : 'normal_new_text';
     if (charOverlap > 0) {
       right = right.substring(charOverlap);
       duplicatePrefixRemoved = true;
+      strategy = 'exact_overlap';
+      nextBoundary = 'exact_overlap';
     } else if (boundary != 'heading' && boundary != 'list_item' && !nextIsBlock) {
       final words = _duplicateLeadingWordCount(left, right);
       if (words > 0 && (boundary != 'complete_sentence' || words >= 2)) {
@@ -162,6 +182,8 @@ abstract final class GemmaStageMerger {
         overlapWords = words;
         duplicatePrefixRemoved = true;
         boundary = words >= 2 ? 'repeated_phrase' : 'repeated_word';
+        strategy = 'partial_word';
+        nextBoundary = 'partial_phrase_overlap';
       } else {
         final glued = _recoverPartialWord(left, right);
         if (glued != null) {
@@ -170,15 +192,25 @@ abstract final class GemmaStageMerger {
           partialWordRecovered = true;
           duplicatePrefixRemoved = true;
           boundary = 'partial_word';
+          strategy = 'partial_word';
+          nextBoundary = 'partial_word_overlap';
         }
       }
     }
-    final joined = _join(
-      previous: left,
-      next: right,
-      previousEndedIncomplete: previousEndedIncomplete && !_endsSentence(left),
-      overlapRemovedChars: charOverlap > 0 || partialWordRecovered ? 1 : 0,
-    );
+    final opened = !partialWordRecovered && charOverlap == 0
+        ? _openPunctuationJoin(left, right)
+        : null;
+    final openPunctuationRecovered = opened != null;
+    if (openPunctuationRecovered) {
+      nextBoundary = _endsWithQuote(left) ? 'continuation_of_open_quote' : 'continuation_of_open_parenthesis';
+    }
+    final joined = opened ??
+        _join(
+          previous: left,
+          next: right,
+          previousEndedIncomplete: previousEndedIncomplete && !_endsSentence(left),
+          overlapRemovedChars: charOverlap > 0 || partialWordRecovered ? 1 : 0,
+        );
     final text = partialWordRecovered ? '$left$right' : joined;
     return GemmaStageMerge(
       text: text,
@@ -188,7 +220,158 @@ abstract final class GemmaStageMerger {
       partialWordRecovered: partialWordRecovered,
       duplicatePrefixRemoved: duplicatePrefixRemoved,
       previousBoundary: boundary,
+      nextBoundary: nextBoundary,
+      strategy: strategy,
+      openPunctuationRecovered: openPunctuationRecovered,
     );
+  }
+
+  /// A heading that opens the next stage is not glued into an unfinished
+  /// sentence. If the body restarts that sentence, merge from the restart.
+  static GemmaStageMerge? _joinGuardedHeading({
+    required String previous,
+    required String next,
+    required String previousBoundary,
+  }) {
+    final body = _bodyAfterLeadingHeading(next);
+    final restart = _findRestartSuffix(previous, body);
+    if (restart != null) {
+      final trimmed = previous.trimRight();
+      final cut = trimmed.substring(0, trimmed.length - restart.suffix.length);
+      return GemmaStageMerge(
+        text: '$cut${body.substring(restart.index)}',
+        overlapRemovedChars: restart.suffix.length,
+        duplicateBlocksRemoved: 0,
+        previousBoundary: previousBoundary,
+        nextBoundary: 'next_starts_with_restatement',
+        strategy: 'restart_phrase',
+        rollbackChars: restart.suffix.length,
+        headingGuardTriggered: true,
+      );
+    }
+    final rolled = _rollbackDangling(previous);
+    final removed = previous.trimRight().length - rolled.length;
+    final cleaned = _stripPostHeadingEllipsis(next);
+    return GemmaStageMerge(
+      text: _join(
+        previous: rolled,
+        next: cleaned,
+        previousEndedIncomplete: false,
+        overlapRemovedChars: 0,
+      ),
+      overlapRemovedChars: 0,
+      duplicateBlocksRemoved: 0,
+      previousBoundary: previousBoundary,
+      nextBoundary: 'next_starts_with_heading',
+      strategy: removed > 0 ? 'rollback' : 'plain_append',
+      rollbackChars: removed,
+      headingGuardTriggered: true,
+    );
+  }
+
+  static String _bodyAfterLeadingHeading(String next) {
+    final lines = next.split('\n');
+    var index = 0;
+    while (index < lines.length && lines[index].trim().isEmpty) {
+      index += 1;
+    }
+    if (index < lines.length && _startsNewBlock(lines[index])) {
+      index += 1;
+    }
+    while (index < lines.length && lines[index].trim().isEmpty) {
+      index += 1;
+    }
+    if (index >= lines.length) {
+      return '';
+    }
+    return lines.sublist(index).join('\n').replaceFirst(
+          RegExp(r'^(?:[ \t]*\.{3}|[ \t]*…)[ \t]*'),
+          '',
+        );
+  }
+
+  static _RestartHit? _findRestartSuffix(String previous, String body) {
+    if (body.isEmpty) {
+      return null;
+    }
+    final unfinished = _unfinishedSentence(previous.trimRight());
+    if (unfinished.length < 8) {
+      return null;
+    }
+    final limit = unfinished.length < 160 ? unfinished.length : 160;
+    final window = body.length < 480 ? body : body.substring(0, 480);
+    for (var length = limit; length >= 8; length--) {
+      final start = unfinished.length - length;
+      if (start > 0 &&
+          _isWordChar(unfinished[start - 1]) &&
+          _isWordChar(unfinished[start])) {
+        continue;
+      }
+      final suffix = unfinished.substring(start);
+      final at = window.indexOf(suffix);
+      if (at >= 0) {
+        return _RestartHit(suffix, at);
+      }
+    }
+    return null;
+  }
+
+  static bool _isWordChar(String char) =>
+      RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(char);
+
+  /// Drops only the dangling open punctuation and the cut token after it.
+  static String _rollbackDangling(String previous) {
+    final trimmed = previous.trimRight();
+    if (trimmed.isEmpty) {
+      return trimmed;
+    }
+    final unfinished = _unfinishedSentence(trimmed);
+    if (unfinished.isEmpty) {
+      return trimmed;
+    }
+    final sentenceStart = trimmed.length - unfinished.length;
+    final opener = RegExp(r'[\(\[\{«“‹]');
+    final closer = RegExp(r'[\)\]\}»”›]');
+    for (var index = trimmed.length - 1; index >= sentenceStart; index--) {
+      if (!opener.hasMatch(trimmed[index])) {
+        continue;
+      }
+      final after = trimmed.substring(index + 1);
+      if (after.length > 24 || closer.hasMatch(after)) {
+        continue;
+      }
+      final kept = trimmed.substring(0, index).trimRight();
+      if (kept.isNotEmpty) {
+        return kept;
+      }
+    }
+    return trimmed;
+  }
+
+  static bool _endsWithQuote(String previous) {
+    final trimmed = previous.trimRight();
+    if (trimmed.isEmpty) {
+      return false;
+    }
+    const quotes = {'«', '“', '‹', '"', "'"};
+    return quotes.contains(trimmed[trimmed.length - 1]);
+  }
+
+  static String? _openPunctuationJoin(String previous, String next) {
+    final prev = previous.trimRight();
+    final trimmedNext = next.trimLeft();
+    if (prev.isEmpty || trimmedNext.isEmpty || _startsNewBlock(trimmedNext)) {
+      return null;
+    }
+    const openers = {'«', '“', '(', '[', '{', '‹', '"', "'"};
+    if (openers.contains(prev[prev.length - 1])) {
+      return prev + trimmedNext;
+    }
+    final attached = RegExp(r'''[\(\[\{«“‹"'](\S{1,4})$''').firstMatch(prev);
+    if (attached != null && RegExp(r'^\p{L}', unicode: true).hasMatch(trimmedNext)) {
+      return prev + trimmedNext;
+    }
+    return null;
   }
 
   static String _boundaryKind(String previous) {
@@ -332,24 +515,31 @@ abstract final class GemmaStageMerger {
       RegExp(r'''^[()\[\]{}«»"'“”‹›.,:;!?؟،؛…]+|[()\[\]{}«»"'“”‹›.,:;!?؟،؛…]+$'''),
       '',
     );
+    final foldedCore = LongFormSectionPlan.normalizeHeading(core);
+    final foldedPrevious = LongFormSectionPlan.normalizeHeading(previousToken);
     if (core.isEmpty ||
-        !previousToken.endsWith(core) ||
-        previousToken.length <= core.length) {
-      return null;
-    }
-    final folded = LongFormSectionPlan.normalizeHeading(core);
-    if (folded.length < 2 || _overlapStopwords.contains(folded)) {
+        foldedCore.length < 2 ||
+        _overlapStopwords.contains(foldedCore) ||
+        foldedPrevious.length <= foldedCore.length ||
+        !foldedPrevious.endsWith(foldedCore)) {
       return null;
     }
     final attachedPunctuation = core != nextToken;
     final compoundBreak = previousToken.contains('\u200c') || previousToken.contains('\u200d');
-    if (!attachedPunctuation && !compoundBreak && core.length < minimumPartialWordChars) {
+    if (!attachedPunctuation &&
+        !compoundBreak &&
+        core.length < minimumPartialWordChars &&
+        foldedCore.length < minimumPartialWordChars) {
       return null;
     }
     if (!next.startsWith(core)) {
       return null;
     }
-    return _GluedWord(previous, next.substring(core.length));
+    var rest = next.substring(core.length);
+    if (rest.startsWith(' ') && rest.trimLeft().startsWith(RegExp(r'[)\]\}»”›]'))) {
+      rest = rest.trimLeft();
+    }
+    return _GluedWord(previous, rest);
   }
 
   static String _capTail(String text) {
@@ -645,6 +835,11 @@ class GemmaStageMerge {
     this.partialWordRecovered = false,
     this.duplicatePrefixRemoved = false,
     this.previousBoundary = '',
+    this.nextBoundary = '',
+    this.strategy = 'plain_append',
+    this.rollbackChars = 0,
+    this.openPunctuationRecovered = false,
+    this.headingGuardTriggered = false,
   });
 
   final String text;
@@ -654,6 +849,18 @@ class GemmaStageMerge {
   final bool partialWordRecovered;
   final bool duplicatePrefixRemoved;
   final String previousBoundary;
+  final String nextBoundary;
+  final String strategy;
+  final int rollbackChars;
+  final bool openPunctuationRecovered;
+  final bool headingGuardTriggered;
+}
+
+class _RestartHit {
+  const _RestartHit(this.suffix, this.index);
+
+  final String suffix;
+  final int index;
 }
 
 class _GluedWord {

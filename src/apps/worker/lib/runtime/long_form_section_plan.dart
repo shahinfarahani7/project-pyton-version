@@ -201,14 +201,22 @@ class LongFormSectionPlan {
     required List<String> plannedSections,
     required List<String> completedSections,
     String previousText = '',
+    int? currentSectionIndex,
   }) {
     if (plannedSections.isEmpty) {
       return LongFormSectionCleanup(text, 0);
     }
     text = canonicalizeMainHeadings(text, plannedSections: plannedSections);
-    final currentIndex = completedSections.length > plannedSections.length
+    final inferred = completedSections.length > plannedSections.length
         ? plannedSections.length
         : completedSections.length;
+    final currentIndex = currentSectionIndex == null
+        ? inferred
+        : (currentSectionIndex < 0
+            ? 0
+            : (currentSectionIndex > plannedSections.length
+                ? plannedSections.length
+                : currentSectionIndex));
     final previousLines = previousText.split('\n');
     final alreadyPresent = <int>{};
     for (var index = 0; index < previousLines.length; index++) {
@@ -281,19 +289,43 @@ class LongFormSectionProgress {
 
   final List<String> plannedSections;
   int currentIndex = 0;
+  final Set<int> _completed = <int>{};
+  final Set<int> _skipped = <int>{};
+  final Set<int> _observed = <int>{};
 
-  List<String> get completedSections =>
-      plannedSections.take(currentIndex).toList(growable: false);
+  List<String> _titles(Set<int> indexes) {
+    final titles = <String>[];
+    for (var index = 0; index < plannedSections.length; index++) {
+      if (indexes.contains(index)) {
+        titles.add(plannedSections[index]);
+      }
+    }
+    return titles;
+  }
+
+  List<String> get completedSections => _titles(_completed);
+
+  List<String> get skippedSections => _titles(_skipped);
+
+  List<String> get observedSections => _titles(_observed);
 
   String? get currentSection =>
       currentIndex < plannedSections.length ? plannedSections[currentIndex] : null;
 
-  List<String> get remainingSections => currentIndex + 1 >= plannedSections.length
-      ? const []
-      : plannedSections.sublist(currentIndex + 1);
+  List<String> get remainingSections {
+    if (currentIndex + 1 >= plannedSections.length) {
+      return const [];
+    }
+    return plannedSections.sublist(currentIndex + 1);
+  }
 
+  /// True only when every planned section was actually observed and then left.
+  /// A forward jump does not complete the sections that were never seen.
   bool get plannedSectionsComplete =>
-      plannedSections.isNotEmpty && currentIndex >= plannedSections.length;
+      plannedSections.isNotEmpty &&
+      _skipped.isEmpty &&
+      currentIndex >= plannedSections.length &&
+      _completed.length == plannedSections.length;
 
   /// Moves the cursor to the furthest real heading that maps forward.
   /// The cursor never moves backward.
@@ -303,7 +335,7 @@ class LongFormSectionProgress {
     }
     final lines = stageText.split('\n');
     final startIndex = currentIndex;
-    var furthest = currentIndex;
+    final matched = <int>{};
     for (var index = 0; index < lines.length; index++) {
       if (!LongFormSectionPlan.isStructuralHeading(lines, index)) {
         continue;
@@ -314,8 +346,8 @@ class LongFormSectionProgress {
         fromIndex: startIndex,
       );
       final moves = match.isMatch && match.matchedSectionIndex > startIndex;
-      if (match.isMatch && match.matchedSectionIndex > furthest) {
-        furthest = match.matchedSectionIndex;
+      if (match.isMatch) {
+        matched.add(match.matchedSectionIndex);
       }
       WorkerPipelineLog.info(
         WorkerPipelineLog.exec,
@@ -329,11 +361,32 @@ class LongFormSectionProgress {
         'reason=${moves ? 'forward_match' : (match.isMatch ? 'already_current' : 'no_forward_match')}',
       );
     }
-    currentIndex = furthest;
+    if (matched.isNotEmpty) {
+      var furthest = startIndex;
+      for (final index in matched) {
+        _observed.add(index);
+        if (index > furthest) {
+          furthest = index;
+        }
+      }
+      if (furthest > startIndex) {
+        for (var index = startIndex; index < furthest; index++) {
+          if (_observed.contains(index)) {
+            _completed.add(index);
+            _skipped.remove(index);
+          } else {
+            _skipped.add(index);
+            _completed.remove(index);
+          }
+        }
+        currentIndex = furthest;
+      }
+    }
     WorkerPipelineLog.info(
       WorkerPipelineLog.exec,
       '[SECTION STATE] completed=[${completedSections.join(', ')}] '
       'current=${currentSection ?? '(none)'} '
+      'skipped=[${skippedSections.join(', ')}] '
       'remaining=[${remainingSections.join(', ')}]',
     );
   }

@@ -393,9 +393,12 @@ void main() {
     final progress = LongFormSectionProgress(plan);
     progress.observe('فرایند\nروند کار.');
     expect(progress.currentSection, 'فرایند');
+    expect(progress.completedSections, isEmpty);
+    expect(progress.skippedSections, ['مقدمه', 'تعریف', 'ساختار']);
     progress.observe('ساختار اجتماعی\nتوضیح کوتاه.');
     expect(progress.currentSection, 'فرایند');
-    expect(progress.completedSections, ['مقدمه', 'تعریف', 'ساختار']);
+    expect(progress.completedSections, isEmpty);
+    expect(progress.skippedSections, contains('ساختار'));
   });
 
   test('E: a prose mention is not a heading', () {
@@ -410,7 +413,8 @@ void main() {
       const ['مقدمه', 'تعریف', 'ساختار', 'فرایند'],
     );
     progress.observe('تعریف\nمعنی موضوع.\n\nساختار\nاجزای موضوع.');
-    expect(progress.completedSections, ['مقدمه', 'تعریف']);
+    expect(progress.completedSections, ['تعریف']);
+    expect(progress.skippedSections, ['مقدمه']);
     expect(progress.currentSection, 'ساختار');
   });
 
@@ -679,7 +683,8 @@ void main() {
     progress.observe('فرایند\nروند کار.');
     progress.observe('ساختار اجتماعی\nتوضیح کوتاه.');
     expect(progress.currentSection, 'فرایند');
-    expect(progress.completedSections, ['مقدمه', 'تعریف', 'ساختار']);
+    expect(progress.completedSections, isNot(contains('ساختار')));
+    expect(progress.skippedSections, contains('ساختار'));
     expect(GemmaGenerationOutputLimit.longFormHardMaxStages, 8);
 
     final cleaned = LongFormOutputSanitizer.sanitize(
@@ -727,5 +732,83 @@ void main() {
     final tail = GemmaStageMerger.continuationTail(text, endedIncomplete: true);
     expect(tail, 'این جمله ناقص ادامه دارد');
     expect(tail.length, lessThanOrEqualTo(GemmaStageMerger.continuationTailMaxChars));
+  });
+
+  test('A: repeated wing ending keeps the closing parenthesis', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'پروانه‌پَر',
+      nextText: 'پَر) و پاها',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'پروانه‌پَر) و پاها');
+    expect(merge.text, isNot(contains('پروانه‌پَر پَر')));
+    expect(merge.partialWordRecovered, isTrue);
+  });
+
+  test('B: a cut token is replaced by the full word', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'مورچ',
+      nextText: 'مورچه‌ها',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'مورچه‌ها');
+    expect(merge.text, isNot(contains('مورچ مورچ')));
+  });
+
+  test('C: an open quote does not gain a space', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'در حالی که «',
+      nextText: ' کار و دفاع...',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'در حالی که «کار و دفاع...');
+    expect(merge.text, isNot(contains('« کار')));
+    expect(merge.openPunctuationRecovered, isTrue);
+  });
+
+  test('D: a heading does not enter an unfinished parenthesis', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: '... محیط (مان',
+      nextText: 'تأثیرات و روابط:\n...تغییر ساختار محیط (مانند تغییرات فصلی، باران)',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, isNot(contains('(مان تأثیرات و روابط:')));
+    expect(merge.text, isNot(contains('...تغییر')));
+    expect(merge.text, contains('محیط (مانند تغییرات'));
+    expect(merge.headingGuardTriggered, isTrue);
+    expect(merge.strategy, 'restart_phrase');
+  });
+
+  test('open parenthesis continuation does not insert a separator', () {
+    final merge = GemmaStageMerger.merge(
+      previousText: 'ساختار (مان',
+      nextText: 'ند تغییرات فصلی ادامه دارد.',
+      previousEndedIncomplete: true,
+    );
+    expect(merge.text, 'ساختار (مانند تغییرات فصلی ادامه دارد.');
+    expect(merge.openPunctuationRecovered, isTrue);
+
+    final latin = GemmaStageMerger.merge(
+      previousText: 'راسته (Insecta',
+      nextText: 'به‌شمار می‌روند)',
+      previousEndedIncomplete: true,
+    );
+    expect(latin.text, contains('(Insecta'));
+    expect(latin.text, contains('به‌شمار می‌روند)'));
+    expect(latin.text, isNot(contains('Insectaبه‌شمار')));
+  });
+
+  test('a skipped planned section is not completed', () {
+    const plan = ['A', 'B', 'C', 'D', 'E'];
+    final progress = LongFormSectionProgress(plan);
+    progress.observe('A\nشروع.\n\nB\nمتن بخش.');
+    expect(progress.currentSection, 'B');
+    expect(progress.completedSections, ['A']);
+    progress.observe('D\nبخش بعدی.');
+    expect(progress.currentSection, 'D');
+    expect(progress.completedSections, ['A', 'B']);
+    expect(progress.skippedSections, ['C']);
+    expect(progress.completedSections, isNot(contains('C')));
+    expect(progress.plannedSectionsComplete, isFalse);
   });
 }
