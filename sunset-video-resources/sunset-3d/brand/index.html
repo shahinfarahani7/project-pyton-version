@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunset Logo Directions</title>
+<link rel="icon" href="svg/pick-favicon-light.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #F3EADB; --ink: #1E1916; --ink-2: #5B5047; --ink-3: #8A7D70;
+  --night: #15111C; --night-2: #201829; --cream: #FBF5EA; --cream-2: rgba(251,245,234,.72); --cream-3: rgba(251,245,234,.5);
+  --sun: #EC6A3C; --vermilion: #D5452B;
+  --line: rgba(30,25,22,.13); --line-soft: rgba(30,25,22,.07); --line-dark: rgba(251,245,234,.12);
+  --serif: 'Instrument Serif', 'Times New Roman', serif; --sans: 'Instrument Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--paper); -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--sans); color: var(--ink); background: var(--paper);
+  background-image: linear-gradient(var(--line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 48px 48px; background-position: -1px -1px; -webkit-font-smoothing: antialiased; line-height: 1.5; overflow-x: hidden; }
+img { display: block; }
+a { color: inherit; }
+.wrap { max-width: 1360px; margin: 0 auto; padding: 0 clamp(16px, 3.4vw, 48px); }
+.lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+header.top { padding: 72px 0 36px; display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: end; }
+header.top h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(46px, 6.6vw, 92px); line-height: .96; letter-spacing: -.02em; margin: 14px 0 0; }
+header.top h1 em { color: var(--sun); }
+header.top p { font-size: 16px; color: var(--ink-2); margin: 0 0 12px; max-width: 36em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.chips span { font-family: var(--mono); font-size: 11px; padding: 5px 10px 5px 24px; border-radius: 999px; outline: 1px solid var(--line); position: relative; background: rgba(251,245,234,.6); }
+.chips span::before { content: ''; position: absolute; left: 7px; top: 50%; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%; background: var(--c); outline: 1px solid rgba(30,25,22,.15); }
+section { padding: 36px 0; }
+h2 { font-family: var(--serif); font-weight: 400; font-size: 44px; letter-spacing: -.01em; margin: 8px 0 6px; line-height: 1; }
+h2 + p { color: var(--ink-2); margin: 0 0 24px; max-width: 52em; font-size: 15px; }
+.hero { display: grid; grid-template-columns: 1fr 1fr; border-radius: 22px; overflow: hidden; outline: 1px solid var(--line); }
+.hero > div { min-height: 280px; display: flex; gap: 48px; align-items: center; justify-content: center; padding: 44px 28px; flex-wrap: wrap; }
+.hero .d { background: var(--night); }
+.hero .l { background: var(--cream); }
+.hero img { max-width: 100%; height: auto; }
+.hero-note { margin: 14px 0 0; color: var(--ink-2); font-size: 14px; max-width: 70em; }
+ol.top3 { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+ol.top3 li { background: rgba(251,245,234,.72); outline: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 20px; font-size: 14px; color: var(--ink-2); }
+ol.top3 b { display: block; font-family: var(--serif); font-weight: 400; font-size: 26px; color: var(--ink); margin-bottom: 6px; line-height: 1.05; }
+.grid { display: grid; gap: 18px; }
+.card { background: rgba(251,245,234,.66); outline: 1px solid var(--line); border-radius: 22px; padding: 20px; }
+.card header { display: grid; grid-template-columns: 44px 1fr; align-items: baseline; margin-bottom: 14px; }
+.card .no { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.card h3 { font-family: var(--serif); font-weight: 400; font-size: 32px; margin: 0; line-height: 1; letter-spacing: -.01em; }
+.card header p { grid-column: 2; margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+.card .files { grid-column: 2; margin-top: 4px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.rank { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; background: var(--sun); color: var(--cream); padding: 3px 9px; border-radius: 999px; margin-left: 12px; vertical-align: 7px; white-space: nowrap; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pn { border-radius: 16px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.pn.light { background: var(--paper); outline: 1px solid var(--line); }
+.pn.dark { background: var(--night); color: var(--cream); }
+.pn-top { display: grid; grid-template-columns: 132px 1fr; gap: 20px; align-items: center; min-height: 140px; }
+.lockbig { display: flex; justify-content: center; min-width: 0; }
+.lockbig img { max-width: 100%; height: auto; }
+.navpill { display: inline-flex; align-items: center; gap: 4px; padding: 6px 6px 6px 14px; border-radius: 999px; font-size: 13px; max-width: 100%; }
+.navpill.light { background: rgba(251,245,234,.94); outline: 1px solid rgba(30,25,22,.08); box-shadow: 0 10px 30px -12px rgba(40,20,10,.28); }
+.navpill.dark { background: rgba(32,24,41,.94); outline: 1px solid var(--line-dark); box-shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+.navpill .lk, .navpill .plk { margin-right: 8px; flex: none; }
+.navpill .nl { display: flex; }
+.navpill .nl i { font-style: normal; padding: 7px 9px; color: var(--ink-2); white-space: nowrap; }
+.navpill.dark .nl i { color: var(--cream-2); }
+.navpill .nb { background: var(--ink); color: var(--cream); border-radius: 999px; padding: 9px 14px; white-space: nowrap; font-weight: 500; }
+.navpill.dark .nb { background: var(--cream); color: var(--ink); }
+.plk { display: inline-flex; align-items: center; }
+.pn-row { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.tab { border-radius: 10px 10px 0 0; padding: 7px 0 0 10px; width: 240px; flex: none; }
+.tab.light { background: #E2D6C3; } .tab.dark { background: #0C0A10; }
+.tab .tb { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border-radius: 8px 8px 0 0; font-size: 12px; width: 212px; }
+.tab.light .tb { background: var(--paper); color: var(--ink); }
+.tab.dark .tb { background: var(--night-2); color: var(--cream); }
+.tab .tb span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab .tb em { font-style: normal; opacity: .5; }
+.px { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.dark .px { color: var(--cream-3); }
+.px b { font-weight: 400; }
+.refs { columns: 2; column-gap: 40px; font-size: 14px; color: var(--ink-2); padding-left: 18px; }
+.refs li { margin: 0 0 8px; break-inside: avoid; }
+.method { font-size: 14px; color: var(--ink-2); max-width: 64em; }
+footer { padding: 36px 0 80px; }
+@media (max-width: 1180px) { .pair { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  header.top { grid-template-columns: 1fr; gap: 16px; padding-top: 40px; }
+  .hero { grid-template-columns: 1fr; }
+  ol.top3 { grid-template-columns: 1fr; }
+  .pn-top { grid-template-columns: 84px 1fr; gap: 14px; min-height: 0; } .pn-top .big img { width: 84px; height: 84px; }
+  .navpill .nl { display: none; }
+  .pn-row { flex-wrap: wrap; }
+  .refs { columns: 1; }
+  .card { padding: 12px; } .card header { grid-template-columns: 1fr; } .card header p, .card .files { grid-column: 1; }
+  .tab { width: 200px; } .tab .tb { width: 180px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div><span class="lbl">Sunset · brand · logo exploration</span>
+  <h1>A <em>setting sun</em>,<br>cut into panel rows.</h1></div>
+  <div><p>10 vector directions (mark, real-type “Sunset” lockup and a heavier 16 px favicon cut, each in light and dark) and 6 Higgsfield emblem directions keyed to transparency. Every one is shown large, in the page’s nav pill with a 26 px mark, and as a 16 px browser-tab favicon.</p>
+  <div class="chips"><span style="--c:#F3EADB">paper F3EADB</span><span style="--c:#1E1916">ink 1E1916</span><span style="--c:#15111C">night 15111C</span><span style="--c:#EC6A3C">sun EC6A3C</span><span style="--c:#D5452B">vermilion D5452B</span><span style="--c:#E7B266">gold E7B266</span><span style="--c:#F3B9C4">sakura F3B9C4</span><span style="--c:#BBA6D8">lavender BBA6D8</span></div></div>
+</header>
+
+<section id="pick">
+  <span class="lbl">Recommendation</span>
+  <h2>The pick, refined</h2>
+  <div class="hero"><div class="l"><img src="svg/pick-mark-light.svg" width="160" height="160" alt=""><img class="herolk" src="svg/pick-lockup-light.svg" width="426.3" height="122.5" alt=""></div><div class="d"><img src="svg/pick-mark-dark.svg" width="160" height="160" alt=""><img class="herolk" src="svg/pick-lockup-dark.svg" width="426.3" height="122.5" alt=""></div></div>
+  <p class="hero-note">Dusk cell, refined from S02 Cell sun: the disc now sets — cut at 62% of its radius below the centre by a horizon rule whose centre sits on the wordmark baseline, so the sun goes down behind the word. Three columns × three rows are the page&#x27;s cell grid; the rows warm toward vermilion as it sets (on paper they start at sun-2 #F08A4B because gold is only 1.6:1 there; on night they start at gold). The 16 px favicon is a separate cut with 4.3/48 gaps so the grid still shows in a browser tab.</p>
+  <ol class="top3"><li><b>#1 · Dusk cell</b><span>The only direction that says solar, sunset and the page&#x27;s hairline grid in one silhouette. Ownable (not a ray fan, not a plain disc), survives 16 px as a tiled sun on a line, and shifts its palette per theme rather than just inverting.</span></li>
+<li><b>#2 · Shu-in seal</b><span>Most Japanese and the strongest at 16 px — a vermilion chop with the sun and the sea carved out reads instantly in a tab and on both grounds. Less specific to solar; best kept as the secondary stamp (hanko on documents, stickers, the plan contract).</span></li>
+<li><b>#3 · Yū 夕</b><span>The most distinctive: the character for evening carved into the sun, in real Shippori Mincho. Bilingual and elegant at 26 px and up, but at 16 px it collapses to a red dot that reads as the Hinomaru, and it says nothing about panels.</span></li></ol>
+</section>
+
+<section id="svg">
+  <span class="lbl">Vector · hand-built SVG</span>
+  <h2>SVG directions</h2>
+  <p>Marks are drawn on a 48-unit grid. The wordmark is Instrument Serif outlined with HarfBuzz + fontTools (its kerning kept, −8/1000 tracking); 夕 is Shippori Mincho, outlined. In the lockup the mark is 1.42 × the cap height, the gap 0.46 × cap, optically centred on the caps — the proportions of the live nav (26 px mark, 25 px serif). Each favicon is a separate, heavier cut for 16 px.</p>
+  <div class="grid">
+<article class="card" id="d-pick"><header><span class="no">S01</span><h3>Dusk cell (refined pick)<span class="rank">#1 pick</span></h3><p>The sun tiled by the panel grid, sinking onto a horizon rule that sits on the wordmark baseline; rows warm toward vermilion.</p><span class="files">svg/pick-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/pick-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/pick-lockup-light.svg" width="235.2" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/pick-lockup-light.svg" width="95.5" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/pick-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/pick-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/pick-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/pick-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/pick-lockup-dark.svg" width="235.2" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/pick-lockup-dark.svg" width="95.5" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/pick-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/pick-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/pick-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-cells"><header><span class="no">S02</span><h3>Cell sun</h3><p>The sun cut by the solar-cell grid; its rows warm from gold to vermilion as it sets.</p><span class="files">svg/cells-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/cells-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/cells-lockup-light.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/cells-lockup-light.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/cells-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/cells-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/cells-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/cells-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/cells-lockup-dark.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/cells-lockup-dark.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/cells-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/cells-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/cells-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-seal"><header><span class="no">S03</span><h3>Shu-in seal<span class="rank">#2 pick</span></h3><p>A vermilion hanko with the setting sun and the sea carved out of it; the favicon is a red chop.</p><span class="files">svg/seal-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/seal-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/seal-lockup-light.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/seal-lockup-light.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/seal-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/seal-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/seal-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/seal-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/seal-lockup-dark.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/seal-lockup-dark.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/seal-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/seal-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/seal-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-yu"><header><span class="no">S04</span><h3>Yū 夕<span class="rank">#3 pick</span></h3><p>The character for evening, carved out of a vermilion sun in Shippori Mincho.</p><span class="files">svg/yu-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/yu-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/yu-lockup-light.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/yu-lockup-light.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/yu-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/yu-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/yu-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/yu-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/yu-lockup-dark.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/yu-lockup-dark.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/yu-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/yu-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/yu-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-slat"><header><span class="no">S05</span><h3>Slatted S</h3><p>A real Instrument Sans Bold S cut into four panel rows that warm from gold to vermilion.</p><span class="files">svg/slat-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/slat-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/slat-lockup-light.svg" width="213.9" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/slat-lockup-light.svg" width="86.9" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/slat-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/slat-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/slat-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/slat-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/slat-lockup-dark.svg" width="213.9" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/slat-lockup-dark.svg" width="86.9" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/slat-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/slat-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/slat-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-rows"><header><span class="no">S06</span><h3>Hinoiri rows</h3><p>A half sun resting on three panel rows that shorten like a sea horizon — the grid read as the sea.</p><span class="files">svg/rows-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/rows-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/rows-lockup-light.svg" width="230.1" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/rows-lockup-light.svg" width="93.5" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/rows-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/rows-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/rows-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/rows-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/rows-lockup-dark.svg" width="230.1" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/rows-lockup-dark.svg" width="93.5" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/rows-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/rows-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/rows-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-roof"><header><span class="no">S07</span><h3>Yane</h3><p>The sun going down behind a minka ridge; sagging slopes and lifted eaves say Japan, not suburbia.</p><span class="files">svg/roof-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/roof-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/roof-lockup-light.svg" width="267.7" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/roof-lockup-light.svg" width="108.7" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/roof-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/roof-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/roof-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/roof-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/roof-lockup-dark.svg" width="267.7" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/roof-lockup-dark.svg" width="108.7" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/roof-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/roof-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/roof-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-shoji"><header><span class="no">S08</span><h3>Shoji sun</h3><p>A window lattice that is also a panel grid, the low sun glowing behind it.</p><span class="files">svg/shoji-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/shoji-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/shoji-lockup-light.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/shoji-lockup-light.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/shoji-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/shoji-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/shoji-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/shoji-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/shoji-lockup-dark.svg" width="225.5" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/shoji-lockup-dark.svg" width="91.6" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/shoji-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/shoji-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/shoji-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-enso"><header><span class="no">S09</span><h3>Ensō horizon</h3><p>An open brush circle with the horizon drawn through it and the sun sitting on the line.</p><span class="files">svg/enso-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/enso-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/enso-lockup-light.svg" width="235.8" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/enso-lockup-light.svg" width="95.8" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/enso-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/enso-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/enso-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/enso-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/enso-lockup-dark.svg" width="235.8" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/enso-lockup-dark.svg" width="95.8" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/enso-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/enso-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/enso-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card" id="d-reflect"><header><span class="no">S10</span><h3>Reflection S</h3><p>The sun and its reflection offset into an S; the reflection breaks into rows of water and panels.</p><span class="files">svg/reflect-mark · -lockup · -favicon — light / dark</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="svg/reflect-mark-light.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/reflect-lockup-light.svg" width="246.4" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill light"><img class="lk" src="svg/reflect-lockup-light.svg" width="100.1" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="svg/reflect-favicon-light.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/reflect-mark-light.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/reflect-favicon-light.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="svg/reflect-mark-dark.svg" width="132" height="132" alt=""></div><div class="lockbig"><img class="lk" src="svg/reflect-lockup-dark.svg" width="246.4" height="67.6" alt=""></div></div>
+  <div class="pn-row"><div class="navpill dark"><img class="lk" src="svg/reflect-lockup-dark.svg" width="100.1" height="27.5" alt=""><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="svg/reflect-favicon-dark.svg" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="svg/reflect-mark-dark.svg" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="svg/reflect-favicon-dark.svg" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+  </div>
+</section>
+
+<section id="png">
+  <span class="lbl">Raster · Higgsfield, keyed to alpha</span>
+  <h2>PNG emblem directions</h2>
+  <p>Generated on pure black with “no text, no letters, no characters”, then keyed: alpha from the max channel above a knee of ≈ 20, colours un-premultiplied for soft edges, frame edges cropped, holes filled for solid emblems. Single-colour cream emblems get an ink recolour for paper. The “Sunset” beside each is the outlined Instrument Serif wordmark, never model-drawn type.</p>
+  <div class="grid">
+<article class="card png" id="d-hanko-print"><header><span class="no">P01</span><h3>Hanko print</h3><p>Nano Banana Pro: a hand-pressed vermilion seal with nicked edges; the sun and sea are ink, the ground is carved away. Keeps its texture at nav size; the frame thins out at 16 px.</p><span class="files">png/hanko-print-{light,dark,favicon-*}.png · originals/hanko-print-original.png</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="png/hanko-print-light.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/hanko-print-light.png" width="72" height="72" alt=""><img src="svg/wordmark-regular-light.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill light"><span class="plk" style="gap:7.8px"><img src="png/hanko-print-light.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-light.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="png/hanko-print-favicon-light.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/hanko-print-light.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/hanko-print-favicon-light.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="png/hanko-print-dark.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/hanko-print-dark.png" width="72" height="72" alt=""><img src="svg/wordmark-regular-dark.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill dark"><span class="plk" style="gap:7.8px"><img src="png/hanko-print-dark.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-dark.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="png/hanko-print-favicon-dark.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/hanko-print-dark.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/hanko-print-favicon-dark.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card png" id="d-gold-seigaiha"><header><span class="no">P02</span><h3>Gold-leaf seigaiha</h3><p>Nano Banana Pro: a gold-leaf sun over seigaiha waves, one clean circle. The richest emblem — right for packaging or a certificate seal, but the waves turn to noise below 32 px.</p><span class="files">png/gold-seigaiha-{light,dark,favicon-*}.png · originals/gold-seigaiha-original.png</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="png/gold-seigaiha-light.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/gold-seigaiha-light.png" width="73" height="73" alt=""><img src="svg/wordmark-regular-light.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill light"><span class="plk" style="gap:7.8px"><img src="png/gold-seigaiha-light.png" width="30" height="30" alt=""><img src="svg/wordmark-regular-light.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="png/gold-seigaiha-favicon-light.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/gold-seigaiha-light.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/gold-seigaiha-favicon-light.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="png/gold-seigaiha-dark.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/gold-seigaiha-dark.png" width="73" height="73" alt=""><img src="svg/wordmark-regular-dark.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill dark"><span class="plk" style="gap:7.8px"><img src="png/gold-seigaiha-dark.png" width="30" height="30" alt=""><img src="svg/wordmark-regular-dark.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="png/gold-seigaiha-favicon-dark.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/gold-seigaiha-dark.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/gold-seigaiha-favicon-dark.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card png" id="d-sumi-enso"><header><span class="no">P03</span><h3>Sumi ensō</h3><p>Nano Banana Pro: one dry-brush ensō with a small vermilion sun on the horizon. Calm and very Japanese on night; recoloured to ink for paper. Too thin for a favicon.</p><span class="files">png/sumi-enso-{light,dark,favicon-*}.png · originals/sumi-enso-original.png</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="png/sumi-enso-light.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/sumi-enso-light.png" width="73" height="73" alt=""><img src="svg/wordmark-italic-light.svg" width="149.0" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill light"><span class="plk" style="gap:7.8px"><img src="png/sumi-enso-light.png" width="30" height="30" alt=""><img src="svg/wordmark-italic-light.svg" width="60.5" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="png/sumi-enso-favicon-light.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/sumi-enso-light.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/sumi-enso-favicon-light.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="png/sumi-enso-dark.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/sumi-enso-dark.png" width="73" height="73" alt=""><img src="svg/wordmark-italic-dark.svg" width="149.0" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill dark"><span class="plk" style="gap:7.8px"><img src="png/sumi-enso-dark.png" width="30" height="30" alt=""><img src="svg/wordmark-italic-dark.svg" width="60.5" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="png/sumi-enso-favicon-dark.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/sumi-enso-dark.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/sumi-enso-favicon-dark.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card png" id="d-woodblock-roof"><header><span class="no">P04</span><h3>Woodblock roof roundel</h3><p>Nano Banana Pro: a Hiroshige-style roundel, the sun sinking behind a kawara ridge with panels on the slope. A great illustration or sticker, not a logo: the panels are in perspective and it is mush at 16 px.</p><span class="files">png/woodblock-roof-{light,dark,favicon-*}.png · originals/woodblock-roof-original.png</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="png/woodblock-roof-light.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/woodblock-roof-light.png" width="70" height="70" alt=""><img src="svg/wordmark-regular-light.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill light"><span class="plk" style="gap:7.8px"><img src="png/woodblock-roof-light.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-light.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="png/woodblock-roof-favicon-light.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/woodblock-roof-light.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/woodblock-roof-favicon-light.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="png/woodblock-roof-dark.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/woodblock-roof-dark.png" width="70" height="70" alt=""><img src="svg/wordmark-regular-dark.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill dark"><span class="plk" style="gap:7.8px"><img src="png/woodblock-roof-dark.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-dark.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="png/woodblock-roof-favicon-dark.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/woodblock-roof-dark.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/woodblock-roof-favicon-dark.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card png" id="d-seal-stone"><header><span class="no">P05</span><h3>Carved seal stone</h3><p>Z Image: the face of a carved vermilion seal stone. Tactile and warm, but it is a photographed object (bevels, grey stone), not a mark.</p><span class="files">png/seal-stone-{light,dark,favicon-*}.png · originals/seal-stone-original.png</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="png/seal-stone-light.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/seal-stone-light.png" width="72" height="72" alt=""><img src="svg/wordmark-regular-light.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill light"><span class="plk" style="gap:7.8px"><img src="png/seal-stone-light.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-light.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="png/seal-stone-favicon-light.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/seal-stone-light.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/seal-stone-favicon-light.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="png/seal-stone-dark.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/seal-stone-dark.png" width="72" height="72" alt=""><img src="svg/wordmark-regular-dark.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill dark"><span class="plk" style="gap:7.8px"><img src="png/seal-stone-dark.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-dark.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="png/seal-stone-favicon-dark.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/seal-stone-dark.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/seal-stone-favicon-dark.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+<article class="card png" id="d-kamon-crest"><header><span class="no">P06</span><h3>Kamon crest</h3><p>Z Image: an Edo-style crest, sun over banded sea. Strong idea, flawed drawing — the ring bulges on the right, which a vector redraw would fix.</p><span class="files">png/kamon-crest-{light,dark,favicon-*}.png · originals/kamon-crest-original.png</span></header><div class="pair"><div class="pn light">
+  <div class="pn-top"><div class="big"><img src="png/kamon-crest-light.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/kamon-crest-light.png" width="72" height="72" alt=""><img src="svg/wordmark-regular-light.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill light"><span class="plk" style="gap:7.8px"><img src="png/kamon-crest-light.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-light.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab light"><span class="tb"><img src="png/kamon-crest-favicon-light.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/kamon-crest-light.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/kamon-crest-favicon-light.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div><div class="pn dark">
+  <div class="pn-top"><div class="big"><img src="png/kamon-crest-dark.png" width="132" height="132" alt=""></div><div class="lockbig"><span class="plk" style="gap:19.2px"><img src="png/kamon-crest-dark.png" width="72" height="72" alt=""><img src="svg/wordmark-regular-dark.svg" width="136.4" height="49.2" alt=""></span></div></div>
+  <div class="pn-row"><div class="navpill dark"><span class="plk" style="gap:7.8px"><img src="png/kamon-crest-dark.png" width="29" height="29" alt=""><img src="svg/wordmark-regular-dark.svg" width="55.4" height="20.0" alt=""></span><span class="nl"><i>Savings</i><i>How it works</i><i>Plans</i></span><span class="nb">Check my roof</span></div></div>
+  <div class="pn-row sm"><div class="tab dark"><span class="tb"><img src="png/kamon-crest-favicon-dark.png" width="16" height="16" alt=""><span>Sunset — ¥0 solar + battery</span><em>×</em></span></div><span class="px"><img src="png/kamon-crest-dark.png" width="26" height="26" alt=""><b>26</b></span><span class="px"><img src="png/kamon-crest-favicon-dark.png" width="16" height="16" alt=""><b>16</b></span></div>
+</div></div></article>
+  </div>
+</section>
+
+<footer>
+  <span class="lbl">Notes</span>
+  <h2>References & method</h2>
+  <ul class="refs"><li><a href="https://mobbin.com/sites/sections/ed5da041-d991-4954-a70b-d5c77d8c73b2">Daylight — footer lockup + nav</a> — half-sun mark ≈ cap height, sitting on the baseline, gap ≈ 0.35 cap; we align Dusk cell&#x27;s horizon to the baseline the same way, and avoid a ray fan (Daylight owns it).</li>
+<li><a href="https://mobbin.com/sites/sections/4231cac2-0350-476b-a7ab-59180a4a73e0">Daylight — nav pill over a hairline grid</a> — almost our page: the nav mark is ~16 px, so anything under ~1.5 px disappears — hence separate favicon cuts.</li>
+<li><a href="https://mobbin.com/sites/sections/cb5d63ef-9558-4994-8e1c-c364c96d8ba3">Daylight — large lockup in the wild</a> — one lockup scaled uniformly from nav to billboard; proportions never change.</li>
+<li><a href="https://mobbin.com/sites/sections/cf954a98-4f2e-41d3-b2a1-168e4ba0108d">Structured — serif wordmark, circled monogram</a> — a serif wordmark carries the brand; a contained mark (circle / seal) survives small sizes.</li>
+<li><a href="https://mobbin.com/sites/sections/1c01c1c6-97bb-43e4-a021-f203e0b04da7">Garden — hairline mark + serif</a> — premium at large sizes, but hairlines die at 16 px; our marks keep gaps ≥ 3/48.</li>
+<li><a href="https://mobbin.com/sites/sections/d2b17651-2709-4db5-99f2-d14af9dd09b2">Wispr Flow — mark at the wordmark&#x27;s height</a> — mark and word at the same optical height, gap ≈ ½ a letter; our lockups use mark 1.42 × cap (the mark has no x-height to lean on).</li>
+<li><a href="https://mobbin.com/sites/sections/08b1da0a-e784-4a8c-8d23-0359ff00b023">T1 Energy — solar nav</a> — a heavy geometric mark reads over photography; favicon is the mark in a solid tile, like the Shu-in seal.</li>
+<li><a href="https://mobbin.com/sites/sections/469fc84d-b8aa-470d-a076-ae761fcacbaa">Sana — mark and wordmark split across the nav</a> — the mark has to stand alone, so every direction ships a mark-only file.</li>
+<li><a href="https://mobbin.com/sites/sections/27606085-d31e-4ea3-a693-be3e7bd5aa32">Headspace — plain orange disc</a> — a bare sun disc is generic (and in Japan a red disc reads as the Hinomaru), so every sun here is cut: by a grid, a horizon, or 夕.</li></ul>
+  <p class="method">Higgsfield spend: 2526.7 → 2517.8 credits = 8.9 credits over 15 jobs (11 Z Image at 0.15 — 6 completed, 5 failed and refunded; 4 Nano Banana Pro at 2k, 2 credits each). The quoted costs matched the charges. At an assumed $0.06 per credit that is ≈ $0.53, under the $1 cap. Keying: alpha from max(R,G,B) above a knee of 20–55 (the Z Image blacks are not pure: 11–44), un-premultiplied colour, hole fill for solid emblems, a circle mask and a saturation floor to drop the lacquer-rim glint on the gold.</p>
+</footer>
+</div>
+</body>
+</html>

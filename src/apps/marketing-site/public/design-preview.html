@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EdgeMint design preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #070707;
+      --white: #ffffff;
+      --muted: #b7b7c2;
+      --nav: #c8c8d0;
+      --line: rgba(255, 255, 255, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; background: var(--void); color: var(--white); }
+
+    body {
+      min-height: 100vh;
+      font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .stage {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--void);
+    }
+
+    .nav {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      height: 72px;
+      padding: 0 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .brand svg { display: block; }
+
+    .links {
+      display: flex;
+      gap: 22px;
+      margin-left: 18px;
+      font-size: 14px;
+      color: var(--nav);
+    }
+
+    .links a { display: inline-flex; align-items: center; gap: 4px; }
+    .links a:hover { color: var(--white); }
+
+    .nav__end {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 14px;
+    }
+
+    .search {
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid var(--nav);
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .search::after {
+      content: "";
+      position: absolute;
+      width: 7px;
+      height: 1.5px;
+      background: var(--nav);
+      right: -4px;
+      bottom: 1px;
+      transform: rotate(40deg);
+    }
+
+    .contact { color: var(--nav); }
+    .contact:hover { color: var(--white); }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .pill--fill { background: var(--white); color: #111; }
+    .pill--ghost { border: 1px solid rgba(255,255,255,0.85); color: var(--white); }
+
+    .hero {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: minmax(0, 640px) minmax(280px, 1fr);
+      gap: 40px;
+      width: min(1240px, calc(100% - 96px));
+      margin: 72px auto 0;
+      align-items: start;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 11ch;
+      font-size: clamp(52px, 5.6vw, 76px);
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+    }
+
+    .lead {
+      max-width: 46ch;
+      margin: 28px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.45;
+      font-weight: 400;
+    }
+
+    .actions { display: flex; gap: 12px; margin-top: 32px; }
+
+    .chips {
+      display: grid;
+      justify-items: end;
+      gap: 22px;
+      padding-top: 18px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(18, 18, 22, 0.72);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      font-size: 13px;
+      color: #e8e8ee;
+      white-space: nowrap;
+    }
+
+    .chip b { font-weight: 500; }
+    .chip span { color: #9a9aa6; }
+
+    .mark {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      background: #1c1c22;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .scene {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 38vh;
+      z-index: 1;
+      background:
+        linear-gradient(180deg, #070707 0%, rgba(7,7,7,0.55) 22%, rgba(7,7,7,0) 46%),
+        url("/hero-track.jpg") center 70% / cover no-repeat;
+      pointer-events: none;
+    }
+
+    .caption {
+      position: absolute;
+      z-index: 2;
+      left: 48px;
+      bottom: 28px;
+      margin: 0;
+      color: #8d8d98;
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .links { display: none; }
+      .hero { grid-template-columns: 1fr; width: min(1240px, calc(100% - 40px)); }
+      .chips { justify-items: start; }
+      h1 { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <header class="nav">
+      <a class="brand" href="/">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+          <rect width="22" height="22" rx="6" fill="#2563eb"/>
+          <text x="11" y="15" text-anchor="middle" fill="#fff" font-size="9" font-family="Geist, sans-serif" font-weight="600">EM</text>
+        </svg>
+        EdgeMint
+      </a>
+      <nav class="links">
+        <a href="#how">How it works <small>▾</small></a>
+        <a href="#use">Use cases</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#security">Security</a>
+        <a href="#workers">Workers</a>
+        <a href="#dev">Developers</a>
+      </nav>
+      <div class="nav__end">
+        <span class="search" aria-hidden="true"></span>
+        <a class="contact" href="#contact">Contact us</a>
+        <a class="pill pill--fill" href="#login">Customer login</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Run AI workloads where your policy allows</h1>
+        <p class="lead">EdgeMint routes document, vision, and language tasks to a verified edge worker network first, with explicit cloud fallback, EUR billing, and a full audit trail.</p>
+        <div class="actions">
+          <a class="pill pill--fill" href="#sales">Talk to sales ›</a>
+          <a class="pill pill--ghost" href="#docs">View documentation ›</a>
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip"><span class="mark">✓</span><b>quote locked</b> <span>€0.0025</span></div>
+        <div class="chip"><span class="mark">◉</span><b>worker assigned</b> <span>edge</span></div>
+        <div class="chip"><span class="mark">!</span><b>ocr verified</b> <span>document.ocr</span></div>
+      </div>
+    </section>
+
+    <div class="scene" aria-hidden="true"></div>
+    <p class="caption">Audit trail</p>
+  </div>
+</body>
+</html>

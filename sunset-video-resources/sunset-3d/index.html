@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunset — The sun sets. Your lights don't.</title>
+<meta name="description" content="Rooftop solar and a home battery for Japanese homes. ¥0 upfront, one fixed monthly plan, and a lower power bill from the first month.">
+<link rel="icon" href="assets/img/hanko.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Shippori+Mincho:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/","lenis":"https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.mjs"}}</script>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<canvas id="petals-near" aria-hidden="true"></canvas>
+
+<nav class="nav" aria-label="Main">
+  <div class="nav-pill">
+    <a class="brand" href="#hero" aria-label="Sunset home"><img src="assets/img/hanko.webp" alt=""><b>Sunset</b></a>
+    <div class="nav-links">
+      <a href="#savings">Savings</a><a href="#how">How it works</a><a href="#hardware">Hardware</a><a href="#plans">Plans</a><a href="#coverage">Coverage</a><a href="#faq">FAQ</a>
+    </div>
+    <a class="btn btn-ink btn-sm" href="#start">Check my roof <i class="i" data-i="arrow-right-bold-duotone"></i></a>
+  </div>
+</nav>
+
+<main>
+<!-- ============================================================ 1 hero -->
+<section id="hero" data-bg="#F3EADB">
+  <div class="gl-host" data-scene="hero">
+    <div class="gl-anchor" data-anchor="produced"><div class="chip"><i class="i" data-i="bolt-bold-duotone"></i><div><small>Made today</small><b>18.4 kWh</b></div></div></div>
+    <div class="gl-anchor" data-anchor="battery"><div class="chip"><i class="i" data-i="battery-charge-bold-duotone"></i><div><small>Battery</small><b>86%</b></div></div></div>
+    <div class="gl-anchor" data-anchor="grid"><div class="chip"><i class="i" data-i="plug-circle-bold-duotone"></i><div><small>From the grid</small><b>0.0 kW</b></div></div></div>
+  </div>
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="frame hero-copy">
+    <span class="eyebrow rv"><i class="i" data-i="sun-2-bold-duotone"></i>Solar + battery for Japanese homes <span class="jp">夕陽</span></span>
+    <h1 class="rv">The sun sets. <em>Your lights don’t.</em></h1>
+    <p class="lede rv">Rooftop solar and a home battery, installed and looked after by Sunset. ¥0 upfront, one fixed monthly plan, and a lower power bill from the first month.</p>
+    <form class="field rv" onsubmit="event.preventDefault();document.querySelector('#coverage').scrollIntoView({behavior:'smooth'})">
+      <label><i class="i" data-i="map-point-bold-duotone"></i><input name="zip" inputmode="numeric" placeholder="Your postal code" aria-label="Postal code"></label>
+      <button class="btn btn-sun" type="submit">Check my roof <i class="i" data-i="arrow-right-bold-duotone"></i></button>
+    </form>
+    <div class="fineprint rv">Free roof check · An answer in two minutes</div>
+  </div>
+  <div class="hero-foot">
+    <div class="frame"><div class="hero-stats">
+      <div><b>4,200</b><span>Homes on Sunset</span></div>
+      <div><b>11 hrs</b><span>Longest outage bridged</span></div>
+      <div><b>¥0</b><span>Upfront, ever</span></div>
+      <div><b>25 yrs</b><span>Panel warranty</span></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 2 savings -->
+<section id="savings" data-bg="#F3EADB">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="orn" data-orn="savings-sprig" style="width:200px;bottom:26px;right:3%;rotate:14deg" data-depth=".18"><img src="assets/img/orn_sakura.webp" alt=""></div>
+  <div class="frame sv-grid">
+    <div class="sv-copy">
+      <span class="eyebrow rv"><i class="i" data-i="graph-up-bold-duotone"></i>Savings <span class="jp">節約</span></span>
+      <h2 class="rv">See what the sun is worth on <em>your</em> roof</h2>
+      <p class="lede rv">Grid prices in Japan rise almost every year. Your own panels and battery don’t. Move the slider to your usual monthly bill and compare 25 years of power.</p>
+      <div class="sv-calc rv">
+        <div class="sv-row"><label for="bill">Your monthly power bill</label><span class="sv-bill" id="billOut">¥15,000<small> / mo</small></span></div>
+        <input id="bill" type="range" min="8000" max="40000" step="500" value="15000" aria-label="Monthly power bill in yen">
+        <div class="sv-scale"><span>¥8,000</span><span>¥40,000</span></div>
+        <div class="sv-result">
+          <div><small>You’d save</small><b class="hot" id="saveOut">¥3.1M</b></div>
+          <div><small>Every month, about</small><b id="monthOut">¥10,300</b></div>
+        </div>
+      </div>
+      <div class="sv-note">Estimates over 25 years. Assumes grid prices rise 3% a year.</div>
+    </div>
+    <div class="sv-stage">
+      <div class="gl-host" data-scene="chart">
+        <div class="gl-anchor" data-anchor="grid"><div class="bar-label"><small><span class="lg">Grid only</span><span class="sh">Grid</span></small><b id="lblGrid">¥6.6M</b></div></div>
+        <div class="gl-anchor" data-anchor="solar"><div class="bar-label"><small><span class="lg">Solar only</span><span class="sh">Solar</span></small><b id="lblSolar">¥4.8M</b></div></div>
+        <div class="gl-anchor" data-anchor="sunset"><div class="bar-label hot"><small><span class="lg">Sunset solar + battery</span><span class="sh">Sunset</span></small><b id="lblSunset">¥3.4M</b></div></div>
+      </div>
+      <div class="chart-legend"><i></i>1 block = ¥1M of power bills over 25 years</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 3 how it works -->
+<section id="how" class="dark" data-bg="#15111C" data-blend="360">
+  <div class="how-pin">
+    <div class="gl-host" data-scene="steps"></div>
+    <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+    <div class="frame how-copy" data-keep>
+      <span class="eyebrow"><i class="i" data-i="home-2-bold-duotone"></i>How it works <span class="jp">仕組み</span></span>
+      <h2>Three evenings from sign-up to <em>sunset</em></h2>
+      <ol class="steps">
+        <li class="step on"><span class="n">01</span><h3>Check</h3><p>We measure your roof from above and on site: sun hours, shade, tile type and load. You get a plan and a fixed price.</p><div class="meta"><span>Free visit</span><span>About a week</span></div></li>
+        <li class="step"><span class="n">02</span><h3>Install</h3><p>A certified crew fits panels, battery and inverter in a single day. Permits and utility paperwork are ours to handle.</p><div class="meta"><span>One day on the roof</span><span>Permits included</span></div></li>
+        <li class="step"><span class="n">03</span><h3>Power on</h3><p>Tonight your home runs on today’s sun. Production, storage and savings are live in the app.</p><div class="meta"><span>Backup in milliseconds</span><span>Live app</span></div></li>
+      </ol>
+    </div>
+    <div class="how-bar"><i></i></div>
+  </div>
+</section>
+
+<!-- ============================================================ 4 hardware -->
+<section id="hardware" data-bg="#F3EADB" data-blend="360">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="orn" style="width:132px;top:150px;right:3%" data-depth=".22"><img src="assets/img/orn_crane.webp" alt=""></div>
+  <div class="frame">
+    <div class="sec-head">
+      <div><span class="eyebrow rv"><i class="i" data-i="widget-bold-duotone"></i>Hardware <span class="jp">設備</span></span><h2 class="rv">What goes on <em>your</em> home</h2></div>
+      <p class="lede rv">Three pieces, sized to your roof and your evenings. We own, insure and maintain all of it for as long as you’re on a plan.</p>
+    </div>
+    <div class="cards3">
+      <article class="hw-card rv">
+        <div class="gl-host" data-scene="panel"></div>
+        <div class="body"><h3>Panels <small>440 W</small></h3><p>All-black monocrystalline panels, laid flush with your roof line.</p>
+          <ul class="ticks"><li><i class="i" data-i="check-circle-bold-duotone"></i>Rated for typhoon winds and snow load</li><li><i class="i" data-i="check-circle-bold-duotone"></i>25-year performance warranty</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Fitted to tile, slate or metal roofs</li></ul></div>
+      </article>
+      <article class="hw-card rv">
+        <div class="gl-host" data-scene="battery"></div>
+        <div class="body"><h3>Battery <small>13.5 kWh</small></h3><p>A quiet cabinet clad in hinoki, on the wall by your meter.</p>
+          <ul class="ticks"><li><i class="i" data-i="check-circle-bold-duotone"></i>Takes over in milliseconds when the grid drops</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Runs a typical home through the night</li><li><i class="i" data-i="check-circle-bold-duotone"></i>10-year warranty, serviced by us</li></ul></div>
+      </article>
+      <article class="hw-card rv">
+        <div class="gl-host" data-scene="phone"></div>
+        <div class="body"><h3>The app <small>iOS · Android</small></h3><p>Your house, live: what the roof makes, what the battery holds, what you saved.</p>
+          <ul class="ticks"><li><i class="i" data-i="check-circle-bold-duotone"></i>Outage and storm alerts</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Weather-aware charging before typhoons</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Monthly savings, to the yen</li></ul></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 5 plans -->
+<section id="plans" data-bg="#F3EADB">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="frame">
+    <div class="sec-head">
+      <div><span class="eyebrow rv"><i class="i" data-i="wallet-money-bold-duotone"></i>Plans <span class="jp">料金</span></span><h2 class="rv">Three ways to go solar</h2></div>
+      <p class="lede rv">Pay once, spread it out, or pay nothing upfront. Every option gets the same panels, battery, crew and app.</p>
+    </div>
+    <div class="cards3">
+      <article class="pay-card rv">
+        <div class="top"><span class="tag">Own it</span><div class="gl-host" data-scene="coins"></div></div>
+        <div class="body"><h3>Buy outright</h3><div class="price">¥1.9M<small> from</small></div><p>The lowest cost over 25 years, if you can pay upfront. Yours from day one.</p>
+          <ul class="ticks"><li><i class="i" data-i="check-circle-bold-duotone"></i>Eligible for local subsidies</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Optional service plan</li></ul>
+          <a class="btn btn-ghost btn-sm" href="#start">Get a quote <i class="i" data-i="arrow-right-bold-duotone"></i></a></div>
+      </article>
+      <article class="pay-card rv">
+        <div class="top"><span class="tag">Spread it</span><div class="gl-host" data-scene="soroban"></div></div>
+        <div class="body"><h3>Solar loan</h3><div class="price">¥14,800<small> / mo</small></div><p>Over 12 years at 1.9% APR. You own the system and keep every yen it saves.</p>
+          <ul class="ticks"><li><i class="i" data-i="check-circle-bold-duotone"></i>Pay off early, no fees</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Service included for 12 years</li></ul>
+          <a class="btn btn-ghost btn-sm" href="#start">See my rate <i class="i" data-i="arrow-right-bold-duotone"></i></a></div>
+      </article>
+      <article class="pay-card hot rv">
+        <div class="top"><span class="tag">Most chosen</span><div class="gl-host" data-scene="risingsun"></div></div>
+        <div class="body"><h3>Sunset Plan</h3><div class="price">¥6,800<small> / mo · from</small></div><p>¥0 upfront, one price fixed for 20 years. We own, insure and maintain everything.</p>
+          <ul class="ticks"><li><i class="i" data-i="check-circle-bold-duotone"></i>Battery backup included</li><li><i class="i" data-i="check-circle-bold-duotone"></i>Buy it out any time after year 5</li></ul>
+          <a class="btn btn-sun btn-sm" href="#start">Check my roof <i class="i" data-i="arrow-right-bold-duotone"></i></a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 6 coverage -->
+<section id="coverage" class="dark" data-bg="#15111C" data-blend="420">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="frame map-head">
+    <span class="eyebrow rv"><i class="i" data-i="map-point-bold-duotone"></i>Coverage <span class="jp">地図</span></span>
+    <h2 class="rv">A network of homes, sharing the <em>evening</em></h2>
+    <p class="lede rv">Sunset homes in 31 cities store daylight and lend it to the grid when the country needs it most. Each new roof makes the whole network steadier.</p>
+    <form class="field rv" id="zipForm"><label><i class="i" data-i="map-point-bold-duotone"></i><input id="zipIn" inputmode="numeric" placeholder="Your postal code" aria-label="Postal code"></label><button class="btn btn-sun" type="submit">Do you cover me? <i class="i" data-i="arrow-right-bold-duotone"></i></button></form>
+    <div class="map-result" id="zipOut" aria-live="polite"></div>
+  </div>
+  <div class="map-stage">
+    <div class="gl-host" data-scene="map">
+      <div class="gl-anchor" data-anchor="sapporo"><div class="city-tag">Sapporo <small>札幌</small><span>184</span></div></div>
+      <div class="gl-anchor" data-anchor="tokyo"><div class="city-tag">Tokyo <small>東京</small><span>640</span></div></div>
+      <div class="gl-anchor" data-anchor="osaka"><div class="city-tag">Osaka <small>大阪</small><span>571</span></div></div>
+      <div class="gl-anchor" data-anchor="fukuoka"><div class="city-tag">Fukuoka <small>福岡</small><span>298</span></div></div>
+      <div class="gl-anchor" data-anchor="naha"><div class="city-tag">Naha <small>那覇</small><span>52</span></div></div>
+    </div>
+    <div class="map-stats"><div class="frame">
+      <div><b>4,200</b><span>Homes connected</span></div>
+      <div><b>31</b><span>Cities from Sapporo to Naha</span></div>
+      <div><b>58 MWh</b><span>Shared with the grid last month</span></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 7 voices -->
+<section id="voices" data-bg="#F3EADB" data-blend="420">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="orn" style="width:170px;top:92px;right:5%;rotate:-8deg" data-depth=".16"><img src="assets/img/orn_fan.webp" alt=""></div>
+  <div class="frame">
+    <span class="eyebrow rv"><i class="i" data-i="star-bold-duotone"></i>Homeowners <span class="jp">お客様の声</span></span>
+    <div class="quote-card rv" style="margin-top:26px">
+      <img class="hanko" src="assets/img/hanko.webp" alt="">
+      <div>
+        <blockquote>“Last autumn’s typhoon took the street’s power for eleven hours. <em>Our lights never flickered</em>, and the bill is down to a few thousand yen.”</blockquote>
+        <div class="quote-by"><img src="assets/img/voice-1.webp" alt=""><div><b>Keiko Tanaka</b><span>Kamakura · Sunset Plan since 2023</span></div></div>
+      </div>
+      <div class="quote-stat"><small>Monthly bill</small><b>−87%</b></div>
+    </div>
+    <div class="voices-row">
+      <article class="v-card rv"><img class="photo" src="assets/img/voice-1.webp" alt="Keiko Tanaka on her engawa at sunset" loading="lazy"><div class="txt"><q>The panels sit so flat on the kawara you’d never know.</q><div class="who"><div>Keiko Tanaka<span>Kamakura</span></div><div class="saved">¥20,900 / mo saved</div></div></div></article>
+      <article class="v-card rv"><img class="photo" src="assets/img/voice-2.webp" alt="Hiroshi Mori in his garden" loading="lazy"><div class="txt"><q>We watch the battery fill while we eat. The kids call it the sun jar.</q><div class="who"><div>Hiroshi Mori<span>Onomichi</span></div><div class="saved">¥14,200 / mo saved</div></div></div></article>
+      <article class="v-card rv"><img class="photo" src="assets/img/voice-3.webp" alt="Aya Sato at home in the evening" loading="lazy"><div class="txt"><q>One crew, one day, and no paperwork on my side at all.</q><div class="who"><div>Aya Sato<span>Sendai</span></div><div class="saved">¥11,600 / mo saved</div></div></div></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 8 faq -->
+<section id="faq" data-bg="#F3EADB">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="frame faq-grid">
+    <div class="faq-side">
+      <span class="eyebrow rv"><i class="i" data-i="document-text-bold-duotone"></i>FAQ <span class="jp">質問</span></span>
+      <h2 class="rv">Questions, <em>answered</em></h2>
+      <p class="lede rv">Still unsure? A Sunset advisor will walk your roof with you, free, and answer the rest.</p>
+      <div class="orn orn-lantern" data-depth=".12"><img src="assets/img/orn_lantern.webp" alt=""></div>
+    </div>
+    <div class="faq-list" id="faq-list">
+      <div class="qa open"><button aria-expanded="true">What does ¥0 upfront actually cover?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>Everything: panels, battery, inverter, installation, permits, monitoring, insurance and repairs. You pay one fixed monthly price for 20 years and nothing else.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">Will panels work on a kawara tile roof?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>Yes. We use tile hooks that sit under the kawara without drilling through it, and we replace any tile we lift. Slate and metal roofs are simpler still.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">What happens in a blackout or a typhoon?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>The battery takes over in milliseconds and keeps your essentials running: lights, fridge, router and outlets. Before a storm the app tops the battery up from the grid automatically.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">How much will I really save?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>Most homes cut their bill by 60–85%. Your roof check gives you a written estimate based on your sun hours, shading and the last twelve months of your bills.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">What if I sell or move house?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>The plan transfers to the buyer, and homes with solar and storage tend to sell faster. You can also buy the system out at any point after year five.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">Can I use national or city subsidies?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>If you buy outright or take the loan, we file every subsidy you qualify for. On the Sunset Plan the subsidy is already built into your lower monthly price.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">Who looks after it?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>We do. We monitor every system remotely, and if something drops below its expected output a technician is booked before you notice.</p></div></div></div>
+      <div class="qa"><button aria-expanded="false">How long does installation take?<i class="i" data-i="add-circle-bold-duotone"></i></button><div class="a"><div><p>About three weeks from signing to switch-on, most of it permits. The crew is on your roof for a single day.</p></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 9 cta -->
+<section id="start" class="dark" data-bg="#15111C" data-blend="420">
+  <div class="grid-lines"><div class="frame"><i></i><i></i><i></i><i></i></div></div>
+  <div class="frame">
+    <div class="cta-card rv">
+      <div class="cta-left">
+        <img class="hanko" src="assets/img/hanko.webp" alt="">
+        <span class="eyebrow"><i class="i" data-i="moon-stars-bold-duotone"></i>Get started <span class="jp">はじめる</span></span>
+        <h2>Tonight, run on <em>today’s</em> sun</h2>
+        <p>Tell us your postal code. We’ll check your roof from above and send a plan and a fixed price within two days.</p>
+        <form class="field" onsubmit="event.preventDefault()"><label><i class="i" data-i="map-point-bold-duotone"></i><input inputmode="numeric" placeholder="Postal code" aria-label="Postal code"></label><button class="btn btn-ink" type="submit">Check my roof <i class="i" data-i="arrow-right-bold-duotone"></i></button></form>
+      </div>
+      <div class="cta-right"><div class="gl-host" data-scene="night"></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="dark" data-bg="#15111C">
+  <div class="frame">
+    <div class="foot-grid">
+      <div class="foot-brand"><a class="brand" href="#hero"><img src="assets/img/hanko.webp" alt=""><b>Sunset</b></a><p>Solar and storage for homes across Japan. Kamakura · Osaka · Sendai.</p></div>
+      <div><h4>Product</h4><a href="#hardware">Panels</a><a href="#hardware">Battery</a><a href="#hardware">App</a><a href="#plans">Plans</a></div>
+      <div><h4>Company</h4><a href="#">About</a><a href="#">Installers</a><a href="#">Careers</a><a href="#">Press</a></div>
+      <div><h4>Help</h4><a href="#faq">FAQ</a><a href="#">Contact</a><a href="#">Outage support</a><a href="#">Subsidies</a></div>
+      <div class="foot-news"><h4>Evening letter</h4><p>One short note a month on the sun, the grid and your bill.</p><form class="field" onsubmit="event.preventDefault()"><label><i class="i" data-i="letter-bold-duotone"></i><input type="email" placeholder="you@example.jp" aria-label="Email"></label><button class="btn btn-sun btn-sm" type="submit">Subscribe</button></form></div>
+    </div>
+  </div>
+  <div class="wordmark-stage"><div class="gl-host" data-scene="wordmark"></div></div>
+  <div class="frame foot-legal"><span>© 2026 Sunset K.K.</span><span>Privacy · Terms · 特定商取引法</span></div>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

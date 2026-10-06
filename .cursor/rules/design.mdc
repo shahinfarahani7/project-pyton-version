@@ -1,0 +1,9 @@
+---
+description: Marketing-site visual system from the imported Refero style
+globs: src/apps/marketing-site/**/*.{vue,css,html}
+alwaysApply: false
+---
+
+Before changing marketing-site UI, read `.cursor/rules/DESIGN (1).md`.
+
+That file is a Refero style reference. The homepage now uses its dark command-deck layout with EdgeMint copy, the EM mark, and the product status chips. Do not copy Harness branding.

@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunseto out of home</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 44 32%27%3E%3Ccircle cx=%2722%27 cy=%2715.4%27 r=%2710.4%27 fill=%27%23e5482f%27/%3E%3Crect y=%2718.7%27 width=%2744%27 height=%2714%27 fill=%27%23fff7e9%27/%3E%3Cpath d=%27M3 21.3h38M8.6 25.6h26.8M14.2 29.8h15.6%27 stroke=%27%232a1d52%27 stroke-width=%272.2%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<meta name="description" content="Sunseto's out-of-home campaign: a rooftop billboard, a letterpress meishi, an indigo T-shirt and a subway series, each shown as print artwork and in place.">
+<style>
+@font-face{font-family:"Instrument Sans";src:url(sunset-ads/assets/fonts/InstrumentSans[wdth,wght].ttf) format("truetype");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Instrument Serif";src:url(sunset-ads/assets/fonts/instrument-serif-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url(sunset-ads/assets/fonts/JetBrainsMono[wght].ttf) format("truetype");font-weight:100 800;font-display:swap}
+@font-face{font-family:"Shippori Mincho";src:url(sunset-ads/assets/fonts/shippori-page.woff2) format("woff2");font-weight:500;font-display:swap}
+:root{
+  --beige:#fff7e9;--beige-2:#f0e5cf;--line:#dacab6;--brown:#4c2806;--black:#111;--grey:#514e4a;--orange:#e5482f;--vermilion:#d8452c;
+  --sans:"Instrument Sans",system-ui,sans-serif;--serif:"Instrument Serif",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,monospace;--jp:"Shippori Mincho","Hiragino Mincho ProN",serif;
+  --pad:clamp(16px,3.2vw,56px);--max:1560px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--beige);-webkit-text-size-adjust:100%}
+body{background:var(--beige);color:var(--black);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit}
+.mono{font-family:var(--mono);font-size:12px;line-height:18px;letter-spacing:-.24px;text-transform:uppercase;color:var(--grey)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+
+/* header */
+header.top{position:sticky;top:0;z-index:20;background:rgba(255,247,233,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+.lockup{display:flex;align-items:center;gap:9px;text-decoration:none}
+.lockup svg{width:34px;height:auto}
+.lockup b{font-weight:600;font-size:21px;letter-spacing:-.73px}
+.lockup img{width:20px;height:20px;transform:rotate(-7deg)}
+header.top nav{display:flex;gap:22px}
+@media (max-width:560px){header.top nav{gap:12px}header.top nav a:nth-child(n+3){display:none}}
+header.top nav a{text-decoration:none}
+header.top nav a:hover{color:var(--black)}
+
+/* hero */
+.hero{padding-top:clamp(56px,9vw,132px);padding-bottom:clamp(40px,6vw,88px);border-bottom:1px solid var(--line)}
+.hero h1{margin-top:22px;font-family:var(--serif);font-weight:400;font-size:clamp(46px,7.2vw,112px);line-height:.98;letter-spacing:-.025em;max-width:13ch}
+.hero p.lede{margin-top:32px;max-width:640px;font-size:clamp(17px,1.5vw,20px);font-weight:500;line-height:1.3;letter-spacing:-.02em}
+.index{margin-top:clamp(40px,5vw,72px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line)}
+.index a{display:block;padding:18px 18px 20px 0;text-decoration:none;border-right:1px solid var(--line)}
+.index a+a{padding-left:18px}
+.index a:last-child{border-right:0}
+.index .k{font-family:var(--jp);font-weight:500;font-size:28px;line-height:1;color:var(--brown)}
+.index h3{margin-top:14px;font-weight:500;font-size:18px;letter-spacing:-.02em}
+.index .mono{display:block;margin-top:6px}
+.index a:hover h3{color:var(--vermilion)}
+@media (max-width:760px){.index{grid-template-columns:1fr 1fr}.index a:nth-child(2){border-right:0}.index a:nth-child(3){padding-left:0}.index a:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+
+/* sections */
+section.piece{padding:clamp(64px,8vw,120px) 0;border-bottom:1px solid var(--line)}
+.phead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(24px,4vw,72px);align-items:end}
+.phead .k{display:inline-grid;place-items:center;width:36px;height:36px;border:1px solid var(--brown);font-family:var(--jp);font-weight:500;font-size:20px;color:var(--brown);margin-right:12px;vertical-align:middle}
+.phead h2{margin-top:22px;font-family:var(--serif);font-weight:400;font-size:clamp(38px,5vw,76px);line-height:1;letter-spacing:-.022em}
+.phead p{margin-top:22px;max-width:560px;font-size:16px;line-height:1.45;color:#2a2622}
+dl.spec{display:grid;grid-template-columns:auto 1fr;border-top:1px solid var(--line)}
+dl.spec dt,dl.spec dd{padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.4}
+dl.spec dt{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:-.24px;color:var(--grey);padding-right:24px;padding-top:11px}
+dl.spec dd{font-weight:500;letter-spacing:-.01em}
+@media (max-width:900px){.phead{grid-template-columns:1fr}}
+
+.figs{margin-top:clamp(40px,5vw,72px);display:grid;gap:clamp(20px,2.4vw,36px)}
+.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:1000px){.two{grid-template-columns:1fr}}
+figure{min-width:0}
+figcaption{display:flex;justify-content:space-between;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+figcaption span:last-child{text-align:right}
+.frame{position:relative;background:var(--beige-2);overflow:hidden}
+.frame img{width:100%;cursor:zoom-in}
+.flat{background:#6d6a66}
+/* flats that carry small type scroll sideways rather than shrink below 11 px on screen */
+.scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;background:#6d6a66}
+.scroll .strip{display:flex;gap:20px;padding:20px;width:max-content}
+.scroll img{cursor:zoom-in}
+.hint{visibility:hidden}
+.hint.on{visibility:visible}
+.strip.bb{width:100%;min-width:1220px}.strip.bb img{width:100%}
+.card-flat{width:620px}
+.b0-flat{width:590px}
+.panel-flat{width:2640px}
+
+/* notes */
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,48px);margin-top:clamp(36px,4vw,56px)}
+.notes h4{font-weight:500;font-size:16px;letter-spacing:-.02em;margin:10px 0 6px}
+.notes p{font-size:14px;line-height:1.45;color:#2a2622}
+@media (max-width:900px){.notes{grid-template-columns:1fr}}
+code,.file{font-family:var(--mono);font-size:12px;letter-spacing:-.2px;word-break:break-all}
+
+footer{padding:clamp(56px,7vw,96px) 0 64px}
+footer .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,48px)}
+footer h4{font-weight:500;font-size:16px;margin:10px 0 8px;letter-spacing:-.02em}
+footer p,footer li{font-size:14px;line-height:1.5;color:#2a2622}
+footer ul{list-style:none}
+@media (max-width:900px){footer .cols{grid-template-columns:1fr}}
+
+/* viewer */
+#viewer{position:fixed;inset:0;z-index:50;background:rgba(20,14,10,.94);display:none;overflow:auto;cursor:zoom-out}
+#viewer.on{display:block}
+#viewer img{max-width:none;margin:0 auto;padding:24px}
+#viewer .mono{position:fixed;top:14px;right:18px;color:#f0e5cf}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="lockup" href="#top" aria-label="Sunseto">
+    <svg viewBox="2.1 5 39.8 26.52" aria-hidden="true" id="mk"></svg><b>sunseto</b><img src="sunset-ads/assets/img/hanko_vermilion_96.png" alt="">
+  </a>
+  <nav class="mono"><a href="#billboard">Billboard</a><a href="#meishi">Meishi</a><a href="#tee">T-shirt</a><a href="#subway">Subway</a></nav>
+</div></header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div class="mono">Out of home · Autumn 2026</div>
+    <h1>Keep today’s sun for tonight</h1>
+    <p class="lede">A rooftop board, a business card, a T-shirt and the subway. Each piece is print-ready artwork set in the site’s own type, palette and woodblock sunset, then shown on the surface it was made for.</p>
+    <div class="index">
+      <a href="#billboard"><span class="k">壱</span><h3>Billboard</h3><span class="mono">10,920 × 3,640 mm · 3:1</span></a>
+      <a href="#meishi"><span class="k">弐</span><h3>Meishi</h3><span class="mono">91 × 55 mm · letterpress</span></a>
+      <a href="#tee"><span class="k">参</span><h3>T-shirt</h3><span class="mono">Ōban back print · indigo</span></a>
+      <a href="#subway"><span class="k">肆</span><h3>Subway</h3><span class="mono">B0 × 3 · B0 5連貼り</span></a>
+    </div>
+  </div>
+
+  <!-- ============================================================ billboard -->
+  <section class="piece" id="billboard"><div class="wrap">
+    <div class="phead">
+      <div>
+        <div class="mono"><span class="k">壱</span>Billboard</div>
+        <h2>One line, the mark, the address</h2>
+        <p>A rooftop board read from the street at 30 to 150 metres. The woodblock sunset from the site fills the board. The line sits in the sky, and the lockup and the address sit on the sea. Nothing else competes.</p>
+      </div>
+      <dl class="spec">
+        <dt>Format</dt><dd>Rooftop board on the サブロク module (910 × 1,820 mm sheets), 6 × 4 sheets</dd>
+        <dt>Size</dt><dd>10,920 × 3,640 mm, 3:1, with 50 mm bleed all round</dd>
+        <dt>Artwork</dt><dd>Drawn at 1/10 scale, 300 dpi: 13,016 × 4,416 px (30 dpi at full size)</dd>
+        <dt>Type</dt><dd>Line 600 mm Instrument Serif (cap height ≈ 400 mm, readable to ≈ 160 m); address 250 mm</dd>
+        <dt>Print</dt><dd>Solvent inkjet on frontlit PVC, lit by the board’s own lamps</dd>
+      </dl>
+    </div>
+    <div class="figs">
+      <figure>
+        <div class="scroll"><div class="strip bb"><img class="bb-flat" src="sunset-ads/print/billboard_10920x3640mm_1-10scale_300dpi.preview.jpg" data-full="sunset-ads/print/billboard_10920x3640mm_1-10scale_300dpi.preview.jpg" alt="Billboard artwork: a woodblock-style sunset over the sea with the line Keep today’s sun for tonight, the Sunseto lockup and sunseto.jp" width="2400" height="815"></div></div>
+        <figcaption class="mono"><span>Flat artwork · trim + bleed</span><span class="hint">Scroll sideways →</span></figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="sunset-ads/mock/billboard-street.jpg" data-full="sunset-ads/mock/billboard-street.jpg" alt="The billboard on a rooftop over a Tokyo shopping street at dusk" width="2048" height="1152" loading="lazy"></div>
+        <figcaption class="mono"><span>In place · a Tokyo shopping street, twenty minutes after sunset</span><span>Lit by the board’s lamps</span></figcaption>
+      </figure>
+    </div>
+  </div></section>
+
+  <!-- ============================================================ meishi -->
+  <section class="piece" id="meishi"><div class="wrap">
+    <div class="phead">
+      <div>
+        <div class="mono"><span class="k">弐</span>Meishi</div>
+        <h2>An English side and a Japanese side</h2>
+        <p>The English side borrows the site’s grid, with its rules pressed blind into the board rather than printed. The Japanese side is set vertically in the order a Japanese card reads: company and brand line on the right, the name in the centre with the 陽 seal, the address in kanji numerals on the left.</p>
+      </div>
+      <dl class="spec">
+        <dt>Size</dt><dd>91 × 55 mm (Japanese standard), 3 mm bleed (塗り足し)</dd>
+        <dt>Stock</dt><dd>1.2 mm duplexed cotton board, cream; edges painted vermilion (小口染め)</dd>
+        <dt>Print</dt><dd>Letterpress, four plates: sumi, vermilion, a split-fountain sun (gold into vermilion on one roller) and a blind deboss</dd>
+        <dt>Artwork</dt><dd>600 dpi: 2,288 × 1,438 px per side, plus one plate file per pass</dd>
+        <dt>Type</dt><dd>Instrument Serif name, JetBrains Mono labels (1.8 mm), Instrument Sans details, Shippori Mincho for the Japanese</dd>
+      </dl>
+    </div>
+    <div class="figs two">
+      <figure>
+        <div class="scroll"><div class="strip" style="flex-direction:column">
+          <img class="card-flat" src="sunset-ads/print/meishi_en_91x55mm_600dpi.preview.jpg" data-full="sunset-ads/print/meishi_en_91x55mm_600dpi.png" alt="English side of the business card" width="1600" height="1005">
+          <img class="card-flat" src="sunset-ads/print/meishi_jp_91x55mm_600dpi.preview.jpg" data-full="sunset-ads/print/meishi_jp_91x55mm_600dpi.png" alt="Japanese side of the business card, set vertically" width="1600" height="1005">
+        </div></div>
+        <figcaption class="mono"><span>Flat artwork · English and Japanese sides</span><span class="hint">Scroll sideways →</span></figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="sunset-ads/mock/meishi-desk.jpg" data-full="sunset-ads/mock/meishi-desk.jpg" alt="The two sides of the card on a hinoki desk" width="2048" height="1152" loading="lazy"></div>
+        <figcaption class="mono"><span>In place · on hinoki, north light</span><span>The impression is lit from the plates</span></figcaption>
+        <div class="frame" style="margin-top:20px"><img src="sunset-ads/mock/meishi-desk_detail.jpg" data-full="sunset-ads/mock/meishi-desk_detail.jpg" alt="Close crop of the cards showing the pressed rules and painted edges" width="1460" height="510" loading="lazy"></div>
+        <figcaption class="mono"><span>Detail · blind rules, cotton tooth, painted edges</span><span></span></figcaption>
+      </figure>
+    </div>
+  </div></section>
+
+  <!-- ============================================================ tee -->
+  <section class="piece" id="tee"><div class="wrap">
+    <div class="phead">
+      <div>
+        <div class="mono"><span class="k">参</span>T-shirt</div>
+        <h2>The shirt is the night sky</h2>
+        <p>The back print is cut to a real ukiyo-e ōban sheet. The sunset steps down in flat bands of ink the way a woodblock print lays its colours, and the top is left unprinted, so the indigo shirt becomes the night with a crescent moon: today’s sun under tonight’s sky. The sea is made of the mark’s own waves. A title slip reads 今日の陽を今夜に, sealed with 陽.</p>
+      </div>
+      <dl class="spec">
+        <dt>Garment</dt><dd>Heavyweight cotton, hand-dyed ai-zome indigo (reads #1F2A4F)</dd>
+        <dt>Back</dt><dd>Print 265 × 390 mm (ōban) on a 300 × 470 mm film, 80 mm below the back neck</dd>
+        <dt>Chest</dt><dd>Lockup 88 mm wide, left chest, 95 mm off centre</dd>
+        <dt>Print</dt><dd>Water-based screen print, 7 flat spot colours, no halftones: cream, gold, orange, coral, rose, plum, vermilion</dd>
+        <dt>Artwork</dt><dd>300 dpi transparent films (3,541 × 5,550 px back) plus one separation per screen</dd>
+      </dl>
+    </div>
+    <div class="figs two">
+      <figure>
+        <div class="scroll" style="background:#1f2a4f"><div class="strip" style="flex-direction:column;align-items:center;gap:28px;padding:28px 20px">
+          <img style="width:560px" src="sunset-ads/print/tee_back_on-indigo_300dpi.preview.jpg" data-full="sunset-ads/print/tee_back_on-indigo_300dpi.png" alt="Back print artwork on indigo" width="893" height="1400">
+          <img style="width:300px" src="sunset-ads/print/tee_chest_on-indigo_300dpi.preview.jpg" data-full="sunset-ads/print/tee_chest_on-indigo_300dpi.png" alt="Chest mark artwork on indigo" width="1000" height="299">
+        </div></div>
+        <figcaption class="mono"><span>Flat artwork · back and chest, on the garment colour</span><span class="hint">Scroll sideways →</span></figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="sunset-ads/mock/tee-worn.jpg" data-full="sunset-ads/mock/tee-worn.jpg" alt="The back print worn on a Kyoto lane at golden hour" width="1152" height="1536" loading="lazy"></div>
+        <figcaption class="mono"><span>In place · worn, Kyoto, the sun ahead</span><span>Wrapped to the back</span></figcaption>
+      </figure>
+    </div>
+    <div class="figs">
+      <figure>
+        <div class="frame"><img src="sunset-ads/mock/tee-flatlay.jpg" data-full="sunset-ads/mock/tee-flatlay.jpg" alt="Front and back of the indigo tee laid flat on tatami" width="2048" height="1152" loading="lazy"></div>
+        <figcaption class="mono"><span>In place · flat on tatami, front and back</span><span>Knit and folds carried into the ink</span></figcaption>
+      </figure>
+    </div>
+  </div></section>
+
+  <!-- ============================================================ subway -->
+  <section class="piece" id="subway"><div class="wrap">
+    <div class="phead">
+      <div>
+        <div class="mono"><span class="k">肆</span>Subway</div>
+        <h2>Three posters and one long day</h2>
+        <p>The B0 series gives each promise its own sheet on the site’s grid: the scene, one figure, and a vertical Japanese line closed by the seal, numbered 壱 弐 参 like a print series. The corridor panel is five B0 sheets posted as one: a single sun path runs from 13:00 over the roof to 23:40 on the phone, and meets the horizon at sunset as the Sunseto mark.</p>
+      </div>
+      <dl class="spec">
+        <dt>Posters</dt><dd>駅貼り B0 (B倍), 1,030 × 1,456 mm, 3 mm bleed; backlit</dd>
+        <dt>Panel</dt><dd>B0 5連貼り (JR East “long size”): five B0 sheets edge to edge, 5,150 × 1,456 mm</dd>
+        <dt>Artwork</dt><dd>150 dpi at full size: 6,117 × 8,633 px per sheet; each panel sheet carries its neighbours’ art as bleed</dd>
+        <dt>Type</dt><dd>Headlines 112 mm, figures 106 mm, the smallest label 20 mm (readable at 6 m)</dd>
+        <dt>Scenes</dt><dd>Captured headlessly from the site’s own 3D build at 3,833 × 5,331 px</dd>
+      </dl>
+    </div>
+    <div class="figs">
+      <figure>
+        <div class="scroll"><div class="strip">
+          <img class="b0-flat" src="sunset-ads/print/b0_1_1030x1456mm_150dpi.preview.jpg" data-full="sunset-ads/print/b0_1_1030x1456mm_150dpi.preview.jpg" alt="Poster 1: Pay for sunshine, not for fuel ships" width="1275" height="1800">
+          <img class="b0-flat" src="sunset-ads/print/b0_2_1030x1456mm_150dpi.preview.jpg" data-full="sunset-ads/print/b0_2_1030x1456mm_150dpi.preview.jpg" alt="Poster 2: The lights stay on when the typhoon comes" width="1275" height="1800" loading="lazy">
+          <img class="b0-flat" src="sunset-ads/print/b0_3_1030x1456mm_150dpi.preview.jpg" data-full="sunset-ads/print/b0_3_1030x1456mm_150dpi.preview.jpg" alt="Poster 3: Every roof lends a little light" width="1275" height="1800" loading="lazy">
+        </div></div>
+        <figcaption class="mono"><span>Flat artwork · B0 series 壱 弐 参</span><span class="hint">Scroll sideways →</span></figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="sunset-ads/mock/station-corridor.jpg" data-full="sunset-ads/mock/station-corridor.jpg" alt="The three posters in backlit frames along a Tokyo subway corridor" width="1536" height="1024" loading="lazy"></div>
+        <figcaption class="mono"><span>In place · a Tokyo subway corridor</span><span>Backlit, the diffuser’s own falloff</span></figcaption>
+      </figure>
+      <figure>
+        <div class="scroll"><div class="strip"><img class="panel-flat" src="sunset-ads/print/corridor_5150x1456mm.wide.jpg" data-full="sunset-ads/print/corridor_5150x1456mm.wide.jpg" alt="The five-sheet corridor panel: one day from 13:00 to 23:40 under a single sun path" width="5200" height="1474" loading="lazy"></div></div>
+        <figcaption class="mono"><span>Flat artwork · B0 5連貼り, 5,150 × 1,456 mm</span><span class="hint">Scroll sideways →</span></figcaption>
+      </figure>
+      <figure>
+        <div class="frame"><img src="sunset-ads/mock/station-platform.jpg" data-full="sunset-ads/mock/station-platform.jpg" alt="The panel on the far wall of a subway platform" width="2048" height="1152" loading="lazy"></div>
+        <figcaption class="mono"><span>In place · across the tracks</span><span>Five sheets, hairline joins</span></figcaption>
+      </figure>
+    </div>
+  </div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="mono">How these were made</div>
+  <div class="cols" style="margin-top:14px">
+    <div><h4>Artwork</h4><p>Every piece is HTML set in physical millimetres with the site’s fonts, colours, mark geometry and 陽 seal, and rendered headlessly at print resolution. The sunset is the site’s own woodblock shader, re-rendered in tiles at print size, without the glitter path. Scenes come from the site’s 3D build.</p></div>
+    <div><h4>In place</h4><p>The environments were generated with Aura with blank surfaces. Each ad is the rendered PNG, resampled once through the surface’s homography and lit by the blank surface itself: the board’s lamp pools, the lightbox falloff, the fabric’s folds, the card’s light. The ads are never redrawn. The platform’s lightbox frame was extended along the wall plane to the panel’s true 3.54:1.</p></div>
+    <div><h4>Files</h4><ul>
+      <li><span class="file">sunset-ads/print/</span> print PNGs, tagged with their dpi</li>
+      <li><span class="file">sunset-ads/print/plates/</span> letterpress plates and screen separations</li>
+      <li><span class="file">sunset-ads/art/</span> the artboards (open with <span class="file">?guides</span> for trim and safe lines)</li>
+      <li><span class="file">sunset-ads/tools/</span> render and composite scripts</li>
+      <li>sunseto.jp stands in for the real address.</li>
+    </ul></div>
+  </div>
+</div></footer>
+
+<div id="viewer" role="dialog" aria-label="Full size"><span class="mono">Click to close</span><img alt=""></div>
+<script>
+// the mark, from the same geometry as the print files
+fetch('sunset-ads/assets/img/mark.json').then(r => r.json()).then(M => {
+  const p = pts => 'M' + pts.map(([x, y]) => `${x} ${y}`).join('L') + 'Z';
+  document.getElementById('mk').innerHTML = `<defs><linearGradient id="g" x1="0" y1="5" x2="0" y2="18.7" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fad58a"/><stop offset="1" stop-color="#ff8b64"/></linearGradient></defs><path fill="url(#g)" d="${p(M.sun)}"/>` + M.waves.map(w => `<path fill="#524c6b" d="${p(w)}"/>`).join('');
+});
+// click any figure for its full-size file
+document.querySelectorAll('figure').forEach(f => { const sc = f.querySelector('.scroll'), h = f.querySelector('.hint'); if (!sc || !h) return; const u = () => h.classList.toggle('on', sc.scrollWidth > sc.clientWidth + 2); u(); addEventListener('resize', u); sc.querySelectorAll('img').forEach(i => i.addEventListener('load', u)); });
+const V = document.getElementById('viewer'), VI = V.querySelector('img');
+document.querySelectorAll('img[data-full]').forEach(i => i.addEventListener('click', () => { VI.src = i.dataset.full; VI.alt = i.alt; V.classList.add('on'); }));
+V.addEventListener('click', () => { V.classList.remove('on'); VI.removeAttribute('src'); });
+addEventListener('keydown', e => { if (e.key === 'Escape') V.click(); });
+</script>
+</body>
+</html>

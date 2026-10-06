@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sunseto T-shirt: chest mark and back print</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Garment: ai-zome indigo heavyweight cotton (reads #1f2a4f). Water-based screen print, flat spot colours, no halftones.
+   ?part=back (the ōban print, 265 × 390 mm, with the line under it) | chest (the lockup, 92 mm wide)
+   ?plate=<ink> one screen as black on white; ?garment=0 transparent film for the printer. */
+:root{--garment:#1f2a4f;--cream:#fff0dc;--gold:#f7c46e;--orange:#f08a4b;--coral:#ea5f4a;--rose:#b0406c;--plum:#5b2a62;--verm:#d8452c}
+.sheet{background:var(--garment)}
+.clear .sheet{background:transparent}
+html.clear,html.clear body{background:transparent}
+.plate .sheet{background:#fff}
+.back{--tw:300mm;--th:470mm;--bleed:0mm}
+.chest{--tw:100mm;--th:30mm;--bleed:0mm}
+svg.art{position:absolute;left:0;top:0;width:100%;height:100%}
+.line{position:absolute;left:0;right:0;top:411mm;text-align:center;font-family:var(--serif);font-size:24.5mm;line-height:1;letter-spacing:-.02em;color:var(--cream)}
+.sub{position:absolute;left:0;right:0;top:444mm;text-align:center;font-family:var(--mono);text-transform:uppercase;font-size:6.4mm;letter-spacing:.06em;color:var(--cream);font-weight:500}
+.chest .lockup{position:absolute;left:4mm;top:6mm;--F:15.4mm}
+.plate .line,.plate .sub,.plate .wm{color:transparent}
+.plate .on{color:#000!important}
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet"></div>
+<script type="module">
+import { Q, loadMark, markSVG, buildLockups, ready } from './kit.js';
+const part = Q.get('part') || 'back', plate = Q.get('plate');
+const root = document.documentElement, sheet = document.getElementById('sheet');
+root.classList.add(part);
+if (Q.get('garment') === '0') root.classList.add('clear');
+if (plate) root.classList.add('plate');
+await loadMark();
+const C = { cream: '#fff0dc', gold: '#f7c46e', orange: '#f08a4b', coral: '#ea5f4a', rose: '#b0406c', plum: '#5b2a62', verm: '#d8452c' };
+const ink = n => plate ? (plate === n ? '#000' : 'none') : C[n];
+
+if (part === 'chest') {
+  // the lockup, the sun in three flat bands, the waves and word in cream, the seal in vermilion
+  sheet.innerHTML = `<span data-lockup="cream" data-seal data-sea="${ink('cream')}" data-word="${plate ? (plate === 'cream' ? '#000' : 'transparent') : C.cream}"></span>`;
+  buildLockups();
+  const lk = sheet.querySelector('.lockup');
+  lk.querySelector('svg').outerHTML;
+  const sun = lk.querySelector('svg path');
+  // replace the gradient sun with three flat bands clipped to the disc
+  const svg = lk.querySelector('svg');
+  const d = sun.getAttribute('d');
+  svg.insertAdjacentHTML('afterbegin', `<defs><clipPath id="sd"><path d="${d}"/></clipPath></defs>`);
+  sun.remove();
+  svg.insertAdjacentHTML('afterbegin', `<g clip-path="url(#sd)"><rect x="0" y="0" width="44" height="10.2" fill="${ink('gold')}"/><rect x="0" y="10.2" width="44" height="4.3" fill="${ink('orange')}"/><rect x="0" y="14.5" width="44" height="6" fill="${ink('verm')}"/></g>`);
+  const hk = lk.querySelector('.hk img');
+  if (plate) hk.style.filter = plate === 'verm' ? 'brightness(0)' : 'opacity(0)';
+} else {
+  // ---------------------------------------------------------------- the ōban print, 265 × 390 mm, centred
+  const W = 265, H = 390, ox = (300 - W) / 2, oy = 8, HZ = 246;          // horizon 246 mm down the print
+  const wav = (y, amp, per, ph) => { let p = `M${ox - 1} ${oy + H}`; for (let x = -1; x <= W + 1; x += 1.5) p += `L${ox + x} ${oy + y + amp * Math.sin((x + ph) / per * Math.PI * 2)}`; return p + `L${ox + W + 1} ${oy + H}Z`; };
+  // sky: each band is an ink laid from its top edge down to the horizon; later, lower bands print over it
+  const bands = [['plum', 84], ['rose', 130], ['coral', 172], ['orange', 208]];
+  let s = `<svg class="art" viewBox="0 0 300 470" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="pr"><rect x="${ox}" y="${oy}" width="${W}" height="${H}"/></clipPath>` +
+    `<clipPath id="sky"><rect x="${ox}" y="${oy}" width="${W}" height="${HZ}"/></clipPath></defs><g clip-path="url(#pr)"><g clip-path="url(#sky)">`;
+  bands.forEach(([c, y], i) => { s += `<path d="${wav(y, 0.9, 46 + i * 7, i * 13)}" fill="${ink(c)}"/>`; });
+  // kasumi: two flat mist bands with stepped, rounded ends, a lighter rose over the plum and coral
+  const cap = (x, y, w, h, c) => `<rect x="${ox + x}" y="${oy + y}" width="${w}" height="${h}" rx="${h / 2}" fill="${ink(c)}"/>`;
+  s += cap(-40, 104, 150, 8.5, 'rose') + cap(-12, 110.5, 88, 8.5, 'rose') + cap(160, 184, 140, 7.5, 'orange') + cap(196, 189.5, 90, 7.5, 'orange');
+  // the sun: a disc in three flat bands, cut by the horizon
+  const R = 60, cx = ox + W / 2, cy = oy + HZ + 8;
+  s += `<clipPath id="sun"><circle cx="${cx}" cy="${cy}" r="${R}"/></clipPath><g clip-path="url(#sun)">` +
+    `<rect x="${cx - R}" y="${cy - R}" width="${2 * R}" height="${R * .52}" fill="${ink('cream')}"/>` +
+    `<rect x="${cx - R}" y="${cy - R * .48}" width="${2 * R}" height="${R * 1.5}" fill="${ink('gold')}"/></g>`;
+  s += `</g>`;
+  // the moon: tonight, up in the unprinted indigo
+  s += `<path d="M${ox + 52} ${oy + 30}a17 17 0 1 0 14 29a14 14 0 1 1 -14 -29z" fill="${ink('cream')}"/>`;
+  // the sea: the mark's own waves, rows lengthening toward the viewer, rose over the indigo, cream near the sun
+  const wave = (x0, x1, y, sw, c) => { let p = ''; for (let x = x0; x <= x1; x += 1) p += (p ? 'L' : 'M') + `${x} ${y + 0.62 / 2.2 * sw * Math.sin(2 * Math.PI * (x - cx) / (12.4 / 2.2 * sw) + Math.PI / 2)}`; return `<path d="${p}" fill="none" stroke="${ink(c)}" stroke-width="${sw}" stroke-linecap="round"/>`; };
+  let y = oy + HZ + 7, row = 0;
+  while (y < oy + H - 3) {
+    const k = (y - oy - HZ) / (H - HZ), sw = 2.0 + k * 4.2, gap = 5.2 + k * 12.5;
+    const c = row < 2 ? 'orange' : row < 5 ? 'coral' : row < 9 ? 'rose' : 'plum';
+    const shift = (row % 2) * 6.2 * sw / 2.2;                        // alternate rows half a wave apart
+    s += wave(ox - 8 - shift, ox + W + 8, y, sw, c);
+    y += gap; row++;
+  }
+  // a hairline horizon in gold
+  s += `<rect x="${ox}" y="${oy + HZ - 0.6}" width="${W}" height="1.2" fill="${ink('gold')}"/>`;
+  s += `</g>`;
+  // title cartouche, top right, as on an ukiyo-e sheet: the line in indigo, knocked out of a cream slip
+  const tx = ox + W - 34, ty = oy + 16;
+  s += `<rect x="${tx}" y="${ty}" width="20" height="136" fill="${ink('cream')}"/>` +
+    `<rect x="${tx + 1.6}" y="${ty + 1.6}" width="16.8" height="132.8" fill="none" stroke="${plate ? 'none' : 'var(--garment)'}" stroke-width=".5"/>`;
+  s += `</svg>`;
+  sheet.innerHTML = s + `<div style="position:absolute;left:${tx}mm;top:${ty + 7}mm;width:20mm;writing-mode:vertical-rl;font-family:var(--jp);font-weight:500;font-size:10.4mm;line-height:20mm;letter-spacing:.06em;color:${plate ? (plate === 'cream' ? '#fff' : 'transparent') : 'var(--garment)'};text-align:start">今日の陽を今夜に</div>` +
+    `<img src="../assets/img/hanko_vermilion.png" style="position:absolute;left:${tx - 27}mm;top:${ty + 1}mm;width:22mm;height:22mm;transform:rotate(-6deg);${plate ? (plate === 'verm' ? 'filter:brightness(0)' : 'opacity:0') : ''}">` +
+    `<div class="line ${plate === 'cream' ? 'on' : ''}">Keep today’s sun for tonight</div><div class="sub ${plate === 'cream' ? 'on' : ''}">Sunseto · Solar + storage for homes in Japan</div>`;
+}
+await ready();
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sunseto corridor panel: B0 5連貼り, 5,150 × 1,456 mm</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/* JR East's "long size": five B0 posters (1,030 × 1,456 mm) posted edge to edge as one 5,150 × 1,456 mm image.
+   One day in five sheets, under a single sun path. Each sheet is printed as its own B0 with 3 mm bleed:
+   ?sheet=1..5 frames one sheet (its bleed is the neighbour's artwork); no param shows the whole panel. */
+:root{--tw:5150mm;--th:1456mm;--bleed:3mm;--S:1030mm;--M:62mm;--hz:318mm;--rule:1.1mm}
+.sheet{background:var(--beige)}
+.one .sheet{width:calc(var(--S) + 2*var(--bleed))}
+.pan{position:absolute;left:var(--bleed);top:var(--bleed);width:var(--tw);height:var(--th)}
+.pan>*{position:absolute}
+.joins i{position:absolute;top:calc(-1*var(--bleed));height:calc(var(--th) + 2*var(--bleed));width:.3mm;background:rgba(0,180,255,.8)}
+.joins{display:none}.guides .joins{display:block}
+.rule{background:var(--line)}
+svg.path{left:0;top:0;width:var(--tw);height:var(--th);overflow:visible}
+.lbl{font-family:var(--mono);text-transform:uppercase;font-size:22mm;line-height:28mm;letter-spacing:-.01em;color:var(--grey);white-space:nowrap}
+.time{top:calc(var(--hz) + 54mm);font-family:var(--mono);font-size:30mm;line-height:1;letter-spacing:-.02em;color:var(--black);font-weight:500}
+.time span{margin-left:12mm;font-weight:400;color:var(--grey);text-transform:uppercase;font-size:22mm}
+.win{top:calc(var(--hz) + 104mm);width:calc(var(--S) - 2*var(--M));height:680mm;overflow:hidden;background:#1b1426}
+.win img{width:100%;height:100%;object-fit:cover}
+.win canvas{width:100%;height:100%}
+.line{top:calc(var(--hz) + 104mm + 680mm + 42mm);font-family:var(--serif);font-size:92mm;line-height:.98;letter-spacing:-.02em;color:var(--black);white-space:nowrap}
+.jpv{writing-mode:vertical-rl;font-family:var(--jp);font-weight:500;font-size:25mm;letter-spacing:.12em;color:#fff3e4;white-space:nowrap}
+.seal{width:44mm;height:44mm;transform:rotate(-6deg)}
+.seal img{width:100%;height:100%}
+.plans{display:flex;gap:40mm;align-items:baseline;font-family:var(--sans);font-weight:500;font-size:30mm;line-height:1.2;letter-spacing:-.01em;color:var(--black);white-space:nowrap}
+.plans b{font-family:var(--jp);font-weight:500;font-size:38mm;margin-right:8mm;color:var(--brown)}
+.plans i{font-style:normal;color:var(--grey)}
+.cta{display:flex;align-items:center;gap:24mm}
+.btn{display:inline-flex;align-items:center;height:80mm;padding:0 34mm;border-radius:7mm;background:var(--black);color:#fff;font-family:var(--sans);font-weight:500;font-size:26mm;letter-spacing:-.015em}
+.url{font-family:var(--sans);font-weight:500;font-size:28mm;letter-spacing:-.02em;color:var(--black)}
+.lockup{--F:62mm}
+</style>
+</head>
+<body>
+<div class="sheet"><div class="pan" id="pan">
+  <div class="rule" style="left:calc(-1*var(--bleed));right:calc(-1*var(--bleed));top:var(--hz);height:var(--rule)"></div>
+  <svg class="path" id="path" viewBox="0 0 5150 1456"></svg>
+  <div class="joins"><i style="left:var(--S)"></i><i style="left:calc(2*var(--S))"></i><i style="left:calc(3*var(--S))"></i><i style="left:calc(4*var(--S))"></i></div>
+</div></div>
+<script type="module">
+import { Q, loadMark, markSVG, buildLockups, renderSunset, fitCanvas, ready } from './kit.js';
+const k = +Q.get('sheet') || 0;
+const pan = document.getElementById('pan');
+if (k) { document.documentElement.classList.add('one'); pan.style.left = `calc(var(--bleed) - ${k - 1} * var(--S))`; }
+await loadMark();
+const mm = v => `${v}mm`, S = 1030, M = 62, HZ = 318;
+const SHEETS = [
+  { t: '13:00', img: 'kyoto-roof.jpg', pos: '50% 62%', line: 'The roof runs the house<br>and fills the battery' },
+  { t: '16:00', img: 'battery-cedar-yard.jpg', pos: '50% 60%', line: 'Stored by<br>mid-afternoon' },
+  { t: '18:12', tag: 'Sunset', print: true, line: 'Keep today’s sun<br>for tonight' },
+  { t: '20:00', img: 'dusk-farmhouse.jpg', pos: '50% 52%', line: 'The lamps run on<br>the afternoon' },
+  { t: '23:40', img: 'hand-phone.jpg', pos: '50% 40%', line: 'Every kilowatt,<br>in your pocket', last: true },
+];
+// the sun's path: high over sheet 1, down to the horizon at the middle of sheet 3, then on below it, dotted:
+// the part of the day the battery carries
+const X = i => S * i + S / 2, sunset = X(2);
+const yOf = x => x <= sunset ? HZ - 260 * Math.cos(Math.PI / 2 * (x + 600) / (sunset + 600)) : HZ + 16 * Math.sin(Math.PI / 2 * Math.min(1, (x - sunset) / (S * 2.2)));
+const pts = []; for (let x = -3; x <= sunset; x += 5) pts.push([x, yOf(x)]);
+const tail = []; for (let x = sunset; x <= 5153; x += 5) tail.push([x, yOf(x)]);
+const d = p => 'M' + p.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L');
+const svg = document.getElementById('path');
+svg.innerHTML = `<path d="${d(pts)}" fill="none" stroke="#b9a58c" stroke-width="2.2"/>` +
+  `<path d="${d(tail)}" fill="none" stroke="#b9a58c" stroke-width="2.2" stroke-dasharray="1 16" stroke-linecap="round"/>`;
+const add = (html, css) => { const e = document.createElement('div'); e.innerHTML = html; const n = e.firstElementChild; Object.assign(n.style, css); pan.append(n); return n; };
+SHEETS.forEach((s, i) => {
+  const x0 = S * i, cx = X(i), cy = yOf(cx);
+  // the marker on the path: a sun by day, the Sunseto mark at the horizon, a ring of stored light after dark
+  if (i < 2) add(`<div></div>`, { left: mm(cx - 26), top: mm(cy - 26), width: mm(52), height: mm(52), borderRadius: '50%', background: 'linear-gradient(#fad58a, #ef6a45)' });
+  else if (i === 2) add(`<div>${markSVG({ sunTop: '#fad58a', sunBot: '#ef6a45', sea: 'var(--sea-ink)' })}</div>`, { left: mm(cx - 60), top: mm(HZ - 60 * 26.52 / 39.8 * 0.52 - 2), width: mm(120) });
+  else add(`<div></div>`, { left: mm(cx - 20), top: mm(cy - 20), width: mm(40), height: mm(40), borderRadius: '50%', border: '2.4mm solid #e5602f', background: 'var(--beige)' });
+  add(`<div class="time">${s.t}${s.tag ? `<span>${s.tag}</span>` : ''}</div>`, { left: mm(x0 + M) });
+  const win = add(`<div class="win">${s.print ? '<canvas></canvas>' : `<img src="../assets/scenes/${s.img}" alt="">`}</div>`, { left: mm(x0 + M) });
+  if (s.img) win.querySelector('img').style.objectPosition = s.pos;
+  add(`<div class="line">${s.line}</div>`, { left: mm(x0 + M) });
+  if (s.print) {
+    add(`<div class="jpv">今日の陽を、今夜のあかりに。</div>`, { left: mm(x0 + S - M - 58), top: mm(HZ + 104 + 46) });
+    add(`<div class="seal"><img src="../assets/img/hanko_vermilion.png" alt=""></div>`, { left: mm(x0 + S - M - 64), top: mm(HZ + 104 + 46 + 400) });
+  }
+  if (s.last) {
+    add(`<div class="plans"><span><b>小</b>Ko ¥9,800</span><span><b>中</b>Naka ¥13,800</span><span><b>大</b>Ō ¥17,800</span></div>`, { left: mm(x0 + M), top: mm(HZ + 104 + 680 + 42 + 212) });
+  }
+});
+// the brand and the way in, under the last sheet's line
+add(`<div class="lbl">Plans a month · ¥0 up front</div>`, { right: mm(M), top: mm(196) });
+// the brand rides in the night sky over sheets 4 and 5, where the path has gone under the horizon
+add(`<div class="cta"><span data-lockup="ink" data-seal></span></div>`, { left: mm(3 * S + M), top: mm(84) });
+add(`<div class="lbl">Solar + storage for homes in Japan</div>`, { left: mm(3 * S + M), top: mm(196) });
+add(`<div class="cta"><span class="btn">Check my roof</span><span class="url">sunseto.jp</span></div>`, { right: mm(M), top: mm(82) });
+buildLockups();
+// the sunset print in the middle window, the horizon set level with the panel's
+await document.fonts.ready;
+const cv = fitCanvas(document.querySelector('.win canvas'));
+const aspect = cv.height / cv.width;               // S = width in shader units: p.y spans ±aspect
+renderSunset(cv, { hz: -aspect * 0.34, sunR: 0.28, sunX: 0.0, skyK: 1.55 / (aspect * 1.34), seaK: 2.0, strokes: 52, strokeAmt: 0.3, glow: 0.12, grain: 0.02, grainCell: cv.width / 906 * 0.4 });
+await ready();
+</script>
+</body>
+</html>

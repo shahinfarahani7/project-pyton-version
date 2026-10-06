@@ -1,0 +1,54 @@
+<!doctype html><html><body style="margin:0;background:transparent">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const q = new URLSearchParams(location.search), variant = q.get('v') || 'cream';
+const W = q.get('v') === 'icon' ? 1600 : 2400, H = q.get('v') === 'icon' ? 1600 : 1800;
+const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+r.setSize(W, H); r.setPixelRatio(1); r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .85; r.outputColorSpace = THREE.SRGBColorSpace;
+r.setClearColor(0x000000, 0); document.body.appendChild(r.domElement);
+const scene = new THREE.Scene();
+const pm = new THREE.PMREMGenerator(r); scene.environment = pm.fromScene(new RoomEnvironment(), .03).texture;
+// the Sunseto mark from mark.json (tools/make_mark.py): a sun setting into three waves, y flipped up, centred
+const M = await (await fetch('../mark.json?' + Date.now())).json();
+const shape = pts => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x - M.w / 2, M.h / 2 - y)));
+const ex = { depth: 1.1, bevelEnabled: true, bevelThickness: .5, bevelSize: .36, bevelSegments: 10, curveSegments: 12 };
+const discG = new THREE.ExtrudeGeometry(shape(M.sun), { ...ex, bevelSize: .45 });
+// the sun: pale gold at the crown down to vermilion where it meets the sea
+{ const p = discG.attributes.position, col = [], c = new THREE.Color(), top = new THREE.Color('#ff9d2e'), bot = new THREE.Color('#d7321d');
+  let y0 = Infinity, y1 = -Infinity; for (let i = 0; i < p.count; i++) { y0 = Math.min(y0, p.getY(i)); y1 = Math.max(y1, p.getY(i)); }
+  for (let i = 0; i < p.count; i++) { const t = (p.getY(i) - y0) / (y1 - y0); c.copy(bot).lerp(top, Math.pow(t, .9)); col.push(c.r, c.g, c.b); }
+  discG.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); }
+const sunM = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: .24, metalness: .05, clearcoat: 1, clearcoatRoughness: .06, emissive: 0xff4a00, emissiveIntensity: .05, envMapIntensity: .22 });
+const enamel = variant === 'ink'
+  ? new THREE.MeshPhysicalMaterial({ color: 0x1c1238, roughness: .25, metalness: 0, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: .3 })
+  : new THREE.MeshPhysicalMaterial({ color: 0xfff0dc, roughness: .3, metalness: 0, clearcoat: .9, clearcoatRoughness: .1, sheen: .4, sheenColor: 0xffd9b0, envMapIntensity: 1.05 });
+const g = new THREE.Group(); scene.add(g);
+g.add(new THREE.Mesh(discG, sunM));
+for (const w of M.waves) g.add(new THREE.Mesh(new THREE.ExtrudeGeometry(shape(w), ex), enamel));
+if (variant === 'icon') {
+  // the app icon: a bevelled squircle tile in the sunset gradient, the mark raised on it
+  const S = 54, R = 13.5, tile = new THREE.Shape();
+  tile.moveTo(-S / 2 + R, -S / 2); tile.lineTo(S / 2 - R, -S / 2); tile.quadraticCurveTo(S / 2, -S / 2, S / 2, -S / 2 + R);
+  tile.lineTo(S / 2, S / 2 - R); tile.quadraticCurveTo(S / 2, S / 2, S / 2 - R, S / 2); tile.lineTo(-S / 2 + R, S / 2);
+  tile.quadraticCurveTo(-S / 2, S / 2, -S / 2, S / 2 - R); tile.lineTo(-S / 2, -S / 2 + R); tile.quadraticCurveTo(-S / 2, -S / 2, -S / 2 + R, -S / 2);
+  const tg = new THREE.ExtrudeGeometry(tile, { depth: 3, bevelEnabled: true, bevelThickness: 1.6, bevelSize: 1.4, bevelSegments: 12, curveSegments: 48 });
+  const tp = tg.attributes.position, tc = [], c = new THREE.Color(), c0 = new THREE.Color('#34205e'), c1 = new THREE.Color('#e46a78');
+  for (let i = 0; i < tp.count; i++) { const t = THREE.MathUtils.clamp((tp.getY(i) + S / 2) / S, 0, 1); c.copy(c0).lerp(new THREE.Color('#8a3a78'), THREE.MathUtils.smoothstep(t, .05, .45)).lerp(c1, THREE.MathUtils.smoothstep(t, .45, 1)); tc.push(c.r, c.g, c.b); }
+  tg.setAttribute('color', new THREE.Float32BufferAttribute(tc, 3));
+  const tm = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: .62, specularIntensity: .25, clearcoat: .55, clearcoatRoughness: .04, envMapIntensity: .1 });
+  r.toneMappingExposure = .78;
+  scene.children.filter(o => o.isDirectionalLight).forEach(l => l.intensity *= .6);
+  const tileM = new THREE.Mesh(tg, tm); tileM.position.z = -5.2; scene.add(tileM);
+  g.scale.setScalar(1.12); g.position.y = -1.5;
+}
+const key = new THREE.DirectionalLight(0xfff4e8, 1.5); key.position.set(-8, 14, 16); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffc49a, 1.2); rim.position.set(12, 8, 6); scene.add(rim);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2a24, .5));
+// face-on, orthographic: depth reads only through the bevels and the light
+const hw = variant === 'icon' ? 31 : 23.5, hh = hw * H / W;
+const cam = new THREE.OrthographicCamera(-hw, hw, hh, -hh, -50, 50); cam.position.set(0, 0, 20); cam.lookAt(0, 0, 0);
+r.render(scene, cam);
+window.__png = r.domElement.toDataURL('image/png');
+</script></body></html>

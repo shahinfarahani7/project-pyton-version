@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunseto — Brand guide</title>
+<meta name="description" content="The Sunseto brand guide: the mark, colour, type, grid, components, imagery, motion and voice of the site, with every asset to download.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 44 32%27%3E{{MARK_URI}}%3C/svg%3E">
+<link rel="preload" href="{{A}}/fonts/instrument-serif-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{A}}/fonts/instrument-sans-500.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{A}}/fonts/jetbrains-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{A}}/guide/shippori-guide.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+{{CSS}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>{{MARK_SYMBOL}}</defs></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" id="lenses"></svg>
+<div id="gridOverlay" aria-hidden="true"><span class="m l"></span><span class="m r"></span><i style="left:33.3333%"></i><i style="left:66.6667%"></i></div>
+
+<header class="site-header" id="header">
+  <div class="nav-pill" data-lens>
+    <a class="logo" href="#top" aria-label="Sunseto brand guide, top"><img class="lg-dark" src="{{A}}/logo/logo_ink_nav.webp" alt="Sunseto"><img class="lg-light" src="{{A}}/logo/logo_sunseto_nav.webp" alt="" aria-hidden="true"></a>
+    <nav aria-label="Chapters"><a href="#logo">Logo</a><a href="#colour">Colour</a><a href="#type">Type</a><a href="#grid">Grid</a><a href="#components">Components</a><a href="#imagery">Imagery</a><a href="#motion">Motion</a><a href="#voice">Voice</a><a href="#rules">Rules</a></nav>
+    <span class="where mono" id="where" aria-live="polite"><b>00</b><span>Brand guide</span></span>
+    <a class="get-started" href="#downloads" data-print="button" data-word="kit"><div class="view"><canvas></canvas></div><span>Get the kit</span></a>
+  </div>
+</header>
+
+<main>
+<!-- ============================================================ HERO -->
+<section id="top" data-nav="dark" data-ch="00" data-name="Brand guide">
+  <div class="view" data-print="hero"><canvas></canvas></div>
+  <div class="hero-shade"></div>
+  <i class="vl a"></i><i class="vl b"></i>
+  <div class="hero-copy">
+    <small class="mono line-mask rv"><span>Sunseto · Brand guide · Edition 01</span></small>
+    <h1><span class="line-mask rv"><span>One sun,</span></span><span class="line-mask rv"><span>three waves</span></span></h1>
+    <p><span class="line-mask rv"><span>How Sunseto looks, sounds and moves: the mark,</span></span><span class="line-mask rv"><span>the colours, the type, the grid and every crafted</span></span><span class="line-mask rv"><span>detail of the site, in one place.</span></span></p>
+  </div>
+  <div class="hero-info fade">
+    <div class="row"><span class="th"><svg viewBox="0 0 14 14" aria-hidden="true"><path fill="#FFF7E9" d="M8.6 1.2A6 6 0 1 0 12.8 9a4.8 4.8 0 0 1-4.2-7.8z"/></svg>Sunset in Kyoto tonight</span><b id="kyotoSunset">17:46</b></div>
+    <div class="row"><span>Edition</span><b>01, {{DATE}}</b></div>
+    <div class="row"><span>Files in the kit</span><b>{{KIT_COUNT}} files, {{KIT_SIZE}}</b></div>
+  </div>
+</section>
+
+<!-- ============================================================ CONTENTS -->
+<section id="contents" data-ch="00" data-name="Contents">
+  <div class="g3 toc">
+    <div class="cell intro">
+      <div><b>目次</b></div>
+      <div><small class="mono" style="color:var(--grey)">Mokuji · Contents</small><p style="margin-top:14px">Ten chapters, from the mark to the last hairline. Everything shown here is built from the site’s own source and runs live on this page.</p></div>
+    </div>
+    <a class="cell ch" href="#logo"><div class="top"><span class="mono">01</span><b>印</b></div><div><h3>Logo</h3><p>The mark, lockups, clear space and misuse<i>→</i></p></div></a>
+    <a class="cell ch" href="#colour"><div class="top"><span class="mono">02</span><b>色</b></div><div><h3>Colour</h3><p>Paper, ink, vermilion and the sunset print<i>→</i></p></div></a>
+    <a class="cell ch" href="#type"><div class="top"><span class="mono">03</span><b>字</b></div><div><h3>Type</h3><p>Four open fonts and the scale they are set in<i>→</i></p></div></a>
+    <a class="cell ch" href="#grid"><div class="top"><span class="mono">04</span><b>間</b></div><div><h3>Grid</h3><p>Three columns, hairline rules and 3:4 tiles<i>→</i></p></div></a>
+    <a class="cell ch" href="#components"><div class="top"><span class="mono">05</span><b>器</b></div><div><h3>Components</h3><p>The parts of the site, working<i>→</i></p></div></a>
+    <a class="cell ch" href="#imagery"><div class="top"><span class="mono">06</span><b>絵</b></div><div><h3>Imagery</h3><p>Engravings, ornaments, stamps and 3D tiles<i>→</i></p></div></a>
+    <a class="cell ch" href="#motion"><div class="top"><span class="mono">07</span><b>流</b></div><div><h3>Motion</h3><p>Easing, timing and four signature moves<i>→</i></p></div></a>
+    <a class="cell ch" href="#voice"><div class="top"><span class="mono">08</span><b>声</b></div><div><h3>Voice</h3><p>UK English, plain and warm<i>→</i></p></div></a>
+    <a class="cell ch" href="#rules"><div class="top"><span class="mono">09</span><b>守</b></div><div><h3>Do and don’t</h3><p>The rules we always keep<i>→</i></p></div></a>
+    <a class="cell ch" href="#downloads"><div class="top"><span class="mono">10</span><b>箱</b></div><div><h3>Downloads</h3><p>Every file, with its size<i>→</i></p></div></a>
+    <div class="cell colophon">
+      <img src="{{A}}/seal/hanko.webp" alt="" width="44" height="44">
+      <p>Edition 01, {{DATE}}. Set in Instrument Serif, Instrument Sans, JetBrains Mono and Shippori Mincho on washi, #fff7e9.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 01 LOGO -->
+<section class="chapter" id="logo" data-ch="01" data-name="Logo">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>01 — Logo</span></small><h2><span class="line-mask sv"><span>A sun setting</span></span><span class="line-mask sv"><span>into the sea</span></span></h2></div>
+    <p class="lede">The Sunseto mark is a low sun meeting three waves. It stands for the one promise we make: the afternoon’s light, kept for the evening.</p>
+    <div class="kanji"><b>印</b><span class="mono">Shirushi · the mark</span></div>
+  </header>
+
+  <div class="g3 bt">
+    <div class="c12 edge-l"><div class="plate grain lockup-plate">
+      <div class="anat" id="anat">
+        <img src="{{A}}/logo/logo_ink.png" alt="The Sunseto lockup: the mark, the wordmark sunseto and the 陽 seal" width="1051" height="181">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="inset:0;width:100%;height:100%">
+          <line x1="-6" x2="106" y1="71" y2="71" stroke="#e5482f" stroke-opacity=".55" stroke-dasharray="1.2 1.2" vector-effect="non-scaling-stroke" stroke-width="1"/>
+          <line x1="24" x2="86" y1="21" y2="21" stroke="#4c2806" stroke-opacity=".3" stroke-dasharray="1.2 1.2" vector-effect="non-scaling-stroke" stroke-width="1"/>
+          <line x1="11.6" x2="11.6" y1="-105" y2="8" stroke="#4c2806" stroke-opacity=".45" vector-effect="non-scaling-stroke" stroke-width="1"/>
+          <line x1="54" x2="54" y1="101" y2="190" stroke="#4c2806" stroke-opacity=".45" vector-effect="non-scaling-stroke" stroke-width="1"/>
+          <line x1="92.5" x2="92.5" y1="-105" y2="3" stroke="#4c2806" stroke-opacity=".45" vector-effect="non-scaling-stroke" stroke-width="1"/>
+        </svg>
+        <span class="tag mono" style="left:11.6%;bottom:calc(100% + 108%);translate:-10px 0"><i>1</i>Mark</span>
+        <span class="tag mono" style="left:54%;top:calc(100% + 92%);translate:-10px 0"><i>2</i>Wordmark</span>
+        <span class="tag mono" style="left:92.5%;bottom:calc(100% + 108%);translate:-10px 0"><i>3</i>Seal</span>
+        <span class="tag mono" style="right:calc(100% + 16px);top:71%;translate:0 -50%;color:var(--orange)">Baseline</span>
+        <span class="tag mono" style="left:calc(100% + 16px);top:21%;translate:0 -50%">x-height</span>
+      </div>
+      <div class="cap mono"><span>Primary lockup · ink on washi</span><span>logo_ink.png</span></div>
+    </div></div>
+    <div class="cell ledger mid">
+      <small class="mono">Anatomy</small>
+      <h4 class="serif">Three parts, one line</h4>
+      <ol class="nums">
+        <li><b>The mark</b>A sun disc sinking behind the horizon, clipped a sliver above the first wave, over three round-capped waves, each shorter than the one above. No rays.</li>
+        <li><b>The wordmark</b><i style="font-style:normal">sunseto</i>, lowercase, in Instrument Sans SemiBold with each letter closed up by 6 units. Its baseline sits level with the first wave.</li>
+        <li><b>The seal</b>陽, <i>hi</i>, the sun, cut as a hanko and pressed at −7°. It signs the lockup the way a craftsman signs a print.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="c1 edge-l"><div class="plate paper lockup-plate" style="outline:1px solid var(--line);outline-offset:-1px">
+      <div class="clear">
+        <span class="frame"></span><span class="inner"></span>
+        <img src="{{A}}/logo/logo_ink.png" alt="" width="1051" height="181">
+        <span class="x" style="left:-10%;top:50%;width:10%;translate:0 -50%"><svg viewBox="11.6 5 20.8 13.7" class="mk paper"><path fill="#e5482f" d="{{SUN_PATH}}"/></svg></span>
+        <span class="x" style="right:-10%;top:50%;width:10%;translate:0 -50%"><svg viewBox="11.6 5 20.8 13.7"><path fill="#e5482f" d="{{SUN_PATH}}"/></svg></span>
+        <span class="x" style="left:50%;bottom:calc(100% + 18%);translate:-50% 0;width:10%"><svg viewBox="11.6 5 20.8 13.7"><path fill="#e5482f" d="{{SUN_PATH}}"/></svg></span>
+        <span class="x" style="left:50%;top:calc(100% + 18%);translate:-50% 0;width:10%"><svg viewBox="11.6 5 20.8 13.7"><path fill="#e5482f" d="{{SUN_PATH}}"/></svg></span>
+      </div>
+      <div class="cap mono"><span>Clear space · one sun</span><span>x = sun width</span></div>
+    </div></div>
+    <div class="c2"><div class="plate lockup-plate">
+      <div class="sizes">
+        <div class="r"><div class="marks" style="align-items:center;gap:22px"><img src="{{A}}/logo/logo_ink_nav.webp" alt="" style="width:132px;height:auto"><img src="{{A}}/logo/logo_ink_nav.webp" alt="" style="width:120px;height:auto"></div><span class="mono">Lockup ≥ 120 px</span></div>
+        <div class="r"><div class="marks"><svg viewBox="0 0 44 32" class="mk" style="width:44px">{{MARK}}</svg><svg viewBox="0 0 44 32" class="mk" style="width:24px">{{MARK}}</svg><svg viewBox="0 0 44 32" class="mk" style="width:16px">{{MARK}}</svg></div><span class="mono">Mark ≥ 16 px</span></div>
+        <div class="r"><div class="marks"><img src="{{A}}/seal/hanko.webp" alt="" style="width:48px;rotate:-7deg;mix-blend-mode:multiply"><img src="{{A}}/seal/hanko.webp" alt="" style="width:28px;rotate:-7deg;mix-blend-mode:multiply"><img src="{{A}}/seal/hanko.webp" alt="" style="width:20px;rotate:-7deg;mix-blend-mode:multiply"></div><span class="mono">Seal ≥ 20 px</span></div>
+      </div>
+      <div class="cap mono"><span>Minimum sizes, at 1:1</span><span>Screen px</span></div>
+    </div></div>
+    <div class="cell ledger mid">
+      <small class="mono">Space and size</small>
+      <h4 class="serif">Give it one sun of room</h4>
+      <p>Measure the width of the sun disc and keep that much clear paper on every side of the lockup. Nothing else enters that frame: no rules, no type, no edge of the screen.</p>
+      <ul class="spec"><li><span>Full lockup</span><b>120 px wide or more</b></li><li><span>In the nav</span><b>132 × 21 px</b></li><li><span>Mark alone</span><b>16 px (the favicon)</b></li><li><span>Seal alone</span><b>20 px</b></li></ul>
+    </div>
+  </div>
+
+  <div class="sub"><h3>On light and dark</h3><span class="mono">Ink on paper · cream after dark</span></div>
+  <div class="onbg">
+    <div style="background:var(--beige);outline:1px solid var(--line);outline-offset:-1px"><img class="lock" src="{{A}}/logo/logo_ink.png" alt=""><span class="cap mono" style="position:absolute;left:20px;bottom:16px;color:var(--grey)">Washi · #fff7e9</span></div>
+    <div style="background:var(--beige-2)"><img class="lock" src="{{A}}/logo/logo_ink.png" alt=""><span class="cap mono" style="position:absolute;left:20px;bottom:16px;color:var(--grey)">Kinari · #f0e5cf</span></div>
+    <div style="background:var(--purple)"><img class="lock" src="{{A}}/logo/logo_ink.png" alt=""><span class="cap mono" style="position:absolute;left:20px;bottom:16px;color:rgba(19,36,87,.7)">Fuji · #b9cbf1</span></div>
+    <div style="background:var(--night)" data-nav="dark"><img class="lock" src="{{A}}/logo/logo_sunseto.webp" alt=""><span class="cap mono" style="position:absolute;left:20px;bottom:16px;color:rgba(255,247,233,.66)">Night · #1c1428</span></div>
+    <div data-nav="dark"><div class="view" data-print="plate"><canvas></canvas></div><img class="lock" src="{{A}}/logo/logo_sunseto.webp" alt="" style="position:relative;z-index:2;translate:0 -30%"><span class="cap mono" style="position:absolute;left:20px;bottom:16px;color:rgba(255,247,233,.8);z-index:2">The sunset print, above the sun</span></div>
+    <div class="eng" data-nav="dark" style="--g:radial-gradient(26% 32% at 86% 40%,rgba(255,190,100,.95),rgba(255,120,60,.35) 45%,transparent 75%),linear-gradient(180deg,#120a24 0%,#3a1a44 22%,#9a3e4a 34%,#f09048 40%,#6a2c2c 43%,#20101a 70%,#0c070c 100%)"><img src="{{A}}/guide/w_jaerial.webp" alt="" loading="lazy"><img class="lock" src="{{A}}/logo/logo_sunseto.webp" alt="" style="position:relative;inset:auto;width:min(58%,260px);height:auto;object-fit:contain;mix-blend-mode:normal;filter:none;z-index:2;translate:0 -92%"><span class="cap mono">On an engraving, in its sky</span></div>
+  </div>
+
+  <div class="sub"><h3>The mark, the seal and the icon</h3><span class="mono">Flat · enamel · stamped</span></div>
+  <div class="g3">
+    <div class="c1 edge-l"><div class="plate paper lockup-plate" style="outline:1px solid var(--line);outline-offset:-1px"><div class="center"><svg viewBox="0 0 44 32" class="mk mark-big" role="img" aria-label="The flat Sunseto mark">{{MARK}}</svg></div><div class="cap mono"><span>Flat mark · SVG</span><span>Sun #e5482f · sea #2a1d52</span></div></div></div>
+    <div class="c2"><div class="plate ink lockup-plate" data-nav="dark"><div class="center"><img class="mark3d" src="{{A}}/mark/mark_cream.png" alt="The enamel mark in cream"></div><div class="cap mono"><span>Enamel mark · cream</span><span>mark.html</span></div></div></div>
+    <div class="c3 edge-r"><div class="plate lockup-plate"><div class="center"><img class="appicon" src="{{A}}/seal/orn_appicon.webp" alt="The Sunseto app icon"></div><div class="cap mono"><span>App icon</span><span>orn_appicon</span></div></div></div>
+  </div>
+  <div class="g3 bt">
+    <div class="c1 edge-l"><div class="plate grain lockup-plate"><div class="center"><img class="seal-big" src="{{A}}/seal/hanko.webp" alt="The 陽 seal"></div><div class="cap mono"><span>陽 · hi · the sun</span><span>hanko.webp</span></div></div></div>
+    <div class="c2"><div class="plate lockup-plate" style="background:none"><div class="ways">
+      <div style="background:var(--beige);outline:1px solid var(--line);outline-offset:-1px"><svg viewBox="0 0 44 32" class="mk">{{MARK}}</svg><span class="cap mono" style="position:absolute;color:var(--grey)">Colour</span></div>
+      <div style="background:var(--beige-2)"><svg viewBox="0 0 44 32" class="mk paper">{{MARK}}</svg><span class="cap mono" style="position:absolute;color:var(--grey)">Sun and brown</span></div>
+      <div style="background:var(--beige)"><svg viewBox="0 0 44 32" class="mk ink">{{MARK}}</svg><span class="cap mono" style="position:absolute;color:var(--grey)">Ink</span></div>
+      <div style="background:var(--night)" data-nav="dark"><svg viewBox="0 0 44 32" class="mk cream">{{MARK}}</svg><span class="cap mono" style="position:absolute;color:rgba(255,247,233,.66)">Cream</span></div>
+    </div></div></div>
+    <div class="cell ledger mid">
+      <small class="mono">Which mark where</small>
+      <h4 class="serif">Flat for small, enamel for proud</h4>
+      <p>The enamel mark lives inside the lockups and the app icon. At favicon size, in print and in single colours, use the flat SVG in one of the four colourways.</p>
+      <p>The seal signs things: the lockup, a postcard, the chart paper, the Step 1 heading. It is always pressed at a slight turn and multiplied into the paper. It never stands in for the logo.</p>
+    </div>
+  </div>
+
+  <div class="sub"><h3>Misuse</h3><span class="mono">Six ways to break it</span></div>
+  <div class="misuse">
+    <figure><img src="{{A}}/logo/logo_ink.png" alt="" style="transform:scaleX(1.45)"><figcaption class="mono">Don’t stretch it</figcaption></figure>
+    <figure><img src="{{A}}/logo/logo_ink.png" alt="" style="filter:hue-rotate(150deg) saturate(1.6)"><figcaption class="mono">Don’t recolour the sun</figcaption></figure>
+    <figure><img src="{{A}}/logo/logo_ink.png" alt="" style="rotate:-12deg"><figcaption class="mono">Don’t turn the lockup</figcaption></figure>
+    <figure><div style="position:relative;width:min(64%,300px)"><img src="{{A}}/logo/logo_ink.png" alt="" style="width:100%;filter:drop-shadow(0 0 10px rgba(255,160,60,.9)) drop-shadow(0 6px 8px rgba(0,0,0,.35))"><span style="position:absolute;inset:-30% -10%;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.9) 50%,transparent 60%);mix-blend-mode:screen"></span></div><figcaption class="mono">Don’t add glows or shines</figcaption></figure>
+    <figure data-nav="dark"><div class="busy"><img src="{{A}}/guide/w_jliving.webp" alt="" loading="lazy" style="object-position:50% 70%;filter:contrast(1.1)"></div><img src="{{A}}/logo/logo_sunseto.webp" alt="" style="position:relative;z-index:2"><figcaption class="mono" style="z-index:2;color:#fff7e9;left:0;right:0;bottom:0;padding:28px 20px 16px;background:linear-gradient(180deg,rgba(17,10,8,0),rgba(17,10,8,.7))">Don’t set it on busy detail</figcaption></figure>
+    <figure><div class="typeset"><svg viewBox="0 0 44 32" class="mk ink">{{MARK}}</svg><span>Sunseto</span></div><figcaption class="mono">Don’t retype the wordmark</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============================================================ 02 COLOUR -->
+<section class="chapter" id="colour" data-ch="02" data-name="Colour">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>02 — Colour</span></small><h2><span class="line-mask sv"><span>Paper, ink</span></span><span class="line-mask sv"><span>and one low sun</span></span></h2></div>
+    <p class="lede">Most of Sunseto is washi and brown ink. Vermilion is the sun: it appears once or twice a screen, never as a wash. When colour is the point, the sunset print carries it.</p>
+    <div class="kanji"><b>色</b><span class="mono">Iro · colour</span></div>
+  </header>
+
+  <div class="sub"><h3>Paper, ink, accent</h3><span class="mono">The :root tokens</span></div>
+  <div class="swatches" id="swatches">
+    <div class="sw hair" style="--c:#fff7e9;--on:#4c2806" data-hex="#fff7e9" data-vs="#111111,#4c2806,#514e4a"><div class="t"><span class="mono">--beige</span><span class="k">和紙</span></div><div><h4>Washi</h4><div class="hex">#FFF7E9 · 255 247 233</div><p class="role">The page itself. Every section sits on it until night falls.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#f0e5cf;--on:#4c2806" data-hex="#f0e5cf" data-vs="#4c2806,#111111,#514e4a"><div class="t"><span class="mono">--beige-2</span><span class="k">生成</span></div><div><h4>Kinari</h4><div class="hex">#F0E5CF · 240 229 207</div><p class="role">Cards, plates and the chosen tier. One step down from the page.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#dacab6;--on:#4c2806" data-hex="#dacab6" data-vs="#fff7e9,#4c2806"><div class="t"><span class="mono">--line</span><span class="k">罫</span></div><div><h4>Rule</h4><div class="hex">#DACAB6 · 218 202 182</div><p class="role">Hairlines only: the grid, ledger rows, tier borders. Never text.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#4c2806;--on:#fff7e9" data-hex="#4c2806" data-vs="#fff7e9,#f0e5cf"><div class="t"><span class="mono">--brown</span><span class="k">焦茶</span></div><div><h4>Kogecha</h4><div class="hex">#4C2806 · 76 40 6</div><p class="role">The ledger’s ink: headings, figures and notes on paper.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#111111;--on:#fff7e9" data-hex="#111111" data-vs="#fff7e9,#ffffff"><div class="t"><span class="mono">--black</span><span class="k">墨</span></div><div><h4>Sumi</h4><div class="hex">#111111 · 17 17 17</div><p class="role">Body text, the black button and the nav’s ink.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#514e4a;--on:#fff7e9" data-hex="#514e4a" data-vs="#fff7e9,#f0e5cf"><div class="t"><span class="mono">--grey</span><span class="k">鼠</span></div><div><h4>Nezumi</h4><div class="hex">#514E4A · 81 78 74</div><p class="role">Mono eyebrows, labels and captions.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#e5482f;--on:#fff7e9" data-hex="#e5482f" data-vs="#fff7e9,#111111"><div class="t"><span class="mono">--orange</span><span class="k">陽</span></div><div><h4>Sun</h4><div class="hex">#E5482F · 229 72 47</div><p class="role">The sun in the mark, the slider’s thumb, one accent per view.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#b9cbf1;--on:#132457" data-hex="#b9cbf1" data-vs="#132457,#111111"><div class="t"><span class="mono">--purple</span><span class="k">藤</span></div><div><h4>Fuji</h4><div class="hex">#B9CBF1 · 185 203 241</div><p class="role">Wisteria: the evening sky behind the call to action.</p><div class="cr"></div></div></div>
+    <div class="sw" style="--c:#132457;--on:#fff7e9" data-hex="#132457" data-vs="#b9cbf1,#fff7e9"><div class="t"><span class="mono">--purple-dark</span><span class="k">紺</span></div><div><h4>Kon</h4><div class="hex">#132457 · 19 36 87</div><p class="role">Navy type on the wisteria sky.</p><div class="cr"></div></div></div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="cell ledger">
+      <small class="mono">Accent inks</small>
+      <h4 class="serif">Pigments, not paint</h4>
+      <p>A handful of inks appear inside drawings, stamps and charts. They are named for the traditional pigments they resemble and used only where they are listed, never as fills for UI.</p>
+    </div>
+    <div class="cell c23"><div class="inks">
+      <figure><i style="--c:#d8452c"></i><div><b>朱</b><strong>Shu · #D8452C</strong><span>The chart’s solar line, postcode boxes, the network’s trunk</span></div></figure>
+      <figure><i style="--c:#34508f"></i><div><b>藍</b><strong>Ai · #34508F</strong><span>The network’s branches, out to the next towns</span></div></figure>
+      <figure><i style="--c:#3f63b8"></i><div><b>瑠璃</b><strong>Ruri · #3F63B8</strong><span>The battery line on the chart</span></div></figure>
+      <figure><i style="--c:#f3b27a"></i><div><b>杏</b><strong>Anzu · #F3B27A</strong><span>The forecast, dashed</span></div></figure>
+      <figure><i style="--c:#2e3f7a"></i><div><b>群青</b><strong>Gunjō · #2E3F7A</strong><span>The Kyoto stamp’s ink</span></div></figure>
+      <figure><i style="--c:#26345f"></i><div><b>鉄紺</b><strong>Tetsukon · #26345F</strong><span>The Chiba stamp’s ink</span></div></figure>
+      <figure><i style="--c:#c8452c"></i><div><b>洗朱</b><strong>Araishu · #C8452C</strong><span>The Onomichi stamp’s ink</span></div></figure>
+      <figure><i style="--c:#2a1d52"></i><div><b>茄子紺</b><strong>Nasukon · #2A1D52</strong><span>The mark’s sea, in the favicon and on the phone</span></div></figure>
+    </div></div>
+  </div>
+
+  <div class="sub"><h3>The sunset print</h3><span class="mono">wave.js · PALETTES · live</span></div>
+  <div class="prints">
+    <div class="c1" data-nav="dark"><div class="view" data-print="phone"><canvas></canvas></div>
+      <h4><b>Phone</b><span class="mono">Step 1 screen · pricing sky</span></h4>
+      <div class="stops"><div class="r"><i style="--c:#2c1d55"></i>Indigo<em>#2C1D55</em></div><div class="r"><i style="--c:#b0406c"></i>Rose<em>#B0406C</em></div><div class="r"><i style="--c:#ea5f4a"></i>Coral<em>#EA5F4A</em></div></div></div>
+    <div class="c2" data-nav="dark"><div class="view" data-print="swatch-button"><canvas></canvas></div>
+      <h4><b>Button</b><span class="mono">The Get started button</span></h4>
+      <div class="stops"><div class="r"><i style="--c:#4a2255"></i>Indigo<em>#4A2255</em></div><div class="r"><i style="--c:#c4466a"></i>Rose<em>#C4466A</em></div><div class="r"><i style="--c:#f0683f"></i>Coral<em>#F0683F</em></div></div></div>
+    <div class="c3" style="position:relative"><div class="bokashi">
+      <small class="mono" style="color:var(--grey);margin-bottom:14px">Bokashi · the wiped-ink blend, top to horizon</small>
+      <div class="ramp">
+        <div style="--f:3.2;--c:#2c1d55;--on:#fff7e9"><span>Indigo · c0</span><span>h ≥ .66</span></div>
+        <div style="--f:1.6;--c:#b0406c;--on:#fff7e9"><span>Rose · c1</span><span>.32–.72</span></div>
+        <div style="--f:1.2;--c:#ea5f4a;--on:#fff7e9"><span>Coral · c2</span><span>.10–.38</span></div>
+        <div style="--f:.8;--c:#fa8c3d;--on:#2a1a0e"><span>Orange · fixed</span><span>0–.16</span></div>
+        <div style="--f:.7;--c:#ffd173;--on:#2a1a0e"><span>Gold · horizon</span><span>0</span></div>
+      </div>
+      <p style="margin-top:16px;font-size:14px;line-height:20px;color:var(--ink-2)">A woodblock sunset: a low sun cut by the horizon, flat kasumi bands, violet water in fine strokes, a paper grain over all of it. Three inks change per use; gold and orange stay.</p>
+    </div></div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="cell ledger">
+      <small class="mono">Pairings</small>
+      <h4 class="serif">What sits on what</h4>
+      <p>Contrast is measured live on this page (WCAG 2.2). Text pairs pass AA at the sizes we set them; vermilion and the rule colour are for marks and lines, not reading.</p>
+    </div>
+    <div class="cell c23"><ul class="pairs" id="pairs">
+      <li data-f="#111111" data-b="#fff7e9" data-min="4.5"><div class="smp" style="--f:#111;--b:#fff7e9"><b>Aa</b><span>Body text on washi</span></div><div class="nm"><b>Sumi on washi</b>Paragraphs, the nav, buttons’ labels</div><div class="rt"></div></li>
+      <li data-f="#4c2806" data-b="#fff7e9" data-min="4.5"><div class="smp" style="--f:#4c2806;--b:#fff7e9"><b>Aa</b><span>Headings and figures</span></div><div class="nm"><b>Kogecha on washi</b>Serif headings, ledger figures</div><div class="rt"></div></li>
+      <li data-f="rgba(76,40,6,.78)" data-b="#fff7e9" data-min="4.5"><div class="smp" style="--f:rgba(76,40,6,.78);--b:#fff7e9"><b>Aa</b><span>Notes at 78%</span></div><div class="nm"><b>Kogecha 78% on washi</b>Ledger notes and ledes</div><div class="rt"></div></li>
+      <li data-f="#514e4a" data-b="#fff7e9" data-min="4.5"><div class="smp" style="--f:#514e4a;--b:#fff7e9"><b>Aa</b><span class="mono">Mono eyebrow</span></div><div class="nm"><b>Nezumi on washi</b>12px mono labels</div><div class="rt"></div></li>
+      <li data-f="#4c2806" data-b="#f0e5cf" data-min="4.5"><div class="smp" style="--f:#4c2806;--b:#f0e5cf"><b>Aa</b><span>On a card</span></div><div class="nm"><b>Kogecha on kinari</b>Step cards, plates, chosen tier</div><div class="rt"></div></li>
+      <li data-f="#132457" data-b="#b9cbf1" data-min="4.5"><div class="smp" style="--f:#132457;--b:#b9cbf1"><b>Aa</b><span>Keep the evening</span></div><div class="nm"><b>Kon on fuji</b>The call to action</div><div class="rt"></div></li>
+      <li data-f="#fff7e9" data-b="#1c1428" data-min="4.5"><div class="smp" style="--f:#fff7e9;--b:#1c1428"><b>Aa</b><span>We fit it</span></div><div class="nm"><b>Washi on night</b>The Step 2 card, the footer</div><div class="rt"></div></li>
+      <li data-f="#ffffff" data-b="#111111" data-min="4.5"><div class="smp" style="--f:#fff;--b:#111"><b>Aa</b><span>Check my roof</span></div><div class="nm"><b>White on sumi</b>The black button</div><div class="rt"></div></li>
+      <li data-f="#e5482f" data-b="#fff7e9" data-min="3"><div class="smp" style="--f:#e5482f;--b:#fff7e9"><b>Aa</b><span>Marks, large only</span></div><div class="nm"><b>Sun on washi</b>The mark, a thumb, a numeral; never body text</div><div class="rt"></div></li>
+      <li data-f="#dacab6" data-b="#fff7e9" data-min="0"><div class="smp" style="--f:#dacab6;--b:#fff7e9"><b>Aa</b><span>Rules only</span></div><div class="nm"><b>Rule on washi</b>1px lines; never text</div><div class="rt"></div></li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ============================================================ 03 TYPE -->
+<section class="chapter" id="type" data-ch="03" data-name="Type">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>03 — Type</span></small><h2><span class="line-mask sv"><span>A serif for the evening,</span></span><span class="line-mask sv"><span>a sans for the facts</span></span></h2></div>
+    <p class="lede">Instrument Serif carries the feeling and Instrument Sans carries the facts. JetBrains Mono labels things, and Shippori Mincho sets the few kanji we use. All four are open fonts under the SIL OFL 1.1.</p>
+    <div class="kanji"><b>字</b><span class="mono">Ji · letters</span></div>
+  </header>
+
+  <div class="g3 bt">
+    <div class="c12 fam">
+      <div class="top"><h4>Instrument Serif</h4><span class="mono">400 · 400 italic · display</span></div>
+      <div><div class="spec">Keep today’s <i>sun</i></div><div class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 ¥ £ € & ’ “ ” — · ,.</div></div>
+      <div class="top"><span class="mono">Hero, section heads, figures, prices, postcards</span><a class="mono" href="{{A}}/fonts/instrument-serif-400.woff2" download style="color:var(--brown)">woff2 ↓</a></div>
+    </div>
+    <div class="c3 fam">
+      <div class="top"><h4>Shippori Mincho</h4><span class="mono">500 · kanji</span></div>
+      <div class="spec jp">陽<br>小中大</div>
+      <div class="top"><span class="mono">The seal, the tiers, the loader</span><a class="mono" href="{{A}}/fonts/shippori-mincho-500.woff2" download style="color:var(--brown)">woff2 ↓</a></div>
+    </div>
+  </div>
+  <div class="g3 bt">
+    <div class="c12 fam">
+      <div class="top"><h4>Instrument Sans</h4><span class="mono">400 · 500 · 600 · UI and body</span></div>
+      <div><div class="spec sans">Stay on</div>
+        <div class="w"><span style="font-weight:400">Regular 400 — paragraphs and notes</span><span style="font-weight:500">Medium 500 — headings, buttons, nav</span><span style="font-weight:600">SemiBold 600 — the wordmark, chips</span></div></div>
+      <div class="top"><span class="mono">Everything that tells you a fact</span><a class="mono" href="{{A}}/fonts/instrument-sans-500.woff2" download style="color:var(--brown)">woff2 ↓</a></div>
+    </div>
+    <div class="c3 fam">
+      <div class="top"><h4>JetBrains Mono</h4><span class="mono">400 · 500 · labels</span></div>
+      <div class="spec mono">Wed<br>18:40</div>
+      <div class="top"><span class="mono">12 px, uppercase, −0.24 px</span><a class="mono" href="{{A}}/fonts/jetbrains-mono-400.woff2" download style="color:var(--brown)">woff2 ↓</a></div>
+    </div>
+  </div>
+
+  <div class="sub"><h3>The scale, as set on the site</h3><span class="mono">Size / line height · tracking</span></div>
+  <ol class="scale">
+    <li><div class="meta"><b>Call to action</b><span class="mono">Serif 400 · 120 / 146.4</span><small>“Keep the evening” · phones 64 / 72</small></div><div class="smp" style="font-family:var(--serif);font-size:120px;line-height:146.4px;color:var(--purple-dark)">Keep the evening</div></li>
+    <li><div class="meta"><b>Display</b><span class="mono">Serif 400 · 85 / 98.6 · −1.7 px</span><small>Hero, How it works, Network, Why · phones 48 / 52</small></div><div class="smp" style="font-family:var(--serif);font-size:85px;line-height:98.6px;letter-spacing:-1.7px">Keep today’s sun for tonight</div></li>
+    <li><div class="meta"><b>Section head</b><span class="mono">Serif 400 · clamp(56, 5.9vw, 85) / 1.08 · −.02em</span><small>Letters, chapter heads here · phones 44 / 48</small></div><div class="smp" style="font-family:var(--serif);font-size:clamp(56px,5.9vw,85px);line-height:1.08;letter-spacing:-.02em">Letters from the street</div></li>
+    <li><div class="meta"><b>Figure</b><span class="mono">Serif 400 · clamp(60, 5.4vw, 100) / .92 · −.025em</span><small>Ledger cells; the unit in sans at .2em</small></div><div class="smp"><div class="hg-note" style="padding:0"><b style="margin:0">¥9,800<i>/ month</i></b></div></div></li>
+    <li><div class="meta"><b>Step heading</b><span class="mono">Sans 500 · clamp(32, 3.05vw, 56) / 1.08 · −.02em</span><small>Steps 1 and 3 · phones 28 / 32</small></div><div class="smp" style="font-size:clamp(32px,3.05vw,56px);font-weight:500;line-height:1.08;letter-spacing:-.02em">Choose a plan</div></li>
+    <li><div class="meta"><b>Row heading</b><span class="mono">Sans 500 · clamp(26, 2.3vw, 48) / 1.15 · −.02em</span><small>The three homes rows · phones 30 / 34</small></div><div class="smp" style="font-size:clamp(26px,2.3vw,48px);font-weight:500;line-height:1.15;letter-spacing:-.02em;color:var(--black)">Pay for sunshine, not for fuel ships</div></li>
+    <li><div class="meta"><b>Statement</b><span class="mono">Sans 500 · 45 / 52.2 · −.9 px</span><small>What we face · phones 22 / 26</small></div><div class="smp" style="font-size:45px;font-weight:500;line-height:52.2px;letter-spacing:-.9px">One storm can darken a whole prefecture</div></li>
+    <li><div class="meta"><b>Postcard hand</b><span class="mono">Serif 400 · clamp(23, 2vw, 29) / 39 · ruled</span><small>Hagaki quotes, on a 39 px ruling</small></div><div class="smp"><p style="font-family:var(--serif);font-size:clamp(23px,2vw,29px);line-height:39px;letter-spacing:-.01em;color:#2a1a0e;background:repeating-linear-gradient(180deg,transparent 0 38px,rgba(76,40,6,.12) 38px 39px);background-position:0 -8px;max-width:520px">Our lamps never flickered, so the neighbours came round for tea.</p></div></li>
+    <li><div class="meta"><b>Lead</b><span class="mono">Sans 500 · 20 / 23.2 · −.4 px</span><small>Hero and section intros · phones 16 / 20</small></div><div class="smp" style="font-size:20px;font-weight:500;line-height:23.2px;letter-spacing:-.4px;max-width:470px">Rooftop solar and a home battery, one monthly plan. Nothing to buy, nothing to maintain.</div></li>
+    <li><div class="meta"><b>Body</b><span class="mono">Sans 400 · 15 / 21 · 16 / 23</span><small>Notes, ledes, cards</small></div><div class="smp" style="font-size:15px;line-height:21px;max-width:400px;color:var(--ink-2)">Panels, battery, fitting and upkeep in one price. A local installer handles the permits and connects everything to your fuse box.</div></li>
+    <li><div class="meta"><b>Interface</b><span class="mono">Sans 500 · 14 / 21 · −.24 px</span><small>Buttons, nav links, list rows</small></div><div class="smp"><span class="btn"><span>Check my roof</span></span></div></li>
+    <li><div class="meta"><b>Eyebrow</b><span class="mono">Mono 400 · 12 / 18 · −.24 px · caps</span><small>Every section’s first line</small></div><div class="smp"><span class="mono" style="color:var(--grey)">Solar + storage for homes in Japan</span></div></li>
+    <li><div class="meta"><b>The floor</b><span class="mono">Mono 400 · 11 / 14 · caps</span><small>Tier ages, the stamp’s band. Nothing goes smaller.</small></div><div class="smp"><span style="font-family:var(--mono);font-size:11px;line-height:14px;text-transform:uppercase;color:var(--grey)">3–4 people · Nippon 84</span></div></li>
+    <li><div class="meta"><b>Kanji</b><span class="mono">Shippori Mincho 500 · clamp(64, 6.6vw, 104)</span><small>The pricing card; 22 px on the tiers</small></div><div class="smp" style="font-family:var(--jp);font-weight:500;font-size:clamp(64px,6.6vw,104px);line-height:1">中</div></li>
+  </ol>
+
+  <div class="g3 bt">
+    <div class="cell ledger">
+      <small class="mono">The 11 px rule</small>
+      <h4 class="serif">Nothing under eleven</h4>
+      <p>No text on a Sunseto page renders below 11px, on any screen. Fluid sizes are wrapped in <span class="code">max(11px, …)</span>, and text inside SVGs is sized for the box it is drawn into: the postmark’s 8.5 units become 11.1px.</p>
+    </div>
+    <div class="cell c23 mid"><div class="floor">
+      <span style="font-size:9px;opacity:0;width:0;overflow:hidden" aria-hidden="true"></span>
+      <span class="no" style="font-size:22px;line-height:1">Aa<em>9 px</em></span>
+      <span class="no" style="font-size:24px;line-height:1">Aa<em>10 px</em></span>
+      <span style="font-size:11px;line-height:1">Aa — the floor<em>11 px</em></span>
+      <span style="font-size:12px;line-height:1" class="mono">Aa eyebrow<em>12 px</em></span>
+      <span style="font-size:15px;line-height:1">Aa body<em>15 px</em></span>
+      <span style="font-size:20px;line-height:1">Aa lead<em>20 px</em></span>
+    </div><p style="margin-top:18px;font-size:13px;line-height:18px;color:rgba(76,40,6,.6);max-width:520px">The struck-out samples are drawn larger here so this page keeps its own rule.</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ 04 GRID -->
+<section class="chapter" id="grid" data-ch="04" data-name="Grid">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>04 — Grid and layout</span></small><h2><span class="line-mask sv"><span>Three columns</span></span><span class="line-mask sv"><span>and a hairline</span></span></h2></div>
+    <p class="lede">Every Sunseto page sits on three equal columns divided by 1px rules, with 20px of margin at the edge of the screen. Cells are 3:4, so a row of three is exactly four-ninths of the width tall.</p>
+    <div class="kanji"><b>間</b><span class="mono">Ma · the space between</span></div>
+  </header>
+
+  <div class="g3 bt">
+    <div class="c12 gridlive">
+      <div class="schem" id="schem">
+        <div class="col a mono">Column 1</div><div class="col b mono">Column 2</div><div class="col c mono">Column 3</div>
+        <div class="mg l"></div><div class="mg r"></div>
+        <div class="tile mono" id="schemTile">3:4</div>
+      </div>
+      <div class="measures" id="measures">
+        <div><span class="mono">Your window</span><b id="mW">1440<i>px</i></b></div>
+        <div><span class="mono">Column · W/3</span><b id="mC">480<i>px</i></b></div>
+        <div><span class="mono">Row · W × 4/9</span><b id="mR">640<i>px</i></b></div>
+        <div><span class="mono">Margin</span><b id="mM">20<i>px</i></b></div>
+      </div>
+    </div>
+    <div class="cell ledger mid">
+      <small class="mono">Measured on this page</small>
+      <h4 class="serif">The numbers follow the window</h4>
+      <p>The figures on the left are read from your browser as you resize it. Rows are set in container units, <span class="code">calc(100cqw * 4 / 9)</span>, so a tile stays 3:4 at any width.</p>
+      <button class="toggle" id="gridToggle" aria-pressed="false" type="button"><i></i>Show the grid on this page</button>
+    </div>
+  </div>
+
+  <div class="sub"><h3>The diagonal rhythm</h3><span class="mono">Media · text · object</span></div>
+  <div class="g3">
+    <div class="cell">
+      <div class="mini" aria-label="The homes section: media, text and ornament cells stepping down the diagonal">
+        <div class="m"><span class="lbl">M</span><img src="{{A}}/guide/t_tile-house.webp" alt="" loading="lazy"></div>
+        <div class="t"><span class="lbl">T</span><small>Spend less</small><b>Pay for sunshine, not for fuel ships</b></div>
+        <div class="o"><span class="lbl">O</span><img src="{{A}}/ornaments/orn_sakura.webp" alt="" loading="lazy"></div>
+        <div class="o"><span class="lbl">O</span><img src="{{A}}/ornaments/orn_crane.webp" alt="" loading="lazy"></div>
+        <div class="m"><span class="lbl">M</span><img src="{{A}}/guide/t_tile-battery.webp" alt="" loading="lazy"></div>
+        <div class="t"><span class="lbl">T</span><small>Stay on</small><b>The lights stay on when the typhoon comes</b></div>
+        <div class="o"><span class="lbl">O</span><img src="{{A}}/ornaments/orn_fan.webp" alt="" loading="lazy"></div>
+        <div class="t"><span class="lbl">T</span><small>See it</small><b>Every kilowatt, in your pocket</b></div>
+        <div class="m"><span class="lbl">M</span><img src="{{A}}/guide/t_tile-hand.webp" alt="" loading="lazy"></div>
+      </div>
+      <p class="mono" style="margin-top:14px;color:var(--grey)">Homes · 3 rows of 3</p>
+    </div>
+    <div class="cell">
+      <div class="mini" aria-label="Step 1: the phone in the middle, scenes in opposite corners, ledger notes in the empty cells">
+        <div class="n"><span class="lbl">N</span><small>Plans from</small><b>¥9,800</b></div>
+        <div class="n"><span class="lbl">N</span><small>Higashiyama</small><b>4.8</b></div>
+        <div class="m"><span class="lbl">M</span><img src="{{A}}/guide/t_tile-machiya.webp" alt="" loading="lazy"></div>
+        <div class="o"></div>
+        <div class="m"><span class="lbl">P</span><img src="{{A}}/guide/t_tile-phone.webp" alt="" loading="lazy" style="object-fit:contain"></div>
+        <div class="o"></div>
+        <div class="m"><span class="lbl">M</span><img src="{{A}}/guide/t_tile-cedar-yard.webp" alt="" loading="lazy"></div>
+        <div class="t"><span class="lbl">T</span><small>Step 1</small><b>Choose a plan</b></div>
+        <div class="n"><span class="lbl">N</span><small>Up front</small><b>¥0</b></div>
+      </div>
+      <p class="mono" style="margin-top:14px;color:var(--grey)">Step 1 · scenes in opposite corners</p>
+    </div>
+    <div class="cell ledger">
+      <small class="mono">How a row is composed</small>
+      <h4 class="serif">One of each, stepping down</h4>
+      <p>Each row of three holds one <b style="font-weight:500">media</b> tile, one <b style="font-weight:500">text</b> cell and one <b style="font-weight:500">object</b> cell, and they move one column to the right as you scroll, so the page walks down a diagonal.</p>
+      <p>In the step grids a phone or chart sits in the middle, two 3D scenes take opposite corners, and every empty square carries one <b style="font-weight:500">note</b>: a label, a figure, a sentence.</p>
+      <ul class="spec"><li><span>M</span><b>Media, full bleed in its cell</b></li><li><span>T</span><b>Eyebrow and heading, centred</b></li><li><span>O</span><b>A floating ornament</b></li><li><span>N</span><b>A ledger note</b></li></ul>
+    </div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="cell c12"><ul class="spacing" id="spacing">
+      <li><b>Section</b><span class="bar" style="--w:150px"></span><span class="mono">150 px · homes 180</span></li>
+      <li><b>Head to content</b><span class="bar" style="--w:110px"></span><span class="mono">110 px</span></li>
+      <li><b>Cell padding</b><span class="bar" style="--w:var(--pad)"></span><span class="mono" id="padVal">clamp(28, 3.3vw, 64)</span></li>
+      <li><b>Button gap</b><span class="bar" style="--w:60px"></span><span class="mono">30–60 px</span></li>
+      <li><b>Eyebrow to heading</b><span class="bar" style="--w:24px"></span><span class="mono">24 px</span></li>
+      <li><b>Nav from top</b><span class="bar" style="--w:22px"></span><span class="mono">22 px · phones 12</span></li>
+      <li><b>Screen margin</b><span class="bar" style="--w:20px"></span><span class="mono">1.389vw · phones 4.27vw</span></li>
+    </ul></div>
+    <div class="cell ledger">
+      <small class="mono">Radii and breakpoints</small>
+      <h4 class="serif">Small corners, one break</h4>
+      <ul class="spec"><li><span>Postcard, chip</span><b>3 px</b></li><li><span>Button, tiers</span><b>4 px</b></li><li><span>Cards on phones</span><b>6 px</b></li><li><span>Nav button</span><b>9 px</b></li><li><span>Nav pill, phone screen</span><b>16 px</b></li><li><span>Three columns</span><b>1024 px and up</b></li><li><span>Below 1024</span><b>One column, cards on kinari</b></li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 05 COMPONENTS -->
+<section class="chapter" id="components" data-ch="05" data-name="Components">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>05 — Components</span></small><h2><span class="line-mask sv"><span>The parts</span></span><span class="line-mask sv"><span>of an evening</span></span></h2></div>
+    <p class="lede">Each part below is live and built from the site’s own CSS, so hover it, drag it, press it. They sit flat and face-on. Only the chart tray has depth, because it is a thing on a desk.</p>
+    <div class="kanji"><b>器</b><span class="mono">Utsuwa · vessels</span></div>
+  </header>
+
+  <div class="g3 bt">
+    <div class="c12 edge-l"><div class="plate comp-plate" id="glassPlate">
+      <div class="glassbed">
+        <div class="paperband"><div class="ph">Keep today’s sun for tonight · Keep today’s sun for tonight</div></div>
+        <div class="wire" style="top:50%;--g:radial-gradient(26% 40% at 70% 30%,rgba(255,190,100,.9),rgba(255,120,60,.3) 45%,transparent 75%),linear-gradient(180deg,#3a1a44 0%,#9a3e4a 30%,#f09048 44%,#6a2c2c 52%,#20101a 80%,#0c070c 100%)" data-nav="dark"><img src="{{A}}/guide/w_jaerial.webp" alt="" loading="lazy"></div>
+      </div>
+      <div class="pillslot" style="top:25%"><div class="nav-pill" data-lens data-fit>
+        <a class="logo" href="#glassPlate" aria-label="Sunseto"><img class="lg-dark" src="{{A}}/logo/logo_ink_nav.webp" alt="Sunseto"><img class="lg-light" src="{{A}}/logo/logo_sunseto_nav.webp" alt="" aria-hidden="true"></a>
+        <nav aria-label="Specimen"><a href="#glassPlate">How it works</a><a href="#glassPlate">Homes</a><a href="#glassPlate">Network</a><a href="#glassPlate">Pricing</a><a href="#glassPlate">Company</a></nav>
+        <a class="get-started" href="#glassPlate" data-print="button" data-word="roof"><div class="view"><canvas></canvas></div><span>Check my roof</span></a>
+      </div></div>
+      <div class="pillslot" style="top:75%"><div class="nav-pill dark" data-lens data-fit>
+        <a class="logo" href="#glassPlate" aria-label="Sunseto"><img class="lg-dark" src="{{A}}/logo/logo_ink_nav.webp" alt="Sunseto"><img class="lg-light" src="{{A}}/logo/logo_sunseto_nav.webp" alt="" aria-hidden="true"></a>
+        <nav aria-label="Specimen, dark"><a href="#glassPlate">How it works</a><a href="#glassPlate">Homes</a><a href="#glassPlate">Network</a><a href="#glassPlate">Pricing</a><a href="#glassPlate">Company</a></nav>
+        <a class="get-started" href="#glassPlate" data-print="button" data-word="roof"><div class="view"><canvas></canvas></div><span>Check my roof</span></a>
+      </div></div>
+      <div class="cap mono top" style="color:var(--grey)"><span>05.1 · Over paper</span></div>
+      <div class="cap mono" style="color:rgba(255,247,233,.72)"><span>Over a dark section</span><span>Move the cursor near it</span></div>
+    </div></div>
+    <div class="cell ledger mid">
+      <small class="mono">05.1 · .nav-pill</small>
+      <h4 class="serif">Liquid-glass nav</h4>
+      <p>Clear glass on a 16px radius. Its rim bends what passes behind it (an SVG lens, in Chromium), picks up light from the side nearest the cursor as a slab of glass would, and turns to dark glass over dark sections.</p>
+      <ul class="spec"><li><span>Height</span><b>58 px · phones 52</b></li><li><span>Radius</span><b>16 px</b></li><li><span>Glass</span><b>blur 9–10 px, saturate 160%</b></li><li><span>Links</span><b>Sans 500 · 14 / 19.6</b></li><li><span>Offset</span><b>22 px from the top</b></li></ul>
+      <span class="src mono">page.html · dom.js GLASS</span>
+    </div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="cell ledger mid">
+      <small class="mono">05.2 · .get-started · wave.js</small>
+      <h4 class="serif">The sunset-print button</h4>
+      <p>The brand’s own surface, rendered live: a woodblock sunset with the sun set behind the word “roof”. On hover the tide comes in on a damped spring, the sun sinks into it and a few sparks lift off the water.</p>
+      <ul class="spec"><li><span>Size</span><b>126 × 44 · radius 9</b></li><li><span>Inks</span><b>#4A2255 · #C4466A · #F0683F</b></li><li><span>Tide</span><b>spring ω 11, ζ 0.62</b></li><li><span>Label</span><b>Sans 500 · 15 / 22.5</b></li></ul>
+      <span class="src mono">page.html · wave.js · main.js sunBehindWord</span>
+    </div>
+    <div class="c23 edge-r"><div class="plate comp-plate grain">
+      <div class="btnbed">
+        <a class="get-started xl" href="#components" data-print="button" data-word="roof"><div class="view"><canvas></canvas></div><span>Check my roof</span></a>
+        <div class="row">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px"><a class="get-started" href="#components" data-print="button" data-word="roof"><div class="view"><canvas></canvas></div><span>Check my roof</span></a><span class="mono">At rest</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px"><a class="get-started" href="#components" data-print="button" data-word="roof" data-tide="1" tabindex="-1"><div class="view"><canvas></canvas></div><span>Check my roof</span></a><span class="mono">Tide in</span></div>
+        </div>
+      </div>
+      <div class="cap mono"><span>Hover the large one: the tide comes in</span><span>1:1 and 2:1</span></div>
+    </div></div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="c1 edge-l"><div class="plate comp-plate">
+      <div class="btnbed">
+        <div class="row"><a class="btn" href="#components"><span>See my price</span></a><a class="btn is-hover" href="#components" tabindex="-1"><span>See my price</span></a></div>
+        <div class="row" style="background:var(--night);padding:26px 28px;border-radius:6px" data-nav="dark"><a class="btn light" href="#components"><span>Check my roof</span></a><a class="btn light is-hover" href="#components" tabindex="-1"><span>Check my roof</span></a></div>
+        <span class="mono" style="color:var(--grey)">Rest · hover</span>
+      </div>
+      <div class="cap mono top"><span>05.3 · .btn</span></div>
+    </div>
+    <div class="cell ledger" style="padding-left:var(--pad);padding-right:var(--pad)">
+      <h4 class="serif">The black button</h4>
+      <p>On hover a paper panel rises from below at a slight turn and fills the button, and the label lifts 1px. On dark sections it is inverted.</p>
+      <ul class="spec"><li><span>Height</span><b>50 px, padding 24</b></li><li><span>Radius</span><b>4 px</b></li><li><span>Motion</span><b>.6 s · (.16, 1, .3, 1)</b></li></ul>
+    </div></div>
+    <div class="c2"><div class="plate comp-plate paper" style="outline:1px solid var(--line);outline-offset:-1px">
+      <div class="eyebed">
+        <div class="ex"><span class="mono">Spend less</span><h2>Pay for sunshine,<br>not for fuel ships</h2></div>
+        <div class="ex"><span class="mono">From the neighbours</span><h3>Letters from<br>the street</h3></div>
+      </div>
+      <div class="cap mono top"><span>05.4 · .mono eyebrow</span></div>
+    </div>
+    <div class="cell ledger">
+      <h4 class="serif">The mono eyebrow</h4>
+      <p>Every heading is introduced by a short uppercase label in JetBrains Mono. It names the thing; it never explains it. Two to four words.</p>
+      <ul class="spec"><li><span>Set</span><b>Mono 400 · 12 / 18 · −.24 px</b></li><li><span>Ink</span><b>Nezumi on paper, cream 66% at night</b></li><li><span>Gap</span><b>24 px to the heading</b></li></ul>
+    </div></div>
+    <div class="c3 edge-r"><div class="plate comp-plate ledgers" style="background:none">
+      <div class="ledgerbed">
+        <div class="hg-note"><small class="mono">Plans from</small><b>¥9,800<i>/ month</i></b><p>Panels, battery, fitting and upkeep in one price.</p></div>
+        <div class="hg-note"><small class="mono">When the grid drops</small><b>0.02<i>s</i></b><p>The battery takes over before a lamp can flicker.</p></div>
+      </div>
+      <div class="cap mono top"><span>05.5 · .hg-note</span></div>
+    </div>
+    <div class="cell ledger">
+      <h4 class="serif">The ledger cell</h4>
+      <p>The empty squares of a step grid each carry one figure, like a line in a ledger: a label, a large serif number with its unit, and one sentence.</p>
+      <ul class="spec"><li><span>Figure</span><b>Serif clamp(60, 5.4vw, 100)</b></li><li><span>Unit</span><b>Sans .2em at 60%</b></li><li><span>Note</span><b>15 / 21 at 78%, max 270</b></li></ul>
+    </div></div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="c1 edge-l"><div class="plate comp-plate grain" style="min-height:640px">
+      <div class="hkbed">
+        <article class="hagaki" id="hagakiSpec" style="--rot:-1.6deg;--ink:#2e3f7a" data-pm="KYOTO|16.4.25|18-40">
+          <div class="hk-top">
+            <div class="hk-stamp"><img src="{{A}}/stamps/stamp_kyoto.webp" alt="" loading="lazy"><span class="band"><span>NIPPON</span><span>84</span></span></div>
+            <svg class="hk-pm" viewBox="0 0 84 84" aria-hidden="true"></svg>
+            <div class="hk-zip" aria-label="Postcode 605-0826"><i>6</i><i>0</i><i>5</i><b></b><i>0</i><i>8</i><i>2</i><i>6</i></div>
+          </div>
+          <blockquote class="hk-quote"><p>Our machiya is a hundred and ten years old. The crew laid the panels into the kawara as if they had always been there.</p></blockquote>
+          <div class="hk-from"><img src="{{A}}/seal/hanko.webp" alt=""><div><b>Haru Morimoto</b><span class="mono">Higashiyama, Kyoto</span></div></div>
+          <div class="hk-fact mono">Naka plan · 4.8 kW · on since April</div>
+        </article>
+      </div>
+      <button class="replay" type="button" data-replay="hagakiSpec"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6a4 4 0 1 0 1.2-2.85M2 1.5V4h2.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>Post again</button>
+      <div class="cap mono top"><span>05.6 · .hagaki</span></div>
+    </div>
+    <div class="cell ledger">
+      <h4 class="serif">The hagaki postcard</h4>
+      <p>Testimonials arrive as Japanese postcards: a perforated intaglio stamp, red postcode boxes, a round postmark that comes down once the card settles, and the sender’s seal beside the name.</p>
+      <ul class="spec"><li><span>Card</span><b>340 wide, 100 : 148</b></li><li><span>Turn</span><b>−1.6° to 1.2°</b></li><li><span>Postmark</span><b>.34 s, (.3, 1.4, .5, 1)</b></li><li><span>Seal</span><b>.3 s, .22 s after</b></li></ul>
+    </div></div>
+    <div class="c23 edge-r"><div class="plate comp-plate grain" style="min-height:640px">
+      <div class="traybed">
+        <div class="chart" id="chart">
+          <div class="tabs"><span>This week</span><span>Savings</span></div>
+          <div class="c3d" id="chart3d">
+            <div class="c3-stage" id="chartStage">
+              <div class="c3-wood" aria-hidden="true">
+                <div class="w-sh"></div>
+                <div class="w-sb"><div data-l="py"></div></div><div class="w-sr"><div data-l="px"></div></div><div class="w-st"><div data-l="ny"></div></div><div class="w-sl"><div data-l="nx"></div></div>
+                <div class="w-fl"></div><div class="w-oc"></div>
+                <div class="w-wt"><div data-l="py" data-w></div></div><div class="w-wr"><div data-l="nx" data-w></div></div><div class="w-wb"><div data-l="ny" data-w></div></div><div class="w-wl"><div data-l="px" data-w></div></div>
+                <div class="w-rt"></div><div class="w-rb"></div><div class="w-rl"></div><div class="w-rr"></div>
+              </div>
+              <div class="c3-l c3-under" style="--z:-96px"></div>
+              <div class="c3-l c3-paper" style="--z:-64px">
+                <img class="c3-draw" src="{{A}}/textures/chart_sky.webp" alt="">
+                <svg class="c3-plot" viewBox="0 0 410 211" preserveAspectRatio="none" aria-hidden="true"><use href="#chartLineShape" class="c3-cast" clip-path="url(#chartClip)"/></svg>
+              </div>
+              <div class="c3-l c3-grid" style="--z:-32px">
+                <svg class="c3-plot" viewBox="0 0 410 211" preserveAspectRatio="none" aria-hidden="true" id="chartGrid"></svg>
+                <div class="c3-yax"><span>24</span><span>16</span><span>8</span><span>0</span></div>
+              </div>
+              <div class="c3-l c3-vellum" style="--z:0px">
+                <div class="val"><b id="kwh">0.0</b><span>kWh</span></div>
+                <img class="c3-seal" src="{{A}}/seal/hanko.webp" alt="">
+                <div class="days"><span>Sun</span><span>Mon</span><span>Tue</span><span class="on">Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+                <div class="c3-legend"><i style="--c:#e5482f"></i>Solar<i style="--c:#f3b27a" class="d"></i>Forecast<i style="--c:#6b4a2e"></i>Home<i style="--c:#3f72dc"></i>Battery</div>
+                <svg class="c3-plot" viewBox="0 0 410 211" preserveAspectRatio="none" aria-hidden="true">
+                  <defs><linearGradient id="chartAreaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a2a" stop-opacity=".32"/><stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/></linearGradient></defs>
+                  <path id="chartArea" d="" fill="url(#chartAreaG)" clip-path="url(#chartClip)"/>
+                </svg>
+              </div>
+              <div class="c3-l c3-lines" style="--z:34px">
+                <svg class="c3-plot" viewBox="0 0 410 211" preserveAspectRatio="none" aria-hidden="true">
+                  <defs><clipPath id="chartClip"><rect id="chartClipRect" x="0" y="-20" width="0" height="260"/></clipPath></defs>
+                  <path id="chartUse" d="" fill="none" stroke="#6b4a2e" stroke-opacity=".38" stroke-width="1.1" vector-effect="non-scaling-stroke"/>
+                  <path id="chartGhost" d="" fill="none" stroke="#f3b27a" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                  <path id="chartBattShape" d="" fill="none" stroke="#3f63b8" stroke-opacity=".9" stroke-width="1.6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                </svg>
+              </div>
+              <div class="c3-l c3-top" style="--z:64px">
+                <svg class="c3-plot" viewBox="0 0 410 211" preserveAspectRatio="none" aria-hidden="true">
+                  <line id="chartNow" x1="203" x2="203" y1="0" y2="211" stroke="rgba(76,40,6,.45)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                  <path id="chartLineShape" d="" fill="none" stroke="#d8452c" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke" clip-path="url(#chartClip)"/>
+                </svg>
+                <div class="c3-chip" id="chartChip"><b>11.9</b> kWh · Wed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" type="button" id="chartReplay"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6a4 4 0 1 0 1.2-2.85M2 1.5V4h2.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>Draw again</button>
+      <div class="cap mono top"><span>05.8 · .chart</span></div>
+      <div class="cap mono"><span>Face-on at rest · hover to turn it</span><span>Hinoki, masu joints</span></div>
+    </div>
+    <div class="cell ledger split" style="display:grid;grid-template-columns:1fr 1fr;gap:0 var(--pad);padding-left:0;padding-right:0">
+      <div><h4 class="serif">The hinoki chart tray</h4><p>The week’s chart as sheets of washi and vellum resting in a hinoki tray with masu-style butt joints and eased edges. It lies face-on; under the cursor it turns a little, and each side takes its shade from the key light.</p></div>
+      <ul class="spec"><li><span>Tray</span><b>440 × 384 design px</b></li><li><span>Boards</span><b>18 px, 56 tall, 44 recess</b></li><li><span>Turn</span><b>up to ±8° and ±12°</b></li><li><span>Lines</span><b>Shu 2.4 · Ruri 1.6 · Anzu dashed</b></li></ul>
+    </div></div>
+  </div>
+
+  <div class="sub"><h3>05.7 · The pricing card</h3><span class="mono">Drag the slider · tap a tier</span></div>
+  <div class="pricing-wrap">
+    <div class="pr-grid">
+      <div class="pr-intro">
+        <small class="mono">Pricing</small>
+        <h2>One plan, sized<br>to your evenings</h2>
+        <p>Tell us who lives at home. We size the panels and the battery so the afternoon carries you into the night, and charge one monthly price for all of it.</p>
+        <div class="pr-size">
+          <div class="row"><label class="mono" for="prPeople">Who lives at home</label><output id="prPeopleOut" for="prPeople">3 people</output></div>
+          <div class="pr-range"><input type="range" id="prPeople" min="1" max="6" step="1" value="3" aria-valuetext="3 people"><div class="pr-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6+</span></div></div>
+          <div class="pr-tiers" role="group" aria-label="Plans">
+            <button type="button" data-plan="ko" data-p="2" aria-pressed="false"><b>小</b><span>Ko</span><em>1–2 people</em></button>
+            <button type="button" data-plan="naka" data-p="3" aria-pressed="true"><b>中</b><span>Naka</span><em>3–4 people</em></button>
+            <button type="button" data-plan="o" data-p="5" aria-pressed="false"><b>大</b><span>Ō</span><em>5–6 people</em></button>
+          </div>
+        </div>
+      </div>
+      <article class="pr-card" aria-live="polite">
+        <div class="pr-sky" data-nav="dark">
+          <div class="view" data-print="pricing"><canvas></canvas></div>
+          <div class="pr-kanji" id="prKanji" aria-hidden="true">中</div>
+          <div class="pr-until mono"><span>Carries your evening to</span><b id="prUntil">12:10 am</b></div>
+        </div>
+        <div class="pr-body">
+          <div class="pr-name"><b id="prName">Naka</b><span class="mono" id="prFor">3–4 people</span></div>
+          <div class="pr-price"><span class="yen">¥</span><b id="prPrice">13,800</b><span class="per">a month</span></div>
+          <ul class="pr-list">
+            <li><span>Panels</span><b id="prPanels">4.8 kW, 16 panels</b></li>
+            <li><span>Battery</span><b id="prBatt">10 kWh</b></li>
+            <li><span>Fitting</span><b>One day, one local crew</b></li>
+            <li><span>Monitoring and repairs</span><b>Included</b></li>
+            <li><span>Up front</span><b>¥0</b></li>
+          </ul>
+          <a class="btn" href="#components"><span>Check my roof</span></a>
+          <p class="pr-note">Prices include tax. We confirm yours after we have looked at your roof.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+  <div class="g3 bb">
+    <div class="cell ledger"><p style="margin:0">The slider steps 小 中 大 at one to two, three to four and five to six people. The card’s sky is the evening that plan’s battery covers: the sun sinks further, the print deepens to indigo and a crescent moon comes up the later it carries you.</p></div>
+    <div class="cell ledger"><ul class="spec" style="margin:0"><li><span>Ko 小</span><b>¥9,800 · 3.2 kW · 5 kWh</b></li><li><span>Naka 中</span><b>¥13,800 · 4.8 kW · 10 kWh</b></li><li><span>Ō 大</span><b>¥17,800 · 6.4 kW · 13.5 kWh</b></li></ul></div>
+    <div class="cell ledger"><ul class="spec" style="margin:0"><li><span>Sky</span><b>eased at 3.2 / s</b></li><li><span>Price</span><b>counts at 9 / s, to ¥100</b></li><li><span>Thumb</span><b>24 px, sun on washi</b></li></ul></div>
+  </div>
+</section>
+
+<!-- ============================================================ 06 IMAGERY -->
+<section class="chapter" id="imagery" data-ch="06" data-name="Imagery">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>06 — Imagery</span></small><h2><span class="line-mask sv"><span>Engraved, folded</span></span><span class="line-mask sv"><span>and printed by hand</span></span></h2></div>
+    <p class="lede">Four kinds of picture: white-line engravings lit by the sky behind them, paper objects floating in empty cells, intaglio stamps, and 3D tiles of real homes at the hour the battery takes over.</p>
+    <div class="kanji"><b>絵</b><span class="mono">E · pictures</span></div>
+  </header>
+
+  <div class="sub"><h3>Ornaments</h3><span class="mono">The only things with depth</span></div>
+  <div class="g3 row3x4 orns">
+    <div class="orn"><img src="{{A}}/ornaments/orn_crane.webp" alt="An origami crane" style="width:52%;left:30%;top:14%" loading="lazy"><img src="{{A}}/ornaments/orn_lantern.webp" alt="A paper lantern" style="width:22%;left:10%;top:48%" loading="lazy"><span class="cap mono"><span>Orizuru · chōchin</span><span>Crane, lantern</span></span></div>
+    <div class="orn"><img src="{{A}}/ornaments/orn_fan.webp" alt="A folding fan with a seigaiha wave pattern" style="width:60%;left:20%;top:22%" loading="lazy"><span class="cap mono"><span>Sensu</span><span>Fan</span></span></div>
+    <div class="orn"><img src="{{A}}/ornaments/orn_sakura.webp" alt="A sprig of cherry blossom" style="width:62%;left:14%;top:12%" loading="lazy"><span class="cap mono"><span>Sakura</span><span>Blossom</span></span></div>
+  </div>
+  <div class="g3 bt">
+    <div class="cell ledger c12"><p style="max-width:640px;margin:0">Ornaments float in the empty cells of the grid and nowhere else. They carry a soft two-part shadow, drift on a seven- or nine-second breath, and never overlap type. They are keyed objects, photographed flat, so the page itself stays face-on.</p></div>
+    <div class="cell ledger"><ul class="spec" style="margin:0"><li><span>Shadow</span><b>0 34 22 · 0 5 6, brown 13–14%</b></li><li><span>Drift</span><b>14 px, ±1.5°, 7 s / 9 s</b></li></ul></div>
+  </div>
+
+  <div class="sub"><h3>Intaglio stamps</h3><span class="mono">Perforated · 84 yen</span></div>
+  <div class="g3 stamps">
+    <figure><div class="hk-stamp" style="--ink:#2e3f7a"><img src="{{A}}/stamps/stamp_kyoto.webp" alt="Kyoto stamp: a machiya window and a lantern" loading="lazy"><span class="band"><span>NIPPON</span><span>84</span></span></div><figcaption><b>Kyoto</b><span class="mono"><i style="--c:#2e3f7a"></i>Gunjō · #2E3F7A</span></figcaption></figure>
+    <figure><div class="hk-stamp" style="--ink:#26345f"><img src="{{A}}/stamps/stamp_chiba.webp" alt="Chiba stamp: a rainy street of power poles" loading="lazy"><span class="band"><span>NIPPON</span><span>84</span></span></div><figcaption><b>Chiba</b><span class="mono"><i style="--c:#26345f"></i>Tetsukon · #26345F</span></figcaption></figure>
+    <figure><div class="hk-stamp" style="--ink:#c8452c"><img src="{{A}}/stamps/stamp_onomichi.webp" alt="Onomichi stamp: the harbour and a torii at sunset" loading="lazy"><span class="band"><span>NIPPON</span><span>84</span></span></div><figcaption><b>Onomichi</b><span class="mono"><i style="--c:#c8452c"></i>Araishu · #C8452C</span></figcaption></figure>
+  </div>
+
+  <div class="sub"><h3>Engravings</h3><span class="mono">White line · lit from behind</span></div>
+  <div class="g3">
+    <div class="c12 edge-l eng" data-nav="dark" style="aspect-ratio:16/9;--g:radial-gradient(26% 32% at 86% 40%,rgba(255,190,100,.95),rgba(255,120,60,.35) 45%,transparent 75%),linear-gradient(180deg,#120a24 0%,#3a1a44 22%,#9a3e4a 34%,#f09048 40%,#6a2c2c 43%,#20101a 70%,#0c070c 100%)"><img src="{{A}}/guide/w_jaerial.webp" alt="An engraving of a harbour town at sunset, a torii in the water" loading="lazy"><span class="cap mono"><span>Roof by roof · w_jaerial</span><span>Screen over the sky</span></span></div>
+    <div class="cell ledger mid">
+      <small class="mono">The treatment</small>
+      <h4 class="serif">Ink lines, lit by the sky</h4>
+      <p>Each engraving is white line on black, like a scratchboard. On the page it is laid over a painted sky with <span class="code">mix-blend-mode: screen</span>, so the black disappears and the lines take the colour of the evening behind them.</p>
+      <p>On the site they are split into sky, far and near layers that drift apart as you scroll. Keep the sky in the upper third and the sun where the drawing puts it.</p>
+    </div>
+  </div>
+  <div class="engrow">
+    <div class="eng c1" data-nav="dark" style="--g:radial-gradient(30% 22% at 47% 34%,rgba(255,186,120,.9),rgba(255,140,90,.25) 50%,transparent 100%),linear-gradient(180deg,#0d1838 0%,#1b2d5e 30%,#2b4686 55%,#0e1633 100%)"><img src="{{A}}/guide/w_jliving.webp" alt="An engraving of a couple taking tea in a tatami room" loading="lazy"><span class="cap mono"><span>Keep the evening</span><span>w_jliving</span></span></div>
+    <div class="eng c2" data-nav="dark" style="--g:radial-gradient(14% 20% at 58% 17%,rgba(255,200,140,.7),transparent 70%),radial-gradient(30% 26% at 47% 86%,rgba(255,150,100,.3),transparent 70%),linear-gradient(180deg,#0a0e1e 0%,#171a34 40%,#2e2040 70%,#140c16 100%)"><img src="{{A}}/guide/w_jrain.webp" alt="An engraving of a rainy street of power lines" loading="lazy" style="object-position:40% 50%"><span class="cap mono"><span>What we face</span><span>w_jrain</span></span></div>
+    <div class="eng c3" data-nav="dark" style="--g:radial-gradient(60% 34% at 50% 64%,rgba(255,130,80,.55),transparent 70%),linear-gradient(180deg,#0b0a1c 0%,#1a1432 30%,#44223e 50%,#a4483a 63%,#6a2a30 68%,#1a0e14 80%,#0a070c 100%)"><img src="{{A}}/guide/w_jstorm.webp" alt="An engraving of storm clouds over a town with a pagoda" loading="lazy" style="object-position:62% 50%"><span class="cap mono"><span>Why now</span><span>w_jstorm</span></span></div>
+  </div>
+  <div class="g3 bt">
+    <div class="cell ledger mid"><small class="mono">The fifth</small><h4 class="serif">The sun, held</h4><p>The How it works intro: a hand raised to the low sun over the sea. The most literal picture of the promise, used once.</p></div>
+    <div class="c23 edge-r eng" data-nav="dark" style="aspect-ratio:3/2;--g:radial-gradient(28% 40% at 19% 36%,rgba(255,168,88,.8),rgba(230,90,60,.28) 50%,transparent 100%),linear-gradient(180deg,#160a22 0%,#3a1636 30%,#8e3434 46%,#e07a3a 52%,#5a2426 58%,#1e0e18 80%,#0e070c 100%)"><img src="{{A}}/guide/w_sunhand.webp" alt="An engraving of a hand raised to the setting sun over the sea" loading="lazy"><span class="cap mono"><span>From roof to room</span><span>w_sunhand</span></span></div>
+  </div>
+
+  <div class="sub"><h3>The 3D tiles</h3><span class="mono">Captured from the site</span></div>
+  <div class="tiles">
+    <figure><img src="{{A}}/guide/t_tile-house.webp" alt="3D tile: a Japanese house with a cherry tree and panels on the roof" loading="lazy"><figcaption class="mono"><span>Spend less</span><span>The house</span></figcaption></figure>
+    <figure><img src="{{A}}/guide/t_tile-battery.webp" alt="3D tile: a home battery against a timber wall" loading="lazy"><figcaption class="mono"><span>Stay on</span><span>The battery</span></figcaption></figure>
+    <figure><img src="{{A}}/guide/t_tile-hand.webp" alt="3D tile: a phone held in a hand" loading="lazy"><figcaption class="mono"><span>See it</span><span>The hand</span></figcaption></figure>
+    <figure><img src="{{A}}/guide/t_tile-machiya.webp" alt="3D tile: the kawara roofs of a Kyoto machiya with panels" loading="lazy"><figcaption class="mono"><span>Step 1</span><span>The machiya</span></figcaption></figure>
+    <figure class="note">
+      <small class="mono" style="color:var(--grey)">How they are lit</small>
+      <h4 class="serif" style="margin-top:16px;font-family:var(--serif);font-weight:400;font-size:clamp(30px,2.6vw,44px);line-height:1.05;letter-spacing:-.015em;color:var(--brown)">Real homes, at the hour it matters</h4>
+      <p style="margin-top:14px;font-size:15px;line-height:21px;color:var(--ink-2)">Each tile is a small three.js scene: a real kind of Japanese house, under a low sun, at dusk or in a storm. Everything rests on something. Nothing floats, nothing passes through anything else.</p>
+    </figure>
+    <figure><img src="{{A}}/guide/t_tile-cedar-yard.webp" alt="3D tile: the cedar yard beside the house" loading="lazy"><figcaption class="mono"><span>Step 1</span><span>The cedar yard</span></figcaption></figure>
+    <figure><img src="{{A}}/guide/t_tile-dusk.webp" alt="3D tile: a farmhouse lit at dusk, reflected in a flooded field" loading="lazy"><figcaption class="mono"><span>Step 3</span><span>Dusk, Shiga</span></figcaption></figure>
+    <figure><img src="{{A}}/guide/t_tile-storm.webp" alt="3D tile: a house through a storm, the grid down" loading="lazy"><figcaption class="mono"><span>Step 3</span><span>The storm</span></figcaption></figure>
+    <figure><img src="{{A}}/guide/t_tile-network.webp" alt="3D tile: the network map of Japan in ink" loading="lazy"><figcaption class="mono" style="background:linear-gradient(180deg,rgba(76,40,6,0),rgba(76,40,6,.4))"><span>Network</span><span>The map</span></figcaption></figure>
+  </div>
+</section>
+
+<!-- ============================================================ 07 MOTION -->
+<section class="chapter" id="motion" data-ch="07" data-name="Motion">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>07 — Motion</span></small><h2><span class="line-mask sv"><span>Quick to arrive,</span></span><span class="line-mask sv"><span>slow to settle</span></span></h2></div>
+    <p class="lede">Scroll tells the story; time only moves small things. Most things cover their distance early and settle slowly, the way a sheet of paper lands on a table.</p>
+    <div class="kanji"><b>流</b><span class="mono">Nagare · flow</span></div>
+  </header>
+
+  <div class="g3 bt">
+    <div class="cell ledger"><small class="mono">01</small><h4 class="serif">Scroll tells the story</h4><p>Big moves are tied to scroll position, so the reader sets the pace and can always go back: the heading hand-off, the chart drawing in, the phone forming from its icon.</p></div>
+    <div class="cell ledger"><small class="mono">02</small><h4 class="serif">One thing at a time</h4><p>A line of type, then the next, 90ms apart. A card settles, then its postmark comes down, then its seal. The eye always has one place to look.</p></div>
+    <div class="cell ledger"><small class="mono">03</small><h4 class="serif">Stillness is allowed</h4><p>With reduced motion, reveals stop, ornaments hold still and the stamp simply appears. Nothing important depends on movement.</p></div>
+  </div>
+
+  <div class="sub"><h3>The easing set</h3><span class="mono">core.js · E, and the CSS curves</span></div>
+  <div class="eases" id="eases"></div>
+
+  <div class="g3 bt">
+    <div class="cell c12"><ul class="durs">
+      <li><b>Line reveal</b><code>1.2 s · cubic-bezier(.16, 1, .3, 1) · 90 ms stagger</code><span class="mono">.sv, .rv</span></li>
+      <li><b>Fade in</b><code>opacity 1 s ease · rise 12 px in 1.2 s</code><span class="mono">.fade</span></li>
+      <li><b>Button fill</b><code>.6 s panel · .5 s label · (.16, 1, .3, 1)</code><span class="mono">.btn</span></li>
+      <li><b>Nav hides</b><code>.7 s · (.16, 1, .3, 1)</code><span class="mono">header</span></li>
+      <li><b>Glass rim light</b><code>.35 s · (.2, .8, .2, 1)</code><span class="mono">.nav-pill</span></li>
+      <li><b>Loader lifts</b><code>1.15 s clip-path · (.77, 0, .175, 1)</code><span class="mono">#loader</span></li>
+      <li><b>Postmark</b><code>.34 s · (.3, 1.4, .5, 1) · scale 1.35 → 1</code><span class="mono">.hk-pm</span></li>
+      <li><b>Seal</b><code>.3 s, .22 s after the postmark</code><span class="mono">.hk-from</span></li>
+      <li><b>Pricing sky</b><code>eased toward the plan at 3.2 / s</code><span class="mono">sections.js</span></li>
+      <li><b>Button tide</b><code>damped spring, ω 11, ζ 0.62</code><span class="mono">main.js</span></li>
+      <li><b>Ornament drift</b><code>14 px and ±1.5°, 7 s and 9 s, ease-in-out</code><span class="mono">.orn</span></li>
+      <li><b>Heading hand-off</b><code>inOutCubic, in three beats over the middle 56% of the scroll</code><span class="mono">dom.js</span></li>
+    </ul></div>
+    <div class="cell ledger">
+      <small class="mono">Durations</small>
+      <h4 class="serif">Between a breath and a sentence</h4>
+      <p>UI answers in .3 to .6 seconds. Reveals take 1.2 seconds but are readable after the first third. Nothing loops fast; the slowest things, ornaments and the print’s clouds, move over seconds or minutes.</p>
+    </div>
+  </div>
+
+  <div class="sub"><h3>Four signature moves</h3><span class="mono">Live · scrub or replay</span></div>
+  <div class="g3 handoff" id="handoff">
+    <div class="tile c1 edge-l"><img src="{{A}}/guide/t_tile-house.webp" alt="" loading="lazy"></div>
+    <div class="hd c2"><div class="mono">Spend less</div><h4>Pay for sunshine,<br>not for fuel ships</h4></div>
+    <div class="cell ledger mid c3 note">
+      <small class="mono">07.1 · The heading hand-off</small>
+      <h4 class="serif">Letters change seats</h4>
+      <p>As the line between two rows crosses the middle of the screen, the letters the next heading shares with this one close up into a short line, cross the grid together and open out into their new places. The rest fade out and in; only one heading shows at rest.</p>
+    </div>
+    <div class="orn2 c1"><img src="{{A}}/ornaments/orn_crane.webp" alt="" loading="lazy" style="width:44%;left:32%;top:12%"><img src="{{A}}/ornaments/orn_lantern.webp" alt="" loading="lazy" style="width:17%;left:12%;top:40%;animation-duration:9s;animation-delay:-3s">
+      <div class="scrub"><span class="mono">Scroll</span><input type="range" min="0" max="1000" value="0" id="handoffScrub" aria-label="Scrub the heading hand-off"><span class="mono" id="handoffP">0%</span></div></div>
+    <div class="tile c2"><img src="{{A}}/guide/t_tile-battery.webp" alt="" loading="lazy"></div>
+    <div class="hd c3"><div class="mono">Stay on</div><h4>The lights stay on<br>when the typhoon comes</h4></div>
+    <div class="fly" aria-hidden="true"></div>
+  </div>
+  <div class="g3 bt">
+    <div class="cell ledger mid">
+      <small class="mono">07.2 · Line masks</small>
+      <h4 class="serif">Type rises into place</h4>
+      <p>Each line sits in its own mask and rises 105% of its height as it comes into view, 90ms after the line above.</p>
+    </div>
+    <div class="c2"><div class="demo">
+      <div class="revealbed" id="revealDemo"><small class="mono line-mask rv in"><span>From roof to room</span></small><h3><span class="line-mask rv in"><span>Your roof becomes</span></span><span class="line-mask rv in"><span>a small power</span></span><span class="line-mask rv in"><span>station</span></span></h3></div>
+      <button class="replay" type="button" id="revealReplay"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6a4 4 0 1 0 1.2-2.85M2 1.5V4h2.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>Replay</button>
+    </div></div>
+    <div class="c3 edge-r"><div class="demo">
+      <div class="stampbed">
+        <div class="card hagaki-lite" id="stampDemo" data-pm="ONOMICHI|02.7.25|19-05">
+          <div class="hk-top">
+            <div class="hk-stamp" style="--ink:#c8452c"><img src="{{A}}/stamps/stamp_onomichi.webp" alt="" loading="lazy"><span class="band"><span>NIPPON</span><span>84</span></span></div>
+            <svg class="hk-pm" viewBox="0 0 84 84" aria-hidden="true"></svg>
+            <div class="hk-zip" aria-hidden="true"><i>7</i><i>2</i><i>2</i><b></b><i>0</i><i>0</i><i>3</i><i>5</i></div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" type="button" data-replay="stampDemo"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6a4 4 0 1 0 1.2-2.85M2 1.5V4h2.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>Stamp again</button>
+      <div class="cap mono"><span>07.3 · The postmark</span><span>.34 s</span></div>
+    </div></div>
+  </div>
+  <div class="g3 bt">
+    <div class="c12 edge-l"><div class="demo" style="background:var(--beige)">
+      <div class="skybed">
+        <div class="sky" data-nav="dark"><div class="view" data-print="dusk"><canvas></canvas></div><div class="pr-kanji" id="duskKanji" aria-hidden="true" style="font-size:clamp(56px,5vw,84px)">中</div><div class="pr-until mono"><span>Carries your evening to</span><b id="duskUntil">12:10 am</b></div></div>
+        <div class="ctl">
+          <small class="mono" style="color:var(--grey)">07.4 · The sky sets as the plan grows</small>
+          <div class="row"><span class="mono">Who lives at home</span><output id="duskOut">3 people</output></div>
+          <div class="pr-range"><input type="range" id="duskPeople" min="1" max="6" step="1" value="3" aria-label="Household size"><div class="pr-ticks" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6+</span></div></div>
+          <p>A larger battery carries the evening further, so the sky on the card follows it: the sun half set at half past nine, under the sea by midnight, a crescent moon by four. The sky eases there over about a second.</p>
+        </div>
+      </div>
+    </div></div>
+    <div class="cell ledger mid">
+      <small class="mono">What the sky reads</small>
+      <h4 class="serif">One number drives it</h4>
+      <p>Each household size maps to an hour and a depth of night. The shader turns that depth into three things: how far the sun has set, how far the print has deepened toward indigo, and how high the moon is.</p>
+      <ul class="spec"><li><span>Sun</span><b>set by depth .15 → .62</b></li><li><span>Dusk</span><b>0 → .82, depth .12 → 1</b></li><li><span>Moon</span><b>depth .55 → .95</b></li></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 08 VOICE -->
+<section class="chapter" id="voice" data-ch="08" data-name="Voice">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>08 — Voice</span></small><h2><span class="line-mask sv"><span>Plain words,</span></span><span class="line-mask sv"><span>said warmly</span></span></h2></div>
+    <p class="lede">We write in UK English, the way a good neighbour talks over the fence: short sentences, real numbers, no jargon. We promise one thing, the evening, and we say it simply.</p>
+    <div class="kanji"><b>声</b><span class="mono">Koe · voice</span></div>
+  </header>
+
+  <div class="g3 bt">
+    <div class="cell ledger">
+      <small class="mono">Four habits</small>
+      <ol class="nums">
+        <li><b>Say the thing</b>Lead with what happens in someone’s home. “Your lamps stay on,” not “resilience”.</li>
+        <li><b>Use real numbers</b>¥9,800 a month. 4.8 kW. Eleven hours. Figures earn trust; adjectives don’t.</li>
+        <li><b>Keep it warm, not cute</b>Neighbours, tea, the evening. No exclamation marks, no puns, no hype.</li>
+        <li><b>UK spelling, always</b>Colour, neighbour, centre, organise, metre, programme.</li>
+      </ol>
+    </div>
+    <div class="quote c2"><blockquote>“Keep today’s sun for tonight.”</blockquote><span class="mono">The promise · hero</span></div>
+    <div class="quote c3"><blockquote>“Most homes are finished between breakfast and sunset.”</blockquote><span class="mono">Step 2 · We fit it</span></div>
+  </div>
+  <div class="g3 bt">
+    <div class="quote"><blockquote>“Pay for sunshine, not for fuel ships.”</blockquote><span class="mono">Homes · Spend less</span></div>
+    <div class="quote"><blockquote>“When the grid goes down, your house simply carries on.”</blockquote><span class="mono">Step 3 · Switch on</span></div>
+    <div class="quote"><blockquote>“Our lamps never flickered, so the neighbours came round for tea.”</blockquote><span class="mono">A letter from Tateyama</span></div>
+  </div>
+
+  <div class="g3 bt">
+    <div class="cell c12"><ul class="pair2">
+      <li><span>Nothing to buy, nothing to maintain.</span><s>Zero upfront CAPEX and a maintenance-free experience!</s></li>
+      <li><span>The battery takes over before a lamp can flicker.</span><s>Seamless, instantaneous backup power switchover.</s></li>
+      <li><span>We look at your roof from above and send you a price within two days.</span><s>Get your free, no-obligation AI-powered solar quote today.</s></li>
+      <li><span>Each Sunseto home shares what it doesn’t use.</span><s>Leverage our peer-to-peer distributed energy ecosystem.</s></li>
+    </ul></div>
+    <div class="cell ledger">
+      <small class="mono">Words we use</small>
+      <ul class="spec">
+        <li><span>plan</span><b>not subscription package</b></li>
+        <li><span>battery</span><b>not storage solution</b></li>
+        <li><span>the evening</span><b>not peak demand</b></li>
+        <li><span>neighbours</span><b>not peers, users</b></li>
+        <li><span>fit, a local crew</span><b>not deploy, contractors</b></li>
+        <li><span>¥9,800 a month</span><b>not ¥9.8k/mo</b></li>
+        <li><span>18:40 on labels</span><b>9:30 pm in a sentence</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 09 RULES -->
+<section class="chapter" id="rules" data-ch="09" data-name="Do and don’t">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>09 — Do and don’t</span></small><h2><span class="line-mask sv"><span>What we</span></span><span class="line-mask sv"><span>always keep</span></span></h2></div>
+    <p class="lede">Six rules that hold across the site, the app and anything else that carries the name. If a detail breaks one of them, the detail goes.</p>
+    <div class="kanji"><b>守</b><span class="mono">Mamoru · to keep</span></div>
+  </header>
+
+  <div class="rules">
+    <div class="rule c1"><div class="vis">
+        <div><span class="tag">Do</span><div style="width:70%;aspect-ratio:4/3;border-radius:4px;background:linear-gradient(180deg,#4a2255 0%,#c4466a 45%,#f0683f 70%,#ffd173 80%,#8a3a6a 81%,#4a2255 100%)"></div></div>
+        <div><span class="tag no">Don’t</span><div style="position:relative;width:70%;aspect-ratio:4/3;border-radius:4px;overflow:hidden;background:linear-gradient(180deg,#4a2255 0%,#c4466a 45%,#f0683f 70%,#ffd173 80%,#8a3a6a 81%,#4a2255 100%)"><span style="position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 44%,rgba(255,255,255,.8) 50%,transparent 56%)"></span><span style="position:absolute;left:62%;top:22%;width:26px;height:26px;background:radial-gradient(circle,#fff 0 2px,transparent 3px),linear-gradient(90deg,transparent 45%,rgba(255,255,255,.9) 50%,transparent 55%),linear-gradient(0deg,transparent 45%,rgba(255,255,255,.9) 50%,transparent 55%)"></span></div></div>
+      </div>
+      <div class="txt"><span class="mono">01</span><h4>No shines, glints, sheens, sweeps or light streaks</h4><p>Polish comes from the drawing, the material and the light already in the scene, never from a highlight laid on top. If something feels flat, fix the lighting or the motion.</p></div></div>
+    <div class="rule c2"><div class="vis">
+        <div><span class="tag">Do</span><div class="card-demo"><i></i><i style="width:80%"></i><i style="width:55%"></i></div></div>
+        <div><span class="tag no">Don’t</span><div class="card-demo tilt"><i></i><i style="width:80%"></i><i style="width:55%"></i></div></div>
+      </div>
+      <div class="txt"><span class="mono">02</span><h4>UI stays flat and face-on</h4><p>Screens, cards and panels are true rectangles with their edges parallel to the page. Depth belongs to floating decorative objects: the crane, the lantern, the app icon.</p></div></div>
+    <div class="rule c3"><div class="vis" style="grid-template-columns:1fr 1fr 1fr">
+        <div><span class="tag">Rests</span><span class="ground"></span><span class="box3 ok"></span></div>
+        <div><span class="tag no">Floats</span><span class="ground"></span><span class="box3 float"></span></div>
+        <div><span class="tag no">Sinks</span><span class="ground"></span><span class="box3 sunk"></span></div>
+      </div>
+      <div class="txt"><span class="mono">03</span><h4>Nothing floats, nothing intersects</h4><p>In the 3D scenes every object meets what holds it, with a contact shadow where they touch: panels on the kawara, the battery on its plinth, lanterns on their cords. Moving parts keep clear of each other.</p></div></div>
+    <div class="rule c1"><div class="vis">
+        <div><span class="tag">Do</span><div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:0 16%;width:100%"><span class="mono" style="color:var(--grey)">Eyebrow · 12 px</span><span style="font-family:var(--mono);font-size:11px;line-height:14px;text-transform:uppercase;color:var(--grey)">The floor · 11 px</span></div></div>
+        <div><span class="tag no">Don’t</span><div style="display:flex;flex-direction:column;gap:5px;width:60%" aria-label="A line of type set too small, drawn as bars"><i style="display:block;height:3px;width:100%;background:rgba(76,40,6,.4);border-radius:1px"></i><i style="display:block;height:3px;width:86%;background:rgba(76,40,6,.4);border-radius:1px"></i><i style="display:block;height:3px;width:92%;background:rgba(76,40,6,.4);border-radius:1px"></i><span class="mono" style="margin-top:8px;color:var(--orange)">9 px, unreadable</span></div></div>
+      </div>
+      <div class="txt"><span class="mono">04</span><h4>Nothing under 11px</h4><p>On any screen, at any width. Wrap fluid sizes in <span class="code">max(11px, …)</span> and check text drawn inside SVGs against the box it lands in.</p></div></div>
+    <div class="rule c2"><div class="vis">
+        <div><span class="tag">Do</span><div style="width:70%;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--brown)"><span>Panels</span><b style="font-weight:500">4.8 kW</b></div><div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--brown)"><span>Battery</span><b style="font-weight:500">10 kWh</b></div></div></div>
+        <div><span class="tag no">Don’t</span><div style="width:70%;display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;padding:8px 10px;border:1.5px solid #b89f86;border-radius:8px;box-shadow:0 3px 8px rgba(0,0,0,.14);background:#fff;font-size:13px;color:var(--brown)"><span>Panels</span><b style="font-weight:600">4.8 kW</b></div><div style="display:flex;justify-content:space-between;padding:8px 10px;border:1.5px solid #b89f86;border-radius:8px;box-shadow:0 3px 8px rgba(0,0,0,.14);background:#fff;font-size:13px;color:var(--brown)"><span>Battery</span><b style="font-weight:600">10 kWh</b></div></div></div>
+      </div>
+      <div class="txt"><span class="mono">05</span><h4>Hairlines, not boxes</h4><p>Structure is drawn with single 1px rules in the rule colour. No boxed cards inside boxes, no double borders, no drop shadows on flat UI.</p></div></div>
+    <div class="rule c3"><div class="vis">
+        <div><span class="tag">Do</span><div style="display:flex;align-items:center;gap:14px"><svg viewBox="0 0 44 32" class="mk" style="width:64px">{{MARK}}</svg><img src="{{A}}/seal/hanko.webp" alt="" style="width:34px;rotate:-7deg;mix-blend-mode:multiply"></div></div>
+        <div><span class="tag no">Don’t</span><svg viewBox="0 0 64 64" style="width:64px" aria-label="A generic sun with rays"><circle cx="32" cy="32" r="11" fill="#ffb300"/><g stroke="#ffb300" stroke-width="4" stroke-linecap="round"><path d="M32 6v8M32 50v8M6 32h8M50 32h8M13.6 13.6l5.7 5.7M44.7 44.7l5.7 5.7M13.6 50.4l5.7-5.7M44.7 19.3l5.7-5.7"/></g></svg></div>
+      </div>
+      <div class="txt"><span class="mono">06</span><h4>Japanese craft in every detail</h4><p>Postcode boxes on a postcard, a hanko on the chart, kawara under the panels, masu joints in a tray. Reach for the real object before the generic icon; our sun has waves, not rays.</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 10 DOWNLOADS -->
+<section class="chapter" id="downloads" data-ch="10" data-name="Downloads">
+  <header class="g3 ch-head">
+    <div class="ttl"><small class="mono line-mask sv"><span>10 — Downloads</span></small><h2><span class="line-mask sv"><span>Everything,</span></span><span class="line-mask sv"><span>in one box</span></span></h2></div>
+    <div class="lede dl-top"><p style="font-size:16px;line-height:23px;color:var(--ink-2)">Every file in this guide, grouped as the chapters are. Take the whole kit as one archive, or single files below.</p>
+      <a class="get-started" href="{{A}}/sunseto-brand-kit.zip" download data-print="button" data-word="kit"><div class="view"><canvas></canvas></div><span>Download the kit · {{ZIP_SIZE}}</span></a></div>
+    <div class="kanji"><b>箱</b><span class="mono">Hako · the box</span></div>
+  </header>
+  {{DOWNLOADS}}
+</section>
+</main>
+
+<!-- ============================================================ FOOTER -->
+<footer id="footer" data-nav="dark" data-ch="10" data-name="Good evening">
+  <div class="view" data-print="night"><canvas></canvas></div>
+  <div class="fshade"></div>
+  <i class="vl a"></i><i class="vl b"></i>
+  <div class="fcontent">
+    <h2 class="more">Good evening</h2>
+    <div class="flogo"><img src="{{A}}/logo/logo_sunseto.webp" alt="Sunseto"></div>
+    <ul>
+      <li><a href="#top"><span class="br">[</span>Back to the top<span class="br">]</span></a></li>
+      <li><a href="#contents"><span class="br">[</span>Contents<span class="br">]</span></a></li>
+      <li><a href="#downloads"><span class="br">[</span>Downloads<span class="br">]</span></a></li>
+    </ul>
+    <div class="colo"><span class="mono">Colophon</span>Sunseto brand guide, edition 01. Built from the site’s own source: the same tokens, fonts, shaders and components, running live.</div>
+    <div class="social mono"><span>Sunseto · Solar + storage for homes in Japan</span><span>{{DATE}}</span></div>
+  </div>
+</footer>
+
+<script>
+{{JS}}
+</script>
+</body>
+</html>

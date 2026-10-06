@@ -1,0 +1,42 @@
+/* Sunseto ad kit: the site's fonts and tokens (sunset-assets/src/page.html :root), set in physical units.
+   Every artboard is laid out in millimetres; tools/render.mjs picks the device scale for the print DPI. */
+@font-face{font-family:"Instrument Sans";src:url(../assets/fonts/InstrumentSans[wdth,wght].ttf) format("truetype");font-weight:400 700;font-stretch:75% 100%}
+@font-face{font-family:"Instrument Serif";src:url(../assets/fonts/InstrumentSerif-Regular.ttf) format("truetype");font-weight:400;font-style:normal}
+@font-face{font-family:"Instrument Serif";src:url(../assets/fonts/InstrumentSerif-Italic.ttf) format("truetype");font-weight:400;font-style:italic}
+@font-face{font-family:"JetBrains Mono";src:url(../assets/fonts/JetBrainsMono[wght].ttf) format("truetype");font-weight:100 800}
+@font-face{font-family:"Shippori Mincho";src:url(../assets/fonts/ShipporiMincho-Medium.ttf) format("truetype");font-weight:500}
+
+:root{
+  --beige:#fff7e9; --beige-2:#f0e5cf; --line:#dacab6; --brown:#4c2806; --black:#111; --grey:#514e4a;
+  --orange:#e5482f; --purple:#b9cbf1; --purple-dark:#132457;
+  --vermilion:#d8452c; --indigo:#34508f; --indigo-2:#2e3f7a;
+  --print-0:#2c1d55; --print-1:#b0406c; --print-2:#ea5f4a; --gold:#f7c46e;
+  --sun-top:#fad58a; --sun-bot:#ff8b64; --sea-ink:#524c6b; --sea-cream:#f2efeb;
+  --sans:"Instrument Sans",system-ui,sans-serif;
+  --serif:"Instrument Serif",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --jp:"Shippori Mincho","Hiragino Mincho ProN",serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#6d6a66}
+body{-webkit-font-smoothing:antialiased;font-kerning:normal;text-rendering:geometricPrecision}
+img{display:block}
+
+/* the sheet: trim size + bleed; the trim and safe lines are drawn only in ?guides mode */
+.sheet{position:relative;overflow:hidden;width:calc(var(--tw) + 2*var(--bleed));height:calc(var(--th) + 2*var(--bleed))}
+.trim{position:absolute;left:var(--bleed);top:var(--bleed);width:var(--tw);height:var(--th)}
+.guides .trim{outline:.25mm solid rgba(0,200,255,.9)}
+.guides .safe{position:absolute;inset:var(--safe);outline:.25mm dashed rgba(255,0,200,.8);pointer-events:none;z-index:99}
+
+.mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:-.02em;font-weight:400}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.02em}
+.jp{font-family:var(--jp);font-weight:500}
+.tate{writing-mode:vertical-rl;text-orientation:mixed}
+
+/* lockup: the mark, the lowercase wordmark and the 陽 seal, proportioned as tools/make_logo.py draws them
+   (wordmark Instrument Sans 600 at F; mark 0.872F tall, its top 0.628F above the baseline; seal 0.744F) */
+.lockup{display:inline-flex;align-items:baseline;font-size:var(--F);line-height:1;white-space:nowrap}
+.lockup .mk{width:calc(.872em * 39.8 / 26.52);height:.872em;transform:translateY(.244em);flex:none;overflow:visible}
+.lockup .wm{margin-left:.198em;font-family:var(--sans);font-weight:600;font-stretch:100%;letter-spacing:-.0349em;color:var(--word,#16110e)}
+.lockup .hk{position:relative;width:.744em;height:.744em;margin-left:.15em;flex:none;align-self:auto;transform:translateY(.06em) rotate(-7deg)}
+.lockup .hk img{position:absolute;inset:0;width:100%;height:100%}

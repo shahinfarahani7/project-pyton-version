@@ -1,0 +1,3214 @@
+{
+  "files": [
+    {
+      "path": "sunset.html",
+      "bytes": 10529272,
+      "sha256": "7aae9cf9d6948d20bad21e771aa14f7eb0ca5e01c6e6d64838db75a85b6e4e74"
+    },
+    {
+      "path": "sunset-ads.html",
+      "bytes": 9833336,
+      "sha256": "5f3e64368b025971b0f4dee21da4f94f5761224a9f0b13dfbc9fb39666e9857f"
+    },
+    {
+      "path": "sunset-brand.html",
+      "bytes": 283000,
+      "sha256": "0efcc8b2f5df272fe3feb0ce5736df0cab399fe2751c3ec279a2220e04852e58"
+    },
+    {
+      "path": "sunset-ads/art/b0.html",
+      "bytes": 6609,
+      "sha256": "9e70ee1f3f3e9e61003bca6078a51f230e41be022a8f401af966df626bf79b84"
+    },
+    {
+      "path": "sunset-ads/art/billboard.html",
+      "bytes": 2023,
+      "sha256": "edd4b37ff9052eb8f29bb1b4d000b2e88c398d88df4a9d5ceb815064796afa61"
+    },
+    {
+      "path": "sunset-ads/art/corridor.html",
+      "bytes": 7941,
+      "sha256": "9dcce677d8346026d2e10e629d66334b0301d5c96c5a88cae6b13a47766edfc8"
+    },
+    {
+      "path": "sunset-ads/art/kit.css",
+      "bytes": 3252,
+      "sha256": "4d8e87c2c8d1f7f71af2098b697c1ac70bf9c60d1fd41e5ce58886a4599e55cd"
+    },
+    {
+      "path": "sunset-ads/art/kit.js",
+      "bytes": 11423,
+      "sha256": "89af2d3060fb9eac4863883880eb861f92c696c0657438c426d4a912147ebc73"
+    },
+    {
+      "path": "sunset-ads/art/meishi.html",
+      "bytes": 7718,
+      "sha256": "4c95e4a9ba7257a36b08a795eee0608257e0bec62b4f042cc8d2c4e16aa63c56"
+    },
+    {
+      "path": "sunset-ads/art/tee.html",
+      "bytes": 7422,
+      "sha256": "ec233b5bf6dc54ca616322cd26931165ccbaf25dd769ca8da2f501dd67a8efc7"
+    },
+    {
+      "path": "sunset-ads/assets/SOURCE-CREDITS.md",
+      "bytes": 1433,
+      "sha256": "88ceb916a22c85d03114b1cc2b2f687102015dae4735d1020d75f518f933f0f0"
+    },
+    {
+      "path": "sunset-ads/assets/eng/aerial.png",
+      "bytes": 4406500,
+      "sha256": "59b429ca71e2d0f87122f4f868c154ef136727ed531093834eb841c2aed42275"
+    },
+    {
+      "path": "sunset-ads/assets/eng/living.png",
+      "bytes": 4540260,
+      "sha256": "98350d31740df805f311ac2aa994e8096e82dc2b2e95bad34c6657f2b6d89adb"
+    },
+    {
+      "path": "sunset-ads/assets/eng/rain.png",
+      "bytes": 4828886,
+      "sha256": "45668a55af7efb629280a457a74b3d4c7e3f42015e2bfdc5d54da2718ac10b60"
+    },
+    {
+      "path": "sunset-ads/assets/eng/storm.png",
+      "bytes": 6120698,
+      "sha256": "9f6b1fa45c750c1c80e073c537104ecd426cfa73a599b7e02f4d786a0261c639"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_aerial.png",
+      "bytes": 4216138,
+      "sha256": "2d4695f107ca4c2729b9dc98d4d36b56d3c45ce8ecc9f8401b4346617f9492bc"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_aerial.webp",
+      "bytes": 659030,
+      "sha256": "d9086cb84dc580dde496744ffca696e7a27b27deb7f90ad812e399fbf10e6378"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_jaerial.webp",
+      "bytes": 658790,
+      "sha256": "5ef1bf2aa3ec05be8db437446b1f61a5feb0f7caf1470b2dbf4d33d253f530eb"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_jliving.webp",
+      "bytes": 669962,
+      "sha256": "0a73532dc022db097eff46b6877fd3d20b39a54259fb1c19a9ed2d216b41b575"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_jrain.webp",
+      "bytes": 622294,
+      "sha256": "39ef1afd166e277ec4859fbf93d1ce2382496d1b75e5e4e79beee765ed2e70d5"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_jstorm.webp",
+      "bytes": 918208,
+      "sha256": "c98c94e6475d96730d48c1b2892c0fa86886110c1d4003b6ef041836eab5cc6e"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_living.png",
+      "bytes": 4475303,
+      "sha256": "a16edca5ab1874bffc081cc1862a6ff7091978126c43fdce32ac14a332055a78"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_living.webp",
+      "bytes": 690174,
+      "sha256": "bdf6393b03fd5804cfd2fbe878d685e893f3bf45e7920be76b0fe532a3d1f20a"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_stormhouse.png",
+      "bytes": 5785084,
+      "sha256": "92c279fd82f51cf3df1bd65d8ca7ee4cefa99651c6cf39add0b01c55a48b6cef"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_stormhouse.webp",
+      "bytes": 919456,
+      "sha256": "7f17d410eca29d8d9a34d624b509e20660ac1696cc95e649296801985e0ba8ef"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_stormsky.png",
+      "bytes": 5598071,
+      "sha256": "660c4ac2be9f312253b26ae879a874454cfcc3264238ea68a3fc8f8b3d8d881d"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_stormsky.webp",
+      "bytes": 846250,
+      "sha256": "fe1ffbb501ce01078e0ffd3923125249879ba1298fbd26b5599c9f7e7b5ec32b"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_sunhand.png",
+      "bytes": 1898613,
+      "sha256": "e0d4cc7148216fe9b7dd1fed15fef00b3aad8274815164972ecebac002108d7d"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_sunhand.webp",
+      "bytes": 243594,
+      "sha256": "0b12c21aa8ad8ebcaa02ffd51e9a86442fcf3b90576c771828dba2fb8afe6fd7"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_wildfire.png",
+      "bytes": 4775210,
+      "sha256": "5a002396a41430c69adb8b8c5f29b5edf32b8ad3082a4de2605141e08fba30bc"
+    },
+    {
+      "path": "sunset-ads/assets/eng/w_wildfire.webp",
+      "bytes": 741238,
+      "sha256": "1ecfd1e673673ab9e3a2730f45d3bce46f3bf471686097e8e76f334764f51357"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/InstrumentSans[wdth,wght].ttf",
+      "bytes": 194336,
+      "sha256": "b24f1812584816958afcf22e22d08e44318c5e51651e25d2438efdde389b33b1"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/InstrumentSerif-Italic.ttf",
+      "bytes": 71592,
+      "sha256": "08939b8bdf534afec24ae0ef5e03f948940cd9a8fe08e7fecbad040e62327385"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/InstrumentSerif-Regular.ttf",
+      "bytes": 70012,
+      "sha256": "498efd461f6ddfcb7a111bf9a565709d2085d48201d501ead960d93e84ffbb88"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/JetBrainsMono[wght].ttf",
+      "bytes": 187208,
+      "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/ShipporiMincho-Medium.ttf",
+      "bytes": 8678848,
+      "sha256": "700e505afc4cded2338eba29478a041e04c1c2ea5114fbb3e0b04e76c302c5d8"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/instrument-sans-400.woff2",
+      "bytes": 23084,
+      "sha256": "ce550e3b693cb6d17f7006533deb5ca8fa8d8d494ddc04e529145b718a59e412"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/instrument-sans-500.woff2",
+      "bytes": 23908,
+      "sha256": "47450406ce3f489d66517415b189be72ecaea245362fc9117cab4f61f4842e94"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/instrument-sans-600.woff2",
+      "bytes": 23912,
+      "sha256": "3abf8fd91ab0ee8cd09671a40c92b7df1606a8e9966ba654fd605cf943b50d67"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/instrument-serif-400.woff2",
+      "bytes": 23752,
+      "sha256": "980268ebf3324801b9743aa589a6daaf136fa48b838c464aed59466c9c8cc63d"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/instrument-serif-400i.woff2",
+      "bytes": 24428,
+      "sha256": "6f71c70d3c11b60874e798bf5ac1ff0e097ae2f9c789ee8cd6b3c56201481447"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/jetbrains-mono-400.woff2",
+      "bytes": 22056,
+      "sha256": "be5a52e12085943425ec4aea4f1fc489f6aaae1c2ad3a09921dfabbf1ba7cea5"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/jetbrains-mono-500.woff2",
+      "bytes": 22724,
+      "sha256": "d31dde9973aaa60ab0474129ae67441ca1b9ec159388e71d6cf09054a43868e9"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/licenses/instrumentsans-OFL.txt",
+      "bytes": 4403,
+      "sha256": "9e27a72ed30eb49a08678f6a5d6ed98ec7ba5368f541637ee0683ec9134ef966"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/licenses/instrumentserif-OFL.txt",
+      "bytes": 4405,
+      "sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/licenses/jetbrainsmono-OFL.txt",
+      "bytes": 4399,
+      "sha256": "b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/licenses/shipporimincho-OFL.txt",
+      "bytes": 4399,
+      "sha256": "41fba056279be5f45ff9a99e44b7b53897b42732f5806d8e666e0ab49ac6bd38"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/shippori-mincho-500.woff2",
+      "bytes": 2416,
+      "sha256": "a3245014fc4fa26b47247bbf9845f59000821dcb3b8cef776cf85de1b323730c"
+    },
+    {
+      "path": "sunset-ads/assets/fonts/shippori-page.woff2",
+      "bytes": 6604,
+      "sha256": "e7c90074eb1203af59d3b94479fad40245cfffddcdf00d9aedbc2bf1a9a8184a"
+    },
+    {
+      "path": "sunset-ads/assets/img/chart_wood.webp",
+      "bytes": 95432,
+      "sha256": "c815a36a254411ef308a2261e91d0cbec2dd240299a7c94aedc4cf429a81caa7"
+    },
+    {
+      "path": "sunset-ads/assets/img/hanko.webp",
+      "bytes": 28772,
+      "sha256": "08ceeb5172683033c03576d35ac981cb1b3054af57aaf94721ddf035578db10c"
+    },
+    {
+      "path": "sunset-ads/assets/img/hanko_alpha.png",
+      "bytes": 495298,
+      "sha256": "8b6a470bbdfdac051d97295e18811b08d621a910afab35b2d2ab0c8b589b2114"
+    },
+    {
+      "path": "sunset-ads/assets/img/hanko_keyed.png",
+      "bytes": 459328,
+      "sha256": "e26d70909324b52aadee7172cd1380913e6ec34a698b0b69d1fea84f40e82aba"
+    },
+    {
+      "path": "sunset-ads/assets/img/hanko_src.png",
+      "bytes": 1070929,
+      "sha256": "d1061c862f8d9a3ded2ba40b6c5d364b9bdae8de2c76cdbe392a9928d036fb47"
+    },
+    {
+      "path": "sunset-ads/assets/img/hanko_vermilion.png",
+      "bytes": 680097,
+      "sha256": "7db202b7c66592c3a1e316ea35f08a24b101f7ab2252d4531402887702067673"
+    },
+    {
+      "path": "sunset-ads/assets/img/hanko_vermilion_96.png",
+      "bytes": 18873,
+      "sha256": "c618c2476f4cf22b240d14c32b99a425d7854ea093c5603b59ce0cd25753a538"
+    },
+    {
+      "path": "sunset-ads/assets/img/logo_ink_nav.webp",
+      "bytes": 15754,
+      "sha256": "51926b15039196df21b7c63807f0760cabf9260e7f2f45701a9356e09d7fc0df"
+    },
+    {
+      "path": "sunset-ads/assets/img/logo_stamp.webp",
+      "bytes": 13460,
+      "sha256": "5a50d1b2400746f4abf29dfe4efcfdbed3a71a5fa9d20c66cc4d14cc791272c4"
+    },
+    {
+      "path": "sunset-ads/assets/img/logo_sunseto.webp",
+      "bytes": 35038,
+      "sha256": "448cda0921acf04013320eae6f4a35abdaaf3c81fb1b5f768773e9baa63b6543"
+    },
+    {
+      "path": "sunset-ads/assets/img/logo_sunseto_nav.webp",
+      "bytes": 16996,
+      "sha256": "17baa2f6d3d8125212ad12523cd04064601eb3f5d5ad0295e0644ba5b64c2a98"
+    },
+    {
+      "path": "sunset-ads/assets/img/logo_word.webp",
+      "bytes": 21724,
+      "sha256": "69f488f420f65c3b87e7964521c696dd4cc3b0934df8127f6625f6bcf928ef45"
+    },
+    {
+      "path": "sunset-ads/assets/img/mark.json",
+      "bytes": 10128,
+      "sha256": "5d29d5ad1675e870930ceae9023f71653c1c8df718452594772cc3a74759a939"
+    },
+    {
+      "path": "sunset-ads/assets/img/mark_cream.png",
+      "bytes": 168475,
+      "sha256": "ec502fe6f6e23de744ac203e78071a7844d2ee0eb3ca69e1e650ef163faf6e3b"
+    },
+    {
+      "path": "sunset-ads/assets/img/mark_ink.png",
+      "bytes": 211023,
+      "sha256": "8bdb253f1e27345bd35624d8cffbb8afcc38e6d67eae0c18b0f3995d07b00c67"
+    },
+    {
+      "path": "sunset-ads/assets/img/orn_appicon.webp",
+      "bytes": 9426,
+      "sha256": "f7d0b584fc550fc58e28f1c87a8a989ec7e73a563cd1bac9e595dd121edf5678"
+    },
+    {
+      "path": "sunset-ads/assets/img/orn_crane.webp",
+      "bytes": 34342,
+      "sha256": "9624325f8004d4aba626777709de6e0c5729c9abe96ecf8cb385a5ac74f3b7e6"
+    },
+    {
+      "path": "sunset-ads/assets/img/orn_fan.webp",
+      "bytes": 65062,
+      "sha256": "f2d5e10dd7fac1e91c36ce77788ef411c8f2470af893ad0223e0ee5a70373f84"
+    },
+    {
+      "path": "sunset-ads/assets/img/orn_lantern.webp",
+      "bytes": 40558,
+      "sha256": "a825d18481a9dfe93c6d665685367c8aea6438ff248eb02c60d1252222b25505"
+    },
+    {
+      "path": "sunset-ads/assets/img/orn_sakura.webp",
+      "bytes": 52272,
+      "sha256": "4f56d496897d1113cdcf3a73825b962f2d0891011c25938c6dda6a0b9fa8f6ed"
+    },
+    {
+      "path": "sunset-ads/assets/img/stamp_chiba.webp",
+      "bytes": 36308,
+      "sha256": "f7b0c25e5bb4ac1e7ea03498e1e64e1331f0c96110d0c9136eb35743a6367365"
+    },
+    {
+      "path": "sunset-ads/assets/img/stamp_kyoto.webp",
+      "bytes": 54824,
+      "sha256": "d5dde468f91a64d03396649b56578962b88f983882b9fd9af4854ff3ed6626ee"
+    },
+    {
+      "path": "sunset-ads/assets/img/stamp_onomichi.webp",
+      "bytes": 29452,
+      "sha256": "6dad9c0912482abecebe5d7df9fc5d006f2598b3638d84ba80435906fb8d322e"
+    },
+    {
+      "path": "sunset-ads/assets/img/sunseto-mark.svg",
+      "bytes": 8643,
+      "sha256": "586c892702f8da4c31222542d212f24dbd55f16d92c49ffcf37d2b9a0fce6d6c"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/battery-cedar-yard.jpg",
+      "bytes": 11267891,
+      "sha256": "22a7e713323310afe20fc70bedf747e3d2b04a35cdb4c346fac36f07b8a62ccb"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/battery-wall.jpg",
+      "bytes": 5831395,
+      "sha256": "8bade1254d7e023b853d44a0584979b28eaa404ba0ea92c71fa92bcc834d7255"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/dusk-farmhouse.jpg",
+      "bytes": 5767344,
+      "sha256": "7caf9d773c3a0c9fbb08576bc36210d33364460659fe08f52d822e3b73e2b977"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/hand-phone.jpg",
+      "bytes": 3196186,
+      "sha256": "824bd4c535b599b953bfa49514ce9200f508537041ea42d7f34117cbbbd94ff8"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/kyoto-roof.jpg",
+      "bytes": 10393010,
+      "sha256": "4b61b59092e3274bc0cb78cd14f693c46d0a999f5ba67f48cbed7af3ddc4378a"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/machiya-sunset.jpg",
+      "bytes": 6301780,
+      "sha256": "fe1b51ba89522e4c8d456bd760cea86c1a7e6af4ee862f6e840b97aff90ffffa"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/network-map-crop.png",
+      "bytes": 17852410,
+      "sha256": "e633ff5b54d7b343f5957d85301f1ca8fff18cc979e2e8328bc50a5994b40369"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/network-map.png",
+      "bytes": 19711041,
+      "sha256": "72ea7a7c847466c9cf5c4a6ca9acd69afdf2e1a42f3088a87d9b9def4f652820"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/sakura-machiya.jpg",
+      "bytes": 7366207,
+      "sha256": "1a2be3ce9af182ecedbf9cc67d956f8d588660c4b84be7d9573f0253c8b45d5b"
+    },
+    {
+      "path": "sunset-ads/assets/scenes/typhoon-night.jpg",
+      "bytes": 5690346,
+      "sha256": "4b1d3b3efeedcbd784ce83a2df09f5242f404892027d49ccb5feb59d14925225"
+    },
+    {
+      "path": "sunset-ads/env/billboard-street.png",
+      "bytes": 3675202,
+      "sha256": "cf160379c243adbcf98446859a7f96f84de9411de865e18a4248028b027821a5"
+    },
+    {
+      "path": "sunset-ads/env/desk-cards.png",
+      "bytes": 3307820,
+      "sha256": "76e7285a44e7729d2b5d9e9aa1f8d318b62b24e63b5f1728d00b31de049883a4"
+    },
+    {
+      "path": "sunset-ads/env/platform-v2.png",
+      "bytes": 3067098,
+      "sha256": "56959be0c2d8acc4bd93d328069ca628d9658d1eac4ce9448d6ecd49da992382"
+    },
+    {
+      "path": "sunset-ads/env/platform.png",
+      "bytes": 3128111,
+      "sha256": "d659e612c1540c63f12504e5841086bb9686e963c6f2cf23f245b35e63d6de57"
+    },
+    {
+      "path": "sunset-ads/env/station-corridor.png",
+      "bytes": 2156623,
+      "sha256": "a88a761fe70b0cda6481dfc4e749768e9571bf7cf31eb321646d2b2f3ab42904"
+    },
+    {
+      "path": "sunset-ads/env/tee-flatlay.png",
+      "bytes": 4559230,
+      "sha256": "d70e32bb06fd331e4ad4438f4a150928c35576ae711400c1ebdd9f5cc12591ad"
+    },
+    {
+      "path": "sunset-ads/env/tee-worn.png",
+      "bytes": 2397789,
+      "sha256": "a60298a5942ab84d0a4c3d923a70a340575080cf9b0aaa61e72522c1470d81f3"
+    },
+    {
+      "path": "sunset-ads/mock/billboard-street.jpg",
+      "bytes": 712871,
+      "sha256": "548381bc7202e5b05b055e55363576ecb2d6f65a667296fc3fb00de90bf25010"
+    },
+    {
+      "path": "sunset-ads/mock/billboard-street_detail.jpg",
+      "bytes": 77601,
+      "sha256": "052da9ba060fd2feedacba600d379a62eb866019de95cdaac1fd82ba5e0396ea"
+    },
+    {
+      "path": "sunset-ads/mock/meishi-desk.jpg",
+      "bytes": 523707,
+      "sha256": "9ac4cad9e7805618c6185747f42dac64a9904071127e04a497977d06948cd333"
+    },
+    {
+      "path": "sunset-ads/mock/meishi-desk_detail.jpg",
+      "bytes": 275099,
+      "sha256": "2b0e6766bc5a4d0f8165e33c4e684f5c139984c6c9733927df193ff5faa2f76c"
+    },
+    {
+      "path": "sunset-ads/mock/station-corridor.jpg",
+      "bytes": 361166,
+      "sha256": "7ca0ebcd352e625b608ca1d858bf28a9bed6b1f7ac10cdeeb0d65043f96088c4"
+    },
+    {
+      "path": "sunset-ads/mock/station-platform.jpg",
+      "bytes": 494609,
+      "sha256": "777fc7906a6eae0b4a52e7f620c735b74ca1398c08a0bf48581939cdf482c859"
+    },
+    {
+      "path": "sunset-ads/mock/station-platform_detail.jpg",
+      "bytes": 116967,
+      "sha256": "6136523d274f0a3174175a340eeb73d47a4af188cd3d0df6ca7c50fbd6f510dd"
+    },
+    {
+      "path": "sunset-ads/mock/tee-flatlay.jpg",
+      "bytes": 822576,
+      "sha256": "d64296be46f9a4a23e589a29a2800a6de26d52a0bf037d34ff96b008418f002d"
+    },
+    {
+      "path": "sunset-ads/mock/tee-flatlay_back-detail.jpg",
+      "bytes": 212422,
+      "sha256": "388645d5032199e7a10d5ac753f1733f6288b03ee1d4452e29b5e5d720824f6a"
+    },
+    {
+      "path": "sunset-ads/mock/tee-flatlay_chest-detail.jpg",
+      "bytes": 28496,
+      "sha256": "0479dcda1f0a9a46d4d8e0096ed96e0bbd67fd52d8f74acb1987dcf756618c1b"
+    },
+    {
+      "path": "sunset-ads/mock/tee-worn.jpg",
+      "bytes": 369606,
+      "sha256": "e31fe4215ef111095fb3f0bad04d98e4e1c6fa739d0f8d025efd8d656e2c5289"
+    },
+    {
+      "path": "sunset-ads/page.src.html",
+      "bytes": 23209,
+      "sha256": "41ee63688b5f45614e7282a3661f9b871709d32afc50793af3755113b24fdef7"
+    },
+    {
+      "path": "sunset-ads/print/b0_1_1030x1456mm_150dpi.png",
+      "bytes": 26168058,
+      "sha256": "ed5418bc611a2a7e518fdc73cf814ac2d1d30b1e8ccca4641c8fc62ec4db9880"
+    },
+    {
+      "path": "sunset-ads/print/b0_1_1030x1456mm_150dpi.preview.jpg",
+      "bytes": 462911,
+      "sha256": "9114714c572f745f00e3305840f317ba4f223141b97c1fda5c6243b9cd99ab3c"
+    },
+    {
+      "path": "sunset-ads/print/b0_2_1030x1456mm_150dpi.png",
+      "bytes": 20048872,
+      "sha256": "0e4ddd4232b43caeb060987b7e94ef3c9f3b1778e3af88298d2e30eaee0bcbda"
+    },
+    {
+      "path": "sunset-ads/print/b0_2_1030x1456mm_150dpi.preview.jpg",
+      "bytes": 323304,
+      "sha256": "bb67ec09fdef7525eff4f6d2ef74991502272a51c8a9d522102f67f1bb8105c7"
+    },
+    {
+      "path": "sunset-ads/print/b0_3_1030x1456mm_150dpi.png",
+      "bytes": 12364932,
+      "sha256": "6f33bd8ddd4e0adc5530cdd7f227b2bb5546415cbc49d579691bcb0256701890"
+    },
+    {
+      "path": "sunset-ads/print/b0_3_1030x1456mm_150dpi.preview.jpg",
+      "bytes": 255016,
+      "sha256": "602b39bbfecc4465433f07aebe365c65bb43588d4e2154f7c4a69a5be2da48ed"
+    },
+    {
+      "path": "sunset-ads/print/b0_series.preview.jpg",
+      "bytes": 721359,
+      "sha256": "e01a6b8e42b13221b2c63deaedf26033d1e0236e3d07a57143b091331586dca4"
+    },
+    {
+      "path": "sunset-ads/print/billboard_10920x3640mm_1-10scale_300dpi.png",
+      "bytes": 15263576,
+      "sha256": "b378068dac5ee4797da2a6d98f37af15e2d4804f4055c9f0cde501f431abeab3"
+    },
+    {
+      "path": "sunset-ads/print/billboard_10920x3640mm_1-10scale_300dpi.preview.jpg",
+      "bytes": 313453,
+      "sha256": "065a4bd26b148c0999eb3acf2a408203b65017ed4ebb08b58a368f66067bcf9b"
+    },
+    {
+      "path": "sunset-ads/print/corridor_5150x1456mm.preview.jpg",
+      "bytes": 568993,
+      "sha256": "45011f45af541fc0c24efa9a266311f8c64e24606e980b579afebfc247761a71"
+    },
+    {
+      "path": "sunset-ads/print/corridor_5150x1456mm.wide.jpg",
+      "bytes": 1288692,
+      "sha256": "b3e6b0cf808e5e14504282459ea78b0a2ee18116b4ecdd5cbcd438b90d522d9b"
+    },
+    {
+      "path": "sunset-ads/print/corridor_5150x1456mm_preview_40dpi.png",
+      "bytes": 13582930,
+      "sha256": "ad2afe3b419c96618d93bbcb9f37c70d95865a79e4cc84cfc4e1fdc956d56543"
+    },
+    {
+      "path": "sunset-ads/print/corridor_5150x1456mm_preview_40dpi.preview.jpg",
+      "bytes": 887475,
+      "sha256": "5751ca96d3ae9fee17990d92329d188d5f673d2456f2fa80d4ef8e077793c7f7"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet1_B0_150dpi.png",
+      "bytes": 34185978,
+      "sha256": "b5545e5e92c25f2666c546fc59207065a0f824ab751a4363c24f0ab21ae72c53"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet1_B0_150dpi.preview.jpg",
+      "bytes": 261717,
+      "sha256": "af296f1727042fd100172e0bf56b75782d2d555e4e1ba3a2e66f0db6a8934ca3"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet2_B0_150dpi.png",
+      "bytes": 31605781,
+      "sha256": "835fa985947fcc88613386d0cdf49cd81bceb1f972ebeee9f97aba93932ea737"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet2_B0_150dpi.preview.jpg",
+      "bytes": 221174,
+      "sha256": "f95525224a18483f5d94dce3068ee4db5214dc029d04a3b6ae963a30555fe1c1"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet3_B0_150dpi.png",
+      "bytes": 15754023,
+      "sha256": "2768303c43620e9d07f77a4515389c642f7e51926131daa39bb705602004633b"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet3_B0_150dpi.preview.jpg",
+      "bytes": 102844,
+      "sha256": "ff5dd142430a09a0abf1087cf5adf8789674e5d93bfa61509009f6596f92f67c"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet4_B0_150dpi.png",
+      "bytes": 23682789,
+      "sha256": "fe028d5b008b3775e28f106dada59f513d096cc55f4fb31662424d33a28d05e8"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet4_B0_150dpi.preview.jpg",
+      "bytes": 163464,
+      "sha256": "36ece97885b1cd2d5285f60b9a2867912472ac80e58deca760e4c96120931f32"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet5_B0_150dpi.png",
+      "bytes": 18788174,
+      "sha256": "fbca9b401b4879d36597fdb2b38232ff57cb3c01752aa096df5133a0f7818527"
+    },
+    {
+      "path": "sunset-ads/print/corridor_sheet5_B0_150dpi.preview.jpg",
+      "bytes": 166383,
+      "sha256": "8d21ad40848fd6381da1c618e944596863e5a30887ecb71c02d5504fa0fdddde"
+    },
+    {
+      "path": "sunset-ads/print/meishi_both.preview.jpg",
+      "bytes": 366619,
+      "sha256": "cef868a51b4c92a3eb35dfffb2f8516396019e0601a35af4b0efa25b7a98e749"
+    },
+    {
+      "path": "sunset-ads/print/meishi_en_91x55mm_600dpi.png",
+      "bytes": 2210793,
+      "sha256": "e7f34549ef5c3d1f2829a6b44bb564a4c20ab6c5d790dab8df5f29eb6acf9eb3"
+    },
+    {
+      "path": "sunset-ads/print/meishi_en_91x55mm_600dpi.preview.jpg",
+      "bytes": 247375,
+      "sha256": "c62d621037db333d84328157dc65e4ef823c368b2206414d64d40218957838b7"
+    },
+    {
+      "path": "sunset-ads/print/meishi_jp_91x55mm_600dpi.png",
+      "bytes": 2229425,
+      "sha256": "34aae3a51797f7c1a03e02c5ad2cc90f334d1902ebbb60ffd0b025a40d78bc1f"
+    },
+    {
+      "path": "sunset-ads/print/meishi_jp_91x55mm_600dpi.preview.jpg",
+      "bytes": 240696,
+      "sha256": "1b8882a1344cddfda12e581a40865f66bc71818aef900a946757d45bf286b534"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_en_plate-blind_600dpi.png",
+      "bytes": 48321,
+      "sha256": "b981ee38457f5e758b753632cc1519342e169b8131944ca28dd22f00431c0966"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_en_plate-fount_600dpi.png",
+      "bytes": 48680,
+      "sha256": "53a56349b3c86b0210997bb8dcafe8ea93e433494aa27b7321c4f2774bb22553"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_en_plate-sumi_600dpi.png",
+      "bytes": 127999,
+      "sha256": "49ffa90946710dd3cb4ff5ddba4c1f756b69417981cc8cef8ddff274170d295f"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_en_plate-verm_600dpi.png",
+      "bytes": 122457,
+      "sha256": "459381e554ebd9d44c46fa6b47483653c7f482317e224abff3d0d04f74a15d45"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_jp_plate-blind_600dpi.png",
+      "bytes": 48668,
+      "sha256": "9278aef66ed7377af1a0ce2715382db2d00d322d7f8361641da630e3ce20a1b5"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_jp_plate-fount_600dpi.png",
+      "bytes": 47919,
+      "sha256": "40f50ff98f04fc874f63b4de3640d33e1dc02c27b9486699104cf1747afcea45"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_jp_plate-sumi_600dpi.png",
+      "bytes": 139633,
+      "sha256": "dc16bd7ad2d6342c8230a593f65b017079c5d428902c9903c4cd89c39c529f0f"
+    },
+    {
+      "path": "sunset-ads/print/plates/meishi_jp_plate-verm_600dpi.png",
+      "bytes": 126883,
+      "sha256": "8c02ac2f0612db8e80708be446dc2f5fba3f8f4ab76f05d0a82e1316e588cfbe"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-coral_300dpi.png",
+      "bytes": 297932,
+      "sha256": "9b51df87979bec5599973c5cad0f38dee3ab5f4f4e7b73885fd28edb8a8467d9"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-cream_300dpi.png",
+      "bytes": 391180,
+      "sha256": "f59a1a4c67349813b8b06b6b6020aa927629f7a2029b974fab34f6dc65b85202"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-gold_300dpi.png",
+      "bytes": 278243,
+      "sha256": "6b6d16713d871ec572902d59a95c82b71e3ebe7c172925a214f40e9510712fc8"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-orange_300dpi.png",
+      "bytes": 292234,
+      "sha256": "fc9949698f74efa465d87018639999fca9f01dbdc6178f52ad2291debe9f2164"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-plum_300dpi.png",
+      "bytes": 318565,
+      "sha256": "fcfbe7e55dffe9e2787545b6557d443133d0f6380d074c3b56397e70e2324729"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-rose_300dpi.png",
+      "bytes": 309515,
+      "sha256": "c09cc0ac678fcd1fae14c4c11724586bb2655993ee97fcec5a67f6590727f21d"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_back_screen-verm_300dpi.png",
+      "bytes": 361110,
+      "sha256": "abbe04cd34970a2402d3c562a22d8bbe7bb4374a66607a9bbd5a98e264fd2b0c"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_chest_screen-cream_300dpi.png",
+      "bytes": 8411,
+      "sha256": "d96c6a5d8145e63ee0223514aebefa5820c93fdace3168a6f3db1374a563fe41"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_chest_screen-gold_300dpi.png",
+      "bytes": 7372,
+      "sha256": "d782cb3794908baa8de8e50e354a648fd8dd18cddc697b98bf81f2775b48b01c"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_chest_screen-orange_300dpi.png",
+      "bytes": 7005,
+      "sha256": "c423147811e10f6faa8a35c0d9f8269b7ec9ecb84e94eeec821fada509477159"
+    },
+    {
+      "path": "sunset-ads/print/plates/tee_chest_screen-verm_300dpi.png",
+      "bytes": 32981,
+      "sha256": "b09b97fadb46fcad51433b6f624a5ed55bdcf2f2d5deab55ad6dad5cda7be813"
+    },
+    {
+      "path": "sunset-ads/print/render.log",
+      "bytes": 3707,
+      "sha256": "20c6193f659aa5e6d10913ebcf5086c39466704cf9a55b7e43bbcd07bc67af53"
+    },
+    {
+      "path": "sunset-ads/print/tee_back_film_300dpi.png",
+      "bytes": 744940,
+      "sha256": "1942fe791987d18dd7487adad4945587fb6d19f1121993da393bee042b7bdf31"
+    },
+    {
+      "path": "sunset-ads/print/tee_back_on-indigo_300dpi.png",
+      "bytes": 607390,
+      "sha256": "1cb8b26aff632d86c5c65cf0b70fad265ebd2842b9f9c654ff51ec97ab969d35"
+    },
+    {
+      "path": "sunset-ads/print/tee_back_on-indigo_300dpi.preview.jpg",
+      "bytes": 187563,
+      "sha256": "a53564749c80533da4fd02ad35e1ef8d36476d3bd82b35545be886a371d6de93"
+    },
+    {
+      "path": "sunset-ads/print/tee_chest_film_300dpi.png",
+      "bytes": 73764,
+      "sha256": "5370a036d34ad824be2a2ad9ff6e1d708d99ccec93b6708c9bfa64c7cd1a4bd6"
+    },
+    {
+      "path": "sunset-ads/print/tee_chest_on-indigo_300dpi.png",
+      "bytes": 58113,
+      "sha256": "d01764896440a2adc6123a362d8152d832e257985753fbb6ec2998476b1cfaec"
+    },
+    {
+      "path": "sunset-ads/print/tee_chest_on-indigo_300dpi.preview.jpg",
+      "bytes": 41505,
+      "sha256": "ef152abfe1a0ddcc73aae52bb9d7383a0face1b4de164cf7ae957b10d12855bc"
+    },
+    {
+      "path": "sunset-ads/tools/build-page.py",
+      "bytes": 1665,
+      "sha256": "39a581b0b0ae62ba8e4872b7cf9d50b4dbc3d8ccb028f35394429fa2cc652c66"
+    },
+    {
+      "path": "sunset-ads/tools/composite.py",
+      "bytes": 4096,
+      "sha256": "b13bf725c172e31d56870c05143b4c3f351496daa61f6dd9a11e49eeeace3157"
+    },
+    {
+      "path": "sunset-ads/tools/mock/billboard.py",
+      "bytes": 1311,
+      "sha256": "cc62017d8a39f40084eafb6437740ce43a4c579e41a8aa01476e45aa8d39201b"
+    },
+    {
+      "path": "sunset-ads/tools/mock/corridor.py",
+      "bytes": 1449,
+      "sha256": "dc8ee30dfc46e24834c85395893092fd153c9e20e12aeeffc198131b7c0dd9dc"
+    },
+    {
+      "path": "sunset-ads/tools/mock/desk.py",
+      "bytes": 3213,
+      "sha256": "6a710ed496de2e766b56f2c4a941506b9767e6eee6b8bbd5e02346aef28b336b"
+    },
+    {
+      "path": "sunset-ads/tools/mock/station_platform.py",
+      "bytes": 5240,
+      "sha256": "c117a31fa6fdec800dc78118024b6fc47c5fa6b8d7e58c1f1849bc92ba0ac968"
+    },
+    {
+      "path": "sunset-ads/tools/mock/tee_flat.py",
+      "bytes": 2439,
+      "sha256": "94bd8a8d04cc5889b8b2ef6f752fd5301f2887febd1f8bd0a89b078a4e1284da"
+    },
+    {
+      "path": "sunset-ads/tools/mock/tee_worn.py",
+      "bytes": 2991,
+      "sha256": "070ee093fb3335d1cba4e189028c959f86fecf9e346e54a13d50de6e9412a8ef"
+    },
+    {
+      "path": "sunset-ads/tools/quad.py",
+      "bytes": 3816,
+      "sha256": "b8eca363914f4038749d6365e73e871915f50dffc8338fea97495312b14e3246"
+    },
+    {
+      "path": "sunset-ads/tools/render-all.sh",
+      "bytes": 1281,
+      "sha256": "17a12798c8c58e7bb608ce798b4220dba23c22799f363130323389b578e83484"
+    },
+    {
+      "path": "sunset-ads/tools/render.mjs",
+      "bytes": 2717,
+      "sha256": "f9fd26e8e3e15ad637292098cfe53b929160718c112561023162c59f3d2561bb"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_aerial.webp",
+      "bytes": 659030,
+      "sha256": "d9086cb84dc580dde496744ffca696e7a27b27deb7f90ad812e399fbf10e6378"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_jaerial.webp",
+      "bytes": 658790,
+      "sha256": "5ef1bf2aa3ec05be8db437446b1f61a5feb0f7caf1470b2dbf4d33d253f530eb"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_jliving.webp",
+      "bytes": 669962,
+      "sha256": "0a73532dc022db097eff46b6877fd3d20b39a54259fb1c19a9ed2d216b41b575"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_jrain.webp",
+      "bytes": 622294,
+      "sha256": "39ef1afd166e277ec4859fbf93d1ce2382496d1b75e5e4e79beee765ed2e70d5"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_jstorm.webp",
+      "bytes": 918208,
+      "sha256": "c98c94e6475d96730d48c1b2892c0fa86886110c1d4003b6ef041836eab5cc6e"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_living.webp",
+      "bytes": 690174,
+      "sha256": "bdf6393b03fd5804cfd2fbe878d685e893f3bf45e7920be76b0fe532a3d1f20a"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_stormhouse.webp",
+      "bytes": 919456,
+      "sha256": "7f17d410eca29d8d9a34d624b509e20660ac1696cc95e649296801985e0ba8ef"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_stormsky.webp",
+      "bytes": 846250,
+      "sha256": "fe1ffbb501ce01078e0ffd3923125249879ba1298fbd26b5599c9f7e7b5ec32b"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_sunhand.webp",
+      "bytes": 243594,
+      "sha256": "0b12c21aa8ad8ebcaa02ffd51e9a86442fcf3b90576c771828dba2fb8afe6fd7"
+    },
+    {
+      "path": "sunset-brand/assets/engravings/w_wildfire.webp",
+      "bytes": 741238,
+      "sha256": "1ecfd1e673673ab9e3a2730f45d3bce46f3bf471686097e8e76f334764f51357"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/instrument-sans-400.woff2",
+      "bytes": 23084,
+      "sha256": "ce550e3b693cb6d17f7006533deb5ca8fa8d8d494ddc04e529145b718a59e412"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/instrument-sans-500.woff2",
+      "bytes": 23908,
+      "sha256": "47450406ce3f489d66517415b189be72ecaea245362fc9117cab4f61f4842e94"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/instrument-sans-600.woff2",
+      "bytes": 23912,
+      "sha256": "3abf8fd91ab0ee8cd09671a40c92b7df1606a8e9966ba654fd605cf943b50d67"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/instrument-serif-400.woff2",
+      "bytes": 23752,
+      "sha256": "980268ebf3324801b9743aa589a6daaf136fa48b838c464aed59466c9c8cc63d"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/instrument-serif-400i.woff2",
+      "bytes": 24428,
+      "sha256": "6f71c70d3c11b60874e798bf5ac1ff0e097ae2f9c789ee8cd6b3c56201481447"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/jetbrains-mono-400.woff2",
+      "bytes": 22056,
+      "sha256": "be5a52e12085943425ec4aea4f1fc489f6aaae1c2ad3a09921dfabbf1ba7cea5"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/jetbrains-mono-500.woff2",
+      "bytes": 22724,
+      "sha256": "d31dde9973aaa60ab0474129ae67441ca1b9ec159388e71d6cf09054a43868e9"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/licenses/instrumentsans-OFL.txt",
+      "bytes": 4403,
+      "sha256": "9e27a72ed30eb49a08678f6a5d6ed98ec7ba5368f541637ee0683ec9134ef966"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/licenses/instrumentserif-OFL.txt",
+      "bytes": 4405,
+      "sha256": "129ed7618959716959f2941fdd5b49e0ad6e6c1d78726761786a00253d865521"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/licenses/jetbrainsmono-OFL.txt",
+      "bytes": 4399,
+      "sha256": "b2fe5e8987594e9ffd1d2ca52a2f5d73eb8335243893c5d6254b5ad69269591d"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/licenses/shipporimincho-OFL.txt",
+      "bytes": 4399,
+      "sha256": "41fba056279be5f45ff9a99e44b7b53897b42732f5806d8e666e0ab49ac6bd38"
+    },
+    {
+      "path": "sunset-brand/assets/fonts/shippori-mincho-500.woff2",
+      "bytes": 2416,
+      "sha256": "a3245014fc4fa26b47247bbf9845f59000821dcb3b8cef776cf85de1b323730c"
+    },
+    {
+      "path": "sunset-brand/assets/guide/shippori-guide.woff2",
+      "bytes": 10520,
+      "sha256": "2bc6983cb62abf51a387d6c8271e624dabddca8728ae392f89e7a69876494e4d"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-battery.webp",
+      "bytes": 149776,
+      "sha256": "91950a345841832cc0894ce00bab421aee2c2170de931a7b5f407a9b8276bbb0"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-cedar-yard.webp",
+      "bytes": 134266,
+      "sha256": "0de183f0af41d64c297e8d9b5fc646e83102f10efafc86b3390db4f50b6b3679"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-dusk.webp",
+      "bytes": 47882,
+      "sha256": "33e430ed5cfa1de43b245b538ffdedee0dabe364bf42106f546661eca810aa58"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-hand.webp",
+      "bytes": 57784,
+      "sha256": "fa8ddf485d91138280ec78533076dd46b2bf0832bd786587d3f3900ae86adece"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-hero.webp",
+      "bytes": 61572,
+      "sha256": "5410c16c2db918a710f1200d5e224df9e2950c08d985d3b32a734bed1fb23e31"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-house.webp",
+      "bytes": 174276,
+      "sha256": "7563436d4ffb5a54aeda491139e238e38a62f70d7722a015c51b360192fa37c1"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-machiya.webp",
+      "bytes": 140816,
+      "sha256": "1ab738684474dc9630535ddfaa9985e45e75286fef5bc67c0b0def87a09b4d03"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-network.webp",
+      "bytes": 33564,
+      "sha256": "97fa05d1505bc9789368983c5800edb285adfac5059dc80deaa8986f8d9acbfc"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-phone.webp",
+      "bytes": 28836,
+      "sha256": "d338725b33d7e39b2930d72552cf38516c53b756a832f2146163519dc041411e"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-step2.webp",
+      "bytes": 39420,
+      "sha256": "a24e6f73cbd8b43c6b94c9533e464390ecefbf18dbdebbc59a7dc28ee37fdfa2"
+    },
+    {
+      "path": "sunset-brand/assets/guide/t_tile-storm.webp",
+      "bytes": 47794,
+      "sha256": "1d17666367d28bda4df0887a028c14f2b563f93b97f76188a34d259411f00e05"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_aerial.webp",
+      "bytes": 3962,
+      "sha256": "7ace2d01747691abb2d1e026f4ba54caab8efdd64211a52f9ae87e95d919cbd1"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_jaerial.webp",
+      "bytes": 3856,
+      "sha256": "f7f75e5c4d9d7c1006fca90a5f236e62413b1104a34d817b993de8f112f44c66"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_jliving.webp",
+      "bytes": 3998,
+      "sha256": "d7eca5b4ac2641f408edd34dd819c307c2ab5029c157c7c40be1c2fe51d1c940"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_jrain.webp",
+      "bytes": 4942,
+      "sha256": "0b46042aa5c4839ea542ef181e911b68cb52f5c357960dee7a4763bfb750d45c"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_jstorm.webp",
+      "bytes": 5166,
+      "sha256": "16c6178a884cea492f0cec639b7a6375445da8abf319eb85fb99a667db1ae509"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_living.webp",
+      "bytes": 3822,
+      "sha256": "932e8581fc2fbfa89771936d03ad7d893632a71d3cc1d9dc6f60ec1dd46c5718"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_stormhouse.webp",
+      "bytes": 5264,
+      "sha256": "a443ee18b30d514e6856dfa9559981be75c0aa5432bb11e8a3d3ec4f21830842"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_stormsky.webp",
+      "bytes": 4628,
+      "sha256": "1655c4972c8009f149b11103782c822868855f79f79accd83cd88f07141ce6df"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_sunhand.webp",
+      "bytes": 2684,
+      "sha256": "4fc4e37431825488c45d1e844d286c1cb5f6260dec4cf7ef4b3f56539231081e"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/engravings__w_wildfire.webp",
+      "bytes": 4330,
+      "sha256": "52e7eae09e2777f0466da28c078c96123be800d5c7b07e2aba2d52d855e59d2d"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/logo__logo_ink.webp",
+      "bytes": 3414,
+      "sha256": "8aff776c46a4577cb56a09f70aec2a0fc8523de3e73163e453a87813bfc21c7a"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/logo__logo_ink_nav.webp",
+      "bytes": 3470,
+      "sha256": "0822ee2f92200663e3c1e60a9da61b9beca288eaa5522c8bdc3c85c7516a6f89"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/logo__logo_stamp.webp",
+      "bytes": 1046,
+      "sha256": "95ce5983daa6b2c8b6d0ad4b79f3639e3141f4061c21c7e9499e85854fa7cd78"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/logo__logo_sunseto.webp",
+      "bytes": 3614,
+      "sha256": "f981061be6708e057b9c9f6939949d8b70350ba4f10d66e64bc884d9137cdf55"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/logo__logo_sunseto_nav.webp",
+      "bytes": 3588,
+      "sha256": "0bb5e1a6efc4ea38b4d7c9c1de110d3f5cbbe3f7bff2f995ae8e5e6a608b7201"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/logo__logo_word.webp",
+      "bytes": 2794,
+      "sha256": "87c225782c95b8cc9be06cfb3feffb4168722121edf911dffd8806bbce92f091"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/mark__mark_cream.webp",
+      "bytes": 6486,
+      "sha256": "fd8532a263db3ac0836355577a31ebd16e4ad71fb49aef49fb7ea5a514a2e3be"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/mark__mark_ink.webp",
+      "bytes": 6906,
+      "sha256": "ff486dade8677ed5e06f0065c67494c1fcb9accb5918bc818c83e7b5bef5cf82"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/ornaments__orn_crane.webp",
+      "bytes": 4912,
+      "sha256": "667b8fde4a89865f851f4f2784fd3b2b228643cf042181f4195d9399eff381d4"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/ornaments__orn_fan.webp",
+      "bytes": 5988,
+      "sha256": "ff07464982fd0fdf6c325aa55940d7fd59d7ca8bf6724946c9e8977808aa6df2"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/ornaments__orn_lantern.webp",
+      "bytes": 4492,
+      "sha256": "5fbc02bf237af4607dc3e717fbdb2d84ac1a30a90c8c75529ef7918a37755eaa"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/ornaments__orn_sakura.webp",
+      "bytes": 7122,
+      "sha256": "2adf6ffc5d0794150496e99fa336493e841b8c66d1b3270b2f124c84df8a2183"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/seal__hanko.webp",
+      "bytes": 17632,
+      "sha256": "d31241977d8ed306774042104d5f3ae91a0d4ef83838719833775d8af0caa7fa"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/seal__orn_appicon.webp",
+      "bytes": 2576,
+      "sha256": "b3c9a1fb2060858e80b41ad88db1352fafadb05492742554b439b97ef0697252"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/stamps__stamp_chiba.webp",
+      "bytes": 3262,
+      "sha256": "50e35a9dc4e975524333b80bb8e2835a79b28303c8f0729841aa98f3b068298e"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/stamps__stamp_kyoto.webp",
+      "bytes": 6092,
+      "sha256": "37b1af2f102211a3251e3c2853883ae194134cc6e819cca40fb1d9ed110dbdb2"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/stamps__stamp_onomichi.webp",
+      "bytes": 2508,
+      "sha256": "c8418a7f09e821a6642025c0a4ca65c2a36d3492f7af5e221474eff0ebebc37f"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/textures__chart_sky.webp",
+      "bytes": 1466,
+      "sha256": "4b7f1637cec29b156425154b68f5ad08e5aa22b0315bf51190492f7042ad34c7"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/textures__chart_wood.webp",
+      "bytes": 708,
+      "sha256": "61273329b6fb812f3fbf7b0a38a3768988087aba3cdbe86c80c0a8d28369ec79"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/textures__grain.webp",
+      "bytes": 6986,
+      "sha256": "a7f4a8c7881445c4bab95a8df50bb97d8dff43d1bf2b2591452e114538a53062"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-battery.webp",
+      "bytes": 2198,
+      "sha256": "6843c79fc1a7dd3834509123f00b58d08c9ab67c3218337dc5292e80a4a3504f"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-cedar-yard.webp",
+      "bytes": 3364,
+      "sha256": "bb37696e0121c28112d6d0dd5e67dd65720419be37460703f4232975638c4dcf"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-dusk.webp",
+      "bytes": 2244,
+      "sha256": "a2bafd0eab6213cb635aa4e71749e25942e8fbacff3b8c220d5ac373bc135bbd"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-hand.webp",
+      "bytes": 2408,
+      "sha256": "3ad18aa320b23de9def972227df6f417fefd62c39cd4dcfdfe7310362a20ce2a"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-hero.webp",
+      "bytes": 3974,
+      "sha256": "4bef4a51dc779e44fe2c055f9c807ca5c8cd8e553267023deb291889fc06b59a"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-house.webp",
+      "bytes": 2550,
+      "sha256": "5133911b6421715d16757624e156cebe487e78d2510e3c06f825e8a307da0d03"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-machiya.webp",
+      "bytes": 2798,
+      "sha256": "810256c2ef2b2e4b82878d022d08bfdfb9fed6e768930d71ca9448f914b15e0f"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-network.webp",
+      "bytes": 1010,
+      "sha256": "194bcb9f39b261ef41cbd93f5f4e6bbad65afe124bb89130bd050df382b82927"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-phone.webp",
+      "bytes": 1296,
+      "sha256": "d1b0b8fb74f67fa3fa1ede33df2a74d58e8a47c547098e15e6d79b9e40109350"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-step2.webp",
+      "bytes": 1910,
+      "sha256": "460afd1a9af8a36a0353e6dabeb0cc9d0f7a276d0975c45ab9b653a48f1275eb"
+    },
+    {
+      "path": "sunset-brand/assets/guide/thumbs/tiles__tile-storm.webp",
+      "bytes": 1526,
+      "sha256": "f70c79f65c0f59ba5b9ee12446a20f8f82ec9c84d5cbb65987104ce53045d31b"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_aerial.webp",
+      "bytes": 285474,
+      "sha256": "5bac0b5ec4af73ad493789fd81297c4b30f4265ae6386c19926d6a9785122e54"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_jaerial.webp",
+      "bytes": 286654,
+      "sha256": "55f0917bccc5d52ff3051099fbba4fe90bf8792dd8bb248330c529abe630a607"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_jliving.webp",
+      "bytes": 463228,
+      "sha256": "9f125a34f329649a0b1a49113b582decef15312c19f8b55096b5efada81e7976"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_jrain.webp",
+      "bytes": 352278,
+      "sha256": "0dbbf6b1233fb8e95a1b57797f975565cde98d285d0700868cc67c0efa697f26"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_jstorm.webp",
+      "bytes": 379632,
+      "sha256": "f39a9ab712de18b04e2fb2e77c8ea23cd6fd0a93dd6ba473b3389f0ee73fde3a"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_living.webp",
+      "bytes": 483396,
+      "sha256": "410e869eb586321e6ab353f57224605ec8f1de2a8346bca75f7239f1cb34aa33"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_stormhouse.webp",
+      "bytes": 404140,
+      "sha256": "f855e9f54c9a63b4987ef8bf956a64b4c608ccb0cfe23515fc07073ca452908a"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_stormsky.webp",
+      "bytes": 354330,
+      "sha256": "ba90d0ce6afe714c05817725a1314a9d86b1ca68390b11f2b9bb09daa065ab05"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_sunhand.webp",
+      "bytes": 169714,
+      "sha256": "7b4af53a581d32ce41429a7d345411043efe62ee58956b62c79f464ce2bb1e41"
+    },
+    {
+      "path": "sunset-brand/assets/guide/w_wildfire.webp",
+      "bytes": 325644,
+      "sha256": "f3ae41afeaaea84df1fc3ed291da5eae483a199af2cfab82e6d33dd83f568dd4"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_ink.png",
+      "bytes": 88300,
+      "sha256": "c1616ec37917a99a384b9072525eccebd861ea310aa4227b9e380100a94c1139"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_ink_nav.png",
+      "bytes": 30319,
+      "sha256": "7cc466ab0b7286dd2e8fbced0c9f59624622627db1f758fab895469bb5b608c2"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_ink_nav.webp",
+      "bytes": 15754,
+      "sha256": "51926b15039196df21b7c63807f0760cabf9260e7f2f45701a9356e09d7fc0df"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_stamp.png",
+      "bytes": 43959,
+      "sha256": "058ef46b45d0a4516d7018cfd58a3808abe7938f22386f946f3a0f25e9453642"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_stamp.webp",
+      "bytes": 13460,
+      "sha256": "5a50d1b2400746f4abf29dfe4efcfdbed3a71a5fa9d20c66cc4d14cc791272c4"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_sunseto.png",
+      "bytes": 89287,
+      "sha256": "cd500e2880508fe38d8c54acdcbf921ec442e0721482a29bf14ed1be7526df82"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_sunseto.webp",
+      "bytes": 35038,
+      "sha256": "448cda0921acf04013320eae6f4a35abdaaf3c81fb1b5f768773e9baa63b6543"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_sunseto_nav.png",
+      "bytes": 32005,
+      "sha256": "5c7cd899498ceafa92dc7df8a813a7f934762e19e1e5893f248ab1639ad31b71"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_sunseto_nav.webp",
+      "bytes": 16996,
+      "sha256": "17baa2f6d3d8125212ad12523cd04064601eb3f5d5ad0295e0644ba5b64c2a98"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_word.png",
+      "bytes": 47314,
+      "sha256": "736eb522788dd69673f60f7dde13b8d16d867f702f9f40858e40a895446cff4b"
+    },
+    {
+      "path": "sunset-brand/assets/logo/logo_word.webp",
+      "bytes": 21724,
+      "sha256": "69f488f420f65c3b87e7964521c696dd4cc3b0934df8127f6625f6bcf928ef45"
+    },
+    {
+      "path": "sunset-brand/assets/mark/mark.json",
+      "bytes": 10128,
+      "sha256": "5d29d5ad1675e870930ceae9023f71653c1c8df718452594772cc3a74759a939"
+    },
+    {
+      "path": "sunset-brand/assets/mark/mark_cream.png",
+      "bytes": 168475,
+      "sha256": "ec502fe6f6e23de744ac203e78071a7844d2ee0eb3ca69e1e650ef163faf6e3b"
+    },
+    {
+      "path": "sunset-brand/assets/mark/mark_ink.png",
+      "bytes": 211023,
+      "sha256": "8bdb253f1e27345bd35624d8cffbb8afcc38e6d67eae0c18b0f3995d07b00c67"
+    },
+    {
+      "path": "sunset-brand/assets/mark/sunseto-mark-colour.svg",
+      "bytes": 8555,
+      "sha256": "00d305b40c1f43dbdf953b75a3cf9247bbee7cbde39dfd2db7c3c2ed585e0517"
+    },
+    {
+      "path": "sunset-brand/assets/mark/sunseto-mark-cream.svg",
+      "bytes": 8555,
+      "sha256": "6cd8175537a0218070ebbbff0ce836c6a04f98b5bc8127bbe343ccf29227d0d9"
+    },
+    {
+      "path": "sunset-brand/assets/mark/sunseto-mark-ink.svg",
+      "bytes": 8555,
+      "sha256": "9bd3326efa6c8d09dc288dc1e390303d8b9d545f4bdd4f8a818f2f00f5f6b552"
+    },
+    {
+      "path": "sunset-brand/assets/mark/sunseto-mark-paper.svg",
+      "bytes": 8555,
+      "sha256": "d7dea75e3a1926634e1f5108c3a5d5ab280d94b796ab263ed224da79ed6a8445"
+    },
+    {
+      "path": "sunset-brand/assets/mark/sunseto-mark.svg",
+      "bytes": 8643,
+      "sha256": "586c892702f8da4c31222542d212f24dbd55f16d92c49ffcf37d2b9a0fce6d6c"
+    },
+    {
+      "path": "sunset-brand/assets/ornaments/orn_crane.webp",
+      "bytes": 34342,
+      "sha256": "9624325f8004d4aba626777709de6e0c5729c9abe96ecf8cb385a5ac74f3b7e6"
+    },
+    {
+      "path": "sunset-brand/assets/ornaments/orn_fan.webp",
+      "bytes": 65062,
+      "sha256": "f2d5e10dd7fac1e91c36ce77788ef411c8f2470af893ad0223e0ee5a70373f84"
+    },
+    {
+      "path": "sunset-brand/assets/ornaments/orn_lantern.webp",
+      "bytes": 40558,
+      "sha256": "a825d18481a9dfe93c6d665685367c8aea6438ff248eb02c60d1252222b25505"
+    },
+    {
+      "path": "sunset-brand/assets/ornaments/orn_sakura.webp",
+      "bytes": 52272,
+      "sha256": "4f56d496897d1113cdcf3a73825b962f2d0891011c25938c6dda6a0b9fa8f6ed"
+    },
+    {
+      "path": "sunset-brand/assets/seal/hanko.webp",
+      "bytes": 28772,
+      "sha256": "08ceeb5172683033c03576d35ac981cb1b3054af57aaf94721ddf035578db10c"
+    },
+    {
+      "path": "sunset-brand/assets/seal/orn_appicon.png",
+      "bytes": 118584,
+      "sha256": "331f1687a99305c4fc33aec3a465524072ed4a490ad0cef89b7104d277089cbd"
+    },
+    {
+      "path": "sunset-brand/assets/seal/orn_appicon.webp",
+      "bytes": 9426,
+      "sha256": "f7d0b584fc550fc58e28f1c87a8a989ec7e73a563cd1bac9e595dd121edf5678"
+    },
+    {
+      "path": "sunset-brand/assets/source/make_fonts.py",
+      "bytes": 2592,
+      "sha256": "a74c0f313028e193927d19bf07dbf5db3c545ae0c81dc42e8032220f7004f14a"
+    },
+    {
+      "path": "sunset-brand/assets/source/make_logo.py",
+      "bytes": 2740,
+      "sha256": "4d6d2115134211cd25395fb5aa5cac9f512aec286d0aa1b1a33f9b03034dcb94"
+    },
+    {
+      "path": "sunset-brand/assets/source/make_mark.py",
+      "bytes": 3430,
+      "sha256": "9f2a33ef76f35aee163decf282b15504107fcaadf4220e955ae18b207649edd1"
+    },
+    {
+      "path": "sunset-brand/assets/source/mark.html",
+      "bytes": 5054,
+      "sha256": "c6f55089da7df11221f5c1d130c56718dbc963ad3552ea79f413c36f09d1f163"
+    },
+    {
+      "path": "sunset-brand/assets/stamps/stamp_chiba.webp",
+      "bytes": 36308,
+      "sha256": "f7b0c25e5bb4ac1e7ea03498e1e64e1331f0c96110d0c9136eb35743a6367365"
+    },
+    {
+      "path": "sunset-brand/assets/stamps/stamp_kyoto.webp",
+      "bytes": 54824,
+      "sha256": "d5dde468f91a64d03396649b56578962b88f983882b9fd9af4854ff3ed6626ee"
+    },
+    {
+      "path": "sunset-brand/assets/stamps/stamp_onomichi.webp",
+      "bytes": 29452,
+      "sha256": "6dad9c0912482abecebe5d7df9fc5d006f2598b3638d84ba80435906fb8d322e"
+    },
+    {
+      "path": "sunset-brand/assets/sunseto-brand-kit.zip",
+      "bytes": 10694061,
+      "sha256": "44efad1fcb0c6989f237602cdf2f71597a4e40250f3b8e90b1270feefdda105a"
+    },
+    {
+      "path": "sunset-brand/assets/textures/chart_sky.webp",
+      "bytes": 13902,
+      "sha256": "f8eab733a9fdbd46a4aaef6c9d4ba4f0731ad7e4aaaa5cd13d652d26662013fe"
+    },
+    {
+      "path": "sunset-brand/assets/textures/chart_wood.webp",
+      "bytes": 95432,
+      "sha256": "c815a36a254411ef308a2261e91d0cbec2dd240299a7c94aedc4cf429a81caa7"
+    },
+    {
+      "path": "sunset-brand/assets/textures/grain.png",
+      "bytes": 31862,
+      "sha256": "3fdfd87970570b4f3bedd23c6199514a3e382ed010db2eb36f65bd05c6bcb859"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-battery.webp",
+      "bytes": 250592,
+      "sha256": "b21b735c0d77c9525705af54d402c5e864aeb4e93d852727acbd44db7d9a7a53"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-cedar-yard.webp",
+      "bytes": 200216,
+      "sha256": "178542b8ab5a7091a95fc7a5b51c7b742a07811cc11fbe3dfc833ab890ab76a6"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-dusk.webp",
+      "bytes": 71398,
+      "sha256": "4674327a9adf36dd1e0c677f60d3ba60d8c4bf1d56ffec59b30f6380bcaa6e54"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-hand.webp",
+      "bytes": 94180,
+      "sha256": "67295b3d0df1aafcef1f6e1799c2e8b9cf7792972e7201225d47e8c0fdad656f"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-hero.webp",
+      "bytes": 502454,
+      "sha256": "cb70f4a9064d81822e20b173a12e749b8dbdb3daf17e7399fab6d7468ddab43a"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-house.webp",
+      "bytes": 270066,
+      "sha256": "dd6cb8e3aaa51d327fa5e5b47dbdb1df96817c153a6bff6ef751cfa0c548ff03"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-machiya.webp",
+      "bytes": 197886,
+      "sha256": "bff13891a56c30dd66acc46bd0b4ddb40d59b9b9b08ae08fca9f01262ead6be1"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-network.webp",
+      "bytes": 108612,
+      "sha256": "e0c99c6e2970d6c2c78970dc5bfbbdbd8173a5ff510848f6faf3d673ba846d78"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-phone.webp",
+      "bytes": 47016,
+      "sha256": "c54956db0db55d167ace2071ca380e961b3a9b184747912333b3f07ac302e936"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-step2.webp",
+      "bytes": 289206,
+      "sha256": "17ceec7bef453fca6fdbedeb8cb47bb04da1cd0a13509b5d35723e195e01e769"
+    },
+    {
+      "path": "sunset-brand/assets/tiles/tile-storm.webp",
+      "bytes": 79060,
+      "sha256": "3e9b984193a2e17c69d9f00e773dde0260bf2632c2314f7d0c0e91ee409afb7d"
+    },
+    {
+      "path": "sunset-brand/build.py",
+      "bytes": 10430,
+      "sha256": "384158c4463dc2fad2a359aa20f87d96717126b267a8993fc56c1e61ec26adc1"
+    },
+    {
+      "path": "sunset-brand/src/guide.css",
+      "bytes": 79859,
+      "sha256": "9da6b0359a84557bac09657339330c6111a1ce3c49b9efdfcf8084ceae7a6241"
+    },
+    {
+      "path": "sunset-brand/src/guide.js",
+      "bytes": 47878,
+      "sha256": "549e3b9d58c7aa9568333c2a8ac72eca5cc690682c30612cd88db27979ad8b8e"
+    },
+    {
+      "path": "sunset-brand/src/page.html",
+      "bytes": 95103,
+      "sha256": "0625ce43c82ba34a8ed80eca8f4d6abe3f71c435c41aeaf1db3eb0bdeba39256"
+    },
+    {
+      "path": "sunset-brand/tools/audit.mjs",
+      "bytes": 4469,
+      "sha256": "a746447d7d6959c477adaf30253360c7c41d9cecde63b90f1d496fdddf860bf2"
+    },
+    {
+      "path": "sunset-brand/tools/capture-site.mjs",
+      "bytes": 4497,
+      "sha256": "0769361d72098a5d185bcf199813e84aa3da6d6a2e02037721cf6a4a9fe1e477"
+    },
+    {
+      "path": "sunset-brand/tools/make_assets.py",
+      "bytes": 5371,
+      "sha256": "53d93d1c3b25d7a116c48a42f3d9f99e9bbd59038b06de615f32ccd8bff8950d"
+    },
+    {
+      "path": "sunset-brand/tools/shot.mjs",
+      "bytes": 2506,
+      "sha256": "6ec450a134e47ff4ae525629fb5e2141c6e1249e8ff1812d606ee560e0cd1738"
+    },
+    {
+      "path": "sunset-3d/BRIEF.md",
+      "bytes": 12571,
+      "sha256": "b4b8e0110435fae5891a5c4bc392ab70ebf790c323939e70e1580545ff81191d"
+    },
+    {
+      "path": "sunset-3d/assets/data/jpmap.json",
+      "bytes": 46984,
+      "sha256": "f65c5312008a75c080f062a1b2074a84edcc2af13948ddc2133a1d3d432a1393"
+    },
+    {
+      "path": "sunset-3d/assets/hdr/belfast_sunset_puresky_2k.hdr",
+      "bytes": 4563204,
+      "sha256": "273003109ca1cfb798ce6b96e09ac8440f763d0ef0c376bbe77492613540b4a3"
+    },
+    {
+      "path": "sunset-3d/assets/icons.json",
+      "bytes": 72519,
+      "sha256": "32d22d8356f5d4bd4c2b1ec98e13573eec588c956f6911fa90357cae130ff91c"
+    },
+    {
+      "path": "sunset-3d/assets/img/blossom-atlas.json",
+      "bytes": 1532,
+      "sha256": "81834ebdb1504b1861de88fb46edd89c816ddfd71443d2354cc87efd41192867"
+    },
+    {
+      "path": "sunset-3d/assets/img/blossom-atlas.webp",
+      "bytes": 491710,
+      "sha256": "daf22a1744f1a56ec5aff853430a74e3a8db52c6758d970de60c949ff2f31aca"
+    },
+    {
+      "path": "sunset-3d/assets/img/branch-1.webp",
+      "bytes": 292668,
+      "sha256": "600c5771f3e5c2916288389cd5e6cf2f3aa51cc457f018ac95e61073474d2bd6"
+    },
+    {
+      "path": "sunset-3d/assets/img/branch-2.webp",
+      "bytes": 154560,
+      "sha256": "9a93d005774172497bae85076827e56a2303aa03ec93a066a4f21291c41996c7"
+    },
+    {
+      "path": "sunset-3d/assets/img/hanko.webp",
+      "bytes": 28772,
+      "sha256": "08ceeb5172683033c03576d35ac981cb1b3054af57aaf94721ddf035578db10c"
+    },
+    {
+      "path": "sunset-3d/assets/img/orn_crane.webp",
+      "bytes": 34342,
+      "sha256": "9624325f8004d4aba626777709de6e0c5729c9abe96ecf8cb385a5ac74f3b7e6"
+    },
+    {
+      "path": "sunset-3d/assets/img/orn_fan.webp",
+      "bytes": 65062,
+      "sha256": "f2d5e10dd7fac1e91c36ce77788ef411c8f2470af893ad0223e0ee5a70373f84"
+    },
+    {
+      "path": "sunset-3d/assets/img/orn_lantern.webp",
+      "bytes": 40558,
+      "sha256": "a825d18481a9dfe93c6d665685367c8aea6438ff248eb02c60d1252222b25505"
+    },
+    {
+      "path": "sunset-3d/assets/img/orn_sakura.webp",
+      "bytes": 52272,
+      "sha256": "4f56d496897d1113cdcf3a73825b962f2d0891011c25938c6dda6a0b9fa8f6ed"
+    },
+    {
+      "path": "sunset-3d/assets/img/stamp_chiba.webp",
+      "bytes": 36308,
+      "sha256": "f7b0c25e5bb4ac1e7ea03498e1e64e1331f0c96110d0c9136eb35743a6367365"
+    },
+    {
+      "path": "sunset-3d/assets/img/stamp_kyoto.webp",
+      "bytes": 54824,
+      "sha256": "d5dde468f91a64d03396649b56578962b88f983882b9fd9af4854ff3ed6626ee"
+    },
+    {
+      "path": "sunset-3d/assets/img/stamp_onomichi.webp",
+      "bytes": 29452,
+      "sha256": "6dad9c0912482abecebe5d7df9fc5d006f2598b3638d84ba80435906fb8d322e"
+    },
+    {
+      "path": "sunset-3d/assets/img/voice-1.webp",
+      "bytes": 140728,
+      "sha256": "6318de7aab9e11be8113d1700a0553fd0d1eb91f3d147e0c4a09e2f3d912e734"
+    },
+    {
+      "path": "sunset-3d/assets/img/voice-2.webp",
+      "bytes": 186364,
+      "sha256": "052c950345bdda8077ae3cd268fedc7fac9d6a7d9b1141c6cbc700b12d5a7e2d"
+    },
+    {
+      "path": "sunset-3d/assets/img/voice-3.webp",
+      "bytes": 111944,
+      "sha256": "dc3ac46cc74f15ea24a24b6d0f0fc999bf6a5af30b2c3d707716a460b61d71a1"
+    },
+    {
+      "path": "sunset-3d/assets/models/iphone18.glb",
+      "bytes": 433664,
+      "sha256": "ad615f989a0d140a77d7a9abc89348dd9820b8f73189c0c43a68693ec6115b51"
+    },
+    {
+      "path": "sunset-3d/assets/tex/darkwood_c.webp",
+      "bytes": 454754,
+      "sha256": "d9071ec8a3f5dccf7fb62168371c02033c7a199d33822989b37e08a5a054d740"
+    },
+    {
+      "path": "sunset-3d/assets/tex/darkwood_n.webp",
+      "bytes": 247164,
+      "sha256": "3c851924ac6447dd78f5cc4077e0619c0306de6efaef969b8d195c6b4499c1de"
+    },
+    {
+      "path": "sunset-3d/assets/tex/darkwood_r.webp",
+      "bytes": 353576,
+      "sha256": "d87db326669fb0df3f0929ad4269bd63d0f9d65a6b01984cac7205f82eaa0cd8"
+    },
+    {
+      "path": "sunset-3d/assets/tex/deck_c.webp",
+      "bytes": 1199802,
+      "sha256": "8daab5cfd78f69207e97626df7376e0dfbfd4d4adf2ca3db70239788d3e51d37"
+    },
+    {
+      "path": "sunset-3d/assets/tex/deck_n.webp",
+      "bytes": 957840,
+      "sha256": "18a3c3754a2fb58f982072c1d2a6c76b7007699708d46477ab946e52e3f9f303"
+    },
+    {
+      "path": "sunset-3d/assets/tex/deck_r.webp",
+      "bytes": 158586,
+      "sha256": "8e152f9b4fde6d9b1dbade0fbced88d0ce4dd44adb14e6457c11b4aafaa43060"
+    },
+    {
+      "path": "sunset-3d/assets/tex/forest_ground_04_c.webp",
+      "bytes": 184566,
+      "sha256": "515170084753a2bae12b785c8344dfba633cf835aa667e8823ccdfad609ef465"
+    },
+    {
+      "path": "sunset-3d/assets/tex/forest_ground_04_n.webp",
+      "bytes": 101112,
+      "sha256": "d28de42c0b528c9fa4243db404b514cd93e2f240ffaf24884ed8aa86dfa5b7e5"
+    },
+    {
+      "path": "sunset-3d/assets/tex/ganges_river_pebbles_c.webp",
+      "bytes": 145692,
+      "sha256": "1d48a6e3f1b7c403b4481fc88c5f438c53778f2fae65f2c253be4831938ace8a"
+    },
+    {
+      "path": "sunset-3d/assets/tex/ganges_river_pebbles_n.webp",
+      "bytes": 176780,
+      "sha256": "330ca9ef6c952b044d8296bd7d2502f55e893ade8417007b20d56e5a40ae5030"
+    },
+    {
+      "path": "sunset-3d/assets/tex/hinoki_c.webp",
+      "bytes": 719948,
+      "sha256": "660f8c6fcd5e6c81123e8efc521c426bbfea1cf3eacd47fa6e577b426dfdafc9"
+    },
+    {
+      "path": "sunset-3d/assets/tex/hinoki_n.webp",
+      "bytes": 514792,
+      "sha256": "726dd110dff86cd46a26efe475487fe3973c5fcd3b57ae61da08dd29078475b6"
+    },
+    {
+      "path": "sunset-3d/assets/tex/hinoki_r.webp",
+      "bytes": 344760,
+      "sha256": "1d704495cff7ba03a9b1c4fc8f053bc6db0ee617543a0fbd4b3059e8b3dd5184"
+    },
+    {
+      "path": "sunset-3d/assets/tex/japanese_stone_wall_c.webp",
+      "bytes": 179190,
+      "sha256": "898c75767e7d37a01a5a35b2e9cd6b480d6e976413d6c164d1ee507640c4d130"
+    },
+    {
+      "path": "sunset-3d/assets/tex/japanese_stone_wall_n.webp",
+      "bytes": 81944,
+      "sha256": "ae3f06892a6c235383666f7e15b7596e16a8bf83858a9a23f28460a93c273697"
+    },
+    {
+      "path": "sunset-3d/assets/tex/mahogany_c.webp",
+      "bytes": 2149340,
+      "sha256": "86806d86ddb1fda29e6b6f875f12726458e39b398ab0f523de32420298492e55"
+    },
+    {
+      "path": "sunset-3d/assets/tex/mahogany_n.webp",
+      "bytes": 977704,
+      "sha256": "cbed7b2fc89086c111998597d21d6b829b9ca8d15276acc852c9933c8e050c61"
+    },
+    {
+      "path": "sunset-3d/assets/tex/mahogany_r.webp",
+      "bytes": 583694,
+      "sha256": "037a94e8bf95d874251a2363e495f818b97c337fa3d5b9550aad7a0d856cbc22"
+    },
+    {
+      "path": "sunset-3d/assets/tex/plaster_c.webp",
+      "bytes": 529282,
+      "sha256": "ebad6b7256a7b913ff747d46afd092f656e42d6a228846321d3a6030e442c48a"
+    },
+    {
+      "path": "sunset-3d/assets/tex/plaster_n.webp",
+      "bytes": 1915486,
+      "sha256": "bc7b19505228c702333696e70509fc7ea7ce0028ea97f4abff1eacf91fef146b"
+    },
+    {
+      "path": "sunset-3d/assets/tex/plaster_r.webp",
+      "bytes": 128006,
+      "sha256": "cbbefbae8b352bfa8ce46068ed1751329d57741768cfd76d1d0b762e3c32b657"
+    },
+    {
+      "path": "sunset-3d/assets/tex/reed_roof_04_c.webp",
+      "bytes": 517384,
+      "sha256": "a70129edcb87abb88649540c606df02fd4bd0a8d004494cbc7d7c941cdfc5044"
+    },
+    {
+      "path": "sunset-3d/assets/tex/reed_roof_04_n.webp",
+      "bytes": 394576,
+      "sha256": "a09668e3a4c5e7dbd9568ff58b443ae18baeda68623d596fbc540f6cfb38d0aa"
+    },
+    {
+      "path": "sunset-3d/assets/tex/rock_face_01_c.webp",
+      "bytes": 183070,
+      "sha256": "17433534ad9140e45b1ea1c5384058f6a2fbc36732e3801e5089f76182ed0815"
+    },
+    {
+      "path": "sunset-3d/assets/tex/rock_face_01_n.webp",
+      "bytes": 62762,
+      "sha256": "55e24006681efabdbd23e3f87c359291f14b2ee79e4f223c0f86e5501bff3e77"
+    },
+    {
+      "path": "sunset-3d/assets/tex/rock_moss_set_02_c.webp",
+      "bytes": 133056,
+      "sha256": "214d04fbea4f0a23b11efddca721bc9de5bc216b729731e5a5b271a38d35a1e0"
+    },
+    {
+      "path": "sunset-3d/assets/tex/rock_moss_set_02_n.webp",
+      "bytes": 136074,
+      "sha256": "12b53eac1d62d91f61bcd70057f611a002708dc86442330de4591798c6411e69"
+    },
+    {
+      "path": "sunset-3d/assets/tex/sakura_bark_c.webp",
+      "bytes": 355040,
+      "sha256": "d0259326fcac76ab15f2e59c1455c4ac317142f1db4695bf7f3f70e828e5d7fe"
+    },
+    {
+      "path": "sunset-3d/assets/tex/sakura_bark_n.webp",
+      "bytes": 278806,
+      "sha256": "cabbd04a60b7cfc06a3dd749f80b2333c89c59de101ad3807532df62e7724181"
+    },
+    {
+      "path": "sunset-3d/assets/tex/sugi_c.webp",
+      "bytes": 3988960,
+      "sha256": "1d8fa08650fdc921fdfba8d7e258dbcff2ecd85e456713080f8bee1990faf354"
+    },
+    {
+      "path": "sunset-3d/assets/tex/sugi_n.webp",
+      "bytes": 2633842,
+      "sha256": "046c1a8d78183257b6010895cf10b739ce848984c51da92bdfbd585a25d12693"
+    },
+    {
+      "path": "sunset-3d/assets/tex/sugi_r.webp",
+      "bytes": 1808392,
+      "sha256": "f3832ba3c45506a3b87bf13ddd15818cbefe28fec64e5df70d87f9d505cc6664"
+    },
+    {
+      "path": "sunset-3d/brand/contact-sheet-desktop.png",
+      "bytes": 1714480,
+      "sha256": "f29d7352d084b0299904d56ffd3886699391ffc08e60c542eb35562fbf4891fe"
+    },
+    {
+      "path": "sunset-3d/brand/contact-sheet-mobile.png",
+      "bytes": 1413070,
+      "sha256": "5f380707df3a2b73eb980229a76e43195a394c30730bdde75727f4b4668219c3"
+    },
+    {
+      "path": "sunset-3d/brand/index.html",
+      "bytes": 52328,
+      "sha256": "ce608270c478bc60483666bd3a0e54d35575d2eeae1d678a72d056605449cb1a"
+    },
+    {
+      "path": "sunset-3d/brand/png/gold-seigaiha-dark.png",
+      "bytes": 1519555,
+      "sha256": "3e9711fd713ea519855f4cd18ac1729da4cc5fe19fbc3c45c01eaf8911727974"
+    },
+    {
+      "path": "sunset-3d/brand/png/gold-seigaiha-favicon-dark.png",
+      "bytes": 9800,
+      "sha256": "f4e3255580e97d390f1cf598f411a8b049e08877752daf97101c0900a136a6a5"
+    },
+    {
+      "path": "sunset-3d/brand/png/gold-seigaiha-favicon-light.png",
+      "bytes": 9750,
+      "sha256": "e1abc7a658e98897f46c3f1c952a1445e9d45d582b25faa4ac19b50cb7e6e87d"
+    },
+    {
+      "path": "sunset-3d/brand/png/gold-seigaiha-light.png",
+      "bytes": 1467745,
+      "sha256": "0ea0f73a083dde24507ffd0d4100838cfdacc747fbf6acdbcfb8cc255012f525"
+    },
+    {
+      "path": "sunset-3d/brand/png/hanko-print-dark.png",
+      "bytes": 704939,
+      "sha256": "4149b3eb81714496d76a769ba600d543c4c0997e61fa8f5001359671320583b1"
+    },
+    {
+      "path": "sunset-3d/brand/png/hanko-print-favicon-dark.png",
+      "bytes": 5334,
+      "sha256": "6af4c145ef01460737323401f38c783fd1f0cb6922a433f3e936de02c23cb38c"
+    },
+    {
+      "path": "sunset-3d/brand/png/hanko-print-favicon-light.png",
+      "bytes": 5334,
+      "sha256": "6af4c145ef01460737323401f38c783fd1f0cb6922a433f3e936de02c23cb38c"
+    },
+    {
+      "path": "sunset-3d/brand/png/hanko-print-light.png",
+      "bytes": 704939,
+      "sha256": "4149b3eb81714496d76a769ba600d543c4c0997e61fa8f5001359671320583b1"
+    },
+    {
+      "path": "sunset-3d/brand/png/kamon-crest-dark.png",
+      "bytes": 694914,
+      "sha256": "fca5650aaaf4a6ca03c6bbb791f7845fc231816a37cbee3d4882b183e53ff7dd"
+    },
+    {
+      "path": "sunset-3d/brand/png/kamon-crest-favicon-dark.png",
+      "bytes": 6964,
+      "sha256": "eee681666d63e8f78b91b0dca03ac6ccefe0ed4d27efaf72bb98c722f0d4814d"
+    },
+    {
+      "path": "sunset-3d/brand/png/kamon-crest-favicon-light.png",
+      "bytes": 5898,
+      "sha256": "8309bb5039c99b572aa22abd87ac76f28f50c727b53a22cdea52f71e710df785"
+    },
+    {
+      "path": "sunset-3d/brand/png/kamon-crest-light.png",
+      "bytes": 372983,
+      "sha256": "c0e08aade4c803d1d638d2ca670e64b815444b27e8e7508954df44fe2d5e5b17"
+    },
+    {
+      "path": "sunset-3d/brand/png/originals/gold-seigaiha-original.png",
+      "bytes": 5686565,
+      "sha256": "a6c13ac9e079982b07809c913eebd3142696328bbb846136531ea13ed1381f2f"
+    },
+    {
+      "path": "sunset-3d/brand/png/originals/hanko-print-original.png",
+      "bytes": 2458335,
+      "sha256": "44dd6c9e9ef57d51857ee913a2ea8f9f8389736b137d5777dc3a295fc4910aee"
+    },
+    {
+      "path": "sunset-3d/brand/png/originals/kamon-crest-original.png",
+      "bytes": 6130624,
+      "sha256": "6dac369ec419af09123bbd94493aa7b2ab871c0724543e41557f6974736ef639"
+    },
+    {
+      "path": "sunset-3d/brand/png/originals/seal-stone-original.png",
+      "bytes": 5948865,
+      "sha256": "a3dec57e06f5be93ded5bfa49299dbfffe93b12790292de85ad596e347e3db52"
+    },
+    {
+      "path": "sunset-3d/brand/png/originals/sumi-enso-original.png",
+      "bytes": 2038182,
+      "sha256": "f74acfb47d30ee3bfcbe84c8a67e904bce0fbb87d2ceb20f5ad49e21a740a3a1"
+    },
+    {
+      "path": "sunset-3d/brand/png/originals/woodblock-roof-original.png",
+      "bytes": 5208127,
+      "sha256": "3b99935ff2709a8401d7c04da2b098bf60a11f5018e07fa2ec76deea51b88c70"
+    },
+    {
+      "path": "sunset-3d/brand/png/seal-stone-dark.png",
+      "bytes": 1929001,
+      "sha256": "c0d78b83bf907fd94ba9ac64b4722aa8cfab94832863df249c8b13b0f67ceba0"
+    },
+    {
+      "path": "sunset-3d/brand/png/seal-stone-favicon-dark.png",
+      "bytes": 11504,
+      "sha256": "67ca9e0cde73862f66422e8df1205031682b7e91898df95eae23b16cfd59d7b9"
+    },
+    {
+      "path": "sunset-3d/brand/png/seal-stone-favicon-light.png",
+      "bytes": 11504,
+      "sha256": "67ca9e0cde73862f66422e8df1205031682b7e91898df95eae23b16cfd59d7b9"
+    },
+    {
+      "path": "sunset-3d/brand/png/seal-stone-light.png",
+      "bytes": 1929001,
+      "sha256": "c0d78b83bf907fd94ba9ac64b4722aa8cfab94832863df249c8b13b0f67ceba0"
+    },
+    {
+      "path": "sunset-3d/brand/png/sumi-enso-dark.png",
+      "bytes": 469180,
+      "sha256": "0cc67d37a81583452b5614b18877882e53fa4a61bd2a7feb5d58c38c6940ce75"
+    },
+    {
+      "path": "sunset-3d/brand/png/sumi-enso-favicon-dark.png",
+      "bytes": 4093,
+      "sha256": "3ff9f35e355e10375ee0c8dc8f717e7f9c4aa9d394cbbcc3b56fa6933ce9a8f1"
+    },
+    {
+      "path": "sunset-3d/brand/png/sumi-enso-favicon-light.png",
+      "bytes": 3790,
+      "sha256": "7e94fe5634f20f6e3d26d632bff10067dd7ebc0a7d93323b7417bef307925c1c"
+    },
+    {
+      "path": "sunset-3d/brand/png/sumi-enso-light.png",
+      "bytes": 215547,
+      "sha256": "ec749d9e9db2e8da88414c375a12dfc11339a0324a0cb063c44ae1a95ff70a91"
+    },
+    {
+      "path": "sunset-3d/brand/png/woodblock-roof-dark.png",
+      "bytes": 1423064,
+      "sha256": "e91080ad438482c11a8ceaac1470b23e6481937d00a15d9ccbbc5545c18f4df0"
+    },
+    {
+      "path": "sunset-3d/brand/png/woodblock-roof-favicon-dark.png",
+      "bytes": 8616,
+      "sha256": "828d9a07bc6e8c2d4687fc107b24c6b3871471d626861ab52c225d5c3fe5bd26"
+    },
+    {
+      "path": "sunset-3d/brand/png/woodblock-roof-favicon-light.png",
+      "bytes": 8616,
+      "sha256": "828d9a07bc6e8c2d4687fc107b24c6b3871471d626861ab52c225d5c3fe5bd26"
+    },
+    {
+      "path": "sunset-3d/brand/png/woodblock-roof-light.png",
+      "bytes": 1423064,
+      "sha256": "e91080ad438482c11a8ceaac1470b23e6481937d00a15d9ccbbc5545c18f4df0"
+    },
+    {
+      "path": "sunset-3d/brand/svg/cells-favicon-dark.svg",
+      "bytes": 2795,
+      "sha256": "7ae73f0e3b54a27093208a99e01c1c3b2fa2438cae4f21531651abac96f276d0"
+    },
+    {
+      "path": "sunset-3d/brand/svg/cells-favicon-light.svg",
+      "bytes": 2795,
+      "sha256": "607ee50fb96ef00227cc4f3133f851978b458be0b3c5e2f6285ac4128ef5a2a3"
+    },
+    {
+      "path": "sunset-3d/brand/svg/cells-lockup-dark.svg",
+      "bytes": 8138,
+      "sha256": "9796f7fd80601947586ea8a11de131b29a4ce7acf9470b5b9a7b478f588f067c"
+    },
+    {
+      "path": "sunset-3d/brand/svg/cells-lockup-light.svg",
+      "bytes": 8138,
+      "sha256": "623669fb3e0044457996fac5e153fed0409e7083f6b12b4dc25c2e94a69f6079"
+    },
+    {
+      "path": "sunset-3d/brand/svg/cells-mark-dark.svg",
+      "bytes": 2975,
+      "sha256": "6e5111863dcba85b458915ce91a4c3aaa8ccf58f65b1a2c048526b727349ad01"
+    },
+    {
+      "path": "sunset-3d/brand/svg/cells-mark-light.svg",
+      "bytes": 2975,
+      "sha256": "990c0ef362eb924fa1c871f2d5ea23f58a7a3c5b4c67a2c5cbd901914c934af6"
+    },
+    {
+      "path": "sunset-3d/brand/svg/enso-favicon-dark.svg",
+      "bytes": 7456,
+      "sha256": "8b3b9a75bad09a4b70e2547cb71a9b7736b8fdaba40faa9dbf284fe567acb434"
+    },
+    {
+      "path": "sunset-3d/brand/svg/enso-favicon-light.svg",
+      "bytes": 7456,
+      "sha256": "aede211ae0ac2b9fc359bdcb8fa7d2568f440b95bbe20efa8e111d7c67a9076b"
+    },
+    {
+      "path": "sunset-3d/brand/svg/enso-lockup-dark.svg",
+      "bytes": 13074,
+      "sha256": "9eece1b3b0f7056d437ee98243709abe661a9ebe4c7a7269955af6d07cea64ae"
+    },
+    {
+      "path": "sunset-3d/brand/svg/enso-lockup-light.svg",
+      "bytes": 13074,
+      "sha256": "525461ced38ed1b6596de15ffd197724865e8182aea315542917d768b773f99f"
+    },
+    {
+      "path": "sunset-3d/brand/svg/enso-mark-dark.svg",
+      "bytes": 7363,
+      "sha256": "14a753b1e815325b62b3443da3215a67315bbce0b9d3f8a6de47dd3c27ad0d45"
+    },
+    {
+      "path": "sunset-3d/brand/svg/enso-mark-light.svg",
+      "bytes": 7363,
+      "sha256": "20cda13c54c6199622d43a98d146484090e602ec5d2ac5003262978840d6cbd7"
+    },
+    {
+      "path": "sunset-3d/brand/svg/pick-favicon-dark.svg",
+      "bytes": 2317,
+      "sha256": "79deb0e18c621d14cca53b4f452ad28493ac388614b7d14a44afa74bf96462f2"
+    },
+    {
+      "path": "sunset-3d/brand/svg/pick-favicon-light.svg",
+      "bytes": 2317,
+      "sha256": "54cf18dc5f8e7784244532d13f82300fba122e6816475052acc07655b3aa9169"
+    },
+    {
+      "path": "sunset-3d/brand/svg/pick-lockup-dark.svg",
+      "bytes": 7650,
+      "sha256": "4b446d2372af5034f4cf40698ad878fbc5bb149341fbfa7bd3a8bb308c51de84"
+    },
+    {
+      "path": "sunset-3d/brand/svg/pick-lockup-light.svg",
+      "bytes": 7650,
+      "sha256": "e4f258b2c22393d9b7c521aa2a1d3b1d0cb7b3d6851bd69270fe7237387fb19f"
+    },
+    {
+      "path": "sunset-3d/brand/svg/pick-mark-dark.svg",
+      "bytes": 2466,
+      "sha256": "7fa4ee297b4c9a15c99f3f321210eb0b41285cc5b0a7f7e2b6fb0abe0cd7e3d7"
+    },
+    {
+      "path": "sunset-3d/brand/svg/pick-mark-light.svg",
+      "bytes": 2466,
+      "sha256": "61e7af2a9b734783a8e6134a956d0a6533b7ce745e22b951ca47b74d54709ded"
+    },
+    {
+      "path": "sunset-3d/brand/svg/reflect-favicon-dark.svg",
+      "bytes": 3129,
+      "sha256": "ec54988d3c915ef159ab26a47e268f2a47a5ee7b1c85876b3bae8e15fbb8b624"
+    },
+    {
+      "path": "sunset-3d/brand/svg/reflect-favicon-light.svg",
+      "bytes": 3129,
+      "sha256": "e9ac0f6bfae9ff62f8c57d0db2cdc7f28189e37764ed82bb24d682547cd2b72c"
+    },
+    {
+      "path": "sunset-3d/brand/svg/reflect-lockup-dark.svg",
+      "bytes": 8641,
+      "sha256": "c223c45a38249f777dc929d4340651c3582396adbf895fcf18a2ca94f3aedade"
+    },
+    {
+      "path": "sunset-3d/brand/svg/reflect-lockup-light.svg",
+      "bytes": 8641,
+      "sha256": "ac856391b90eab7e324525444d7fc77eb14cf6b6c2f36629e9dd5b4a152a9496"
+    },
+    {
+      "path": "sunset-3d/brand/svg/reflect-mark-dark.svg",
+      "bytes": 2914,
+      "sha256": "abee2e7baf395295ba1ea992b2baf207961eb36c2476a06b3c00fa3b7b613bf9"
+    },
+    {
+      "path": "sunset-3d/brand/svg/reflect-mark-light.svg",
+      "bytes": 2914,
+      "sha256": "80eafbd5bc7391af6e7b36f3ab05df11f48247b47f89de4c65f43b245740d59b"
+    },
+    {
+      "path": "sunset-3d/brand/svg/roof-favicon-dark.svg",
+      "bytes": 6502,
+      "sha256": "ebda9fa8b5f9653fcbb85620342838f0017e3fa251de6e9858f084ca2ea5c7fe"
+    },
+    {
+      "path": "sunset-3d/brand/svg/roof-favicon-light.svg",
+      "bytes": 6502,
+      "sha256": "87d2681a55909fb7273896de79fef14e6af9041a6b251db3e2a298899dee52b5"
+    },
+    {
+      "path": "sunset-3d/brand/svg/roof-lockup-dark.svg",
+      "bytes": 11657,
+      "sha256": "5aba9c76e5a371efc877aa60c603ca18ec420cbe07b46a59ade3b29c3123fc16"
+    },
+    {
+      "path": "sunset-3d/brand/svg/roof-lockup-light.svg",
+      "bytes": 11657,
+      "sha256": "7d2eac734913ec418bb59ee4c8c1ae2de5c708332d7bc1af7e444f8220547ad5"
+    },
+    {
+      "path": "sunset-3d/brand/svg/roof-mark-dark.svg",
+      "bytes": 6497,
+      "sha256": "6ee6d6f34e9d6fda23aef78513210493f1783d0cacd4fad4d9925047fea0583b"
+    },
+    {
+      "path": "sunset-3d/brand/svg/roof-mark-light.svg",
+      "bytes": 6497,
+      "sha256": "c0557e0c5a7e566c09f7c1c0a75b3370d4e6cec0056def68d0ff05f8bbd64911"
+    },
+    {
+      "path": "sunset-3d/brand/svg/rows-favicon-dark.svg",
+      "bytes": 1978,
+      "sha256": "5d240df1e943bbcde13ef34e445023e137c394da8ab12f3eaa936efb874d55a1"
+    },
+    {
+      "path": "sunset-3d/brand/svg/rows-favicon-light.svg",
+      "bytes": 1978,
+      "sha256": "61197a369959366c7d260be1bf0faf8387468795c63a0b2574a077abc6ca54ff"
+    },
+    {
+      "path": "sunset-3d/brand/svg/rows-lockup-dark.svg",
+      "bytes": 7330,
+      "sha256": "4c7ea140db580aac415c8254ce74fa895c59ec155c2c90f40a2e0502f05aaf1d"
+    },
+    {
+      "path": "sunset-3d/brand/svg/rows-lockup-light.svg",
+      "bytes": 7330,
+      "sha256": "a90f0dbbf6744659b7c45acd8ccca1f7dfc2e8a68b6e312269f31e52dd56eb67"
+    },
+    {
+      "path": "sunset-3d/brand/svg/rows-mark-dark.svg",
+      "bytes": 2165,
+      "sha256": "bcfb12f57837d64f42711a209cc4ba262cb6bcc5cf5ee56e28e8482b6cf0328c"
+    },
+    {
+      "path": "sunset-3d/brand/svg/rows-mark-light.svg",
+      "bytes": 2165,
+      "sha256": "b5581525553a5485dd0a75fb18c6543c04d562792f3efb05f38e187a5be920ee"
+    },
+    {
+      "path": "sunset-3d/brand/svg/seal-favicon-dark.svg",
+      "bytes": 2115,
+      "sha256": "b961d0813c96087d49a7bc3640ec96f4c15ec790fbf16fbcfb92c5343be561af"
+    },
+    {
+      "path": "sunset-3d/brand/svg/seal-favicon-light.svg",
+      "bytes": 2115,
+      "sha256": "4cf6ab2b3d8adfd0beeb9bd36a070674e603be2fc03f2ff48372cb38f36dc9b1"
+    },
+    {
+      "path": "sunset-3d/brand/svg/seal-lockup-dark.svg",
+      "bytes": 7288,
+      "sha256": "766753aa82d0d48167d7221d185635d3bcb5f98b54bebdb67df214eee7acb042"
+    },
+    {
+      "path": "sunset-3d/brand/svg/seal-lockup-light.svg",
+      "bytes": 7288,
+      "sha256": "f77842a3949be8f0f770146ba61e817fb4330225c39935de86fb31c3592ec368"
+    },
+    {
+      "path": "sunset-3d/brand/svg/seal-mark-dark.svg",
+      "bytes": 2125,
+      "sha256": "68693cbd380d0d4c84c3e8a3e214b63ce111d1c114f2a79c2a4a6b3c912c30cd"
+    },
+    {
+      "path": "sunset-3d/brand/svg/seal-mark-light.svg",
+      "bytes": 2125,
+      "sha256": "a4e97522b2a7619e263d5e718a169537c52ca571eab2cb43fb5b8b4de461158a"
+    },
+    {
+      "path": "sunset-3d/brand/svg/shoji-favicon-dark.svg",
+      "bytes": 2354,
+      "sha256": "64aa409e36da48852abeb3c57d34d43b0b726e85eefc420ba34c39417dd5d1db"
+    },
+    {
+      "path": "sunset-3d/brand/svg/shoji-favicon-light.svg",
+      "bytes": 2354,
+      "sha256": "d5d328299cf80052e783b5c62a2d57de7cf118b50a319527e07e00484d84298d"
+    },
+    {
+      "path": "sunset-3d/brand/svg/shoji-lockup-dark.svg",
+      "bytes": 7428,
+      "sha256": "4d7a01da44141eb35fc83d38d7826db796a2c77509ded1efa381dc3138052427"
+    },
+    {
+      "path": "sunset-3d/brand/svg/shoji-lockup-light.svg",
+      "bytes": 7428,
+      "sha256": "1948433c0df98312710830f2fc5b05bbf270751f246f0d303f311bb0a58fee69"
+    },
+    {
+      "path": "sunset-3d/brand/svg/shoji-mark-dark.svg",
+      "bytes": 2265,
+      "sha256": "3cc24666481e2f8722a0f97fbc408449e4b962df697b6b1b98636789bde7f79c"
+    },
+    {
+      "path": "sunset-3d/brand/svg/shoji-mark-light.svg",
+      "bytes": 2265,
+      "sha256": "6a51e0d7f4552690ab814471d83bcf64ee5bac5a09b19ea0aff5bd2f88407ecb"
+    },
+    {
+      "path": "sunset-3d/brand/svg/slat-favicon-dark.svg",
+      "bytes": 2638,
+      "sha256": "2aa77cfc75bb67db348f70fcb28b35de8a5c17983e24b43c0a7ba9cd7dbb3fdf"
+    },
+    {
+      "path": "sunset-3d/brand/svg/slat-favicon-light.svg",
+      "bytes": 2638,
+      "sha256": "db2235d2791c478f184765aca15e8fb832e01f63389e658e8ff6d580dc50d4bd"
+    },
+    {
+      "path": "sunset-3d/brand/svg/slat-lockup-dark.svg",
+      "bytes": 7810,
+      "sha256": "97b0f483adb342edff8ecd76cfe9f016f53d566bd3f018378be98ae60187b63d"
+    },
+    {
+      "path": "sunset-3d/brand/svg/slat-lockup-light.svg",
+      "bytes": 7810,
+      "sha256": "7e67a5ce260b8e8f89b232bafa15b8f653b22812fa504d9f794c724759599f0c"
+    },
+    {
+      "path": "sunset-3d/brand/svg/slat-mark-dark.svg",
+      "bytes": 2640,
+      "sha256": "6c61cc9a4246e4f4d6279d9f589654dca9b574d584ca1f8829e3ac8ca8ff2266"
+    },
+    {
+      "path": "sunset-3d/brand/svg/slat-mark-light.svg",
+      "bytes": 2640,
+      "sha256": "5bc8803c446c299540a8a41d0ff8d8d39d217bddc936787e839749a163596791"
+    },
+    {
+      "path": "sunset-3d/brand/svg/wordmark-italic-dark.svg",
+      "bytes": 5622,
+      "sha256": "372c21346fa321cb278118729e862b0fcb0c53e22fc7b8cd1879edb83f3ae703"
+    },
+    {
+      "path": "sunset-3d/brand/svg/wordmark-italic-light.svg",
+      "bytes": 5622,
+      "sha256": "cee0b1701fb2feaa1e5eb0953e3a64b9025cdd54949d12086425d00d6546124b"
+    },
+    {
+      "path": "sunset-3d/brand/svg/wordmark-regular-dark.svg",
+      "bytes": 5070,
+      "sha256": "2f83109b3a2bfd428dc63fd6195d83f1609a8d7f1c8f1977ae30385753d1cc47"
+    },
+    {
+      "path": "sunset-3d/brand/svg/wordmark-regular-light.svg",
+      "bytes": 5070,
+      "sha256": "d0480ca6e6ab37a3c2d621be90fbb45e240a9f7741d6ceea634f4b97dcf4952e"
+    },
+    {
+      "path": "sunset-3d/brand/svg/yu-favicon-dark.svg",
+      "bytes": 1250,
+      "sha256": "970b72bfc472f5785e00a37f03acc55bd5368d4b7dc3f37871c34c0244afb44a"
+    },
+    {
+      "path": "sunset-3d/brand/svg/yu-favicon-light.svg",
+      "bytes": 1250,
+      "sha256": "721d8d222ac1e09f121e92a050a0f38a141d33df39278bc4a50129e8f50ae1a3"
+    },
+    {
+      "path": "sunset-3d/brand/svg/yu-lockup-dark.svg",
+      "bytes": 6341,
+      "sha256": "becd5d1a04ebfb2ba2f032c706516d12811e88a426d813a31e6b8327352a0237"
+    },
+    {
+      "path": "sunset-3d/brand/svg/yu-lockup-light.svg",
+      "bytes": 6341,
+      "sha256": "189a7fb7724564fa75ed4d1d484fa50090bd948bce3f63925c4187b686c61d2d"
+    },
+    {
+      "path": "sunset-3d/brand/svg/yu-mark-dark.svg",
+      "bytes": 1180,
+      "sha256": "b0bf9aebd6265bfe9974affa821fa472952bafe369e20b4d60195f9ed45b0ebe"
+    },
+    {
+      "path": "sunset-3d/brand/svg/yu-mark-light.svg",
+      "bytes": 1180,
+      "sha256": "0c6b9661da5bd7e058a70e29d2ae69f831098f3873a79183250c82464c767ed5"
+    },
+    {
+      "path": "sunset-3d/css/site.css",
+      "bytes": 31344,
+      "sha256": "cd4eb6db6ba643d60d3cb30e65e2df35428ee31f9c117113ea093989509452fc"
+    },
+    {
+      "path": "sunset-3d/index.html",
+      "bytes": 23053,
+      "sha256": "0927d9e7f6c4d153f7188944403e14628570bcfbffe3335d6d1fa3f4319eec47"
+    },
+    {
+      "path": "sunset-3d/js/core.js",
+      "bytes": 10374,
+      "sha256": "7e1908cde5ac01c265dfba1b7be4eed51ef44c0e80b0e6527f07d1aa18d64ac0"
+    },
+    {
+      "path": "sunset-3d/js/main.js",
+      "bytes": 20376,
+      "sha256": "3c172f404990573cb735b2815e2358d5029923b3369c9d6b8fc8e3362c377000"
+    },
+    {
+      "path": "sunset-3d/js/models/.garden-ready",
+      "bytes": 492,
+      "sha256": "f17c262a1133257891fc9ee724acd56f9703852d776f076eaaf88fff1d698901"
+    },
+    {
+      "path": "sunset-3d/js/models/.house-ready",
+      "bytes": 602,
+      "sha256": "d76f9dc57405c9ad611de01865008590591a9de15d028c74523002ade3b6c1c8"
+    },
+    {
+      "path": "sunset-3d/js/models/.sakura-ready",
+      "bytes": 456,
+      "sha256": "0704ab10911eccd229190ec6697044185266677ddc75d458a4cc68d5d719b59a"
+    },
+    {
+      "path": "sunset-3d/js/models/garden.js",
+      "bytes": 31494,
+      "sha256": "d40bd94b1e9fa0e273734a0ba9add149ff30fc9ace8a5420db5483e2f0783e89"
+    },
+    {
+      "path": "sunset-3d/js/models/house.js",
+      "bytes": 58496,
+      "sha256": "cddd12dc09bc4785fd528c2b0fb6c3784ff1abbf0a115ff03651976eab741cb5"
+    },
+    {
+      "path": "sunset-3d/js/models/sakura.js",
+      "bytes": 29197,
+      "sha256": "2453d88dbeebe4bc6c386e50519c5faa4b8ce37e75125fe5b6a84dd1b12d950b"
+    },
+    {
+      "path": "sunset-3d/js/models/woods.js",
+      "bytes": 8651,
+      "sha256": "aa6f66abe89d1040d3ffe285d63670c3a5e0bde5802e0c8e0663aa6565a19275"
+    },
+    {
+      "path": "sunset-3d/js/petals.js",
+      "bytes": 9375,
+      "sha256": "db69733a7d444258c5cbf6d6506806b56980054b7b7cf41c6b09b7a10392803c"
+    },
+    {
+      "path": "sunset-3d/js/post.js",
+      "bytes": 15914,
+      "sha256": "01a9de22fd4e9d5ecc94b5a1171e9eded8f91cbe0fe0e7e4a5aa1600beeecec3"
+    },
+    {
+      "path": "sunset-3d/js/scenes/battery.js",
+      "bytes": 8503,
+      "sha256": "db6785de886ae4944e3f9428eca804e6fb648286950934a6c1abdf2e146c1169"
+    },
+    {
+      "path": "sunset-3d/js/scenes/chart.js",
+      "bytes": 31784,
+      "sha256": "28ea56a9233b0c6d2a5e1669e78c208ae387cebc32a739190ca9fb5440a66fe9"
+    },
+    {
+      "path": "sunset-3d/js/scenes/coins.js",
+      "bytes": 36525,
+      "sha256": "adc14260fb4cef740287b59a047ddaf39c1db3ecf0ab54c7c92c7d84cc0e0060"
+    },
+    {
+      "path": "sunset-3d/js/scenes/hero.js",
+      "bytes": 33829,
+      "sha256": "b1768f914fd2ebc9b3e0bba877a89959ed845038038ef1787350f623ff75f4ec"
+    },
+    {
+      "path": "sunset-3d/js/scenes/hw-rig.js",
+      "bytes": 22984,
+      "sha256": "c59fd38ad3b2bcf2b0ea5f2ec314257af42b00e12291439aa5443116151b5ee1"
+    },
+    {
+      "path": "sunset-3d/js/scenes/map.js",
+      "bytes": 35762,
+      "sha256": "32443c1c9ff02fc6caf41cb037ba3da56091386c36dc5d3d41169d71a9fccbe7"
+    },
+    {
+      "path": "sunset-3d/js/scenes/night.js",
+      "bytes": 22949,
+      "sha256": "44f1f255d471859794fdaea2102c3da6eec9e082a0293802784d69ee1166fa78"
+    },
+    {
+      "path": "sunset-3d/js/scenes/panel.js",
+      "bytes": 20267,
+      "sha256": "a43f4c9d934e865444e479a07a5aefa7cc57a7a858ef340f026c604b1e575f13"
+    },
+    {
+      "path": "sunset-3d/js/scenes/phone.js",
+      "bytes": 14548,
+      "sha256": "e5920c1ed0ea8f04c5fba7b38f88b978f13eddad22453f716993c485986b409f"
+    },
+    {
+      "path": "sunset-3d/js/scenes/risingsun.js",
+      "bytes": 10591,
+      "sha256": "371524321cc9035f2c8385fcba2f95058dc40dfb8de697a6fcaccbc54c9733c2"
+    },
+    {
+      "path": "sunset-3d/js/scenes/soroban.js",
+      "bytes": 10809,
+      "sha256": "fb29620416b21f64248be6db799ada6b32aa504fd5b1f42c6ca044875323ace8"
+    },
+    {
+      "path": "sunset-3d/js/scenes/steps.js",
+      "bytes": 43401,
+      "sha256": "e9a4996f7877651d97902ba67ac66ef4c8605b7cc8907d8c16d8e6e1fa621db7"
+    },
+    {
+      "path": "sunset-3d/js/scenes/test.js",
+      "bytes": 1576,
+      "sha256": "d96111c3b01415cad73083c1c78e2ace289ae187499fb59167354cdfc3f070ae"
+    },
+    {
+      "path": "sunset-3d/js/scenes/wordmark.js",
+      "bytes": 26958,
+      "sha256": "41ff3025180b1d469c23852e57bc8cb8e6d41b40b254a7962fb4246f2e96e248"
+    },
+    {
+      "path": "sunset-3d/lab.html",
+      "bytes": 2012,
+      "sha256": "ccfcfa012c3d3d8988e5dcd1585495339aa9f04f9bc1cd4ad923d610554a7173"
+    },
+    {
+      "path": "sunset-3d/originals/aura/blossom-atlas.png",
+      "bytes": 1367068,
+      "sha256": "4c02d1f10584464f5901c216e108c1455c5bcb14fe9a45588b06982ef828bdb5"
+    },
+    {
+      "path": "sunset-3d/originals/aura/branch-1.png",
+      "bytes": 2683031,
+      "sha256": "29995d6bba23c2ed2b041f99039376b97a298d2d7832466d2569860a8820a5fe"
+    },
+    {
+      "path": "sunset-3d/originals/aura/branch-2.png",
+      "bytes": 1727181,
+      "sha256": "7682d4c345dd034c62b3ecc618c79bbceb45b1d85b8253009ce75ece352d84ea"
+    },
+    {
+      "path": "sunset-3d/originals/aura/voice-1.png",
+      "bytes": 2344664,
+      "sha256": "76340dcd1be43036c1df2c72c86dc5f3addb77cf8bebb81137ecd5525b39ce2e"
+    },
+    {
+      "path": "sunset-3d/originals/aura/voice-2.png",
+      "bytes": 2666160,
+      "sha256": "548f2ca3997c49dc022188319eeeb9604c886def856ce84ba5d2c05235ab22ef"
+    },
+    {
+      "path": "sunset-3d/originals/aura/voice-3.png",
+      "bytes": 2298859,
+      "sha256": "350b5f360f09d5f499aecdf1bdf87408a9a8dc87a46b1def8194c6aa7401f96b"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/belfast_sunset_puresky_2k.hdr",
+      "bytes": 4563204,
+      "sha256": "273003109ca1cfb798ce6b96e09ac8440f763d0ef0c376bbe77492613540b4a3"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/dark_wood_ao_4k.jpg",
+      "bytes": 7812084,
+      "sha256": "aca7054bc463facb0da2776414e1833e910515325762ce4fd411b48ce0a64efb"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/dark_wood_diff_4k.jpg",
+      "bytes": 10548308,
+      "sha256": "23b0d56932232c77b453f3db2b135f1a6375744be4b667c4b0f9f0ccb68a1481"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/dark_wood_nor_4k.jpg",
+      "bytes": 6714634,
+      "sha256": "64c16692046e350fd1647ae1cd4c587f762e57e6f2eceb4b0a4620ba0f2966a4"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/dark_wood_rough_4k.jpg",
+      "bytes": 8747349,
+      "sha256": "45c781b364500b0343d81e86698cbc5e0f0a43f871d8d97acd5d00f04b0e64e0"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/fine_grained_wood_ao_2k.jpg",
+      "bytes": 2360200,
+      "sha256": "fc44d72b3b3131a888194f0048ed28ad2ac328401f2719c3a17410731efb95b1"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/fine_grained_wood_diff_2k.jpg",
+      "bytes": 1327517,
+      "sha256": "d97b1ab2c5206ac43bc0c42f21878da14f4d02497fd21396399406c03f3755a9"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/fine_grained_wood_nor_2k.jpg",
+      "bytes": 855682,
+      "sha256": "c76fcd29434978227db5a35b5b0238da1bee0fb5fa8cdfc6819a76c7ef723f3c"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/fine_grained_wood_rough_2k.jpg",
+      "bytes": 871792,
+      "sha256": "7e8f5fc146ae7accd3b9deb2a173c1cf253707ccdee5070ce16cefd4ee68f1b7"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/jobs.txt",
+      "bytes": 3057,
+      "sha256": "536c3c11bc03c945d8c43c4354cebbb591e31a710c0323f60941f715328f71b4"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/kitchen_wood_ao_4k.jpg",
+      "bytes": 13404946,
+      "sha256": "d31082f28531b56f1bf09dfaf13b46814bdc31e92bfa39834df05268f13f99ae"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/kitchen_wood_diff_4k.jpg",
+      "bytes": 12846105,
+      "sha256": "093337816adfc57c9d996460fb56aac77636a519bbdbf057194bfaf2825c80f7"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/kitchen_wood_nor_4k.jpg",
+      "bytes": 9798551,
+      "sha256": "4eeecc08a978d90f3aad3a61dc7129abcd9e2e5a9d89c196c6787192ea274235"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/kitchen_wood_rough_4k.jpg",
+      "bytes": 12434334,
+      "sha256": "65de35ef6791247a74fe33397d461403ddeb2e054370dd7d50d8ca9c56269061"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/oak_veneer_01_ao_2k.jpg",
+      "bytes": 1936557,
+      "sha256": "9a5695ea39303690d66908f6ae1c4e5bc0e929ac4ecc7dcf4622438481849496"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/oak_veneer_01_diff_2k.jpg",
+      "bytes": 2831117,
+      "sha256": "0718c2e1a209afe6138ccb41d70e1a18cd825d1e73db33ad7cf80806fa9ce5a4"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/oak_veneer_01_nor_2k.jpg",
+      "bytes": 2429019,
+      "sha256": "e74a9d3ddcd86473a21815a28464f4dac4ceb8f86e7f170226dede8ed70d8eb9"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/oak_veneer_01_rough_2k.jpg",
+      "bytes": 3968436,
+      "sha256": "5c81718ee172299c44e0754fadbe652758b6feed05a8fd88be6efff5aa70ca1e"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/plastered_wall_ao_2k.jpg",
+      "bytes": 2560322,
+      "sha256": "aa1a648a21f1a3bd62221c57ca6d660dc82df4188ea0248f23dcf57fa4a90cc0"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/plastered_wall_diff_2k.jpg",
+      "bytes": 2434531,
+      "sha256": "c9f3235d6b28b249dd3c7e6346483f1f6ae11e62b4a81d0397936ff756dfcb1f"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/plastered_wall_nor_2k.jpg",
+      "bytes": 4505457,
+      "sha256": "de20f536b1ec428c6de32267b317bbf538ecfa5c42398743f1b702a0f8434071"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/plastered_wall_rough_2k.jpg",
+      "bytes": 1475662,
+      "sha256": "be5c23b7d473bf1dea6d3a39b3e0537d5cf9eb990b4148566d20a35dc0902e54"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/wood_floor_deck_ao_2k.jpg",
+      "bytes": 2754602,
+      "sha256": "cedf58bdeabcf080974185b0a345fbe92a75933626b6d6461b6ee710cc01dc96"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/wood_floor_deck_diff_2k.jpg",
+      "bytes": 3804436,
+      "sha256": "1b55c67104cf6398ab976ee7fe4f0d0831c8c9808c13ab286dfc1cf0e4fcf2d0"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/wood_floor_deck_nor_2k.jpg",
+      "bytes": 3121998,
+      "sha256": "6d452c7511ca6797e9bb6809a1ae054d7448725b966d7d2f85ff139648ddd7ec"
+    },
+    {
+      "path": "sunset-3d/originals/polyhaven/wood_floor_deck_rough_2k.jpg",
+      "bytes": 2881541,
+      "sha256": "c82ee0705926f7d0a235bb5d6a5879a666040a4d1438980f4ed5387935cba786"
+    },
+    {
+      "path": "sunset-3d/tools/.gitignore",
+      "bytes": 14,
+      "sha256": "4d56952b0fb13bf8f9b6c13a6d4c34a075bac3af447636a1df4335d7576e2f97"
+    },
+    {
+      "path": "sunset-3d/tools/PORT",
+      "bytes": 6,
+      "sha256": "37b8925dfdaaf62fa02b391ad5a85bb5cf3bbf60dc087ce879fe9e1bf45597d0"
+    },
+    {
+      "path": "sunset-3d/tools/key_layers.py",
+      "bytes": 1841,
+      "sha256": "cc7080ad6d5be12fc71156c8af9c1d4ae985ec0908467f777370adee610a5171"
+    },
+    {
+      "path": "sunset-3d/tools/make_blossom_atlas.py",
+      "bytes": 2335,
+      "sha256": "617d78c47935b6df1ed39f70e984f96707ff2ebf2b9b8f139a1bf521ceb2c776"
+    },
+    {
+      "path": "sunset-3d/tools/make_tex.py",
+      "bytes": 1980,
+      "sha256": "4a247016cd1882121cca6fd9fe60d239bc127f8126aa9d3bfeab914c6837aec7"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/.bin/playwright-core",
+      "bytes": 839,
+      "sha256": "f1c4075aef116c766092250d7f37b3249a7cee6465d953207fc38c8f6145becd"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/.package-lock.json",
+      "bytes": 520,
+      "sha256": "e76df888fb1c4878af8aeb0306d4ce4deb1d5afd800f1a3ebd89814f31b3c79c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/LICENSE",
+      "bytes": 11601,
+      "sha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/NOTICE",
+      "bytes": 254,
+      "sha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/README.md",
+      "bytes": 120,
+      "sha256": "d16ff7f8e38fa1fc954f695ad551cdc118d9c9bdd5f3d83203901f4c317d7d7e"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/ThirdPartyNotices.txt",
+      "bytes": 676,
+      "sha256": "a549d329bad8806fe279f0ecae0fc0270dec7e7c2dc8ec10f90e394f7c32b144"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/install_media_pack.ps1",
+      "bytes": 174,
+      "sha256": "bc20f049badf021e3a53bdb4156603caa5ef482c9a9a251f927605e676a44171"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/install_webkit_wsl.ps1",
+      "bytes": 1464,
+      "sha256": "bc61beda37a808eef27d39ce684baa792f6d17737a25a432b1a84d3b591ab815"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_chrome_beta_linux.sh",
+      "bytes": 1217,
+      "sha256": "dc8c22b9dde76583cece2857575b88094299615f3136a3c598149710c45dee3a"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_chrome_beta_mac.sh",
+      "bytes": 563,
+      "sha256": "a92eaeb4ebcf5633a4e9c981481e14c80764fc81b6fcbc0565398e50ff319433"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_chrome_beta_win.ps1",
+      "bytes": 957,
+      "sha256": "b6d9e44742feafb98d5edc56fa20042949973cf30d141a1c5b4fb384096967c5"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_chrome_stable_linux.sh",
+      "bytes": 1212,
+      "sha256": "dc72ab3567a4ce43bd8353d4ecf41f1d9c03e870169367cd3ed9043aabf67dd1"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_chrome_stable_mac.sh",
+      "bytes": 519,
+      "sha256": "bb43a96c192a6cc81524ade0264686fff7809c019a89f7db0a9849635879c3be"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_chrome_stable_win.ps1",
+      "bytes": 923,
+      "sha256": "3d96c4e2f4ebbb3fad44cf3ba58d9cf90af1c9fb3073e3b27d45a74cf005515b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_beta_linux.sh",
+      "bytes": 1494,
+      "sha256": "10b26f35dbc2000b94edf1172d803a29c5873a4eb8d523afbc687997b642767e"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_beta_mac.sh",
+      "bytes": 377,
+      "sha256": "0036d738bc90d686100d81f328ba0003bf07863f5500b792c8da391d149750fa"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_beta_win.ps1",
+      "bytes": 874,
+      "sha256": "b173c378a59f0cc38033cee702de1f44f09276c9b2270d1a650ebe66ee312433"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_dev_linux.sh",
+      "bytes": 1489,
+      "sha256": "00e4947e7a4f8339c6db09c87976d808583c07f9179e4aa7694d88614b82fe95"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_dev_mac.sh",
+      "bytes": 372,
+      "sha256": "6f899e3b311f742c24ca37ff9e32298e8290514ffc14bf588cc51556a29da4c0"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_dev_win.ps1",
+      "bytes": 869,
+      "sha256": "46f7f98c81cb0abe687d7f4a5afea9b897a38d2a6dd6f6662fbd847f7a22bd51"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_stable_linux.sh",
+      "bytes": 1507,
+      "sha256": "ec0a31a5f09c565e108473a1850895a4458ab00c713ac1de3aa2001912e4668f"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_stable_mac.sh",
+      "bytes": 371,
+      "sha256": "3af1e893527ff2257aa2dbc3b259a053b92f45c3eadb13e38eba46e87902655d"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/bin/reinstall_msedge_stable_win.ps1",
+      "bytes": 856,
+      "sha256": "40bb5fcbfcebbbe2ce43c6e736e7c5deefc5be03b6e9c6914423c06ec1f591be"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/browsers.json",
+      "bytes": 1137,
+      "sha256": "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/cli.js",
+      "bytes": 839,
+      "sha256": "f1c4075aef116c766092250d7f37b3249a7cee6465d953207fc38c8f6145becd"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/index.d.ts",
+      "bytes": 634,
+      "sha256": "7a8ec10b0834eb7183e4bfcd929838ac77583828e343211bb73676d1e47f6f01"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/index.js",
+      "bytes": 697,
+      "sha256": "a58fb2cec4293e7dcf73c58a179898a4f3986666451a19da4e731fa3af63265b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/index.mjs",
+      "bytes": 1063,
+      "sha256": "3d36e2132d3c8b62397d23f0bb4177336aaee503203ae2a2c90fbeb5bf3317dd"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/bootstrap.js",
+      "bytes": 3481,
+      "sha256": "4637f4dbfef9cfc01baeb5f5d2cb63fa0901522c96915ea2227290558d27123e"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/coreBundle.js",
+      "bytes": 3477183,
+      "sha256": "549070af3acabb3efcc4f55bfe6210f9f7c2fcf633cf7eaa59bfe60719969171"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/entry/cliDaemon.js",
+      "bytes": 197,
+      "sha256": "062f256fb29a7bf91793a014b9c3f1f9cf2dc6b12e40a8a2ebba88a630ae16a0"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/entry/dashboardApp.js",
+      "bytes": 108,
+      "sha256": "209962c6eaeef11629f226d6a2ab33ec7a2480754242b6e19590a9e6eb71d126"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/entry/mcp.js",
+      "bytes": 442,
+      "sha256": "cc87dc0020cb41caebbf04f50e42bc7835b033a6d80e9c3f0a3d0b3dbdf341c7"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/entry/oopBrowserDownload.js",
+      "bytes": 120,
+      "sha256": "87567cdbd67dd2f50bb232d47d3784701ece7c81e39c0287bb7d1b466b68cf06"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/package.js",
+      "bytes": 2112,
+      "sha256": "9f938e1d44a0dd231b1660ca62f7dae964859b79cbdc370b8542c5d375ca3c05"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/server/chromium/appIcon.png",
+      "bytes": 16565,
+      "sha256": "6ba994f05c5cf18e22d9b6bef9898fbdec6ad4d4d77f5187d0609cb42d72d01e"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/server/electron/loader.js",
+      "bytes": 4994,
+      "sha256": "699fb5564539da34ed72f49e9821af28f9fc06940adb639cac55dc9c477cfe7c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/serverRegistry.js",
+      "bytes": 57039,
+      "sha256": "38025f08f335705b099b9f188bf45b5908a56a722825fe895b1e90f56d5595b6"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/serverRegistry.js.LICENSE",
+      "bytes": 2982,
+      "sha256": "3098a6efcbc11752cbdf6075fa65480f5470f78c8d981fab9c0796dc9a41cefe"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/channelSessions.js",
+      "bytes": 7087,
+      "sha256": "6b9c613e87340f48ad7182addd7495a8ff3fbe55feb1bbd0ce04f59f1552e126"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/cli.js",
+      "bytes": 153,
+      "sha256": "dfde8e9dfde30c4b3914eb25ba1c5a8524ec64651d866171d75cd7b41a827180"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/help.json",
+      "bytes": 38799,
+      "sha256": "e78d7a22d059196e838d1f076b563eae185b851e3e36063fa4ae77a8dc1415b1"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/minimist.js",
+      "bytes": 4109,
+      "sha256": "9430489ebc06fd02231dccfe844516f743e812a9ac4fe8e6748a67718738851c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/output.js",
+      "bytes": 11972,
+      "sha256": "b4c3ebab965e73d621971cd3c76b60c22cf460a0921f14c5c6c51e46e06f02d2"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/program.js",
+      "bytes": 16373,
+      "sha256": "55a9a10132c680ecdec25b5000afb12035745ac9e75dd9cc0ef3e5d5e08d7f3e"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/registry.js",
+      "bytes": 6768,
+      "sha256": "4976cd5b2b3a25572cc1a4b5f055a756dacd4cc1b19d48987ee3253428e759b8"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/cli-client/session.js",
+      "bytes": 9544,
+      "sha256": "a71e03ba6dc99d6d9cca4577d534daa6d0c20c32e50065311823f41caba29b46"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/dashboard/appIcon.png",
+      "bytes": 18945,
+      "sha256": "38037bcf18c7f9b950da2e1a2d8800d38fb27637ccda293d38368a3704b67f18"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/SKILL.md",
+      "bytes": 12726,
+      "sha256": "1a609c93bff3eea9ab99fed93c0334c851fdc39fb6ac5335551bfb87c171d57c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/element-attributes.md",
+      "bytes": 665,
+      "sha256": "bf19aa4671e0a50a0fefa9c790f39124e803060eefe395042b723c29fcb7faa2"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/playwright-tests.md",
+      "bytes": 1690,
+      "sha256": "c5b0719fef2cfdff50bd744051b2f9afc119775db4b48e9b2882c1cf3886797c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/request-mocking.md",
+      "bytes": 2182,
+      "sha256": "54e801c9663fc2b6d68ceb058cb1c360724c2499f42acc7852a68e83e5b5f37c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/running-code.md",
+      "bytes": 5642,
+      "sha256": "d95c539a5990b71d02d8bdf1d9414df16191eb6cff95b0063820518b7a13dcb2"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/session-management.md",
+      "bytes": 5671,
+      "sha256": "cd3e261b8763bf952f1e371b876cb78d054379afec85482f9250633e1b7e6c44"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/storage-state.md",
+      "bytes": 5198,
+      "sha256": "9ac47f9ae4a1aedcd2077f8ac9ab1ba6bee1962cb83ff51adcd36fb6d83b5ec6"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/test-generation.md",
+      "bytes": 16114,
+      "sha256": "12f54cfa718d9e559bad918120a4ca4f11c933167713d1b9c5f99872eddaf749"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/tracing.md",
+      "bytes": 3456,
+      "sha256": "ef73e71bee792e341df9cd4f60529c929ade48b538ac76e033f4f20843e8dbda"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/video-recording.md",
+      "bytes": 5387,
+      "sha256": "8555ab5400df0d90e66318aacc0a8a4418fbf872e7463824d55d5c41615abd83"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-component-testing/SKILL.md",
+      "bytes": 10404,
+      "sha256": "60f57b31767d562c30cc5332081418c2945f4d9c998efa6e09191333654dd429"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-component-testing/references/gallery-spec.md",
+      "bytes": 6199,
+      "sha256": "0ca25dde6112eb379f56eb618585b64dc2dfd13c2f7f956ac7eabbd76a68912b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-component-testing/references/migration.md",
+      "bytes": 5031,
+      "sha256": "bc3a336f7970bb7455fa5a38f937e45b35fb0c18d6c3b9f37916a4ff757b7acc"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-component-testing/references/react.md",
+      "bytes": 3115,
+      "sha256": "54af9cc1cdb6d4ccdb8e811c0abb29b960d5c9304f4df7d1dcf9b8df3f973102"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-component-testing/references/typing.md",
+      "bytes": 6883,
+      "sha256": "c511025b5c9b02d7f49034a5613c8b478193bf60c90ea6dddb3faf9c6985c82b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-component-testing/references/vue.md",
+      "bytes": 3374,
+      "sha256": "d1b129f126c700702a3c00ad8eb6c86898bc941c29a656c1191eb7230650bf8b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/skills/playwright-trace/SKILL.md",
+      "bytes": 4845,
+      "sha256": "4124dd790915bb76108377121d1e6ca93a5544c90485c090fa5655235efe22aa"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/utils/extension.js",
+      "bytes": 4689,
+      "sha256": "404ae19e57a7c7c5ed3e6ecf9df26a3fcf95867250732f954823078ccb879e63"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/tools/utils/socketConnection.js",
+      "bytes": 3317,
+      "sha256": "973c2bea70a1f1445f4673f99e9fa351e50a2ec9fd93d7381b2c41bb4de764dd"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/utilsBundle.js",
+      "bytes": 3048692,
+      "sha256": "2d1ccc01d21b7d54ca99a6305991d7fb6e072ea4e725d7fec5eb6184188c52c9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/utilsBundle.js.LICENSE",
+      "bytes": 106591,
+      "sha256": "2495f30be29620d54b58339821eda0ebabdfb6ee9b09455f7285a06fd46fb9f3"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/codeMirrorModule--QdMvsKi.css",
+      "bytes": 6251,
+      "sha256": "20be824a82832b62cc04642d31da3c609fd280b23f1cdcb1e622c4f40aac5ab8"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/codeMirrorModule-CQ8RZGBm.js",
+      "bytes": 307374,
+      "sha256": "56b9c6a50c09dfac28eea5ec3e76c8ae85a26009b20ebac9928959cf3c3312bb"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/codicon-DCmgc-ay.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/firefox-1bWoP6pv.svg",
+      "bytes": 7488,
+      "sha256": "3f3742d1e78c0db6c2d3531250f70c30675ee5310de32fa89befaf738c54efd0"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/firefox-beta-k3eOH_eK.svg",
+      "bytes": 9280,
+      "sha256": "7eab5ffdc25903ba33a7202f7fffa1999f119c7be45a39e9e703c118904f917a"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/firefox-nightly-Cp5nfeDT.svg",
+      "bytes": 9143,
+      "sha256": "f311c074b0fa999fcd6b73441301fb54ee87a48ff3bf05f318647928110476da"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/index-AwgwcYie.css",
+      "bytes": 139111,
+      "sha256": "82d06f291a7d0860e1b1e1803ab6f2e49c637541779a37168652e10b062b67f9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/index-hRvO4yU2.js",
+      "bytes": 336491,
+      "sha256": "3a05ed0b026442a1459952df25b9a836d4fa1a917838cf6f9357daefc0e42285"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/assets/safari-na3_-uQk.svg",
+      "bytes": 5254,
+      "sha256": "80fd72ca5eb8545f1981277b31f4f92951d469d4efebd078e4086b676fe517dc"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/index.html",
+      "bytes": 1078,
+      "sha256": "202903aad66040604bc1a0c85615dda4bfc7e6f4a4674e60d9eda4d44f6faea7"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/dashboard/playwright-logo.svg",
+      "bytes": 5645,
+      "sha256": "511524a1c145819303a18fb71870a4307c3e740f9e9722f7686a2b42b0995b6c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/htmlReport/index.html",
+      "bytes": 464,
+      "sha256": "ce7c098020a0eb9ce10edd416245ea6da50dfeaab18dfd0a2176979d22643be6"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/htmlReport/report.css",
+      "bytes": 100452,
+      "sha256": "d98a244bf950333ade383b109e97d396f970f650b20f2e5ef5ecc2740205dff7"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/htmlReport/report.js",
+      "bytes": 415864,
+      "sha256": "3db0c0291241102b14b62af4b80d84dd8169a281bb2ff360c986b9d7da57c339"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/assets/codeMirrorModule--QdMvsKi.css",
+      "bytes": 6251,
+      "sha256": "20be824a82832b62cc04642d31da3c609fd280b23f1cdcb1e622c4f40aac5ab8"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/assets/codeMirrorModule-CVQWJZAA.js",
+      "bytes": 307374,
+      "sha256": "45f900fd93bf33545e6915308a964c49ce342c2e175a54aaef0898f05b25fcf5"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/assets/codicon-DCmgc-ay.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/assets/index-BZpYJZ-P.css",
+      "bytes": 85502,
+      "sha256": "cc24563b96f286614b88f74da413e9984de263227971c4cdfabe1f73be095514"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/assets/index-hrlLqLtq.js",
+      "bytes": 358603,
+      "sha256": "f7f3dfd9113b0119821adf1f3fc873fa5dddba8b2c278014e0fb0ecc1b3f492b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/index.html",
+      "bytes": 1078,
+      "sha256": "5783e9b7e2cc78dd8a1a409d84b44b2431bf60f8f54b8be36c6e433c6a1086ed"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/recorder/playwright-logo.svg",
+      "bytes": 5033,
+      "sha256": "6b0a4367bdeab10995bc239278f04c68c10e48adbec15e799e01909a0d66dcb9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/assets/codeMirrorModule-BbkfBe3n.js",
+      "bytes": 307393,
+      "sha256": "274b964242426bf4e1c662a84f6345d8a99f67821caa508fb12c52e2d1dfd48c"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/assets/defaultSettingsView-Ds6CBOo0.js",
+      "bytes": 654294,
+      "sha256": "0b48f13034cfa075338cc0839f212297d22cadab9219d9699d161d2b18c79019"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/assets/urlMatch-L3liM589.js",
+      "bytes": 2510,
+      "sha256": "1bc6321e32d11c31a452bc75896f0b344e6153321854d9f1658818be7f845c16"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/assets/xtermModule-DywYcAf8.js",
+      "bytes": 288730,
+      "sha256": "2546783e4f74a432bbccd88a6763cf78ac4e951686262cdf85b54d5a26ca3995"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/codeMirrorModule.-QdMvsKi.css",
+      "bytes": 6251,
+      "sha256": "20be824a82832b62cc04642d31da3c609fd280b23f1cdcb1e622c4f40aac5ab8"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/codicon.DCmgc-ay.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/defaultSettingsView.Bqk9acqE.css",
+      "bytes": 107049,
+      "sha256": "cd1d3c277d4962246ed92d7d42734c5ffed6bac5c499232693f9c8331b71801f"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/index.B4cLoZK3.js",
+      "bytes": 6628,
+      "sha256": "7b96efd541639738a8d46e4b6ba9780ffaf57a5c104db66764e0cec46d9f64e8"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/index.B_TqY17P.css",
+      "bytes": 2055,
+      "sha256": "08a212fcacae1866f44f065654afcc4c7d03409c68c74b3315c5bda17a0ca003"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/index.html",
+      "bytes": 2363,
+      "sha256": "139ac80123fb450cfc0631296e9f01463313ca2fec961b3a247ec6c9528447a2"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/manifest.webmanifest",
+      "bytes": 429,
+      "sha256": "d8540500603a32a39fe7e5a0375dc0f9ebafd11118e06a846db7efc608223ab9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/playwright-logo.svg",
+      "bytes": 5033,
+      "sha256": "6b0a4367bdeab10995bc239278f04c68c10e48adbec15e799e01909a0d66dcb9"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/snapshot.B_Jk1wbt.js",
+      "bytes": 650,
+      "sha256": "d4d09e05451d107d8e1a6bbd041405fe518b9fd2833890e4ebaaad83b7f554f5"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/snapshot.html",
+      "bytes": 389,
+      "sha256": "c608c8899c95c5a74d3f556e20146c3d852b9df85ae2854c659a7cc773c9b727"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/sw.bundle.js",
+      "bytes": 95459,
+      "sha256": "37b230329280e28e32b03df20738d2ed3bfd0ea45b408a69213158bb8400adb3"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/uiMode.CU5KtEkS.js",
+      "bytes": 38057,
+      "sha256": "0c0dc5e0c822c27e60420a5c1659683fda89398f1561e43608f9d829eafdc197"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/uiMode.CyMfwkXJ.css",
+      "bytes": 54590,
+      "sha256": "fb403cf0b07007bc1d771e29737f7408924da300e2fab8b289a3ef2e8fc08d7b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/uiMode.html",
+      "bytes": 727,
+      "sha256": "c6e92923ea7f2b617db3a2128ac8889c6c1461a77764651588e0111b729c3a3d"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/vite/traceViewer/xtermModule.kHJ-D0s7.css",
+      "bytes": 2853,
+      "sha256": "0dd60056134e6a2994a86b59a1e9789b9f04e92924da109aef8c923acaf08ce5"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/webp_codec.LICENSE",
+      "bytes": 8841,
+      "sha256": "995c7ee35aceb7666829b7a501ca89c0864e12b493c1174b155774ab1e03d831"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/webp_codec.wasm",
+      "bytes": 565369,
+      "sha256": "164cd9583a3e4d081f767d3b41ff0a730443dc7535fcc5caff83561463384b79"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/lib/xdg-open",
+      "bytes": 32416,
+      "sha256": "7d759d54f0d4ce1beeb34ee62c587985b5042374e8de237b0dcb8cd47aa698cf"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/package.json",
+      "bytes": 876,
+      "sha256": "f061c58427e47e843e26d201f0a57076c734e57c734ecbbd87d4a23b7a20db9b"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/types/protocol.d.ts",
+      "bytes": 814210,
+      "sha256": "0410ed82a9ac63269dc1471ed249b280e2d461249a3a331e71cdb54cdf10db33"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/types/structs.d.ts",
+      "bytes": 2455,
+      "sha256": "c9b9179b7291c8562eb0fb781219ddbdcf36149ebd7bd355e5b4a553d6b60b81"
+    },
+    {
+      "path": "sunset-3d/tools/node_modules/playwright-core/types/types.d.ts",
+      "bytes": 1131883,
+      "sha256": "2806f6d7810fba0306066d500cd716a6d1128d90af2c3cf71723e3ea0a8904c4"
+    },
+    {
+      "path": "sunset-3d/tools/package-lock.json",
+      "bytes": 639,
+      "sha256": "e2dea938afa4729c91ce0c79957f9709cefe7f3ce27d9fca3ccb5aa7b78acd89"
+    },
+    {
+      "path": "sunset-3d/tools/package.json",
+      "bytes": 115,
+      "sha256": "896d335384a1030b22cc46c09257ceb99c9eab59e77fbff825b73a12e4432a66"
+    },
+    {
+      "path": "sunset-3d/tools/pageshots.mjs",
+      "bytes": 3535,
+      "sha256": "dfbae2535415d667da3ee7e76aed95cd5eb93776e68bb7dad224c3d11048fd36"
+    },
+    {
+      "path": "sunset-3d/tools/shot.mjs",
+      "bytes": 3705,
+      "sha256": "8aa5fdf70b8cdb908ade279ec684cc99ef1526a35756fd7b09374454ed7a09b0"
+    }
+  ]
+}

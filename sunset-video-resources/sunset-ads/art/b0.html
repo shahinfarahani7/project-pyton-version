@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sunseto station poster: B0, 1,030 × 1,456 mm</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/* 駅貼りポスター B0 (B倍), 1,030 × 1,456 mm, 3 mm bleed. The site's grid, at poster scale: three columns with
+   hairline rules, a 4:5 scene over the first two, the figure and a vertical Japanese line in the third.  ?n=1|2|3 */
+:root{--tw:1030mm;--th:1456mm;--bleed:3mm;--safe:calc(var(--bleed) + 40mm);
+  --M:58mm;--c1:343.33mm;--c2:686.67mm;--h1:438mm;--h2:1290mm;--rule:1.1mm}
+.sheet{background:var(--beige)}
+.t{position:absolute;left:var(--bleed);top:var(--bleed);width:var(--tw);height:var(--th)}
+.t>*{position:absolute}
+.rule{background:var(--line)}
+.rule.h{left:calc(-1*var(--bleed));right:calc(-1*var(--bleed));height:var(--rule)}
+.rule.v{width:var(--rule);top:var(--h1);height:calc(var(--h2) - var(--h1))}
+.lbl{font-family:var(--mono);text-transform:uppercase;font-size:20mm;line-height:26mm;letter-spacing:-.01em;color:var(--grey)}
+.kan{right:var(--M);top:44mm;width:62mm;height:62mm;display:grid;place-items:center;border:1.4mm solid var(--brown);font-family:var(--jp);font-weight:500;font-size:38mm;line-height:1;color:var(--brown)}
+.top{left:var(--M);top:56mm}
+h1{left:var(--M);top:128mm;font-family:var(--serif);font-weight:400;font-size:112mm;line-height:.98;letter-spacing:-.022em;color:var(--black);white-space:nowrap}
+.shot{left:var(--M);top:calc(var(--h1) + 34mm);width:calc(var(--c2) - var(--M) - 34mm);aspect-ratio:4/5;overflow:hidden;background:#1b1426}
+.shot img{width:100%;height:100%;object-fit:cover}
+.cap{left:var(--M);top:calc(var(--h1) + 34mm + (var(--c2) - var(--M) - 34mm) * 1.25 + 14mm)}
+.col3{left:calc(var(--c2) + 38mm);right:var(--M);top:calc(var(--h1) + 34mm)}
+.big{margin-top:6mm;font-family:var(--serif);font-size:106mm;line-height:1;letter-spacing:-.03em;color:var(--black);white-space:nowrap}
+.big small{font-family:var(--sans);font-weight:500;font-size:24mm;letter-spacing:-.01em;margin-left:5mm;color:var(--grey)}
+.big.stack small{display:block;margin:4mm 0 0 1mm}
+.body{margin-top:18mm;font-family:var(--sans);font-weight:500;font-size:23mm;line-height:29mm;letter-spacing:-.015em;color:var(--black)}
+.jpv{right:calc(var(--M) + 4mm);top:calc(var(--h1) + 352mm);writing-mode:vertical-rl;font-family:var(--jp);font-weight:500;font-size:25.5mm;letter-spacing:.1em;color:var(--brown);white-space:nowrap}
+.seal{width:50mm;height:50mm;transform:rotate(-6deg)}
+.seal img{width:100%;height:100%}
+.foot{left:var(--M);right:var(--M);top:calc(var(--h2) + 50mm);display:flex;align-items:center;justify-content:space-between}
+.foot .lockup{--F:58mm}
+.cta{display:flex;align-items:center;gap:26mm}
+.btn{display:inline-flex;align-items:center;height:86mm;padding:0 38mm;border-radius:7mm;background:var(--black);color:#fff;font-family:var(--sans);font-weight:500;font-size:27mm;letter-spacing:-.015em}
+.url{font-family:var(--sans);font-weight:500;font-size:30mm;letter-spacing:-.02em;color:var(--black)}
+/* the map poster: no window, the washi map lies on the sheet itself */
+.n3 .shot{background:none;overflow:visible}
+.n3 .shot img{object-fit:contain;transform:scale(1.12) translate(2%,4%)}
+</style>
+</head>
+<body>
+<div class="sheet"><div class="safe"></div>
+  <div class="t" id="t">
+    <div class="rule h" style="top:var(--h1)"></div>
+    <div class="rule h" style="top:var(--h2)"></div>
+    <div class="rule v" style="left:var(--c2)"></div>
+    <div class="top lbl" id="label"></div>
+    <div class="kan" id="kan"></div>
+    <h1 id="head"></h1>
+    <div class="shot"><img id="img" alt=""></div>
+    <div class="cap lbl" id="cap"></div>
+    <div class="col3"><div class="lbl" id="stL"></div><div class="big" id="stB"></div><div class="body" id="stT"></div></div>
+    <div class="jpv" id="jp"></div>
+    <div class="seal" id="seal"><img src="../assets/img/hanko_vermilion.png" alt=""></div>
+    <div class="foot"><span data-lockup="ink"></span><span class="cta"><span class="btn">Check my roof</span><span class="url">sunseto.jp</span></span></div>
+  </div>
+</div>
+<script type="module">
+import { Q, loadMark, buildLockups, ready } from './kit.js';
+const P = {
+  1: { label: 'Spend less', kan: '壱', head: 'Pay for sunshine,<br>not for fuel ships', img: '../assets/scenes/kyoto-roof.jpg', cap: 'Kyoto, Higashiyama · 4.8 kW',
+       stL: 'Plans from', stB: '¥9,800<small>a month</small>', stack: true, stT: 'Panels, battery, fitting and upkeep in one price. ¥0 up front.', jp: '払うなら、燃料船より陽の光に。' },
+  2: { label: 'Stay on', kan: '弐', head: 'The lights stay on<br>when the typhoon comes', img: '../assets/scenes/typhoon-night.jpg', cap: 'Tateyama, Chiba · 11 h through the outage',
+       stL: 'When the grid drops', stB: '0.02<small>s</small>', stT: 'The battery takes over before a lamp can flicker.', jp: '台風の夜も、あかりは消えない。' },
+  3: { label: 'Neighbours, connected', kan: '参', head: 'Every roof lends<br>a little light', img: '../assets/scenes/network-map-crop.png', cap: 'One network, roof by roof',
+       stL: 'A typical evening', stB: '82<small>%</small>', stT: 'of it runs on the afternoon’s sun.', jp: 'どの屋根も、すこし光を分けあう。' },
+}[Q.get('n') || '1'];
+document.getElementById('t').classList.add('n' + (Q.get('n') || '1'));
+for (const k of ['label', 'kan', 'cap', 'stL', 'jp']) document.getElementById(k).textContent = P[k];
+for (const k of ['head', 'stB', 'stT']) document.getElementById(k).innerHTML = P[k];
+if (P.stack) document.getElementById('stB').classList.add('stack');
+document.getElementById('img').src = P.img;
+await loadMark(); buildLockups();
+// the seal closes the vertical line, as a seal closes a letter
+await document.fonts.ready;
+// anchored to the foot of the column: the line, 5 mm, then the seal, 34 mm clear of the lower rule
+const mm = 96 / 25.4, jpEl = document.getElementById('jp'), t = document.getElementById('t').getBoundingClientRect();
+const h2 = 1290 * mm, sealH = 50 * mm;
+let jp = jpEl.getBoundingClientRect();
+jpEl.style.top = `${h2 - 34 * mm - sealH - 5 * mm - jp.height}px`;
+jp = jpEl.getBoundingClientRect();
+document.getElementById('seal').style.top = `${jp.bottom - t.top + 5 * mm}px`;
+document.getElementById('seal').style.left = `${jp.left + jp.width / 2 - t.left - sealH / 2}px`;
+// never closer than 30 mm to the copy above it
+const body = document.getElementById('stT').getBoundingClientRect();
+if (jp.top - body.bottom < 30 * mm) console.error('b0: vertical line collides with the copy', jp.top - body.bottom);
+await ready();
+</script>
+</body>
+</html>

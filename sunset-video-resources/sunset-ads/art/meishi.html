@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sunseto meishi: 91 × 55 mm, letterpress</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Meishi, Japan standard 91 × 55 mm, 3 mm bleed (塗り足し). Letterpress on 1.2 mm duplexed cotton board,
+   edges painted vermilion. Plates: sumi, vermilion, a split-fountain sun (gold → vermilion on one roller)
+   and a blind deboss (no ink) for the grid rules. ?side=jp|en  ?plate=sumi|verm|fount|blind  ?guides */
+:root{--tw:91mm;--th:55mm;--bleed:3mm;--safe:calc(var(--bleed) + 4mm);
+  --paper:#f6eedd;--sumi:#1e1713;--verm:#d8452c;--fg:#f3c77a;--fr:#e2553a}
+.sheet{background:var(--paper)}
+.card{position:absolute;left:var(--bleed);top:var(--bleed);width:var(--tw);height:var(--th)}
+.card>*{position:absolute}
+/* cotton: a faint fibre tooth on the preview only (never on a plate) */
+.tooth{inset:calc(-1*var(--bleed));pointer-events:none;opacity:.55;mix-blend-mode:multiply}
+/* blind rules: pressed, not printed. On the preview a pressed line is a hair darker, with its lower lip catching light */
+.blind{background:rgba(120,90,50,.13);box-shadow:0 .09mm 0 rgba(255,255,255,.55)}
+.blind.v{width:.16mm;box-shadow:.09mm 0 0 rgba(255,255,255,.55)}
+.blind.h{height:.16mm}
+.sumi{color:var(--sumi)}
+.brn{color:#4c2806}
+.verm{color:var(--verm)}
+.lbl{font-family:var(--mono);text-transform:uppercase;font-size:1.8mm;line-height:2.6mm;letter-spacing:.02em;font-weight:500}
+.lockup{--F:4.1mm}
+.hanko{width:10.5mm;height:10.5mm;transform:rotate(-5deg)}
+.hanko img{width:100%;height:100%}
+
+/* English side: the site's grid, pressed blind: one column rule at two thirds, two row rules */
+.en .tag{left:64.9mm;top:6.3mm}
+.en .name{left:6mm;top:23.1mm;font-family:var(--serif);font-size:6.3mm;line-height:1;letter-spacing:-.015em}
+.en .role{left:6.2mm;top:31.2mm}
+.en .tel{left:6mm;top:44.1mm;font-family:var(--sans);font-weight:500;font-size:2.12mm;line-height:3.2mm;letter-spacing:-.005em}
+.en .url{left:64.9mm;top:44.1mm;font-family:var(--sans);font-weight:500;font-size:2.12mm;line-height:3.2mm;letter-spacing:-.005em}
+.en .hk{left:70.6mm;top:21.9mm}
+
+/* Japanese side, set vertically: company and the brand line on the right, the name in the centre,
+   the address on the left, as a Japanese card reads (right to left) */
+.jp .col{writing-mode:vertical-rl;text-orientation:upright;font-family:var(--jp);font-weight:500;white-space:nowrap}
+.jp .co{left:82.2mm;top:6mm;font-size:2.35mm;letter-spacing:.2em}
+.jp .tg{left:75.2mm;top:6mm;font-size:2.35mm;letter-spacing:.08em}
+.jp .mark{left:67.9mm;bottom:5.6mm;width:7.4mm}
+.jp .ttl{left:50.6mm;top:7.4mm;font-size:2.35mm;letter-spacing:.3em}
+.jp .nm{left:40.7mm;top:6.2mm;font-size:6.6mm;letter-spacing:.14em;line-height:1}
+.jp .nm i{font-style:normal;display:inline-block;height:2.6mm}
+.jp .hk{left:33.2mm;top:39.2mm;width:8.4mm;height:8.4mm}
+.jp .ad{left:19.4mm;top:6mm;font-size:2.12mm;line-height:3.4mm;letter-spacing:.12em}
+.jp .mail{left:6mm;bottom:5.3mm;font-family:var(--sans);font-weight:500;font-size:2.12mm;line-height:3.2mm;letter-spacing:-.005em}
+
+/* plate mode: one ink as solid black on white, for platemaking */
+.plate .sheet{background:#fff}
+.plate .tooth{display:none}
+.plate .card *{color:transparent!important}
+.plate .card .on, .plate .card .on *{color:#000!important}
+.plate .blind{background:transparent;box-shadow:none}
+.plate .blind.on{background:#000}
+</style>
+</head>
+<body>
+<div class="sheet"><div class="safe"></div>
+  <canvas class="tooth" id="tooth"></canvas>
+  <div class="card" id="card"></div>
+</div>
+<template id="en">
+  <div class="blind v" data-p="blind" style="left:60.67mm;top:-3mm;height:61mm"></div>
+  <div class="blind h" data-p="blind" style="left:-3mm;top:16.2mm;width:97mm"></div>
+  <div class="blind h" data-p="blind" style="left:-3mm;top:39.4mm;width:97mm"></div>
+  <span style="left:6mm;top:6.3mm" data-lockup="ink" data-word="var(--sumi)" data-sea="var(--sumi)" data-sun="#f3c77a,#e2553a" data-p="sumi fount"></span>
+  <div class="tag lbl brn" data-p="sumi">Solar + storage<br>for homes in Japan</div>
+  <div class="name sumi" data-p="sumi">Aiko Tanabe</div>
+  <div class="role lbl brn" data-p="sumi">Roof surveyor · Kyoto, Higashiyama</div>
+  <div class="hk hanko" data-p="verm"><img src="../assets/img/hanko_vermilion.png" alt=""></div>
+  <div class="tel sumi" data-p="sumi">+81 75 000 1840<br>aiko@sunseto.jp</div>
+  <div class="url sumi" data-p="sumi">sunseto.jp<br><span class="brn">Check my roof</span></div>
+</template>
+<template id="jp">
+  <div class="blind v" data-p="blind" style="left:30.33mm;top:-3mm;height:61mm"></div>
+  <div class="blind v" data-p="blind" style="left:60.67mm;top:-3mm;height:61mm"></div>
+  <div class="col co sumi" data-p="sumi">株式会社サンセト</div>
+  <div class="col tg verm" data-p="verm">今日の陽を、今夜のあかりに。</div>
+  <div class="mark" data-mark data-sun="#f3c77a,#e2553a" data-sea="var(--sumi)" data-p="sumi fount"></div>
+  <div class="col ttl brn" data-p="sumi">屋根診断士</div>
+  <div class="col nm sumi" data-p="sumi">田辺<i></i>愛子</div>
+  <div class="hk hanko" data-p="verm"><img src="../assets/img/hanko_vermilion.png" alt=""></div>
+  <div class="col ad brn" data-p="sumi">京都市東山区八坂<br>電話　〇七五・〇〇〇・一八四〇</div>
+  <div class="mail sumi" data-p="sumi">aiko@sunseto.jp<br>sunseto.jp</div>
+</template>
+<script type="module">
+import { Q, loadMark, buildLockups, buildMarks, fitCanvas, ready } from './kit.js';
+const side = Q.get('side') || 'en', plate = Q.get('plate');
+document.getElementById('card').append(document.getElementById(side).content.cloneNode(true));
+document.getElementById('card').classList.add(side);
+await loadMark();
+buildLockups(); buildMarks();
+const extra = [];
+if (plate) {
+  document.documentElement.classList.add('plate');
+  // an element is on the plate when its data-p lists it; the sun and the waves of the mark split across two plates
+  document.querySelectorAll('[data-p]').forEach(el => {
+    const ps = el.dataset.p.split(' ');
+    if (ps.includes(plate)) el.classList.add('on');
+    if (el.querySelector('svg.mk')) {
+      const [sun, ...sea] = el.querySelectorAll('svg.mk path');
+      sun.setAttribute('fill', plate === 'fount' ? '#000' : 'transparent');
+      sea.forEach(s => s.setAttribute('fill', plate === 'sumi' ? '#000' : 'transparent'));
+      el.classList.toggle('on', plate === 'sumi');   // the wordmark is sumi
+      if (plate === 'fount') el.querySelectorAll('.wm').forEach(w => w.style.color = 'transparent');
+    }
+    if (el.classList.contains('hanko')) el.style.filter = ps.includes(plate) ? 'brightness(0)' : 'opacity(0)';
+  });
+} else {
+  // paper tooth: cotton fibres and a fine mottle, at 0.05 mm cells
+  const cv = fitCanvas(document.getElementById('tooth'));
+  const ctx = cv.getContext('2d'), W = cv.width, H = cv.height, img = ctx.createImageData(W, H);
+  let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < W * H; i++) { const v = 255 - rnd() * 18; img.data[i * 4] = v; img.data[i * 4 + 1] = v; img.data[i * 4 + 2] = v - 2; img.data[i * 4 + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+  const mm = W / 97;
+  ctx.globalAlpha = .06; ctx.strokeStyle = '#6b5436'; ctx.lineCap = 'round';
+  for (let i = 0; i < 1400; i++) {            // short curled fibres
+    const x = rnd() * W, y = rnd() * H, a = rnd() * Math.PI * 2, L = (0.6 + rnd() * 2.2) * mm;
+    ctx.lineWidth = (0.02 + rnd() * 0.03) * mm;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + Math.cos(a + 0.6) * L * .5, y + Math.sin(a + 0.6) * L * .5, x + Math.cos(a) * L, y + Math.sin(a) * L); ctx.stroke();
+  }
+}
+await ready(extra);
+</script>
+</body>
+</html>
