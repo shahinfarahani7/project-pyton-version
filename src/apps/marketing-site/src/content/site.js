@@ -10,6 +10,7 @@ export const navLinks = [
 export const hero = {
   eyebrow: 'Edge-first AI inference',
   title: 'Run AI workloads where your policy allows — with a quote before every task.',
+  titleHighlight: 'a quote',
   subtitle:
     'EdgeMint routes document, vision, and language tasks to a verified edge worker network first, with explicit cloud fallback, EUR-denominated billing, and a full audit trail for regulated teams.',
   primaryCta: { label: 'Talk to sales', to: 'contact' },
@@ -105,6 +106,61 @@ export const pricingRows = [
   { task: 'Text translate', measure: 'per 1k chars', price: '€0.003' },
   { task: 'Text generate', measure: 'per 1k tokens', price: '€0.0065' },
   { task: 'Text embedding', measure: 'per 1k tokens', price: '€0.001' },
+];
+
+export const taskFeed = [
+  { task: 'document.ocr', file: 'invoice-2291.pdf', meta: 'quote €0.0025 · edge worker', status: 'ok' },
+  { task: 'text.summarize', file: 'board-minutes.txt', meta: 'quote locked · edge worker', status: 'ok' },
+  { task: 'document.verify', file: 'id-scan.png', meta: 'held · region policy EU-only', status: 'held' },
+  { task: 'image.classify', file: 'shelf-photo.jpg', meta: 'quote €0.0015 · edge worker', status: 'ok' },
+  { task: 'text.translate', file: 'terms-de.txt', meta: 'cloud fallback · reason recorded', status: 'ok' },
+  { task: 'document.ocr', file: 'receipt-118.jpg', meta: 'consensus tier · 2 workers', status: 'ok' },
+];
+
+export const quoteSample = [
+  '{',
+  '  "task_type": "document.ocr",',
+  '  "quote": { "amount": "0.0025", "currency": "EUR" },',
+  '  "route": "edge_preferred",',
+  '  "verification": "standard",',
+  '  "fallback": "allowed_with_reason",',
+  '  "policy_hash": "sha256:9f2c…e41a"',
+  '}',
+];
+
+export const taskCards = [
+  { glyph: 'OCR', title: 'Document OCR', body: 'Invoices, receipts, and forms to structured text.', price: '€0.0025 per page', to: 'models' },
+  { glyph: 'IMG', title: 'Image classify', body: 'Catalog tagging and safety checks on images.', price: '€0.0015 per image', to: 'models' },
+  { glyph: 'TXT', title: 'Text translate', body: 'Contracts, tickets, and support text across languages.', price: '€0.003 per 1k chars', to: 'models' },
+];
+
+export const capabilityChips = [
+  { icon: '€', label: 'Immutable quotes' },
+  { icon: '⌖', label: 'Region policies' },
+  { icon: '⚯', label: 'Signed webhooks' },
+  { icon: '⛨', label: 'Signed models' },
+  { icon: '◎', label: 'Verification tiers' },
+  { icon: '⛓', label: 'Hash-chained audit log' },
+  { icon: '↻', label: 'Idempotent creates' },
+  { icon: '⇄', label: 'Replay & dead-letter' },
+];
+
+export const portalNav = ['Tasks', 'Quotes', 'Workers', 'Billing', 'Audit log'];
+
+export const portalFields = [
+  { label: 'Task type', value: 'document.ocr' },
+  { label: 'Input', value: 'invoice-2291.pdf' },
+  { label: 'Verification', value: 'standard' },
+  { label: 'Region policy', value: 'EU only' },
+];
+
+export const integrations = ['REST', 'SSE', 'TS', 'Hooks', 'API', 'Docs'];
+
+export const fanTargets = [
+  { label: 'Edge', tone: 'edge' },
+  { label: 'Cloud', tone: 'cloud' },
+  { label: 'Hook', tone: 'hook' },
+  { label: 'Ledger', tone: 'ledger' },
 ];
 
 export const pricingNotes = [
