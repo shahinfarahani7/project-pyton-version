@@ -11,6 +11,12 @@ _WORKER_MODEL_VERSION_ID = "mdv_gemma_4_e4b_it"
 
 _pending: list[dict[str, Any]] = []
 _completed: list[str] = []
+# Workers that have actually received a task, and which of them failed it.
+_delivered_devices: dict[str, set[str]] = {}
+_in_flight_devices: dict[str, set[str]] = {}
+_failed_devices: dict[str, dict[str, str]] = {}
+# Assignments the portal cancelled, including ones a worker already claimed.
+_cancelled_ids: set[str] = set()
 _exclusive_device_public_id: str | None = (
     os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID") or None
 )
@@ -82,7 +88,46 @@ def claim_next_assignment(
         register_exclusive_device(device_public_id)
     if not _assignment_allowed_for_device(device_public_id):
         return None
-    return pop_next_assignment()
+    assignment = pop_next_assignment()
+    if assignment is None:
+        return None
+    task_id = str(assignment.get("taskId") or assignment["assignmentId"])
+    note_task_delivery(task_id, device_public_id)
+    return assignment
+
+
+def note_task_delivery(task_id: str, device_id: str | None) -> None:
+    """Remember a worker that received this task, until it reports a result."""
+    recipient = (device_id or "").strip() or "unattributed"
+    _delivered_devices.setdefault(task_id, set()).add(recipient)
+    _in_flight_devices.setdefault(task_id, set()).add(recipient)
+
+
+def record_worker_failure(
+    *,
+    task_id: str,
+    device_id: str | None,
+    error_code: str,
+) -> bool:
+    """Record one worker failure.
+
+    Returns True only when every worker that received the task has failed and
+    none of those deliveries are still running. A later worker that has not
+    been given the task does not keep it queued.
+    """
+    delivered = _delivered_devices.setdefault(task_id, set())
+    in_flight = _in_flight_devices.setdefault(task_id, set())
+    resolved = (device_id or "").strip()
+    if resolved and resolved not in delivered and len(in_flight) == 1:
+        resolved = next(iter(in_flight))
+    elif not resolved:
+        resolved = next(iter(in_flight)) if len(in_flight) == 1 else "unattributed"
+    delivered.add(resolved)
+    in_flight.discard(resolved)
+    _failed_devices.setdefault(task_id, {})[resolved] = error_code
+    mark_completed(task_id)
+    failed_ids = set(_failed_devices.get(task_id, {}))
+    return bool(delivered) and delivered <= failed_ids and not in_flight
 
 
 def pop_next_assignment() -> dict[str, Any] | None:
@@ -124,9 +169,15 @@ def mark_completed(assignment_id: str) -> None:
 def cancel_dev_assignment(assignment_id: str) -> bool:
     existed = any(
         assignment["assignmentId"] == assignment_id for assignment in _pending
-    )
+    ) or assignment_id in _in_flight_devices
+    _cancelled_ids.add(assignment_id)
+    _in_flight_devices.pop(assignment_id, None)
     mark_completed(assignment_id)
     return existed
+
+
+def is_assignment_cancelled(assignment_id: str) -> bool:
+    return assignment_id in _cancelled_ids
 
 
 def list_pending_assignments() -> list[dict[str, Any]]:

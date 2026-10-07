@@ -38,10 +38,12 @@ async function copyFull() {
     <pre
       v-if="monospace"
       class="em-expandable-text__body em-code-block"
+      dir="auto"
     >{{ displayText }}</pre>
     <p
       v-else
       class="em-expandable-text__body em-task-detail-text"
+      dir="auto"
     >{{ displayText }}</p>
     <div v-if="isLong || normalized" class="em-expandable-text__actions">
       <button

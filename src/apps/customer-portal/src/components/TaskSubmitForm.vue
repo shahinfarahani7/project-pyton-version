@@ -9,6 +9,7 @@ const props = defineProps({
   error: { type: String, default: '' },
   showCancel: { type: Boolean, default: false },
   resetKey: { type: Number, default: 0 },
+  composerOnly: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['submit', 'cancel']);
@@ -77,7 +78,7 @@ function validatePayload() {
 }
 
 function onSubmit() {
-  if (!validatePayload()) {
+  if (props.submitting || !validatePayload()) {
     return;
   }
   const note = instructions.value.trim();
@@ -89,69 +90,112 @@ function onSubmit() {
     inputFile: file ?? undefined,
   });
 }
+
+function onComposerKeydown(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    onSubmit();
+  }
+}
 </script>
 
 <template>
-  <form class="task-submit-form" @submit.prevent="onSubmit">
-    <label class="md-field">
-      <span class="field-label">{{ t('tasks.instructionsLabel') }}</span>
-      <textarea
-        v-model="instructions"
-        class="md-textarea"
-        rows="4"
-        :placeholder="t('tasks.instructionsPlaceholder')"
-        :disabled="submitting"
-      />
-      <p class="md-hint">{{ t('tasks.instructionsHint') }}</p>
-    </label>
+  <form
+    class="task-submit-form"
+    :class="composerOnly ? 'em-chat__composer-form' : 'em-chat__body'"
+    @submit.prevent="onSubmit"
+  >
+    <div v-if="!composerOnly" class="em-chat__thread">
+      <div class="em-chat__row">
+        <span class="em-chat__avatar" aria-hidden="true">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </span>
+        <p class="em-chat__bubble em-chat__bubble--assistant">{{ t('tasks.chatGreeting') }}</p>
+      </div>
+
+      <div v-if="submitting && (instructions.trim() || inputFile)" class="em-chat__row em-chat__row--user">
+        <p class="em-chat__bubble em-chat__bubble--user">
+          <span v-if="instructions.trim()">{{ instructions.trim() }}</span>
+          <span v-if="inputFile" class="em-chat__file">{{ inputFile.name }}</span>
+        </p>
+      </div>
+
+      <div v-if="submitting" class="em-chat__row" aria-live="polite">
+        <span class="em-chat__avatar" aria-hidden="true">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </span>
+        <p class="em-chat__bubble em-chat__bubble--assistant em-chat__typing">
+          <span />
+          <span />
+          <span />
+          <span class="visually-hidden">{{ t('tasks.submitting') }}</span>
+        </p>
+      </div>
+
+      <p v-if="localError || error" class="md-alert md-alert--error" role="alert">
+        {{ localError || error }}
+      </p>
+    </div>
 
     <div
-      class="upload-zone"
-      :class="{ 'upload-zone--active': dragOver }"
+      class="em-chat__dock"
+      :class="{ 'em-chat__dock--active': dragOver }"
       @dragover.prevent="dragOver = true"
       @dragleave.prevent="dragOver = false"
       @drop="onDrop"
     >
-      <span class="material-symbols-outlined upload-zone__icon" aria-hidden="true">cloud_upload</span>
-      <p>{{ t('tasks.uploadHint') }}</p>
-      <button type="button" class="md-btn md-btn-filled" @click="browseFiles">
-        {{ t('tasks.browseFiles') }}
-      </button>
-      <input
-        ref="fileInputEl"
-        type="file"
-        class="visually-hidden"
-        :accept="acceptAttr"
-        :disabled="submitting"
-        @change="onFileChange"
-      />
-      <p v-if="inputFile" class="upload-zone__file">
-        {{ t('tasks.inputFileSelected', { name: inputFile.name }) }}
-        <button type="button" class="md-btn md-btn-text md-btn-compact" @click="clearFile">
-          {{ t('tasks.inputFileClear') }}
+      <p v-if="composerOnly && (localError || error)" class="md-alert md-alert--error" role="alert">
+        {{ localError || error }}
+      </p>
+      <p v-if="inputFile" class="em-chat__attachment">
+        <span class="material-symbols-outlined" aria-hidden="true">draft</span>
+        {{ inputFile.name }}
+        <button type="button" class="em-icon-btn" :aria-label="t('tasks.inputFileClear')" @click="clearFile">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
       </p>
+      <div class="em-chat__composer">
+        <button
+          type="button"
+          class="em-chat__icon-btn"
+          :aria-label="t('tasks.browseFiles')"
+          :disabled="submitting"
+          @click="browseFiles"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">attach_file</span>
+        </button>
+        <label class="visually-hidden" for="task-chat-input">{{ t('tasks.instructionsLabel') }}</label>
+        <textarea
+          id="task-chat-input"
+          v-model="instructions"
+          rows="1"
+          :placeholder="t('tasks.chatPlaceholder')"
+          :disabled="submitting"
+          @keydown="onComposerKeydown"
+        />
+        <input
+          ref="fileInputEl"
+          type="file"
+          class="visually-hidden"
+          :accept="acceptAttr"
+          :disabled="submitting"
+          @change="onFileChange"
+        />
+        <button type="submit" class="em-chat__send" :aria-label="t('tasks.submitTask')" :disabled="submitting">
+          <span v-if="submitting" class="md-spinner md-spinner--inline" aria-hidden="true" />
+          <span v-else class="material-symbols-outlined" aria-hidden="true">send</span>
+        </button>
+      </div>
     </div>
 
-    <p v-if="localError || error" class="md-alert md-alert--error" role="alert">
-      {{ localError || error }}
-    </p>
-
-    <div class="task-submit-form__actions">
-      <button
-        v-if="showCancel"
-        type="button"
-        class="md-btn md-btn-outlined"
-        :disabled="submitting"
-        @click="emit('cancel')"
-      >
-        {{ t('tasks.cancel') }}
-      </button>
-      <button type="submit" class="md-btn md-btn-filled md-btn-block" :disabled="submitting">
-        <span v-if="submitting" class="md-spinner md-spinner--inline" aria-hidden="true" />
-        <span v-else class="material-symbols-outlined" aria-hidden="true">send</span>
-        {{ submitting ? t('tasks.submitting') : t('tasks.submitTask') }}
-      </button>
-    </div>
+    <button
+      v-if="showCancel"
+      type="button"
+      class="visually-hidden"
+      :disabled="submitting"
+      @click="emit('cancel')"
+    >
+      {{ t('tasks.cancel') }}
+    </button>
   </form>
 </template>

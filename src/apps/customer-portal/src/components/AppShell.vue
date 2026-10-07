@@ -5,7 +5,6 @@ import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
 import { useSession } from '../auth/session';
 import { t } from '../i18n';
 import SkipToContent from './SkipToContent.vue';
-import WorkspaceSwitcher from './WorkspaceSwitcher.vue';
 
 const bottomNavItems = [
   { name: 'dashboard', labelKey: 'nav.dashboard', icon: 'home' },
@@ -20,12 +19,10 @@ const sidebarItems = [
   { name: 'tasks', labelKey: 'nav.tasks', icon: 'assignment', permission: 'customer.tasks:read' },
   { name: 'usage', labelKey: 'nav.usage', icon: 'bar_chart', permission: 'customer.billing:read' },
   { name: 'billing', labelKey: 'nav.billing', icon: 'payments', permission: 'customer.billing:read' },
+  { name: 'wallet', labelKey: 'nav.wallet', icon: 'account_balance_wallet', permission: 'customer.billing:read' },
   { name: 'api-keys', labelKey: 'nav.apiKeys', icon: 'key', permission: 'customer.apikeys:read' },
-  { name: 'webhooks', labelKey: 'nav.webhooks', icon: 'webhook', permission: 'customer.webhooks:read' },
   { name: 'files', labelKey: 'nav.files', icon: 'folder_open', permission: 'customer.tasks:read' },
-  { name: 'team', labelKey: 'nav.team', icon: 'groups', permission: 'customer.team:read' },
-  { name: 'disputes', labelKey: 'nav.disputes', icon: 'gavel', permission: 'customer.billing:read' },
-  { name: 'settings', labelKey: 'nav.settings', icon: 'settings', permission: null },
+  { name: 'account', labelKey: 'nav.account', icon: 'person', permission: null },
 ];
 
 const session = useSession();
@@ -37,14 +34,6 @@ const visibleBottomNav = computed(() => bottomNavItems);
 
 const visibleSidebarItems = computed(() =>
   sidebarItems.filter((item) => item.permission === null || session.hasPermission(item.permission)),
-);
-
-const activeWorkspace = computed(() =>
-  session.workspaces.find((workspace) => workspace.id === session.workspaceId),
-);
-
-const avatarLetter = computed(() =>
-  (activeWorkspace.value?.name ?? 'E').charAt(0).toUpperCase(),
 );
 
 const pageTitle = computed(() => {
@@ -95,8 +84,6 @@ async function signOut() {
         </div>
       </div>
 
-      <WorkspaceSwitcher class="em-sidebar__workspace" />
-
       <ul class="em-sidebar__list">
         <li v-for="item in visibleSidebarItems" :key="item.name">
           <RouterLink
@@ -132,23 +119,14 @@ async function signOut() {
           </span>
           <div>
             <strong>{{ pageTitle }}</strong>
-            <p class="em-top-bar__env">
-              {{ activeWorkspace?.name ?? t('workspace.unknown') }}
-              ·
-              {{ activeWorkspace?.environment ?? '—' }}
-            </p>
           </div>
-        </div>
-        <div class="em-top-bar__actions">
-          <WorkspaceSwitcher class="em-top-bar__workspace" />
-          <div class="avatar em-top-bar__avatar" aria-hidden="true">{{ avatarLetter }}</div>
         </div>
       </header>
 
       <main
         id="main-content"
         class="em-content"
-        :class="{ 'em-content--no-nav': hideBottomNav }"
+        :class="{ 'em-content--no-nav': hideBottomNav, 'em-content--chat': route.meta?.chatLayout }"
         tabindex="-1"
       >
         <RouterView @open-menu="openDrawer" />
@@ -190,7 +168,6 @@ async function signOut() {
             <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
-        <WorkspaceSwitcher class="em-drawer__workspace" />
         <ul class="em-drawer__list">
           <li v-for="item in visibleSidebarItems" :key="item.name">
             <RouterLink :to="{ name: item.name }" class="em-drawer__link" @click="onNavigate">

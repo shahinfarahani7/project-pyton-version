@@ -115,6 +115,9 @@ class _ExecutionMockClient extends http.BaseClient {
       abandonCalled = true;
       return _receipt('abandonAssignment');
     }
+    if (path.endsWith('/cancellation')) {
+      return _json(200, {'cancelled': false});
+    }
     return Future.error(UnimplementedError('Unexpected path: $path'));
   }
 
@@ -753,6 +756,7 @@ class _RunCountingInference extends StubInferenceAdapter {
     required Uint8List inputBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    bool Function()? shouldContinue,
   }) async {
     runs += 1;
     final crash = failure;
@@ -763,6 +767,7 @@ class _RunCountingInference extends StubInferenceAdapter {
       inputBytes: inputBytes,
       resumedState: resumedState,
       onProgress: onProgress,
+      shouldContinue: shouldContinue,
     );
   }
 }

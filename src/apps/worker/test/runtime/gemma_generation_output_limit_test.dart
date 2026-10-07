@@ -169,6 +169,32 @@ void main() {
       expect(decode.hitOutputLimit, isFalse);
     });
 
+    test('stops the stream when the portal cancels', () async {
+      var checks = 0;
+      var stopped = false;
+      final decode = await GemmaChunkGeneration.collect(
+        pieces: Stream.fromIterable(const [
+          GemmaDecodePiece('one '),
+          GemmaDecodePiece('two '),
+          GemmaDecodePiece('three'),
+        ]),
+        configuredOutputLimit: 512,
+        onStop: () async {
+          stopped = true;
+        },
+        shouldContinue: () {
+          checks += 1;
+          return checks < 2;
+        },
+      );
+
+      expect(stopped, isTrue);
+      expect(decode.stopReason, GemmaGenerationOutputLimit.cancelled);
+      expect(decode.text, 'one ');
+      expect(decode.generatedChunks, 1);
+      expect(decode.text, isNot(contains('two')));
+    });
+
     test('native end exactly at a 512 cap is OUTPUT_LIMIT', () async {
       final decode = await GemmaChunkGeneration.collect(
         pieces: Stream.fromIterable(

@@ -11,16 +11,14 @@ const menuSections = [
     titleKey: 'more.integrations',
     items: [
       { name: 'api-keys', labelKey: 'nav.apiKeys', icon: 'key', permission: 'customer.apikeys:read' },
-      { name: 'webhooks', labelKey: 'nav.webhooks', icon: 'webhook', permission: 'customer.webhooks:read' },
     ],
   },
   {
     titleKey: 'more.workspace',
     items: [
       { name: 'files', labelKey: 'nav.files', icon: 'folder_open', permission: 'customer.tasks:read' },
-      { name: 'team', labelKey: 'nav.team', icon: 'groups', permission: 'customer.team:read' },
-      { name: 'disputes', labelKey: 'nav.disputes', icon: 'gavel', permission: 'customer.billing:read' },
-      { name: 'settings', labelKey: 'nav.settings', icon: 'settings', permission: null },
+      { name: 'wallet', labelKey: 'nav.wallet', icon: 'account_balance_wallet', permission: 'customer.billing:read' },
+      { name: 'account', labelKey: 'nav.account', icon: 'person', permission: null },
     ],
   },
 ];

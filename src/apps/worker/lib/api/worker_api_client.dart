@@ -307,6 +307,32 @@ class WorkerApiClient {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  /// Dev worker-registry reports whether the portal cancelled this assignment.
+  /// A missing route (404) means the gateway has no cancel flag.
+  Future<bool> isAssignmentCancelled({
+    required String assignmentId,
+    required String accessToken,
+    String? requestId,
+  }) async {
+    final path = WorkerRoutes.assignmentCancellation(assignmentId);
+    final response = await _http
+        .get(
+          _config.resolve(path),
+          headers: _headers(accessToken: accessToken, requestId: requestId),
+        )
+        .timeout(_config.requestTimeout);
+    _audit('GET', path, response.statusCode);
+    if (response.statusCode == 404) {
+      return false;
+    }
+    _ensureSuccess(response, method: 'GET', path: path);
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      return false;
+    }
+    return decoded['cancelled'] == true;
+  }
+
   Future<CommandReceipt> reportAssignmentStarted({
     required String assignmentId,
     required String accessToken,

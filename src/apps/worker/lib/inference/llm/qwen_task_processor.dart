@@ -144,6 +144,9 @@ class QwenTaskProcessor {
   final bool testRunnerTruncated;
   final String testRunnerStopReason;
 
+  /// Set for the active task so token generation stops when the portal cancels.
+  bool Function()? activeCancellation;
+
   static const _minKeyPoints = 3;
   static const _minRepairExcerptChars = 400;
   static const _mapIntermediateEvidenceTarget =
@@ -1785,6 +1788,18 @@ class QwenTaskProcessor {
     );
   }
 
+  void _throwIfCancelled(String stopReason) {
+    if (stopReason == GemmaGenerationOutputLimit.cancelled ||
+        stopReason == 'cancelled') {
+      throw const WorkerError(
+        code: WorkerErrorCode.cancelled,
+        message: 'Task cancelled',
+        retryable: false,
+        stage: WorkerTaskStage.llm,
+      );
+    }
+  }
+
   Future<_PromptReply> _runPromptReply(
     String prompt, {
     required String signingKey,
@@ -1811,11 +1826,13 @@ class QwenTaskProcessor {
     );
     final runner = _runner;
     if (runner != null) {
-      return _PromptReply(
+      final reply = _PromptReply(
         text: await runner(formatted),
         truncated: testRunnerTruncated,
         stopReason: testRunnerTruncated ? testRunnerStopReason : 'model_eos',
       );
+      _throwIfCancelled(reply.stopReason);
+      return reply;
     }
     final hasImage = imageBytes != null && imageBytes.isNotEmpty;
     await ensureLoaded(signingKey: signingKey, requireVision: hasImage);
@@ -1831,8 +1848,10 @@ class QwenTaskProcessor {
         maxOutputTokensOverride: outputCap,
         temperature: temperature,
         topP: topP,
+        shouldContinue: () => activeCancellation?.call() != true,
       );
       final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
+      _throwIfCancelled(stopReason);
       return _PromptReply(
         text: utf8.decode(output.resultBytes),
         truncated: stopReason == 'output_limit' ||

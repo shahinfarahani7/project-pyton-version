@@ -14,14 +14,37 @@ const props = defineProps({
 
 const hoverIndex = ref(null);
 const chartRef = ref(null);
+const range = ref('week');
 
-const model = computed(() => buildLineChartModel(props.taskItems, resolveLocale()));
+const ranges = [
+  { id: 'day', labelKey: 'dashboard.rangeDay' },
+  { id: 'week', labelKey: 'dashboard.rangeWeek' },
+  { id: 'month', labelKey: 'dashboard.rangeMonth' },
+];
+
+const model = computed(() => buildLineChartModel(props.taskItems, resolveLocale(), range.value));
+const summaryKey = computed(() => {
+  if (range.value === 'day') return 'dashboard.usageTrendToday';
+  if (range.value === 'month') return 'dashboard.usageTrendLast30Days';
+  return 'dashboard.usageTrendLast7Days';
+});
+const averageKey = computed(() =>
+  range.value === 'day' ? 'dashboard.usageTrendAverageHourly' : 'dashboard.usageTrendAverage',
+);
+const peakKey = computed(() =>
+  range.value === 'day' ? 'dashboard.usageTrendPeakHour' : 'dashboard.usageTrendPeak',
+);
 const activePoint = computed(() =>
   hoverIndex.value == null ? null : model.value.points[hoverIndex.value] ?? null,
 );
 
 function formatAverage(value) {
   return value >= 10 ? Math.round(value).toString() : value.toFixed(1);
+}
+
+function selectRange(next) {
+  range.value = next;
+  hoverIndex.value = null;
 }
 
 function onPointerMove(event) {
@@ -55,11 +78,24 @@ function onPointerLeave() {
       <div>
         <h2 class="em-section-title">{{ t('dashboard.usageTrend') }}</h2>
         <p class="em-chart-card__summary">
-          {{ t('dashboard.usageTrendLast7Days') }}
+          {{ t(summaryKey) }}
           <span v-if="model.isEstimated" class="em-chart-card__note">
             · {{ t('dashboard.usageTrendEstimated') }}
           </span>
         </p>
+      </div>
+      <div class="em-range-switch" role="group" :aria-label="t('dashboard.usageTrend')">
+        <button
+          v-for="item in ranges"
+          :key="item.id"
+          type="button"
+          class="em-range-switch__btn"
+          :class="{ 'em-range-switch__btn--active': range === item.id }"
+          :aria-pressed="range === item.id"
+          @click="selectRange(item.id)"
+        >
+          {{ t(item.labelKey) }}
+        </button>
       </div>
     </div>
 
@@ -69,11 +105,11 @@ function onPointerLeave() {
         <strong class="em-usage-trend__stat-value">{{ formatNumber(model.total) }}</strong>
       </div>
       <div class="em-usage-trend__stat">
-        <span class="em-usage-trend__stat-label">{{ t('dashboard.usageTrendAverage') }}</span>
+        <span class="em-usage-trend__stat-label">{{ t(averageKey) }}</span>
         <strong class="em-usage-trend__stat-value">{{ formatAverage(model.average) }}</strong>
       </div>
       <div class="em-usage-trend__stat">
-        <span class="em-usage-trend__stat-label">{{ t('dashboard.usageTrendPeak') }}</span>
+        <span class="em-usage-trend__stat-label">{{ t(peakKey) }}</span>
         <strong class="em-usage-trend__stat-value">{{ formatNumber(model.peak) }}</strong>
       </div>
     </div>
@@ -162,7 +198,7 @@ function onPointerLeave() {
           />
         </g>
 
-        <g v-for="point in model.points" :key="`xlabel-${point.index}`">
+        <g v-for="point in model.points" v-show="point.showLabel" :key="`xlabel-${point.index}`">
           <text class="em-line-chart__xlabel" :x="point.x" :y="model.plot.baseline + 14">
             {{ point.label.weekday }}
           </text>

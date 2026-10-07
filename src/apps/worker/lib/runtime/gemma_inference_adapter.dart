@@ -79,12 +79,14 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     required Uint8List inputBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    bool Function()? shouldContinue,
   }) {
     return runUserPrompt(
       prompt: utf8.decode(inputBytes),
       imageBytes: null,
       resumedState: resumedState,
       onProgress: onProgress,
+      shouldContinue: shouldContinue,
     );
   }
 
@@ -97,6 +99,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     int? maxOutputTokensOverride,
     double? temperature,
     double? topP,
+    bool Function()? shouldContinue,
   }) async {
     final multimodal = imageBytes != null && imageBytes.isNotEmpty;
     if (multimodal) {
@@ -133,6 +136,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         maxOutputTokensOverride: maxOutputTokensOverride,
         temperature: temperature,
         topP: topP,
+        shouldContinue: shouldContinue,
       ),
     );
   }
@@ -145,6 +149,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
     int? maxOutputTokensOverride,
     double? temperature,
     double? topP,
+    bool Function()? shouldContinue,
   }) async {
     final model = _runtime.requireModel();
     final stopwatch = Stopwatch()..start();
@@ -210,6 +215,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
           'configuredOutputLimit=$outputTokenCap',
         );
         final generation = await GemmaChunkGeneration.collect(
+          shouldContinue: shouldContinue,
           pieces: chat.generateChatResponseAsync().map(
             (response) => switch (response) {
               TextResponse(:final token) => GemmaDecodePiece(token),
@@ -227,6 +233,14 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
           configuredOutputLimit: outputTokenCap,
           onStop: () => _stopGeneration(chat),
         );
+        if (generation.stopReason == GemmaGenerationOutputLimit.cancelled) {
+          throw const WorkerError(
+            code: WorkerErrorCode.cancelled,
+            message: 'Task cancelled',
+            retryable: false,
+            stage: WorkerTaskStage.llm,
+          );
+        }
         if (stopwatch.isRunning) {
           stopwatch.stop();
         }

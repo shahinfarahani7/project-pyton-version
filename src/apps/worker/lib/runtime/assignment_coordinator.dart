@@ -133,6 +133,9 @@ class AssignmentCoordinator {
   bool _assignmentStarted = false;
   WorkerResourceReservationEntry? _activeReservation;
   Timer? _leaseRenewalTimer;
+  Timer? _cancelWatchTimer;
+  int _cancelWatchGeneration = 0;
+  bool _cancelPollInFlight = false;
   int _leaseRenewSequence = 0;
 
   ExecutionStatus _status = const ExecutionStatus(phase: ExecutionPhase.idle);
@@ -281,6 +284,24 @@ class AssignmentCoordinator {
         error: error,
         startedAt: startedAt,
       );
+      if (_isPortalCancellation(error)) {
+        if (_assignmentStarted &&
+            _status.phase != ExecutionPhase.failed &&
+            _status.phase != ExecutionPhase.cleaningUp) {
+          await _cleanup(assignment);
+          await _platform.stopForegroundService();
+          _emit(
+            _status.copyWith(
+              phase: ExecutionPhase.failed,
+              detail: 'Cancelled',
+              assignmentId: assignment.assignmentId,
+              taskId: assignment.taskId,
+              taskType: assignment.taskType,
+            ),
+          );
+        }
+        return;
+      }
       if (failureReportDeferred) {
         return;
       }
@@ -564,6 +585,7 @@ class AssignmentCoordinator {
         inputBytes: bundle.inputBytes,
         resumedState: decision.resumedState,
         onProgress: onProgressWrapper,
+        shouldContinue: () => !_cancelRequested,
       );
     }
     _log(
@@ -832,8 +854,19 @@ class AssignmentCoordinator {
     );
   }
 
+  bool _isPortalCancellation(Object error) {
+    if (_cancelRequested) {
+      return true;
+    }
+    if (error is WorkerError && error.code == WorkerErrorCode.cancelled) {
+      return true;
+    }
+    return error is LeaseRevokedException;
+  }
+
   void _startLeaseRenewal(WorkerAssignment assignment) {
     _stopLeaseRenewal();
+    _startCancelWatch(assignment);
     final now = DateTime.now().toUtc();
     final ttl = assignment.leaseExpiresAt.difference(now);
     if (ttl.isNegative) {
@@ -869,9 +902,51 @@ class AssignmentCoordinator {
     });
   }
 
+  void _startCancelWatch(WorkerAssignment assignment) {
+    _cancelWatchTimer?.cancel();
+    final generation = ++_cancelWatchGeneration;
+    unawaited(_pollAssignmentCancellation(assignment, generation));
+    _cancelWatchTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      unawaited(_pollAssignmentCancellation(assignment, generation));
+    });
+  }
+
+  Future<void> _pollAssignmentCancellation(
+    WorkerAssignment assignment,
+    int generation,
+  ) async {
+    if (generation != _cancelWatchGeneration ||
+        !_assignmentStarted ||
+        _cancelRequested ||
+        _cancelPollInFlight) {
+      return;
+    }
+    _cancelPollInFlight = true;
+    try {
+      final cancelled = await _api.isAssignmentCancelled(
+        assignmentId: assignment.assignmentId,
+        accessToken: _accessToken,
+      );
+      if (generation != _cancelWatchGeneration || !_assignmentStarted) {
+        return;
+      }
+      if (cancelled && _status.assignmentId == assignment.assignmentId) {
+        _cancelRequested = true;
+        _log('[CANCEL] portal cancelled ${assignment.assignmentId}');
+      }
+    } catch (_) {
+      // Missing route, auth, or transport must not be treated as a cancel.
+    } finally {
+      _cancelPollInFlight = false;
+    }
+  }
+
   void _stopLeaseRenewal() {
     _leaseRenewalTimer?.cancel();
     _leaseRenewalTimer = null;
+    _cancelWatchGeneration += 1;
+    _cancelWatchTimer?.cancel();
+    _cancelWatchTimer = null;
   }
 
   Future<void> _cleanup(

@@ -1,10 +1,10 @@
 const PLOT = {
   left: 44,
-  right: 12,
-  top: 20,
-  bottom: 28,
-  width: 300,
-  height: 160,
+  right: 16,
+  top: 16,
+  bottom: 36,
+  width: 560,
+  height: 240,
 };
 
 PLOT.viewWidth = PLOT.left + PLOT.width + PLOT.right;
@@ -41,26 +41,78 @@ function buildYAxisScale(maxValue) {
   return { max, ticks };
 }
 
-export function buildTrendSeries(taskItems, days = 7) {
-  const counts = Array.from({ length: days }, () => 0);
-  const dates = [];
-  const now = new Date();
+const TREND_RANGES = {
+  day: 24,
+  week: 7,
+  month: 30,
+};
 
+function resolveTrendRange(range) {
+  if (range === 'day' || range === 'week' || range === 'month') {
+    return range;
+  }
+  if (typeof range === 'number') {
+    if (range <= 1) return 'day';
+    if (range <= 7) return 'week';
+    return 'month';
+  }
+  return 'week';
+}
+
+function buildTrendBuckets(range, now = new Date()) {
+  if (range === 'day') {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    return Array.from({ length: TREND_RANGES.day }, (_, hour) => {
+      const date = new Date(start);
+      date.setHours(hour, 0, 0, 0);
+      return date;
+    });
+  }
+
+  const days = TREND_RANGES[range];
+  const dates = [];
   for (let offset = days - 1; offset >= 0; offset -= 1) {
     const date = new Date(now);
     date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() - offset);
     dates.push(date);
   }
+  return dates;
+}
+
+function bucketStart(date, range) {
+  const next = new Date(date);
+  if (range === 'day') {
+    next.setMinutes(0, 0, 0);
+    return next;
+  }
+  next.setHours(0, 0, 0, 0);
+  return next;
+}
+
+function estimatedCounts(range, taskCount) {
+  if (range === 'day') {
+    return Array.from({ length: TREND_RANGES.day }, (_, index) => (index % 6) + 1);
+  }
+  if (range === 'month') {
+    return Array.from({ length: TREND_RANGES.month }, (_, index) => (index % 7) + 1);
+  }
+  return [1, 2, 1, 3, 2, 4, Math.max(taskCount, 2)];
+}
+
+export function buildTrendSeries(taskItems, range = 'week') {
+  const resolved = resolveTrendRange(range);
+  const dates = buildTrendBuckets(resolved);
+  const counts = Array.from({ length: dates.length }, () => 0);
 
   for (const task of taskItems) {
     const created = Date.parse(task?.createdAt ?? '');
     if (!Number.isFinite(created)) {
       continue;
     }
-    const taskDay = new Date(created);
-    taskDay.setHours(0, 0, 0, 0);
-    const index = dates.findIndex((date) => date.getTime() === taskDay.getTime());
+    const stamp = bucketStart(created, resolved).getTime();
+    const index = dates.findIndex((date) => date.getTime() === stamp);
     if (index >= 0) {
       counts[index] += 1;
     }
@@ -69,19 +121,30 @@ export function buildTrendSeries(taskItems, days = 7) {
   const hasRealData = counts.some((count) => count > 0);
   if (!hasRealData) {
     return {
-      counts: [1, 2, 1, 3, 2, 4, Math.max(taskItems.length, 2)],
+      counts: estimatedCounts(resolved, taskItems.length),
       dates,
       isEstimated: true,
+      range: resolved,
     };
   }
 
-  return { counts, dates, isEstimated: false };
+  return { counts, dates, isEstimated: false, range: resolved };
 }
 
-function formatDayLabel(date, locale) {
+function formatBucketLabel(date, locale, range) {
+  if (range === 'day') {
+    const hour = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+    return { weekday: hour, day: '', compact: hour };
+  }
   const weekday = date.toLocaleDateString(locale, { weekday: 'short' });
   const day = date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   return { weekday, day, compact: `${weekday} ${day}` };
+}
+
+function labelStep(range) {
+  if (range === 'day') return 4;
+  if (range === 'month') return 5;
+  return 1;
 }
 
 function buildSmoothLinePath(points) {
@@ -112,12 +175,13 @@ function buildSmoothAreaPath(points, baseline) {
   return `${line} L ${last.x},${baseline} L ${first.x},${baseline} Z`;
 }
 
-export function buildLineChartModel(taskItems, locale = 'en') {
-  const series = buildTrendSeries(taskItems);
+export function buildLineChartModel(taskItems, locale = 'en', range = 'week') {
+  const series = buildTrendSeries(taskItems, range);
   const { counts, dates, isEstimated } = series;
   const rawMax = Math.max(...counts, 1);
   const scale = buildYAxisScale(rawMax);
   const step = counts.length > 1 ? PLOT.width / (counts.length - 1) : 0;
+  const every = labelStep(series.range);
 
   const points = counts.map((value, index) => {
     const x = PLOT.left + index * step;
@@ -129,7 +193,8 @@ export function buildLineChartModel(taskItems, locale = 'en') {
       y,
       value,
       index,
-      label: formatDayLabel(date, locale),
+      showLabel: index % every === 0 || index === counts.length - 1,
+      label: formatBucketLabel(date, locale, series.range),
     };
   });
 
@@ -140,6 +205,7 @@ export function buildLineChartModel(taskItems, locale = 'en') {
   return {
     points,
     counts,
+    range: series.range,
     isEstimated,
     total,
     peak,

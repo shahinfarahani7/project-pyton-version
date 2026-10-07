@@ -27,11 +27,13 @@ class SwitchableInferenceAdapter implements InferenceAdapter {
     required Uint8List inputBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    bool Function()? shouldContinue,
   }) async {
     final output = await _active.run(
       inputBytes: inputBytes,
       resumedState: resumedState,
       onProgress: onProgress,
+      shouldContinue: shouldContinue,
     );
     lastOutput = output;
     return output;

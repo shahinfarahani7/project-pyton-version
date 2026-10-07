@@ -9,19 +9,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App.vue';
 import { session } from './auth/session';
 import AppShell from './components/AppShell.vue';
+import AccountPage from './pages/AccountPage.vue';
 import ApiKeysPage from './pages/ApiKeysPage.vue';
 import BillingPage from './pages/BillingPage.vue';
 import DashboardPage from './pages/DashboardPage.vue';
-import DisputesPage from './pages/DisputesPage.vue';
 import FilesPage from './pages/FilesPage.vue';
 import LoginPage from './pages/LoginPage.vue';
 import MorePage from './pages/MorePage.vue';
-import SettingsPage from './pages/SettingsPage.vue';
 import TaskDetailPage from './pages/TaskDetailPage.vue';
-import TasksPage from './pages/TasksPage.vue';
-import TeamPage from './pages/TeamPage.vue';
+import TaskChatPage from './pages/TaskChatPage.vue';
 import UsagePage from './pages/UsagePage.vue';
-import WebhooksPage from './pages/WebhooksPage.vue';
+import WalletPage from './pages/WalletPage.vue';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -79,17 +77,15 @@ function createTestRouter(initialRoute = '/login') {
         meta: { requiresAuth: true },
         children: [
           { path: '', name: 'dashboard', component: DashboardPage },
-          { path: 'tasks', name: 'tasks', component: TasksPage },
+          { path: 'tasks', name: 'tasks', component: TaskChatPage },
           { path: 'tasks/:id', name: 'task-detail', component: TaskDetailPage },
           { path: 'usage', name: 'usage', component: UsagePage },
           { path: 'billing', name: 'billing', component: BillingPage },
           { path: 'more', name: 'more', component: MorePage },
           { path: 'files', name: 'files', component: FilesPage },
-          { path: 'webhooks', name: 'webhooks', component: WebhooksPage },
           { path: 'api-keys', name: 'api-keys', component: ApiKeysPage },
-          { path: 'disputes', name: 'disputes', component: DisputesPage },
-          { path: 'team', name: 'team', component: TeamPage },
-          { path: 'settings', name: 'settings', component: SettingsPage },
+          { path: 'wallet', name: 'wallet', component: WalletPage },
+          { path: 'account', name: 'account', component: AccountPage },
         ],
       },
     ],
@@ -158,8 +154,13 @@ describe('cross-workspace isolation', () => {
     await router.push('/');
     await router.isReady();
     await vi.waitFor(() => {
-      expect(document.body.textContent).toContain(workspaceA);
+      expect(session.workspaceId).toBe(workspaceA);
+      const urls = vi.mocked(fetch).mock.calls.map(([input]) => String(input));
+      expect(urls.some((url) => url.includes(`/v1/workspaces/${workspaceA}/`))).toBe(true);
     });
+    const urls = vi.mocked(fetch).mock.calls.map(([input]) => String(input));
+    expect(urls.some((url) => url.includes(workspaceB))).toBe(false);
+    expect(document.body.textContent).not.toContain(workspaceA);
     expect(document.body.textContent).not.toContain(workspaceB);
   });
 });

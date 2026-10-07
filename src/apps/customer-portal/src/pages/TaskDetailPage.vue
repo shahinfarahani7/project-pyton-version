@@ -9,7 +9,7 @@ import ExpandableText from '../components/ExpandableText.vue';
 import MobilePageHeader from '../components/ui/MobilePageHeader.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
-import { formatDateTime, formatTaskType, statusTone } from '../utils/format';
+import { formatDateTime, formatTaskType, statusTone, taskStatusGroup } from '../utils/format';
 import { taskResultState } from '../utils/taskResult';
 
 const session = useSession();
@@ -55,13 +55,19 @@ useTaskEventStream(() => session.workspaceId, {
   },
 });
 
-const displayStatus = computed(() => {
-  const lifecycle = String(task.value?.lifecycleStatus ?? '').toLowerCase();
-  if (['succeeded', 'completed'].includes(lifecycle)) return t('tasks.statusCompleted');
-  if (['failed'].includes(lifecycle)) return t('tasks.statusFailed');
-  if (['running', 'in_progress', 'queued'].includes(lifecycle)) return t('tasks.statusProcessing');
-  return task.value?.lifecycleStatus ?? '—';
-});
+const TASK_STATUS_LABELS = {
+  done: 'tasks.statusDone',
+  running: 'tasks.statusRunning',
+  queued: 'tasks.statusQueued',
+  cancel: 'tasks.statusCancel',
+};
+
+function taskStatusLabel(status) {
+  const key = TASK_STATUS_LABELS[taskStatusGroup(status)];
+  return key ? t(key) : status || '—';
+}
+
+const displayStatus = computed(() => taskStatusLabel(task.value?.lifecycleStatus));
 
 const statusClass = computed(() => {
   const tone = statusTone(task.value?.lifecycleStatus ?? task.value?.executionStatus);
@@ -114,8 +120,8 @@ watch(taskId, () => {
           <div><dt>{{ t('tasks.colId') }}</dt><dd><code>{{ task.id }}</code></dd></div>
           <div><dt>{{ t('tasks.colCreated') }}</dt><dd>{{ formatDateTime(task.createdAt) }}</dd></div>
           <div><dt>{{ t('tasks.colType') }}</dt><dd>{{ formatTaskType(task) }}</dd></div>
-          <div><dt>{{ t('tasks.colLifecycle') }}</dt><dd><StatusChip :status="task.lifecycleStatus" /></dd></div>
-          <div><dt>{{ t('tasks.colExecution') }}</dt><dd><StatusChip :status="task.executionStatus" /></dd></div>
+          <div><dt>{{ t('tasks.colLifecycle') }}</dt><dd><StatusChip :status="task.lifecycleStatus" :label="taskStatusLabel(task.lifecycleStatus)" /></dd></div>
+          <div><dt>{{ t('tasks.colExecution') }}</dt><dd><StatusChip :status="task.executionStatus" :label="taskStatusLabel(task.executionStatus)" /></dd></div>
           <div><dt>{{ t('tasks.colVersion') }}</dt><dd>{{ task.version }}</dd></div>
         </dl>
           </article>
@@ -148,7 +154,7 @@ watch(taskId, () => {
         <article class="md-card em-result-card">
         <div class="em-result-card__header">
           <h2 class="em-section-title">{{ t('tasks.resultTitle') }}</h2>
-          <StatusChip :status="task.executionStatus" />
+          <StatusChip :status="task.executionStatus" :label="taskStatusLabel(task.executionStatus)" />
         </div>
 
         <div v-if="task.resultArtifactUrl" class="em-result-preview">
@@ -185,9 +191,14 @@ watch(taskId, () => {
           {{ t('tasks.resultPending') }}
         </p>
 
-        <p v-else-if="resultState.kind === 'failed'" class="em-result-summary__value em-task-detail-text--failed">
-          {{ t('tasks.resultFailed') }}
-        </p>
+        <div v-else-if="resultState.kind === 'failed'" class="em-result-summary">
+          <p class="em-result-summary__value em-task-detail-text--failed">
+            {{ t('tasks.resultFailed') }}
+          </p>
+          <p v-if="task.failureReason || task.failureReasonCode" class="em-task-detail-text em-task-detail-text--failed">
+            {{ task.failureReason || task.failureReasonCode }}
+          </p>
+        </div>
 
         <p v-else class="em-result-summary__value em-task-detail-text--muted">{{ t('tasks.resultNone') }}</p>
 

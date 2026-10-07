@@ -532,6 +532,27 @@ if _dev_worker_assignments_enabled():
         dev_worker_assignments.cancel_dev_assignment(assignment_id)
         return Response(status_code=204)
 
+    @app.get(
+        "/assignments/{assignment_id}/cancellation",
+        tags=["dev-assignments"],
+    )
+    async def dev_assignment_cancellation(
+        assignment_id: str,
+        token: WorkerBearerToken,
+    ) -> JSONResponse:
+        if not token:
+            return JSONResponse(
+                {"assignmentId": assignment_id, "cancelled": False},
+                status_code=200,
+            )
+        return JSONResponse(
+            {
+                "assignmentId": assignment_id,
+                "cancelled": dev_worker_assignments.is_assignment_cancelled(assignment_id),
+            },
+            status_code=200,
+        )
+
     async def _ensure_task_input(task_id: str, task_type: str) -> None:
         try:
             async with httpx.AsyncClient(timeout=3.0) as client:
@@ -666,16 +687,56 @@ if _dev_worker_assignments_enabled():
             status_code=200,
         )
 
+    class DevFailAssignmentRequest(BaseModel):
+        errorCode: str = "WORKER_EXECUTION_FAILED"
+        retryable: bool = True
+        diagnostics: dict | None = None
+
+    async def _notify_portal_task_failed(task_id: str, error_code: str) -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                response = await client.post(
+                    f"{_API_GATEWAY}/internal/dev/tasks/{task_id}/fail",
+                    json={"errorCode": error_code, "detail": error_code},
+                )
+                if response.status_code < 300:
+                    return
+        except httpx.HTTPError:
+            pass
+        from edgemint.dev import fixtures
+
+        fixtures.reject_dev_task_output(
+            task_id,
+            reason_code=error_code,
+            reason_detail=error_code,
+        )
+
     @app.post("/assignments/{assignment_id}:fail", tags=["dev-assignments"])
     async def dev_assignment_fail(
         assignment_id: str,
         token: WorkerBearerToken,
+        payload: DevFailAssignmentRequest,
         idempotency_key: str = Header(alias="Idempotency-Key"),
     ) -> JSONResponse:
-        _ = (assignment_id, token, idempotency_key)
-        # A failed dev assignment is terminal. Keeping it eligible causes the
-        # portal queue sync to deliver the same rejected task indefinitely.
-        dev_worker_assignments.mark_completed(assignment_id)
+        _ = idempotency_key
+        from edgemint.workers.sessions import resolve_worker_session
+
+        device_public_id: str | None = None
+        try:
+            async with transaction(isolation="READ COMMITTED") as connection:
+                session = await resolve_worker_session(connection, access_token=token)
+            device_public_id = session.device_public_id
+        except Exception:
+            device_public_id = None
+
+        task_id = assignment_id
+        terminal = dev_worker_assignments.record_worker_failure(
+            task_id=task_id,
+            device_id=device_public_id,
+            error_code=payload.errorCode,
+        )
+        if terminal:
+            await _notify_portal_task_failed(task_id, payload.errorCode)
         return JSONResponse(
             dev_worker_assignments.command_receipt("devAssignmentFail"),
             status_code=202,

@@ -33,4 +33,19 @@ describe('chartHelpers', () => {
     expect(series.isEstimated).toBe(true);
     expect(series.dates).toHaveLength(7);
   });
+
+  it('builds hourly day buckets and daily month buckets', () => {
+    const now = new Date();
+    const tasks = [{ createdAt: now.toISOString() }];
+    const day = buildLineChartModel(tasks, 'en', 'day');
+    const month = buildLineChartModel(tasks, 'en', 'month');
+
+    expect(day.points).toHaveLength(24);
+    expect(day.range).toBe('day');
+    expect(day.points[now.getHours()].value).toBe(1);
+    expect(month.points).toHaveLength(30);
+    expect(month.range).toBe('month');
+    expect(month.points.at(-1).value).toBe(1);
+    expect(month.points.filter((point) => point.showLabel).length).toBeLessThan(30);
+  });
 });

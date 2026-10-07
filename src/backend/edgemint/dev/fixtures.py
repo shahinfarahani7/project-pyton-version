@@ -484,6 +484,44 @@ def dev_credit_balance(workspace_id: UUID) -> dict[str, Any]:
     return {"status": "empty", "availableMicroEur": 0, "reservedMicroEur": 0}
 
 
+_added_wallets: dict[UUID, list[dict[str, Any]]] = {}
+_MAX_WALLET_MICRO_EUR = 1_000_000 * 1_000_000
+
+
+def dev_wallets(workspace_id: UUID) -> dict[str, Any]:
+    balance = dev_credit_balance(workspace_id)
+    primary = {
+        "id": "wal_primary",
+        "name": "Primary",
+        "availableMicroEur": int(balance["availableMicroEur"]),
+        "reservedMicroEur": int(balance["reservedMicroEur"]),
+        "builtin": True,
+    }
+    return {"items": [primary, *_added_wallets.get(workspace_id, [])]}
+
+
+def add_dev_wallet(workspace_id: UUID, *, name: str, amount_micro_eur: int) -> dict[str, Any]:
+    cleaned = name.strip()
+    if not cleaned or len(cleaned) > 80:
+        raise ValueError("WALLET_NAME_INVALID")
+    if (
+        not isinstance(amount_micro_eur, int)
+        or isinstance(amount_micro_eur, bool)
+        or amount_micro_eur <= 0
+        or amount_micro_eur > _MAX_WALLET_MICRO_EUR
+    ):
+        raise ValueError("WALLET_AMOUNT_INVALID")
+    wallet = {
+        "id": f"wal_{secrets.token_hex(6)}",
+        "name": cleaned,
+        "availableMicroEur": amount_micro_eur,
+        "reservedMicroEur": 0,
+        "builtin": False,
+    }
+    _added_wallets.setdefault(workspace_id, []).append(wallet)
+    return wallet
+
+
 def dev_invoices(workspace_id: UUID) -> dict[str, Any]:
     if workspace_id == DEV_WORKSPACE_PRIMARY:
         items = [

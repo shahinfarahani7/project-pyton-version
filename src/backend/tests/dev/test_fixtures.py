@@ -29,6 +29,20 @@ def test_dev_task_lookup() -> None:
     assert fixtures.dev_task(fixtures.DEV_WORKSPACE_PRIMARY, "missing") is None
 
 
+def test_add_dev_wallet_stores_integer_micro_eur() -> None:
+    workspace_id = UUID(int=7)
+    fixtures._added_wallets.pop(workspace_id, None)
+    created = fixtures.add_dev_wallet(workspace_id, name=" Ops ", amount_micro_eur=5_000_000)
+    listed = fixtures.dev_wallets(workspace_id)
+    assert created["availableMicroEur"] == 5_000_000
+    assert created["name"] == "Ops"
+    assert listed["items"][0]["id"] == "wal_primary"
+    assert listed["items"][-1]["id"] == created["id"]
+    with pytest.raises(ValueError, match="WALLET_AMOUNT_INVALID"):
+        fixtures.add_dev_wallet(workspace_id, name="Ops", amount_micro_eur=0)
+    fixtures._added_wallets.pop(workspace_id, None)
+
+
 def test_dev_billing_payloads() -> None:
     usage = fixtures.dev_usage(fixtures.DEV_WORKSPACE_PRIMARY)
     balance = fixtures.dev_credit_balance(fixtures.DEV_WORKSPACE_PRIMARY)

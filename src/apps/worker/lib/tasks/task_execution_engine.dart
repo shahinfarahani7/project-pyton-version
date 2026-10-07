@@ -114,6 +114,7 @@ class TaskExecutionEngine {
     }
 
     _running = true;
+    _qwenProcessor.activeCancellation = isCancelled;
 
     try {
       final ocrRef = _ocrEngine;
@@ -532,6 +533,7 @@ class TaskExecutionEngine {
         return _toInferenceOutput(result);
       }
     } finally {
+      _qwenProcessor.activeCancellation = null;
       final ocrRef = _ocrEngine;
       if (ocrRef is OcrEngineRef) {
         ocrRef.unbindSigningKeyIfSupported();

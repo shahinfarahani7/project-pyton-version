@@ -45,6 +45,11 @@ class DevEnsureTaskInputRequest(BaseModel):
     taskType: str = Field(min_length=1)
 
 
+class DevTaskFailureRequest(BaseModel):
+    errorCode: str = Field(min_length=1, max_length=64)
+    detail: str | None = Field(default=None, max_length=500)
+
+
 def _dev_enabled() -> bool:
     return get_settings().environment in {"development", "test"}
 
@@ -137,6 +142,23 @@ async def worker_task_output(task_id: str, payload: DevWorkerOutputRequest) -> d
         result_mime_type=payload.resultMimeType,
     )
     return {"taskId": task_id, "status": "accepted", "hasResultFile": bool(result_file_bytes)}
+
+
+@router.post("/internal/dev/tasks/{task_id}/fail", status_code=204)
+async def report_worker_task_failure(task_id: str, payload: DevTaskFailureRequest) -> None:
+    """Mark a portal task failed after every worker that received it has errored."""
+    if not _dev_enabled():
+        raise HTTPException(503, "DEV_WORKER_API_DISABLED")
+    detail = (payload.detail or payload.errorCode).strip()
+    updated = fixtures.reject_dev_task_output(
+        task_id,
+        reason_code=payload.errorCode,
+        reason_detail=detail,
+    )
+    if updated:
+        return
+    if fixtures.dev_task_by_id(task_id) is None:
+        raise HTTPException(404, "TASK_NOT_FOUND")
 
 
 @router.post("/internal/dev/tasks/{task_id}/ensure-input", status_code=204)

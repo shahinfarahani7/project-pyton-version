@@ -14,6 +14,8 @@ abstract final class WorkerRoutes {
   static const assignmentInboxBootstrap = '/assignments:inboxBootstrap';
   static String renewAssignment(String assignmentId) => '/assignments/$assignmentId:renew';
   static String reportAssignmentStarted(String assignmentId) => '/assignments/$assignmentId:started';
+  static String assignmentCancellation(String assignmentId) =>
+      '/assignments/$assignmentId/cancellation';
   static String progressAssignment(String assignmentId) => '/assignments/$assignmentId:progress';
   static String checkpointAssignment(String assignmentId) => '/assignments/$assignmentId:checkpoint';
   static String completeAssignment(String assignmentId) => '/assignments/$assignmentId:complete';

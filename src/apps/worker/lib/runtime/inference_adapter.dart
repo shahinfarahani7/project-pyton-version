@@ -44,6 +44,7 @@ abstract class InferenceAdapter {
     required Uint8List inputBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    bool Function()? shouldContinue,
   });
 
   Future<void> dispose();
@@ -71,12 +72,19 @@ class StubInferenceAdapter implements InferenceAdapter {
     required Uint8List inputBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    bool Function()? shouldContinue,
   }) async {
     if (_loaded == null) {
       throw StateError('Model not loaded');
     }
+    if (shouldContinue?.call() == false) {
+      throw StateError('Inference cancelled');
+    }
     final start = resumedState == null ? 0 : 500;
     for (var progress = start; progress <= 1000; progress += 250) {
+      if (shouldContinue?.call() == false) {
+        throw StateError('Inference cancelled');
+      }
       await onProgress?.call(progress);
     }
     final prefix = resumedState == null ? 'fresh' : 'resumed';

@@ -674,6 +674,7 @@ class GemmaChunkGeneration {
     required int configuredOutputLimit,
     required Future<void> Function() onStop,
     TokenEstimator estimator = const TokenEstimator(),
+    bool Function()? shouldContinue,
   }) async {
     final maxOutputChars =
         (configuredOutputLimit * estimator.charactersPerToken).floor();
@@ -687,6 +688,12 @@ class GemmaChunkGeneration {
     await for (final piece in pieces) {
       if (stopRequested) {
         continue;
+      }
+      if (shouldContinue?.call() == false) {
+        provisional = GemmaGenerationOutputLimit.cancelled;
+        stopRequested = true;
+        await onStop();
+        break;
       }
       generatedChunks += 1;
       buffer.write(piece.text);

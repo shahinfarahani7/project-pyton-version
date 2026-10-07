@@ -202,6 +202,12 @@ export const portalApi = {
   apiKeys: () => fetchJson('/v1/api-keys'),
   usage: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/usage`),
   balance: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/credit-balance`),
+  wallets: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/wallets`),
+  addWallet: (workspaceId, body) =>
+    fetchJson(`/v1/workspaces/${workspaceId}/wallets`, {
+      method: 'POST',
+      body,
+    }),
   invoices: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/invoices`),
   disputes: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/disputes`),
 };

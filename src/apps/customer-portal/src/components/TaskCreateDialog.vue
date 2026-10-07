@@ -32,22 +32,25 @@ function onCancel() {
 </script>
 
 <template>
-  <dialog ref="dialogEl" class="md-dialog" @close="onCancel">
-    <div class="md-dialog__panel md-card" :class="{ 'md-dialog__panel--busy': submitting }">
-      <div v-if="submitting" class="md-dialog__busy" aria-live="polite">
-        <span class="md-spinner" aria-hidden="true" />
-        <span>{{ t('tasks.submitting') }}</span>
-      </div>
-      <header class="md-dialog__header">
-        <h2 class="page-title">{{ t('tasks.createTitle') }}</h2>
-        <p class="page-subtitle">{{ t('tasks.createSubtitle') }}</p>
+  <dialog ref="dialogEl" class="md-dialog md-dialog--chat" @close="onCancel">
+    <div class="md-dialog__panel md-card em-chat" :class="{ 'md-dialog__panel--busy': submitting }">
+      <header class="em-chat__header">
+        <span class="em-chat__avatar" aria-hidden="true">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </span>
+        <div class="em-chat__title">
+          <h2>{{ t('tasks.createTitle') }}</h2>
+          <p>{{ submitting ? t('tasks.submitting') : t('app.title') }}</p>
+        </div>
+        <button type="button" class="em-icon-btn" :aria-label="t('tasks.cancel')" @click="onCancel">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
       </header>
       <TaskSubmitForm
         :key="formKey"
         :reset-key="formKey"
         :submitting="submitting"
         :error="error"
-        show-cancel
         @submit="emit('submit', $event)"
         @cancel="onCancel"
       />

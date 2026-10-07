@@ -32,9 +32,13 @@ class DevMockInferenceAdapter implements InferenceAdapter {
     required Uint8List inputBytes,
     required Uint8List? resumedState,
     Future<void> Function(int progressMilli)? onProgress,
+    bool Function()? shouldContinue,
   }) async {
     if (!_loaded) {
       throw StateError('Dev mock model not loaded');
+    }
+    if (shouldContinue?.call() == false) {
+      throw StateError('Inference cancelled');
     }
     await onProgress?.call(200);
 

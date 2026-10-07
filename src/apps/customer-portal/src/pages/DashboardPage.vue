@@ -5,11 +5,10 @@ import { RouterLink } from 'vue-router';
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import StatCard from '../components/ui/StatCard.vue';
-import StatusChip from '../components/ui/StatusChip.vue';
 import TaskResultCell from '../components/TaskResultCell.vue';
 import UsageTrendChart from '../components/UsageTrendChart.vue';
 import { t } from '../i18n';
-import { formatDateTime, formatMicroEur, formatNumber, formatTaskType } from '../utils/format';
+import { formatDateTime, formatMicroEur, formatNumber, taskListTitle } from '../utils/format';
 import { buildDonutGradient } from '../utils/chartHelpers';
 
 const session = useSession();
@@ -20,22 +19,19 @@ const tasks = ref(null);
 
 const taskItems = computed(() => tasks.value?.items ?? []);
 
-const successCount = computed(() =>
-  taskItems.value.filter((task) =>
-    ['succeeded', 'completed'].includes(String(task.lifecycleStatus).toLowerCase()),
-  ).length,
-);
-
-const failedCount = computed(() =>
-  taskItems.value.filter((task) =>
-    ['failed', 'rejected'].includes(String(task.lifecycleStatus).toLowerCase()),
-  ).length,
-);
-
-const successRate = computed(() => {
-  const total = taskItems.value.length;
-  if (!total) return '—';
-  return `${Math.round((successCount.value / total) * 1000) / 10}%`;
+const usedMicro = computed(() => usage.value?.computeMicroEur ?? 0);
+const limitMicro = computed(() => {
+  const available = balance.value?.availableMicroEur ?? 0;
+  const reserved = balance.value?.reservedMicroEur ?? 0;
+  return Math.max(usedMicro.value + available + reserved, 1);
+});
+const usageRate = computed(() => {
+  if (!usage.value && !balance.value) return '—';
+  return `${Math.min(100, Math.round((usedMicro.value / limitMicro.value) * 100))}%`;
+});
+const usageRateHint = computed(() => {
+  if (!usage.value && !balance.value) return '—';
+  return `${formatMicroEur(usedMicro.value)} / ${formatMicroEur(limitMicro.value)}`;
 });
 
 const distribution = computed(() => {
@@ -94,10 +90,10 @@ onMounted(() => {
       {{ t('dashboard.systemsOperational') }}
     </div>
 
-    <div v-if="loading" class="stat-grid stat-grid--responsive">
-      <div v-for="n in 4" :key="n" class="md-skeleton" style="height: 5.5rem" />
+    <div v-if="loading" class="stat-grid stat-grid--responsive stat-grid--dashboard">
+      <div v-for="n in 3" :key="n" class="md-skeleton" style="height: 5.5rem" />
     </div>
-    <div v-else class="stat-grid stat-grid--responsive">
+    <div v-else class="stat-grid stat-grid--responsive stat-grid--dashboard">
       <StatCard
         :label="t('dashboard.totalTasks')"
         :value="formatNumber(taskItems.length)"
@@ -105,15 +101,10 @@ onMounted(() => {
         icon="assignment"
       />
       <StatCard
-        :label="t('dashboard.successRate')"
-        :value="successRate"
-        :hint="`${formatNumber(successCount)} ${t('tasks.statusCompleted').toLowerCase()}`"
-        icon="task_alt"
-      />
-      <StatCard
-        :label="t('dashboard.failedRejected')"
-        :value="formatNumber(failedCount)"
-        icon="error"
+        :label="t('dashboard.usageRate')"
+        :value="usageRate"
+        :hint="usageRateHint"
+        icon="data_usage"
       />
       <StatCard
         :label="t('dashboard.balance')"
@@ -146,8 +137,8 @@ onMounted(() => {
       </article>
     </div>
 
-    <div class="em-layout-dashboard-bottom">
-      <article v-if="taskItems.length" class="md-card">
+    <div v-if="taskItems.length" class="em-layout-dashboard-bottom">
+      <article class="md-card">
         <div class="em-section-header">
           <h2 class="em-section-title">{{ t('dashboard.recentTasks') }}</h2>
           <RouterLink class="md-btn md-btn-text" :to="{ name: 'tasks' }">{{ t('tasks.viewAll') }}</RouterLink>
@@ -156,29 +147,16 @@ onMounted(() => {
           <li v-for="task in taskItems.slice(0, 5)" :key="task.id">
             <RouterLink :to="{ name: 'task-detail', params: { id: task.id } }" class="em-task-row">
               <div class="em-task-row__primary">
-                <code class="em-task-row__id">{{ task.id.slice(0, 8) }}</code>
-                <p class="em-task-row__type">{{ formatTaskType(task) }}</p>
+                <p class="em-task-row__type">{{ t('dashboard.taskTitleLabel') }}</p>
+                <p class="em-task-row__title" :title="taskListTitle(task)">{{ taskListTitle(task) }}</p>
               </div>
               <TaskResultCell :task="task" />
               <div class="em-task-row__meta">
-                <StatusChip :status="task.lifecycleStatus" />
                 <span>{{ formatDateTime(task.createdAt) }}</span>
               </div>
             </RouterLink>
           </li>
         </ul>
-      </article>
-      <article class="md-card em-session-strip">
-        <dl class="em-kv-list">
-          <div>
-            <dt>{{ t('dashboard.workspaceId') }}</dt>
-            <dd><code>{{ session.workspaceId }}</code></dd>
-          </div>
-          <div>
-            <dt>{{ t('dashboard.sessionId') }}</dt>
-            <dd><code>{{ session.sessionPublicId }}</code></dd>
-          </div>
-        </dl>
       </article>
     </div>
   </section>

@@ -486,6 +486,12 @@ def record_output(
                 pass
 
     existing = fixtures.dev_task_by_id(task_id)
+    if existing is not None and existing.get("lifecycleStatus") in {
+        "failed",
+        "cancelled",
+        "expired",
+    }:
+        return
     if existing is not None and existing.get("lifecycleStatus") == "succeeded":
         _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
         _TASK_INPUTS[task_id]["lastOutput"] = {

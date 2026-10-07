@@ -61,6 +61,11 @@ def _bounded_form_text(
     return text
 
 
+class DevAddWalletRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    amountMicroEur: int = Field(gt=0, le=1_000_000_000_000)
+
+
 class DevCreateTaskRequest(BaseModel):
     taskType: str = Field(min_length=1, max_length=128)
     inputText: str | None = Field(default=None, max_length=32_000)
@@ -383,6 +388,32 @@ async def workspace_balance(
 ) -> dict:
     _ensure_workspace_access(session, workspace_id)
     return fixtures.dev_credit_balance(workspace_id)
+
+
+@router.get("/v1/workspaces/{workspace_id}/wallets")
+async def list_wallets(
+    workspace_id: UUID,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    _ensure_workspace_access(session, workspace_id)
+    return fixtures.dev_wallets(workspace_id)
+
+
+@router.post("/v1/workspaces/{workspace_id}/wallets")
+async def create_wallet(
+    workspace_id: UUID,
+    body: DevAddWalletRequest,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    _ensure_workspace_access(session, workspace_id)
+    try:
+        return fixtures.add_dev_wallet(
+            workspace_id,
+            name=body.name,
+            amount_micro_eur=body.amountMicroEur,
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @router.get("/v1/workspaces/{workspace_id}/invoices")
