@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 
 import { resolveTaskTypeForIntake, taskTypeAccept } from '../config/taskTypeCatalog';
 import { t } from '../i18n';
@@ -15,12 +15,22 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'cancel']);
 
 const instructions = ref('');
+const composerEl = ref(null);
 const inputFile = ref(null);
 const fileInputEl = ref(null);
 const localError = ref('');
 const dragOver = ref(false);
 
 const acceptAttr = taskTypeAccept('text.direct');
+
+function resizeComposer() {
+  const field = composerEl.value;
+  if (!field) {
+    return;
+  }
+  field.style.height = 'auto';
+  field.style.height = `${field.scrollHeight}px`;
+}
 
 function resetForm() {
   instructions.value = '';
@@ -29,6 +39,7 @@ function resetForm() {
   if (fileInputEl.value) {
     fileInputEl.value.value = '';
   }
+  void nextTick(resizeComposer);
 }
 
 watch(() => props.resetKey, resetForm);
@@ -167,10 +178,12 @@ function onComposerKeydown(event) {
         <label class="visually-hidden" for="task-chat-input">{{ t('tasks.instructionsLabel') }}</label>
         <textarea
           id="task-chat-input"
+          ref="composerEl"
           v-model="instructions"
           rows="1"
           :placeholder="t('tasks.chatPlaceholder')"
           :disabled="submitting"
+          @input="resizeComposer"
           @keydown="onComposerKeydown"
         />
         <input

@@ -45,7 +45,8 @@ describe('TaskChatPage', () => {
     await wrapper.get('form').trigger('submit');
     await flushPromises();
 
-    expect(wrapper.get('.em-chat-title h1').text()).toContain('سلام');
+    expect(wrapper.find('.em-chat-title').exists()).toBe(false);
+    expect(wrapper.get('.em-chat__bubble--user').text()).toContain('سلام');
     expect(wrapper.text()).toContain('این جواب تسک است');
     expect(wrapper.get('.em-chat__bubble--assistant').text()).toContain('این جواب تسک است');
     wrapper.unmount();

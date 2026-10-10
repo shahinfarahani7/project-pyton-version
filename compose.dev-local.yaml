@@ -26,6 +26,7 @@ services:
       - ./src/backend/edgemint/dev/task_events.py:/app/src/backend/edgemint/dev/task_events.py:ro
       - ./src/backend/edgemint/dev/assignment_bridge.py:/app/src/backend/edgemint/dev/assignment_bridge.py:ro
       - ./src/backend/edgemint/dev/dev_public_urls.py:/app/src/backend/edgemint/dev/dev_public_urls.py:ro
+      - ./src/backend/edgemint/dev/email_otp.py:/app/src/backend/edgemint/dev/email_otp.py:ro
       - ./src/backend/edgemint/services/api_gateway.py:/app/src/backend/edgemint/services/api_gateway.py:ro
   worker-registry:
     volumes:

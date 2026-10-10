@@ -10,6 +10,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  variant: {
+    type: String,
+    default: 'line',
+  },
 });
 
 const hoverIndex = ref(null);
@@ -23,6 +27,30 @@ const ranges = [
 ];
 
 const model = computed(() => buildLineChartModel(props.taskItems, resolveLocale(), range.value));
+const marks = computed(() => {
+  const points = model.value.points;
+  const plot = model.value.plot;
+  if (props.variant !== 'bar' || !points.length) {
+    return points.map((point) => ({ ...point, anchorX: point.x }));
+  }
+  const slot = plot.width / points.length;
+  const barWidth = Math.max(slot * 0.62, 2);
+  return points.map((point) => {
+    const slotX = plot.left + point.index * slot;
+    const barX = slotX + (slot - barWidth) / 2;
+    const barHeight = Math.max(plot.baseline - point.y, 0);
+    return {
+      ...point,
+      slotX,
+      slot,
+      barX,
+      barY: plot.baseline - barHeight,
+      barWidth,
+      barHeight,
+      anchorX: barX + barWidth / 2,
+    };
+  });
+});
 const summaryKey = computed(() => {
   if (range.value === 'day') return 'dashboard.usageTrendToday';
   if (range.value === 'month') return 'dashboard.usageTrendLast30Days';
@@ -35,7 +63,7 @@ const peakKey = computed(() =>
   range.value === 'day' ? 'dashboard.usageTrendPeakHour' : 'dashboard.usageTrendPeak',
 );
 const activePoint = computed(() =>
-  hoverIndex.value == null ? null : model.value.points[hoverIndex.value] ?? null,
+  hoverIndex.value == null ? null : marks.value[hoverIndex.value] ?? null,
 );
 
 function formatAverage(value) {
@@ -49,7 +77,7 @@ function selectRange(next) {
 
 function onPointerMove(event) {
   const svg = chartRef.value;
-  if (!svg || !model.value.points.length) {
+  if (!svg || !marks.value.length) {
     return;
   }
   const rect = svg.getBoundingClientRect();
@@ -57,8 +85,8 @@ function onPointerMove(event) {
   const pointerX = (event.clientX - rect.left) * scaleX;
   let nearest = 0;
   let nearestDistance = Number.POSITIVE_INFINITY;
-  for (const point of model.value.points) {
-    const distance = Math.abs(point.x - pointerX);
+  for (const point of marks.value) {
+    const distance = Math.abs(point.anchorX - pointerX);
     if (distance < nearestDistance) {
       nearest = point.index;
       nearestDistance = distance;
@@ -118,6 +146,7 @@ function onPointerLeave() {
       <svg
         ref="chartRef"
         class="em-line-chart"
+        :class="{ 'em-bar-chart': variant === 'bar' }"
         :viewBox="`0 0 ${model.plot.viewWidth} ${model.plot.viewHeight}`"
         preserveAspectRatio="xMidYMid meet"
         role="img"
@@ -172,8 +201,9 @@ function onPointerLeave() {
           {{ tick.value }}
         </text>
 
-        <path class="em-line-chart__area" :d="model.areaPath" fill="url(#usage-trend-area)" />
+        <path v-if="variant !== 'bar'" class="em-line-chart__area" :d="model.areaPath" fill="url(#usage-trend-area)" />
         <path
+          v-if="variant !== 'bar'"
           class="em-line-chart__line"
           :d="model.linePath"
           fill="none"
@@ -181,7 +211,29 @@ function onPointerLeave() {
           filter="url(#usage-trend-glow)"
         />
 
-        <g v-for="point in model.points" :key="`point-${point.index}`">
+        <g v-if="variant === 'bar'">
+          <g v-for="bar in marks" :key="`bar-${bar.index}`">
+            <rect
+              class="em-bar-chart__hit"
+              :x="bar.slotX"
+              :y="model.plot.top"
+              :width="bar.slot"
+              :height="model.plot.height"
+              @mouseenter="hoverIndex = bar.index"
+            />
+            <rect
+              v-if="bar.barHeight > 0"
+              class="em-bar-chart__bar"
+              :class="{ 'em-bar-chart__bar--active': hoverIndex === bar.index }"
+              :x="bar.barX"
+              :y="bar.barY"
+              :width="bar.barWidth"
+              :height="bar.barHeight"
+              rx="4"
+            />
+          </g>
+        </g>
+        <g v-else v-for="point in model.points" :key="`point-${point.index}`">
           <circle
             class="em-line-chart__hit"
             :cx="point.x"
@@ -198,11 +250,11 @@ function onPointerLeave() {
           />
         </g>
 
-        <g v-for="point in model.points" v-show="point.showLabel" :key="`xlabel-${point.index}`">
-          <text class="em-line-chart__xlabel" :x="point.x" :y="model.plot.baseline + 14">
+        <g v-for="point in marks" v-show="point.showLabel" :key="`xlabel-${point.index}`">
+          <text class="em-line-chart__xlabel" :x="point.anchorX" :y="model.plot.baseline + 14">
             {{ point.label.weekday }}
           </text>
-          <text class="em-line-chart__xsub" :x="point.x" :y="model.plot.baseline + 24">
+          <text class="em-line-chart__xsub" :x="point.anchorX" :y="model.plot.baseline + 24">
             {{ point.label.day }}
           </text>
         </g>
@@ -210,14 +262,14 @@ function onPointerLeave() {
         <g v-if="activePoint" class="em-line-chart__tooltip">
           <line
             class="em-line-chart__crosshair"
-            :x1="activePoint.x"
-            :x2="activePoint.x"
+            :x1="activePoint.anchorX"
+            :x2="activePoint.anchorX"
             :y1="model.plot.top"
             :y2="model.plot.baseline"
           />
           <rect
             class="em-line-chart__tooltip-box"
-            :x="Math.min(Math.max(activePoint.x - 42, model.plot.left), model.plot.left + model.plot.width - 84)"
+            :x="Math.min(Math.max(activePoint.anchorX - 42, model.plot.left), model.plot.left + model.plot.width - 84)"
             :y="Math.max(activePoint.y - 44, model.plot.top)"
             width="84"
             height="34"
@@ -225,14 +277,14 @@ function onPointerLeave() {
           />
           <text
             class="em-line-chart__tooltip-value"
-            :x="Math.min(Math.max(activePoint.x, model.plot.left + 42), model.plot.left + model.plot.width - 42)"
+            :x="Math.min(Math.max(activePoint.anchorX, model.plot.left + 42), model.plot.left + model.plot.width - 42)"
             :y="Math.max(activePoint.y - 26, model.plot.top + 14)"
           >
             {{ activePoint.value }} {{ t('dashboard.taskRuns') }}
           </text>
           <text
             class="em-line-chart__tooltip-day"
-            :x="Math.min(Math.max(activePoint.x, model.plot.left + 42), model.plot.left + model.plot.width - 42)"
+            :x="Math.min(Math.max(activePoint.anchorX, model.plot.left + 42), model.plot.left + model.plot.width - 42)"
             :y="Math.max(activePoint.y - 14, model.plot.top + 26)"
           >
             {{ activePoint.label.compact }}

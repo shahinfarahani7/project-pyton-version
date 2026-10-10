@@ -9,37 +9,50 @@ const initialState = {
   authorizationGeneration: null,
   workspaces: [],
   permissions: [],
+  role: 'customer',
 };
+
+const portalPermissions = [
+  'customer.tasks:read',
+  'customer.tasks:write',
+  'customer.webhooks:read',
+  'customer.webhooks:write',
+  'customer.apikeys:read',
+  'customer.billing:read',
+  'customer.team:read',
+];
+
+async function adoptSession(created) {
+  const workspacesResponse = await portalApi.workspaces();
+  Object.assign(session, {
+    authenticated: true,
+    sessionPublicId: created.sessionPublicId,
+    workspaceId: created.workspaceId,
+    authorizationGeneration: created.authorizationGeneration,
+    workspaces: workspacesResponse.items ?? [],
+    permissions: portalPermissions,
+    role: 'customer',
+  });
+}
 
 export const session = reactive({
   ...initialState,
-  loginWithOidc() {
-    window.location.assign('/auth/oidc/login');
+  async loginWithEmailOtp({ email, challengeId, code }) {
+    await adoptSession(await authApi.verifyEmailOtp({ email, challengeId, code }));
+  },
+  async loginWithPassword({ email, password }) {
+    await adoptSession(await authApi.loginWithPassword({ email, password }));
+  },
+  async signUpWithPassword({ email, password }) {
+    await adoptSession(await authApi.signUp({ email, password }));
   },
   async loginDev(workspaceId) {
-    const permissions = [
-      'customer.tasks:read',
-      'customer.tasks:write',
-      'customer.webhooks:read',
-      'customer.webhooks:write',
-      'customer.apikeys:read',
-      'customer.billing:read',
-      'customer.team:read',
-    ];
     const created = await authApi.login({
       principalId: '00000000-0000-0000-0000-00000000000a',
       workspaceId,
-      permissions,
+      permissions: portalPermissions,
     });
-    const workspacesResponse = await portalApi.workspaces();
-    Object.assign(session, {
-      authenticated: true,
-      sessionPublicId: created.sessionPublicId,
-      workspaceId: created.workspaceId,
-      authorizationGeneration: created.authorizationGeneration,
-      workspaces: workspacesResponse.items ?? [],
-      permissions,
-    });
+    await adoptSession(created);
   },
   async logout() {
     await authApi.logout();

@@ -42,6 +42,8 @@ describe('UsageTrendChart', () => {
     expect(wrapper.text()).toContain('Day');
     expect(wrapper.text()).toContain('Week');
     expect(wrapper.text()).toContain('Month');
+    expect(wrapper.findAll('rect.em-bar-chart__bar').length).toBeGreaterThan(0);
+    expect(wrapper.find('path.em-line-chart__line').exists()).toBe(false);
     expect(wrapper.text()).not.toContain('Workspace ID');
     expect(wrapper.text()).not.toContain('Session ID');
   });

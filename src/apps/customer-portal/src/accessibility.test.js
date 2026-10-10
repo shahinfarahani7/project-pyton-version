@@ -31,6 +31,7 @@ function resetSession() {
     authorizationGeneration: null,
     workspaces: [],
     permissions: [],
+    role: 'customer',
   });
 }
 
@@ -39,7 +40,18 @@ function mockAuthenticatedFetch(workspaceId) {
     'fetch',
     vi.fn(async (input) => {
       const url = String(input);
-      if (url.endsWith('/auth/sessions') && !url.includes('logout')) {
+      if (url.endsWith('/auth/email-otp/challenges')) {
+        return new Response(
+          JSON.stringify({
+            challengeId: 'otp_a11y',
+            expiresInSeconds: 300,
+            emailDispatched: false,
+            devCode: '123456',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.endsWith('/auth/email-otp/verify')) {
         return new Response(
           JSON.stringify({
             sessionPublicId: 'ses_a11y',
@@ -124,7 +136,13 @@ describe('accessibility shell', () => {
   it('exposes skip link, landmarks, and labelled navigation', async () => {
     mockAuthenticatedFetch('00000000-0000-0000-0000-00000000000b');
     const { wrapper } = await renderApp('/login');
-    await wrapper.get('[data-testid="dev-sign-in"]').trigger('click');
+    await wrapper.get('[data-testid="login-method-otp"]').trigger('click');
+    await wrapper.get('[data-testid="login-email-form"]').trigger('submit');
+    await vi.waitFor(() => {
+      expect(wrapper.find('[data-testid="login-otp"]').exists()).toBe(true);
+    });
+    await wrapper.get('[data-testid="login-otp"]').setValue('123456');
+    await wrapper.get('[data-testid="login-otp-form"]').trigger('submit');
     await vi.waitFor(() => {
       expect(session.authenticated).toBe(true);
     });
@@ -147,7 +165,13 @@ describe('cross-workspace isolation', () => {
     const workspaceB = '00000000-0000-0000-0000-00000000000c';
     mockAuthenticatedFetch(workspaceA);
     const { wrapper, router } = await renderApp('/login');
-    await wrapper.get('[data-testid="dev-sign-in"]').trigger('click');
+    await wrapper.get('[data-testid="login-method-otp"]').trigger('click');
+    await wrapper.get('[data-testid="login-email-form"]').trigger('submit');
+    await vi.waitFor(() => {
+      expect(wrapper.find('[data-testid="login-otp"]').exists()).toBe(true);
+    });
+    await wrapper.get('[data-testid="login-otp"]').setValue('123456');
+    await wrapper.get('[data-testid="login-otp-form"]').trigger('submit');
     await vi.waitFor(() => {
       expect(session.authenticated).toBe(true);
     });

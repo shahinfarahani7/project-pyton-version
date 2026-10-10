@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import secrets
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -21,8 +22,8 @@ session_store = BrowserSessionStore()
 token_service = DelegatedTokenService(settings)
 
 if settings.environment in {"development", "test"}:
-    from edgemint.dev.portal_api import router as dev_portal_router
     from edgemint.dev.dev_worker_api import router as dev_worker_router
+    from edgemint.dev.portal_api import router as dev_portal_router
 
     app.include_router(dev_portal_router, tags=["customer-portal-dev"])
     app.include_router(dev_worker_router, tags=["worker-dev"])
@@ -39,6 +40,7 @@ class SessionResponse(BaseModel):
     workspaceId: UUID
     authorizationGeneration: int
     expiresAt: datetime
+    role: str = "customer"
 
 
 class DelegatedTokenResponse(BaseModel):
@@ -47,30 +49,82 @@ class DelegatedTokenResponse(BaseModel):
     expiresInSeconds: int
 
 
-@app.post("/auth/sessions", response_model=SessionResponse, tags=["auth"])
-async def create_browser_session(payload: SessionCreateRequest, response: Response) -> SessionResponse:
+class EmailOtpChallengeRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=254)
+
+
+class EmailOtpChallengeResponse(BaseModel):
+    challengeId: str
+    expiresInSeconds: int
+    emailDispatched: bool = False
+    devCode: str | None = None
+
+
+class EmailOtpVerifyRequest(BaseModel):
+    challengeId: str = Field(min_length=4, max_length=80)
+    email: str = Field(min_length=3, max_length=254)
+    code: str = Field(min_length=6, max_length=6)
+
+
+class EmailPasswordRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class EmailSignupRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=254)
+    password: str = Field(min_length=8, max_length=128)
+
+
+def _require_local_bff() -> None:
     if settings.environment not in {"development", "test"}:
         raise HTTPException(503, "OIDC_BFF_NOT_CONFIGURED")
+
+
+def _try_send_otp(recipient: str, code: str) -> bool:
+    host = os.environ.get("EDGEMINT_OTP_SMTP_HOST", "")
+    if not host and settings.environment == "development":
+        host = "mailpit"
+    if not host:
+        return False
+    port = int(os.environ.get("EDGEMINT_OTP_SMTP_PORT", "1025"))
+    from edgemint.dev.email_otp import deliver_otp_email
+
+    try:
+        deliver_otp_email(recipient, code, host=host, port=port)
+    except OSError:
+        return False
+    return True
+
+
+async def _issue_browser_session(
+    response: Response,
+    *,
+    principal_id: UUID,
+    workspace_id: UUID,
+    details: dict[str, object],
+    role: str = "customer",
+) -> SessionResponse:
     session_token = secrets.token_urlsafe(32)
     csrf_secret = secrets.token_urlsafe(32)
     session_public_id = public_id("ses")
-    async with transaction(workspace_id=payload.workspaceId) as connection:
+    async with transaction(workspace_id=workspace_id) as connection:
         record = await session_store.create_session(
             connection,
             public_id=session_public_id,
-            principal_id=payload.principalId,
-            workspace_id=payload.workspaceId,
+            principal_id=principal_id,
+            workspace_id=workspace_id,
             session_token=session_token,
             csrf_secret=csrf_secret,
         )
         await write_audit_event(
             connection,
-            workspace_id=payload.workspaceId,
-            actor_id=str(payload.principalId),
+            workspace_id=workspace_id,
+            actor_id=str(principal_id),
             action="auth.session.created",
             resource_type="browser_session",
             resource_id=session_public_id,
-            details={"authorizationGeneration": record.authorization_generation},
+            details={**details, "authorizationGeneration": record.authorization_generation},
         )
     response.set_cookie(
         key=BrowserSessionStore.cookie_name(environment=settings.environment),
@@ -84,9 +138,115 @@ async def create_browser_session(payload: SessionCreateRequest, response: Respon
     response.headers[BrowserSessionStore.CSRF_HEADER] = csrf_secret
     return SessionResponse(
         sessionPublicId=session_public_id,
-        workspaceId=payload.workspaceId,
+        workspaceId=workspace_id,
         authorizationGeneration=record.authorization_generation,
         expiresAt=record.absolute_expires_at,
+        role=role,
+    )
+
+
+@app.post("/auth/sessions", response_model=SessionResponse, tags=["auth"])
+async def create_browser_session(payload: SessionCreateRequest, response: Response) -> SessionResponse:
+    _require_local_bff()
+    return await _issue_browser_session(
+        response,
+        principal_id=payload.principalId,
+        workspace_id=payload.workspaceId,
+        details={},
+    )
+
+
+@app.post(
+    "/auth/email-otp/challenges",
+    response_model=EmailOtpChallengeResponse,
+    response_model_exclude_none=True,
+    tags=["auth"],
+)
+async def request_email_otp_challenge(payload: EmailOtpChallengeRequest) -> EmailOtpChallengeResponse:
+    _require_local_bff()
+    from edgemint.dev.email_otp import EmailOtpError, hydrate_local_accounts, request_email_otp
+
+    await hydrate_local_accounts()
+    try:
+        issued = request_email_otp(payload.email, send=_try_send_otp)
+    except EmailOtpError as exc:
+        raise_auth_error(exc.code, status=exc.status, detail=exc.detail)
+    dev_code = issued.code if settings.environment in {"development", "test"} else None
+    return EmailOtpChallengeResponse(
+        challengeId=issued.challenge_id,
+        expiresInSeconds=issued.expires_in_seconds,
+        emailDispatched=issued.email_dispatched,
+        devCode=dev_code,
+    )
+
+
+@app.post("/auth/email-otp/verify", response_model=SessionResponse, tags=["auth"])
+async def verify_email_otp_challenge(payload: EmailOtpVerifyRequest, response: Response) -> SessionResponse:
+    _require_local_bff()
+    from edgemint.dev.email_otp import EmailOtpError, hydrate_local_accounts, verify_email_otp
+
+    await hydrate_local_accounts()
+    try:
+        identity = verify_email_otp(payload.challengeId, payload.email, payload.code)
+    except EmailOtpError as exc:
+        raise_auth_error(exc.code, status=exc.status, detail=exc.detail)
+    return await _issue_browser_session(
+        response,
+        principal_id=identity.principal_id,
+        workspace_id=identity.workspace_id,
+        details={"method": "email_otp"},
+        role=identity.role,
+    )
+
+
+@app.post("/auth/email-password", response_model=SessionResponse, tags=["auth"])
+async def login_with_email_password(payload: EmailPasswordRequest, response: Response) -> SessionResponse:
+    _require_local_bff()
+    from edgemint.dev.email_otp import EmailOtpError, hydrate_local_accounts, verify_email_password
+
+    await hydrate_local_accounts()
+    try:
+        identity = verify_email_password(payload.email, payload.password)
+    except EmailOtpError as exc:
+        raise_auth_error(exc.code, status=exc.status, detail=exc.detail)
+    return await _issue_browser_session(
+        response,
+        principal_id=identity.principal_id,
+        workspace_id=identity.workspace_id,
+        details={"method": "email_password"},
+        role=identity.role,
+    )
+
+
+@app.post("/auth/email-signup", response_model=SessionResponse, status_code=201, tags=["auth"])
+async def signup_with_email_password(payload: EmailSignupRequest, response: Response) -> SessionResponse:
+    _require_local_bff()
+    from edgemint.dev.email_otp import (
+        EmailOtpError,
+        forget_local_account,
+        hydrate_local_accounts,
+        normalize_email,
+        persist_local_account,
+        register_local_account,
+    )
+
+    await hydrate_local_accounts()
+    try:
+        identity = register_local_account(payload.email, payload.password)
+    except EmailOtpError as exc:
+        raise_auth_error(exc.code, status=exc.status, detail=exc.detail)
+    normalized = normalize_email(payload.email)
+    try:
+        await persist_local_account(identity, normalized)
+    except Exception:
+        forget_local_account(normalized)
+        raise HTTPException(503, "LOCAL_SIGNUP_UNAVAILABLE") from None
+    return await _issue_browser_session(
+        response,
+        principal_id=identity.principal_id,
+        workspace_id=identity.workspace_id,
+        details={"method": "email_signup"},
+        role=identity.role,
     )
 
 

@@ -19,6 +19,16 @@ describe('TaskSubmitForm chat composer', () => {
     });
   });
 
+  it('grows the composer to fit a long message', async () => {
+    const wrapper = mount(TaskSubmitForm);
+    const field = wrapper.get('textarea');
+    Object.defineProperty(field.element, 'scrollHeight', { configurable: true, value: 180 });
+
+    await field.setValue(`${'یک خط بلند از متن تسک. '.repeat(8)}\n`.repeat(6));
+
+    expect(field.element.style.height).toBe('180px');
+  });
+
   it('shows the outgoing message while the task is submitting', async () => {
     const wrapper = mount(TaskSubmitForm);
     await wrapper.get('textarea').setValue('در حال ارسال');

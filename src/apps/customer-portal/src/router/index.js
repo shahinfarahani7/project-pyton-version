@@ -53,7 +53,12 @@ const router = createRouter({
     },
     {
       path: '/:pathMatch(.*)*',
-      redirect: () => (session.authenticated ? { name: 'dashboard' } : { name: 'login' }),
+      redirect: () => {
+        if (!session.authenticated) {
+          return { name: 'login' };
+        }
+        return { name: 'dashboard' };
+      },
     },
   ],
 });

@@ -114,7 +114,7 @@ onMounted(() => {
     </div>
 
     <div class="em-layout-charts">
-      <UsageTrendChart :task-items="taskItems" />
+      <UsageTrendChart variant="bar" :task-items="taskItems" />
 
       <article class="md-card em-chart-card">
         <h2 class="em-section-title">{{ t('dashboard.distribution') }}</h2>

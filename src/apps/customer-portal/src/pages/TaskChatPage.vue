@@ -257,7 +257,7 @@ async function scrollAnswerToStart() {
     return;
   }
   thread.scrollTop = 0;
-  thread.querySelector('.em-chat-title')?.scrollIntoView?.({ block: 'start' });
+  thread.querySelector('.em-chat__row--user')?.scrollIntoView?.({ block: 'start' });
 }
 
 watch(selectedId, () => {
@@ -377,11 +377,12 @@ onUnmounted(stopPoll);
         </div>
 
         <template v-else>
-          <header class="em-chat-title">
-            <p class="em-chat-title__kicker">{{ t('dashboard.taskTitleLabel') }}</p>
-            <h1>{{ turnTitle(selectedTurn) }}</h1>
-            <p v-if="selectedTurn.fileName" class="em-chat-title__file">{{ selectedTurn.fileName }}</p>
-          </header>
+          <div class="em-chat__row em-chat__row--user">
+            <p class="em-chat__bubble em-chat__bubble--user">
+              {{ turnTitle(selectedTurn) }}
+              <span v-if="selectedTurn.fileName" class="em-chat__file">{{ selectedTurn.fileName }}</span>
+            </p>
+          </div>
           <div class="em-chat__row">
             <span class="em-chat__avatar" aria-hidden="true">
               <span class="material-symbols-outlined">smart_toy</span>

@@ -146,6 +146,10 @@ export async function fetchForm(path, formData) {
 export const authApi = {
   health: () => fetchJson('/auth/health'),
   login: (body) => fetchJson('/auth/sessions', { method: 'POST', body }),
+  requestEmailOtp: (email) => fetchJson('/auth/email-otp/challenges', { method: 'POST', body: { email } }),
+  verifyEmailOtp: (body) => fetchJson('/auth/email-otp/verify', { method: 'POST', body }),
+  loginWithPassword: (body) => fetchJson('/auth/email-password', { method: 'POST', body }),
+  signUp: (body) => fetchJson('/auth/email-signup', { method: 'POST', body }),
   logout: () => fetchJson('/auth/sessions/logout', { method: 'POST' }),
 };
 

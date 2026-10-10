@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.settings import get_settings
+from edgemint.dev import email_otp
 from edgemint.dev import fixtures
 from edgemint.dev import task_events
 from edgemint.dev import task_type_catalog
@@ -162,6 +163,8 @@ async def require_dev_portal_session(request: Request) -> BrowserSessionRecord:
     if settings.environment not in {"development", "test"}:
         raise HTTPException(503, "DEV_PORTAL_API_DISABLED")
 
+    await email_otp.hydrate_local_accounts()
+
     session_token = BrowserSessionStore.read_session_cookie(
         request.cookies, environment=get_settings().environment
     )
@@ -175,8 +178,12 @@ async def require_dev_portal_session(request: Request) -> BrowserSessionRecord:
         return record
 
 
+def _known_portal_principal(principal_id: UUID) -> bool:
+    return fixtures.is_dev_principal(principal_id) or email_otp.is_registered_principal(principal_id)
+
+
 def _ensure_workspace_access(session: BrowserSessionRecord, workspace_id: UUID) -> None:
-    if not fixtures.is_dev_principal(session.principal_id):
+    if not _known_portal_principal(session.principal_id):
         raise HTTPException(403, "WORKSPACE_ACCESS_DENIED")
     if workspace_id not in fixtures.DEV_WORKSPACE_IDS:
         raise HTTPException(404, "WORKSPACE_NOT_FOUND")
@@ -186,6 +193,9 @@ def _ensure_workspace_access(session: BrowserSessionRecord, workspace_id: UUID) 
 
 @router.get("/v1/me")
 async def current_principal(session: BrowserSessionRecord = Depends(require_dev_portal_session)) -> dict:
+    profile = email_otp.profile_for_principal(session.principal_id)
+    if profile is not None:
+        return profile
     if not fixtures.is_dev_principal(session.principal_id):
         return {
             "id": str(session.principal_id),
@@ -198,7 +208,7 @@ async def current_principal(session: BrowserSessionRecord = Depends(require_dev_
 
 @router.get("/v1/workspaces")
 async def list_workspaces(session: BrowserSessionRecord = Depends(require_dev_portal_session)) -> dict:
-    if not fixtures.is_dev_principal(session.principal_id):
+    if not _known_portal_principal(session.principal_id):
         return {"items": [], "page": fixtures.PAGE}
     return {"items": fixtures.dev_workspaces(), "page": fixtures.PAGE}
 
