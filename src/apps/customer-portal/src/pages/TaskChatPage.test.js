@@ -40,7 +40,7 @@ describe('TaskChatPage', () => {
     });
     await flushPromises();
 
-    expect(wrapper.text()).toContain('What should I do?');
+    expect(wrapper.text()).toContain('What would you like to work on?');
     await wrapper.get('textarea').setValue('سلام');
     await wrapper.get('form').trigger('submit');
     await flushPromises();
@@ -73,6 +73,8 @@ describe('TaskChatPage', () => {
         },
       ],
     });
+    const createTask = vi.spyOn(portalApi, 'createTask').mockResolvedValue({});
+    const readTask = vi.spyOn(portalApi, 'task').mockResolvedValue({});
 
     const wrapper = mount(TaskChatPage, {
       global: { stubs: { RouterLink: true } },
@@ -83,7 +85,11 @@ describe('TaskChatPage', () => {
     expect(wrapper.find('.em-chat__bubble--assistant').exists()).toBe(false);
 
     await wrapper.get('.em-chat-list button').trigger('click');
+    await flushPromises();
 
+    expect(createTask).not.toHaveBeenCalled();
+    expect(readTask).not.toHaveBeenCalled();
+    expect(wrapper.get('.em-chat__bubble--user').text()).toContain('درباره مورچه‌ها بنویس');
     expect(wrapper.text()).toContain('مورچه‌ها گروهی زندگی می‌کنند.');
     expect(wrapper.text()).not.toContain('tsk_old');
     wrapper.unmount();

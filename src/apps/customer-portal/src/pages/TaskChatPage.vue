@@ -1,13 +1,16 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
+import BrandLockup from '../components/BrandLockup.vue';
+import StrokeIcon from '../components/ui/StrokeIcon.vue';
 import TaskSubmitForm from '../components/TaskSubmitForm.vue';
 import { useTaskEventStream } from '../composables/useTaskEventStream';
 import { mapTaskInputError } from '../config/taskTypeCatalog';
 import { t } from '../i18n';
-import { formatDateTime, taskListTitle, taskStatusGroup } from '../utils/format';
+import { taskListTitle, taskStatusGroup } from '../utils/format';
 import { taskAwaitingResult, taskResultDownloadName, taskResultState } from '../utils/taskResult';
 import { trackEvent } from '../telemetry';
 
@@ -20,6 +23,7 @@ const listError = ref('');
 const cancellingTaskId = ref('');
 const formKey = ref(0);
 const copied = ref(false);
+const historyQuery = ref('');
 const threadEl = ref(null);
 let pollTimer = 0;
 
@@ -39,6 +43,7 @@ function turnFromTask(task) {
     fileName: fileLabel(task, prompt),
     task,
     error: '',
+    fromHistory: true,
   };
 }
 
@@ -49,10 +54,13 @@ function chronological(items) {
 }
 
 function isWaiting(turn) {
+  const lifecycle = String(turn.task?.lifecycleStatus ?? '').toLowerCase();
+  if (turn.fromHistory && ['succeeded', 'completed', 'failed', 'cancelled', 'canceled', 'expired'].includes(lifecycle)) {
+    return false;
+  }
   if (turn.error || !turn.task) {
     return !turn.error && !turn.task;
   }
-  const lifecycle = String(turn.task.lifecycleStatus ?? '').toLowerCase();
   if (['failed', 'cancelled', 'canceled', 'expired'].includes(lifecycle)) {
     return false;
   }
@@ -103,11 +111,58 @@ function canCancel(turn) {
 
 const hasPending = computed(() => turns.value.some((turn) => turn.task?.id && isWaiting(turn)));
 const sidebarTurns = computed(() => [...turns.value].reverse());
+const visibleHistory = computed(() => {
+  const query = historyQuery.value.trim().toLowerCase();
+  if (!query) return sidebarTurns.value;
+  return sidebarTurns.value.filter((turn) => turnTitle(turn).toLowerCase().includes(query));
+});
 const selectedTurn = computed(() => turns.value.find((turn) => turn.localId === selectedId.value) ?? null);
 
-function selectTurn(turn) {
+async function selectTurn(turn) {
   selectedId.value = turn.localId;
   copied.value = false;
+  if (!turn.fromHistory || !turn.task?.id || !session.workspaceId) {
+    return;
+  }
+  if (answerText(turn) || resultFileUrl(turn) || turn.error) {
+    return;
+  }
+  try {
+    const task = await portalApi.task(session.workspaceId, turn.task.id);
+    replaceTurn(turn.localId, { ...turn, task, fromHistory: true, error: '' });
+  } catch {
+    // Keep the stored list snapshot. Selecting history never creates a task.
+  }
+}
+
+function newChat() {
+  selectedId.value = '';
+  copied.value = false;
+}
+
+function historyDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
+}
+
+function historyTone(turn) {
+  const group = taskStatusGroup(turn.task?.lifecycleStatus);
+  if (group === 'done') return '';
+  if (group === 'running') return 'blue';
+  if (group === 'queued') return 'warn';
+  if (group === 'failed') return 'bad';
+  return 'neutral';
+}
+
+function historyLabel(turn) {
+  const group = taskStatusGroup(turn.task?.lifecycleStatus);
+  if (group === 'done') return t('dashboard.statusSucceeded');
+  if (group === 'running') return t('dashboard.statusRunning');
+  if (group === 'queued') return t('dashboard.statusQueued');
+  if (group === 'failed') return t('dashboard.statusFailed');
+  if (group === 'cancel') return t('dashboard.statusCancelled');
+  return turnStatus(turn);
 }
 
 async function copyAnswer(text) {
@@ -198,6 +253,7 @@ function applyLoadedTasks(items) {
         localId: existing.localId,
         prompt: existing.prompt || turn.prompt,
         fileName: existing.fileName || turn.fileName,
+        fromHistory: existing.fromHistory === true,
       };
     }),
     ...extras,
@@ -344,50 +400,97 @@ onUnmounted(stopPoll);
 
 <template>
   <section class="em-chat-page">
-    <aside class="em-chat-list" :aria-label="t('nav.tasks')">
+    <aside class="em-chat-history" :aria-label="t('nav.tasks')">
+      <div class="em-chat-history__head">
+        <h2>{{ t('tasks.yourTasks') }}</h2>
+        <button type="button" class="em-chat-history__new" :aria-label="t('tasks.newTask')" @click="newChat">
+          <StrokeIcon name="plus" />
+        </button>
+      </div>
+      <label class="em-chat-history__search">
+        <StrokeIcon name="search" />
+        <input v-model="historyQuery" type="search" :aria-label="t('tasks.searchRequests')" :placeholder="t('tasks.searchRequests')" />
+      </label>
       <p v-if="listError" class="md-alert md-alert--error" role="alert">{{ listError }}</p>
       <div v-if="loading" class="md-skeleton" style="height: 6rem" />
-      <ul v-else>
-        <li v-for="turn in sidebarTurns" :key="turn.localId">
-          <button
-            type="button"
-            class="em-chat-list__item"
-            :class="{ 'em-chat-list__item--active': turn.localId === selectedId }"
-            @click="selectTurn(turn)"
-          >
-            <span class="em-chat-list__title">{{ turnTitle(turn) }}</span>
-            <span v-if="turn.task" class="em-chat-list__meta">
-              <span class="em-chat-list__status" :data-status="taskStatusGroup(turn.task.lifecycleStatus)">
-                {{ turnStatus(turn) }}
+      <div v-else class="em-chat-list">
+        <p v-if="!visibleHistory.length" class="em-chat-history__empty">{{ t('tasks.noMatches') }}</p>
+        <ul v-else>
+          <li v-for="turn in visibleHistory" :key="turn.localId">
+            <button
+              type="button"
+              class="em-chat-list__item"
+              :class="{ 'em-chat-list__item--active': turn.localId === selectedId }"
+              @click="selectTurn(turn)"
+            >
+              <span class="em-chat-list__title">{{ turnTitle(turn) }}</span>
+              <span v-if="turn.task" class="em-chat-list__meta">
+                <span class="fn-badge" :class="historyTone(turn) ? `fn-badge--${historyTone(turn)}` : ''">
+                  {{ historyLabel(turn) }}
+                </span>
+                <time>{{ historyDate(turn.task.createdAt) }}</time>
               </span>
-              <time>{{ formatDateTime(turn.task.createdAt) }}</time>
-            </span>
-          </button>
-        </li>
-      </ul>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <p class="em-chat-history__foot">
+        <StrokeIcon name="lock" />
+        {{ t('tasks.historyFoot') }}
+      </p>
     </aside>
 
     <div class="em-chat-main">
+      <header class="em-chat-top">
+        <span class="em-chat-top__product">
+          <BrandLockup class="fn-logo--chat" />
+        </span>
+        <div class="em-chat-top__actions">
+          <span
+            v-if="selectedTurn?.task"
+            class="fn-badge"
+            :class="historyTone(selectedTurn) ? `fn-badge--${historyTone(selectedTurn)}` : ''"
+          >
+            {{ historyLabel(selectedTurn) }}
+          </span>
+          <span v-else class="fn-badge fn-badge--neutral">{{ t('tasks.newRequest') }}</span>
+          <RouterLink
+            v-if="selectedTurn?.task?.id"
+            class="md-btn"
+            :to="{ name: 'task-detail', params: { id: selectedTurn.task.id } }"
+          >
+            <StrokeIcon name="file" />
+            {{ t('tasks.taskDetails') }}
+          </RouterLink>
+        </div>
+      </header>
       <div ref="threadEl" class="em-chat-page__thread">
         <div v-if="!selectedTurn" class="em-chat-page__empty">
-          <span class="em-chat__avatar" aria-hidden="true">
-            <span class="material-symbols-outlined">smart_toy</span>
-          </span>
-          <p>{{ t('tasks.chatGreeting') }}</p>
+          <BrandLockup class="em-chat-welcome__mark" :wordmark="false" />
+          <p class="fn-eyebrow">{{ t('tasks.welcomeEyebrow') }}</p>
+          <h1>{{ t('tasks.welcomeTitle') }}</h1>
+          <p>{{ t('tasks.welcomeBody') }}</p>
+          <div class="em-chat-welcome__hints">
+            <span><StrokeIcon name="file" />{{ t('tasks.hintDocuments') }}</span>
+            <span><StrokeIcon name="tasks" />{{ t('tasks.hintWriting') }}</span>
+            <span><StrokeIcon name="chart" />{{ t('tasks.hintAnalysis') }}</span>
+          </div>
         </div>
 
         <template v-else>
           <div class="em-chat__row em-chat__row--user">
-            <p class="em-chat__bubble em-chat__bubble--user">
+            <div class="em-chat__bubble em-chat__bubble--user">
+              <span class="em-chat__caption">{{ t('tasks.yourRequest') }}</span>
               {{ turnTitle(selectedTurn) }}
               <span v-if="selectedTurn.fileName" class="em-chat__file">{{ selectedTurn.fileName }}</span>
-            </p>
+            </div>
           </div>
           <div class="em-chat__row">
-            <span class="em-chat__avatar" aria-hidden="true">
-              <span class="material-symbols-outlined">smart_toy</span>
-            </span>
             <div class="em-chat__answer">
+              <div class="em-chat__assistant-label">
+                <BrandLockup class="fn-logo--assistant" />
+                <span v-if="selectedTurn.task?.taskType" class="em-chat__assistant-type">{{ selectedTurn.task.taskType }}</span>
+              </div>
               <div
                 v-if="copyableAnswer(selectedTurn) || selectedTurn.error"
                 class="em-chat__bubble em-chat__bubble--assistant em-chat__bubble--copyable"

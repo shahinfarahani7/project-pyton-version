@@ -34,7 +34,7 @@ const marks = computed(() => {
     return points.map((point) => ({ ...point, anchorX: point.x }));
   }
   const slot = plot.width / points.length;
-  const barWidth = Math.max(slot * 0.62, 2);
+  const barWidth = Math.max(slot * 0.54, 2);
   return points.map((point) => {
     const slotX = plot.left + point.index * slot;
     const barX = slotX + (slot - barWidth) / 2;
@@ -101,18 +101,20 @@ function onPointerLeave() {
 </script>
 
 <template>
-  <article class="md-card em-chart-card em-usage-trend">
+  <article class="md-card em-chart-card em-usage-trend" :class="{ 'em-usage-trend--bar': variant === 'bar' }">
     <div class="em-chart-card__header">
       <div>
-        <h2 class="em-section-title">{{ t('dashboard.usageTrend') }}</h2>
-        <p class="em-chart-card__summary">
+        <h2 class="em-section-title">
+          {{ variant === 'bar' ? t('dashboard.taskActivity') : t('dashboard.usageTrend') }}
+        </h2>
+        <p v-if="variant !== 'bar'" class="em-chart-card__summary">
           {{ t(summaryKey) }}
           <span v-if="model.isEstimated" class="em-chart-card__note">
             · {{ t('dashboard.usageTrendEstimated') }}
           </span>
         </p>
       </div>
-      <div class="em-range-switch" role="group" :aria-label="t('dashboard.usageTrend')">
+      <div v-if="variant !== 'bar'" class="em-range-switch" role="group" :aria-label="t('dashboard.usageTrend')">
         <button
           v-for="item in ranges"
           :key="item.id"
@@ -127,7 +129,28 @@ function onPointerLeave() {
       </div>
     </div>
 
-    <div class="em-usage-trend__stats">
+    <div v-if="variant === 'bar'" class="em-chart-controls">
+      <div class="em-chart-summary">
+        <strong>{{ formatNumber(model.total) }}</strong>
+        <span>{{ t('dashboard.taskRuns') }}</span>
+        <span class="em-chart-average">{{ formatAverage(model.average) }}</span>
+      </div>
+      <div class="em-range-switch" role="group" :aria-label="t('dashboard.taskActivity')">
+        <button
+          v-for="item in ranges"
+          :key="item.id"
+          type="button"
+          class="em-range-switch__btn"
+          :class="{ 'em-range-switch__btn--active': range === item.id }"
+          :aria-pressed="range === item.id"
+          @click="selectRange(item.id)"
+        >
+          {{ t(item.labelKey) }}
+        </button>
+      </div>
+    </div>
+
+    <div v-else class="em-usage-trend__stats">
       <div class="em-usage-trend__stat">
         <span class="em-usage-trend__stat-label">{{ t('dashboard.usageTrendTotal') }}</span>
         <strong class="em-usage-trend__stat-value">{{ formatNumber(model.total) }}</strong>
@@ -150,41 +173,15 @@ function onPointerLeave() {
         :viewBox="`0 0 ${model.plot.viewWidth} ${model.plot.viewHeight}`"
         preserveAspectRatio="xMidYMid meet"
         role="img"
-        :aria-label="t('dashboard.usageTrend')"
+        :aria-label="variant === 'bar' ? t('dashboard.taskActivity') : t('dashboard.usageTrend')"
         @mousemove="onPointerMove"
         @mouseleave="onPointerLeave"
       >
-        <defs>
-          <linearGradient id="usage-trend-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--em-accent)" stop-opacity="0.35" />
-            <stop offset="100%" stop-color="var(--em-accent)" stop-opacity="0.02" />
-          </linearGradient>
-          <linearGradient id="usage-trend-line" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#a78bfa" />
-            <stop offset="100%" stop-color="var(--em-accent)" />
-          </linearGradient>
-          <filter id="usage-trend-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="1.6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <rect
-          class="em-line-chart__plot-bg"
-          :x="model.plot.left"
-          :y="model.plot.top"
-          :width="model.plot.width"
-          :height="model.plot.height"
-          rx="8"
-        />
-
         <line
           v-for="tick in model.yTicks"
           :key="`grid-${tick.value}`"
           class="em-line-chart__grid"
+          :class="{ 'em-line-chart__grid--solid': variant === 'bar' }"
           :x1="model.plot.left"
           :x2="model.plot.left + model.plot.width"
           :y1="tick.y"
@@ -201,14 +198,13 @@ function onPointerLeave() {
           {{ tick.value }}
         </text>
 
-        <path v-if="variant !== 'bar'" class="em-line-chart__area" :d="model.areaPath" fill="url(#usage-trend-area)" />
         <path
           v-if="variant !== 'bar'"
           class="em-line-chart__line"
           :d="model.linePath"
           fill="none"
-          stroke="url(#usage-trend-line)"
-          filter="url(#usage-trend-glow)"
+          stroke="var(--em-accent)"
+          stroke-width="2.3"
         />
 
         <g v-if="variant === 'bar'">
@@ -229,7 +225,7 @@ function onPointerLeave() {
               :y="bar.barY"
               :width="bar.barWidth"
               :height="bar.barHeight"
-              rx="4"
+              rx="3"
             />
           </g>
         </g>

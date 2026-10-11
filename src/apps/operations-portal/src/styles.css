@@ -1,11 +1,17 @@
 :root {
-  font-family: "Segoe UI", system-ui, sans-serif;
-  color: #f8fafc;
-  background: #111827;
+  color-scheme: dark;
+  font-family: "Geist", "Geist Sans", "Segoe UI", Tahoma, system-ui, sans-serif;
+  color: #ffffff;
+  background: #0b0c0f;
+  --em-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: #0b0c0f;
+  color: #ffffff;
+  color-scheme: dark;
 }
 
 .skip-link {
@@ -16,17 +22,31 @@ body {
 .skip-link:focus {
   left: 1rem;
   top: 1rem;
-  background: #2563eb;
-  color: #fff;
+  background: #cdae6f;
+  color: #0b0c0f;
   padding: 0.5rem 1rem;
 }
 
 .topbar,
 .layout,
 .panel {
-  border: 1px solid #334155;
-  border-radius: 10px;
-  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: #101216;
+  box-shadow: none;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.brand-lockup img {
+  display: block;
+  height: 28px;
+  width: auto;
 }
 
 .topbar {
@@ -38,7 +58,7 @@ body {
 }
 
 .badge {
-  color: #94a3b8;
+  color: #b3b5bd;
 }
 
 .layout {
@@ -54,11 +74,23 @@ nav ul {
   margin: 0;
 }
 
+.nav-group {
+  margin: 1rem 1rem 0.25rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7a7c86;
+}
+
 nav a {
-  color: #93c5fd;
+  color: #b3b5bd;
   text-decoration: none;
   display: block;
   padding: 0.4rem 0;
+}
+
+nav a.active {
+  color: #cdae6f;
 }
 
 main {
@@ -86,7 +118,7 @@ table {
 
 th,
 td {
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   text-align: left;
   padding: 0.5rem;
 }
@@ -100,14 +132,20 @@ input {
 }
 
 button.primary {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
+  background: #cdae6f;
+  color: #0b0c0f;
+  border: 1px solid #cdae6f;
+  padding: 9px 13px;
   border-radius: 8px;
+  font-weight: 650;
+}
+
+button.primary:hover {
+  background: #c0a064;
+  border-color: #c0a064;
 }
 
 button {
   border-radius: 8px;
-  padding: 0.6rem 1rem;
+  padding: 9px 13px;
 }

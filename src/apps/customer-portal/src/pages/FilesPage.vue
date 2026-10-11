@@ -1,5 +1,4 @@
 <script setup>
-import PageHeader from '../components/ui/PageHeader.vue';
 import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
 import { formatBytes } from '../utils/format';
@@ -31,22 +30,19 @@ const files = [
 
 <template>
   <section class="em-page">
-    <PageHeader :title="t('nav.files')" :subtitle="t('files.subtitle')">
-      <template #actions>
-        <button type="button" class="md-btn md-btn-filled" disabled>
-          <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
-          {{ t('files.upload') }}
-        </button>
-      </template>
-    </PageHeader>
-
-    <div class="upload-zone">
-      <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
-      <p>{{ t('files.uploadHint') }}</p>
+    <p class="fn-notice">
+      <span class="material-symbols-outlined" aria-hidden="true">description</span>
+      <span>{{ t('files.uploadHint') }}</span>
+    </p>
+    <div class="fn-toolbar">
+      <button type="button" class="md-btn md-btn-filled" disabled>
+        <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+        {{ t('files.upload') }}
+      </button>
     </div>
 
     <article class="md-card">
-      <PageHeader :title="t('files.libraryTitle')" />
+      <h2 class="em-section-title">{{ t('files.libraryTitle') }}</h2>
       <div class="md-table-wrap">
         <table class="md-table">
           <thead>

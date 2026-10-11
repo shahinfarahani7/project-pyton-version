@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
@@ -10,13 +10,6 @@ import { t } from '../i18n';
 import { formatMicroEur, formatNumber, taskStatusGroup } from '../utils/format';
 
 const session = useSession();
-const activeTab = ref('overview');
-
-const tabs = [
-  { id: 'overview', labelKey: 'usage.tabOverview' },
-  { id: 'endpoint', labelKey: 'usage.tabEndpoint' },
-  { id: 'taskType', labelKey: 'usage.tabTaskType' },
-];
 
 const { data: usage, loading: usageLoading } = useAsyncResource(
   () => portalApi.usage(session.workspaceId),
@@ -83,22 +76,26 @@ const activeTaskCount = computed(
     .reduce((sum, row) => sum + row.count, 0),
 );
 
-const endpointStats = computed(() => {
-  const items = tasks.value?.items ?? [];
+const succeededCount = computed(
+  () => taskItems.value.filter((task) => taskStatusGroup(task.lifecycleStatus) === 'done').length,
+);
+
+const familyStats = computed(() => {
   const counts = {};
-  for (const task of items) {
-    const key = `/v1/tasks/${task.taskType?.split('.')[0] ?? 'other'}`;
-    counts[key] = (counts[key] ?? 0) + 1;
+  for (const task of taskItems.value) {
+    const family = task.taskType?.split('.')[0] ?? 'other';
+    counts[family] = (counts[family] ?? 0) + 1;
   }
-  const total = items.length || 1;
+  const total = taskItems.value.length || 1;
+  const palette = ['#cdae6f', '#2c84ff', '#19c7b4', '#c0a064'];
   return Object.entries(counts)
-    .map(([endpoint, count]) => ({
-      endpoint,
+    .map(([label, count], index) => ({
+      label,
       count,
       pct: Math.round((count / total) * 1000) / 10,
+      color: palette[index % palette.length],
     }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    .sort((a, b) => b.count - a.count);
 });
 
 const taskTypeStats = computed(() => {
@@ -121,134 +118,95 @@ const taskTypeStats = computed(() => {
 
 <template>
   <section class="em-page">
-    <div class="em-tabs" role="tablist">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        type="button"
-        role="tab"
-        class="em-tab"
-        :class="{ 'em-tab--active': activeTab === tab.id }"
-        :aria-selected="activeTab === tab.id"
-        @click="activeTab = tab.id"
-      >
-        {{ t(tab.labelKey) }}
-      </button>
-    </div>
-
-    <div v-if="loading" class="stat-grid">
+    <div v-if="loading" class="stat-grid stat-grid--responsive">
       <div v-for="n in 4" :key="n" class="md-skeleton" style="height: 5rem" />
     </div>
 
     <template v-else>
-      <template v-if="activeTab === 'overview'">
-        <div class="stat-grid stat-grid--responsive">
-          <StatCard
-            :label="t('usage.totalRequests')"
-            :value="formatNumber(requestCount)"
-            :hint="usage?.period ?? '—'"
-            icon="api"
-          />
-          <StatCard
-            :label="t('billing.compute')"
-            :value="formatMicroEur(usedMicro)"
-            :hint="`${t('usage.averageCost')}: ${formatMicroEur(averageMicro)}`"
-            icon="memory"
-          />
-          <StatCard
-            :label="t('dashboard.usageRate')"
-            :value="usageRate"
-            :hint="`${formatMicroEur(usedMicro)} / ${formatMicroEur(limitMicro)}`"
-            icon="data_usage"
-          />
-          <StatCard
-            :label="t('usage.activeTasks')"
-            :value="formatNumber(activeTaskCount)"
-            :hint="`${t('tasks.statusRunning')} ${formatNumber(statusStats.find((row) => row.status === 'running')?.count ?? 0)} · ${t('tasks.statusQueued')} ${formatNumber(statusStats.find((row) => row.status === 'queued')?.count ?? 0)}`"
-            icon="assignment"
-          />
-        </div>
+      <div class="stat-grid stat-grid--responsive">
+        <StatCard
+          :label="t('usage.totalRequests')"
+          :value="formatNumber(requestCount)"
+          :hint="usage?.period ?? '—'"
+          icon="tasks"
+        />
+        <StatCard
+          :label="t('billing.compute')"
+          :value="formatMicroEur(usedMicro)"
+          :hint="`${usageRate} · ${t('usage.averageCost')} ${formatMicroEur(averageMicro)}`"
+          icon="wallet"
+        />
+        <StatCard
+          :label="t('usage.activeTasks')"
+          :value="formatNumber(activeTaskCount)"
+          :hint="`${t('tasks.statusRunning')} ${formatNumber(statusStats.find((row) => row.status === 'running')?.count ?? 0)} · ${t('tasks.statusQueued')} ${formatNumber(statusStats.find((row) => row.status === 'queued')?.count ?? 0)}`"
+          icon="clock"
+        />
+        <StatCard
+          :label="t('tasks.statusDone')"
+          :value="formatNumber(succeededCount)"
+          :hint="usage?.period ?? '—'"
+          icon="check"
+        />
+      </div>
 
-        <div class="em-layout-charts">
-          <UsageTrendChart :task-items="taskItems" />
+      <div class="em-layout-charts">
+        <UsageTrendChart :task-items="taskItems" />
 
-          <article class="md-card em-usage-details">
-            <h2 class="em-section-title">{{ t('billing.usageSummary') }}</h2>
-            <div class="em-usage-gauge__header">
-              <span>{{ usage?.period ?? '—' }}</span>
-              <strong>{{ usageRate }}</strong>
-            </div>
-            <div class="em-usage-gauge__track">
-              <div class="em-usage-gauge__fill" :style="{ width: usageRate === '—' ? '0%' : usageRate }" />
-            </div>
-            <dl class="em-usage-details__list">
-              <div>
-                <dt>{{ t('billing.available') }}</dt>
-                <dd>{{ formatMicroEur(balance?.availableMicroEur) }}</dd>
+        <article class="md-card em-usage-details">
+          <h2 class="em-section-title">{{ t('dashboard.distribution') }}</h2>
+          <div v-if="!familyStats.length" class="empty-state">{{ t('usage.noData') }}</div>
+          <ul v-else class="em-bar-list">
+            <li v-for="row in familyStats" :key="row.label">
+              <div class="em-bar-list__label">
+                <span>{{ row.label }}</span>
+                <strong>{{ row.pct }}%</strong>
               </div>
-              <div>
-                <dt>{{ t('usage.reserved') }}</dt>
-                <dd>{{ formatMicroEur(balance?.reservedMicroEur) }}</dd>
+              <div class="em-bar-list__track">
+                <div class="em-bar-list__fill" :style="{ width: `${row.pct}%`, background: row.color }" />
               </div>
-              <div>
-                <dt>{{ t('usage.averageCost') }}</dt>
-                <dd>{{ formatMicroEur(averageMicro) }}</dd>
+            </li>
+          </ul>
+          <h3 class="em-usage-details__subtitle">{{ t('usage.statusBreakdown') }}</h3>
+          <ul class="em-bar-list">
+            <li v-for="row in statusStats" :key="row.status">
+              <div class="em-bar-list__label">
+                <span>{{ row.label }}</span>
+                <span>{{ formatNumber(row.count) }} ({{ row.pct }}%)</span>
               </div>
-              <div>
-                <dt>{{ t('dashboard.usagePeriod') }}</dt>
-                <dd>{{ usage?.period ?? '—' }}</dd>
+              <div class="em-bar-list__track">
+                <div
+                  class="em-bar-list__fill"
+                  :class="`em-bar-list__fill--${row.status}`"
+                  :style="{ width: `${row.pct}%` }"
+                />
               </div>
-            </dl>
-            <h3 class="em-usage-details__subtitle">{{ t('usage.statusBreakdown') }}</h3>
-            <ul class="em-bar-list">
-              <li v-for="row in statusStats" :key="row.status">
-                <div class="em-bar-list__label">
-                  <span>{{ row.label }}</span>
-                  <span>{{ formatNumber(row.count) }} ({{ row.pct }}%)</span>
-                </div>
-                <div class="em-bar-list__track">
-                  <div
-                    class="em-bar-list__fill"
-                    :class="`em-bar-list__fill--${row.status}`"
-                    :style="{ width: `${row.pct}%` }"
-                  />
-                </div>
-              </li>
-            </ul>
-          </article>
-        </div>
-      </template>
+            </li>
+          </ul>
+        </article>
+      </div>
 
-      <article v-if="activeTab === 'endpoint'" class="md-card">
-        <h2 class="em-section-title">{{ t('usage.topEndpoints') }}</h2>
-        <div v-if="!endpointStats.length" class="empty-state">{{ t('usage.noData') }}</div>
-        <ul v-else class="em-bar-list">
-          <li v-for="row in endpointStats" :key="row.endpoint">
-            <div class="em-bar-list__label">
-              <code>{{ row.endpoint }}</code>
-              <span>{{ formatNumber(row.count) }} ({{ row.pct }}%)</span>
-            </div>
-            <div class="em-bar-list__track">
-              <div class="em-bar-list__fill" :style="{ width: `${row.pct}%` }" />
-            </div>
-          </li>
-        </ul>
-      </article>
-
-      <article v-if="activeTab === 'taskType'" class="md-card">
+      <article class="md-card">
         <h2 class="em-section-title">{{ t('usage.byTaskType') }}</h2>
         <div v-if="!taskTypeStats.length" class="empty-state">{{ t('usage.noData') }}</div>
-        <ul v-else class="em-bar-list">
-          <li v-for="row in taskTypeStats" :key="row.type">
-            <div class="em-bar-list__label">
-              <code>{{ row.type }}</code>
-              <span>{{ formatNumber(row.count) }} ({{ row.pct }}%)</span>
-            </div>
-            <div class="em-bar-list__track">
-              <div class="em-bar-list__fill em-bar-list__fill--alt" :style="{ width: `${row.pct}%` }" />
-            </div>
-          </li>
-        </ul>
+        <div v-else class="md-table-wrap">
+          <table class="md-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('usage.byTaskType') }}</th>
+                <th scope="col">{{ t('dashboard.taskRuns') }}</th>
+                <th scope="col">{{ t('billing.compute') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="row in taskTypeStats" :key="row.type">
+                <td><code>{{ row.type }}</code></td>
+                <td>{{ formatNumber(row.count) }}</td>
+                <td>{{ row.pct }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </article>
     </template>
   </section>

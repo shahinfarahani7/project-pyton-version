@@ -3,8 +3,8 @@ import { computed, ref } from 'vue';
 
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
-import StatCard from '../components/ui/StatCard.vue';
 import { useAsyncResource } from '../composables/useAsyncResource';
+import StrokeIcon from '../components/ui/StrokeIcon.vue';
 import { t } from '../i18n';
 import { formatMicroEur, formatNumber } from '../utils/format';
 
@@ -12,7 +12,12 @@ const session = useSession();
 const walletName = ref('');
 const walletAmount = ref(10);
 const adding = ref(false);
+const formOpen = ref(false);
 const addError = ref('');
+
+function wholeMicro(value) {
+  return Number.isInteger(value) ? value : 0;
+}
 
 const canReadBilling = () =>
   Boolean(session.workspaceId && session.hasPermission('customer.billing:read'));
@@ -48,17 +53,12 @@ const { data: usage, loading: usageLoading } = useAsyncResource(
 const loading = computed(() => walletsLoading.value || usageLoading.value);
 const walletItems = computed(() => wallets.value?.items ?? []);
 const availableMicro = computed(() =>
-  walletItems.value.reduce((sum, wallet) => sum + (wallet.availableMicroEur ?? 0), 0),
+  walletItems.value.reduce((sum, wallet) => sum + wholeMicro(wallet.availableMicroEur), 0),
 );
 const reservedMicro = computed(() =>
-  walletItems.value.reduce((sum, wallet) => sum + (wallet.reservedMicroEur ?? 0), 0),
+  walletItems.value.reduce((sum, wallet) => sum + wholeMicro(wallet.reservedMicroEur), 0),
 );
-const usedMicro = computed(() => usage.value?.computeMicroEur ?? 0);
-const limitMicro = computed(() => Math.max(usedMicro.value + availableMicro.value + reservedMicro.value, 1));
-const usagePct = computed(() => {
-  if (!usage.value && !wallets.value) return 0;
-  return Math.min(100, Math.round((usedMicro.value / limitMicro.value) * 100));
-});
+const usedMicro = computed(() => wholeMicro(usage.value?.computeMicroEur));
 
 function walletLabel(wallet) {
   return wallet.builtin ? t('wallet.primary') : wallet.name;
@@ -84,6 +84,7 @@ async function addWallet() {
       : [...current.map((wallet) => ({ ...wallet })), created];
     wallets.value = { items: next };
     walletName.value = '';
+    formOpen.value = false;
     await refresh({ silent: true });
   } catch (err) {
     addError.value = err?.message || t('wallet.addError');
@@ -95,63 +96,92 @@ async function addWallet() {
 
 <template>
   <section class="em-page">
-    <div v-if="loading" class="stat-grid stat-grid--responsive stat-grid--dashboard">
-      <div v-for="n in 3" :key="n" class="md-skeleton" style="height: 5.5rem" />
+    <div v-if="loading" class="fn-wallet-summary">
+      <div v-for="n in 2" :key="n" class="md-skeleton" style="height: 8rem" />
     </div>
     <template v-else>
-      <div class="stat-grid stat-grid--responsive stat-grid--dashboard">
-        <StatCard
-          :label="t('billing.available')"
-          :value="formatMicroEur(availableMicro)"
-          icon="account_balance_wallet"
-        />
-        <StatCard
-          :label="t('usage.reserved')"
-          :value="formatMicroEur(reservedMicro)"
-          icon="lock"
-        />
-        <StatCard
-          :label="t('billing.compute')"
-          :value="formatMicroEur(usedMicro)"
-          :hint="usage?.period ?? '—'"
-          icon="payments"
-        />
+      <div class="fn-wallet-summary">
+        <article class="md-card fn-balance-card">
+          <p class="fn-section-caption">{{ t('wallet.availableCompute') }}</p>
+          <p class="fn-money">{{ formatMicroEur(availableMicro) }}</p>
+          <div class="fn-balance-details">
+            <span>
+              <StrokeIcon name="lock" />
+              {{ formatMicroEur(reservedMicro) }} {{ t('wallet.reservedWord') }}
+            </span>
+            <span>{{ formatNumber(walletItems.length) }} {{ t('wallet.count') }}</span>
+          </div>
+        </article>
+        <article class="md-card">
+          <div class="fn-card-head">
+            <h2 class="em-section-title">{{ t('wallet.creditUsage') }}</h2>
+            <span v-if="usage?.period" class="fn-badge fn-badge--neutral">{{ usage.period }}</span>
+          </div>
+          <dl class="fn-kv">
+            <div>
+              <dt>{{ t('billing.compute') }}</dt>
+              <dd>{{ formatMicroEur(usedMicro) }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('wallet.reservedCredit') }}</dt>
+              <dd>{{ formatMicroEur(reservedMicro) }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('billing.currency') }}</dt>
+              <dd>EUR</dd>
+            </div>
+          </dl>
+          <p class="fn-wallet-note">{{ t('wallet.separate') }}</p>
+        </article>
       </div>
 
-      <article class="md-card">
-        <h2 class="em-section-title">{{ t('wallet.list') }}</h2>
-        <ul class="em-invoice-list">
-          <li v-for="wallet in walletItems" :key="wallet.id">
-            <strong>{{ walletLabel(wallet) }}</strong>
-            <span>{{ formatMicroEur(wallet.availableMicroEur) }}</span>
-          </li>
-        </ul>
-        <form class="em-wallet-form" @submit.prevent="addWallet">
-          <label>
-            <span>{{ t('wallet.name') }}</span>
-            <input v-model="walletName" class="md-input" type="text" maxlength="80" required />
-          </label>
-          <label>
-            <span>{{ t('wallet.amount') }}</span>
-            <input v-model.number="walletAmount" class="md-input" type="number" min="1" step="1" required />
-          </label>
-          <button type="button" class="md-btn md-btn-filled" :disabled="adding" @click="addWallet">
-            {{ t('wallet.add') }}
-          </button>
-        </form>
+      <div class="fn-wallet-head">
+        <h2 class="em-section-title">{{ t('wallet.yourWallets') }}</h2>
+        <button v-if="!formOpen" type="button" class="md-btn md-btn-filled" @click="formOpen = true">
+          <StrokeIcon name="plus" />
+          {{ t('wallet.add') }}
+        </button>
+      </div>
+      <form v-if="formOpen" class="em-wallet-form md-card" @submit.prevent="addWallet">
+        <label>
+          <span>{{ t('wallet.name') }}</span>
+          <input v-model="walletName" class="md-input" type="text" maxlength="80" required />
+        </label>
+        <label>
+          <span>{{ t('wallet.amount') }}</span>
+          <input v-model.number="walletAmount" class="md-input" type="number" min="1" step="1" max="1000000" required />
+        </label>
+        <div class="fn-wallet-form__actions">
+          <button type="button" class="md-btn" @click="formOpen = false">{{ t('wallet.cancel') }}</button>
+          <button type="submit" class="md-btn md-btn-filled" :disabled="adding">{{ t('wallet.add') }}</button>
+        </div>
         <p v-if="addError" class="md-alert md-alert--error" role="alert">{{ addError }}</p>
-      </article>
-
-      <article class="md-card">
-        <div class="em-usage-gauge__header">
-          <span>{{ t('billing.usageSummary') }}</span>
-          <strong>{{ formatMicroEur(usedMicro) }} / {{ formatMicroEur(limitMicro) }}</strong>
-        </div>
-        <div class="em-usage-gauge__track">
-          <div class="em-usage-gauge__fill" :style="{ width: `${usagePct}%` }" />
-        </div>
-        <p class="md-hint">{{ usagePct }}% · {{ formatNumber(usage?.taskCount) }} {{ t('dashboard.taskRuns') }}</p>
-      </article>
+      </form>
+      <div class="fn-wallet-grid">
+        <article v-for="wallet in walletItems" :key="wallet.id" class="md-card fn-wallet-tile">
+          <div class="fn-card-head">
+            <span class="fn-step-icon" aria-hidden="true"><StrokeIcon name="wallet" /></span>
+            <span class="fn-badge fn-badge--neutral">{{ wallet.builtin ? t('wallet.primary') : t('wallet.custom') }}</span>
+          </div>
+          <h2>{{ walletLabel(wallet) }}</h2>
+          <p class="fn-wallet-amount">{{ formatMicroEur(wallet.availableMicroEur) }}</p>
+          <p class="fn-card-note">{{ t('billing.available') }}</p>
+          <dl class="fn-kv">
+            <div>
+              <dt>{{ t('dashboard.reserved') }}</dt>
+              <dd>{{ formatMicroEur(wallet.reservedMicroEur) }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('wallet.walletId') }}</dt>
+              <dd><code>{{ wallet.id }}</code></dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+      <p class="fn-notice">
+        <StrokeIcon name="wallet" />
+        <span>{{ t('wallet.notice') }}</span>
+      </p>
     </template>
   </section>
 </template>

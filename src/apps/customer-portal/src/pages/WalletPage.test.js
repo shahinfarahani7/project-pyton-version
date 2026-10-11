@@ -73,9 +73,10 @@ describe('wallet and account pages', () => {
 
     const wrapper = mount(WalletPage);
     await flushPromises();
+    await wrapper.get('button').trigger('click');
     await wrapper.get('input[type="text"]').setValue('Travel');
     await wrapper.get('input[type="number"]').setValue(5);
-    await wrapper.get('button').trigger('click');
+    await wrapper.get('form').trigger('submit');
     await flushPromises();
 
     expect(portalApi.addWallet).toHaveBeenCalledWith('ws-wallet', {

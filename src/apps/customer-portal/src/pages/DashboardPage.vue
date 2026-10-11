@@ -5,11 +5,10 @@ import { RouterLink } from 'vue-router';
 import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import StatCard from '../components/ui/StatCard.vue';
-import TaskResultCell from '../components/TaskResultCell.vue';
+import StrokeIcon from '../components/ui/StrokeIcon.vue';
 import UsageTrendChart from '../components/UsageTrendChart.vue';
 import { t } from '../i18n';
-import { formatDateTime, formatMicroEur, formatNumber, taskListTitle } from '../utils/format';
-import { buildDonutGradient } from '../utils/chartHelpers';
+import { formatDateTime, formatMicroEur, formatNumber, taskListTitle, taskStatusGroup } from '../utils/format';
 
 const session = useSession();
 const loading = ref(true);
@@ -19,19 +18,17 @@ const tasks = ref(null);
 
 const taskItems = computed(() => tasks.value?.items ?? []);
 
-const usedMicro = computed(() => usage.value?.computeMicroEur ?? 0);
-const limitMicro = computed(() => {
-  const available = balance.value?.availableMicroEur ?? 0;
-  const reserved = balance.value?.reservedMicroEur ?? 0;
-  return Math.max(usedMicro.value + available + reserved, 1);
-});
-const usageRate = computed(() => {
-  if (!usage.value && !balance.value) return '—';
-  return `${Math.min(100, Math.round((usedMicro.value / limitMicro.value) * 100))}%`;
-});
-const usageRateHint = computed(() => {
-  if (!usage.value && !balance.value) return '—';
-  return `${formatMicroEur(usedMicro.value)} / ${formatMicroEur(limitMicro.value)}`;
+const succeededCount = computed(
+  () => taskItems.value.filter((task) => taskStatusGroup(task.lifecycleStatus) === 'done').length,
+);
+const failedCount = computed(
+  () => taskItems.value.filter((task) => taskStatusGroup(task.lifecycleStatus) === 'failed').length,
+);
+const successRate = computed(() => {
+  if (!taskItems.value.length) {
+    return '—';
+  }
+  return `${Math.round((succeededCount.value / taskItems.value.length) * 1000) / 10}%`;
 });
 
 const distribution = computed(() => {
@@ -41,7 +38,7 @@ const distribution = computed(() => {
     buckets[family] = (buckets[family] ?? 0) + 1;
   }
   const total = taskItems.value.length || 1;
-  const palette = ['#7c4dff', '#5b8def', '#34d399', '#fbbf24', '#94a3b8'];
+  const palette = ['#cdae6f', '#2c84ff', '#19c7b4', '#c0a064', '#b3b5bd'];
   const slices = Object.entries(buckets)
     .map(([label, count], index) => ({
       label,
@@ -58,7 +55,30 @@ const distribution = computed(() => {
   }));
 });
 
-const donutGradient = computed(() => buildDonutGradient(distribution.value));
+const recentTasks = computed(() => taskItems.value.slice(0, 5));
+
+function statusPresentation(status) {
+  const group = taskStatusGroup(status);
+  if (group === 'done') return { label: t('dashboard.statusSucceeded'), tone: '' };
+  if (group === 'running') return { label: t('dashboard.statusRunning'), tone: 'blue' };
+  if (group === 'queued') return { label: t('dashboard.statusQueued'), tone: 'warn' };
+  if (group === 'failed') return { label: t('dashboard.statusFailed'), tone: 'bad' };
+  if (group === 'cancel') return { label: t('dashboard.statusCancelled'), tone: 'neutral' };
+  return { label: String(status || '—'), tone: 'neutral' };
+}
+
+function taskDuration(task) {
+  const group = taskStatusGroup(task?.lifecycleStatus);
+  if (group === 'queued' || group === 'running') return '—';
+  const start = Date.parse(task?.createdAt ?? '');
+  const end = Date.parse(task?.updatedAt ?? '');
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return '—';
+  const seconds = (end - start) / 1000;
+  if (seconds < 60) return `${(Math.round(seconds * 10) / 10).toFixed(1)}s`;
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.round(seconds % 60);
+  return `${minutes}m ${rest}s`;
+}
 
 onMounted(() => {
   if (!session.workspaceId) {
@@ -85,31 +105,48 @@ onMounted(() => {
 
 <template>
   <section class="em-page">
-    <div class="em-status-pill em-status-pill--success em-status-pill--banner">
-      <span class="material-symbols-outlined" aria-hidden="true">verified</span>
-      {{ t('dashboard.systemsOperational') }}
-    </div>
+    <section class="fn-hero">
+      <div class="fn-hero__copy">
+        <p class="fn-eyebrow">{{ t('dashboard.heroTag') }}</p>
+        <h2>{{ t('dashboard.heroTitle') }}</h2>
+        <p>{{ t('dashboard.heroBody') }}</p>
+        <RouterLink class="md-btn md-btn-filled" :to="{ name: 'tasks' }">
+          <StrokeIcon name="plus" />
+          {{ t('dashboard.createTask') }}
+        </RouterLink>
+      </div>
+      <div class="fn-hero__net" aria-hidden="true">
+        <span /><span /><span /><span /><span /><span />
+      </div>
+    </section>
 
     <div v-if="loading" class="stat-grid stat-grid--responsive stat-grid--dashboard">
-      <div v-for="n in 3" :key="n" class="md-skeleton" style="height: 5.5rem" />
+      <div v-for="n in 4" :key="n" class="md-skeleton" style="height: 5.5rem" />
     </div>
     <div v-else class="stat-grid stat-grid--responsive stat-grid--dashboard">
       <StatCard
         :label="t('dashboard.totalTasks')"
         :value="formatNumber(taskItems.length)"
         :hint="usage?.period ?? '—'"
-        icon="assignment"
+        icon="tasks"
       />
       <StatCard
-        :label="t('dashboard.usageRate')"
-        :value="usageRate"
-        :hint="usageRateHint"
-        icon="data_usage"
+        :label="t('dashboard.successRate')"
+        :value="successRate"
+        :hint="`${formatNumber(succeededCount)} ${t('dashboard.loadedTasks')}`"
+        icon="check"
+      />
+      <StatCard
+        :label="t('dashboard.failedTasks')"
+        :value="formatNumber(failedCount)"
+        :hint="t('dashboard.loadedTasks')"
+        icon="alert"
       />
       <StatCard
         :label="t('dashboard.balance')"
         :value="formatMicroEur(balance?.availableMicroEur)"
-        icon="schedule"
+        :hint="`${t('dashboard.reserved')} ${formatMicroEur(balance?.reservedMicroEur)}`"
+        icon="wallet"
       />
     </div>
 
@@ -119,45 +156,69 @@ onMounted(() => {
       <article class="md-card em-chart-card">
         <h2 class="em-section-title">{{ t('dashboard.distribution') }}</h2>
         <div v-if="!distribution.length" class="empty-state">{{ t('usage.noData') }}</div>
-        <div v-else class="em-donut-layout">
-          <div
-            class="em-donut-ring"
-            role="img"
-            :aria-label="t('dashboard.distribution')"
-            :style="{ background: donutGradient }"
-          />
-          <ul class="em-donut-legend">
-            <li v-for="slice in distribution" :key="slice.label">
-              <span class="em-donut-legend__dot" :style="{ background: slice.color }" />
+        <ul v-else class="em-bar-list">
+          <li v-for="slice in distribution" :key="slice.label">
+            <div class="em-bar-list__label">
               <span>{{ slice.label }}</span>
               <strong>{{ slice.pct }}%</strong>
-            </li>
-          </ul>
-        </div>
-      </article>
-    </div>
-
-    <div v-if="taskItems.length" class="em-layout-dashboard-bottom">
-      <article class="md-card">
-        <div class="em-section-header">
-          <h2 class="em-section-title">{{ t('dashboard.recentTasks') }}</h2>
-          <RouterLink class="md-btn md-btn-text" :to="{ name: 'tasks' }">{{ t('tasks.viewAll') }}</RouterLink>
-        </div>
-        <ul class="em-task-list">
-          <li v-for="task in taskItems.slice(0, 5)" :key="task.id">
-            <RouterLink :to="{ name: 'task-detail', params: { id: task.id } }" class="em-task-row">
-              <div class="em-task-row__primary">
-                <p class="em-task-row__type">{{ t('dashboard.taskTitleLabel') }}</p>
-                <p class="em-task-row__title" :title="taskListTitle(task)">{{ taskListTitle(task) }}</p>
-              </div>
-              <TaskResultCell :task="task" />
-              <div class="em-task-row__meta">
-                <span>{{ formatDateTime(task.createdAt) }}</span>
-              </div>
-            </RouterLink>
+            </div>
+            <div class="em-bar-list__track">
+              <div class="em-bar-list__fill" :style="{ width: `${slice.pct}%`, background: slice.color }" />
+            </div>
           </li>
         </ul>
       </article>
     </div>
+
+    <article v-if="recentTasks.length" class="md-card fn-recent">
+      <div class="fn-recent__head">
+        <h2 class="em-section-title">{{ t('dashboard.recentTasks') }}</h2>
+        <RouterLink class="md-btn md-btn-text" :to="{ name: 'tasks' }">
+          {{ t('dashboard.viewAllTasks') }}
+          <StrokeIcon name="arrow" />
+        </RouterLink>
+      </div>
+      <div class="fn-table-wrap">
+        <table class="fn-table">
+          <thead>
+            <tr>
+              <th scope="col">{{ t('tasks.colId') }}</th>
+              <th scope="col">{{ t('dashboard.colRequest') }}</th>
+              <th scope="col">{{ t('tasks.colType') }}</th>
+              <th scope="col">{{ t('dashboard.colStatus') }}</th>
+              <th scope="col">{{ t('tasks.colCreated') }}</th>
+              <th scope="col">{{ t('dashboard.colDuration') }}</th>
+              <th scope="col"><span class="fn-table__muted">{{ t('dashboard.colOpen') }}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="task in recentTasks" :key="task.id">
+              <td><strong>{{ task.id }}</strong></td>
+              <td>{{ taskListTitle(task) }}</td>
+              <td>{{ task.taskType || '—' }}</td>
+              <td>
+                <span class="fn-badge" :class="statusPresentation(task.lifecycleStatus).tone ? `fn-badge--${statusPresentation(task.lifecycleStatus).tone}` : ''">
+                  {{ statusPresentation(task.lifecycleStatus).label }}
+                </span>
+              </td>
+              <td>{{ formatDateTime(task.createdAt) }}</td>
+              <td>{{ taskDuration(task) }}</td>
+              <td>
+                <RouterLink
+                  class="fn-table__open"
+                  :to="{ name: 'task-detail', params: { id: task.id } }"
+                  :aria-label="`${t('dashboard.colOpen')} ${task.id}`"
+                >
+                  <StrokeIcon name="arrow" />
+                </RouterLink>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fn-table-foot">
+        <span>{{ t('dashboard.recordCount', { count: recentTasks.length }) }}</span>
+      </div>
+    </article>
   </section>
 </template>

@@ -8,7 +8,7 @@ describe('TaskSubmitForm chat composer', () => {
     const wrapper = mount(TaskSubmitForm);
 
     expect(wrapper.text()).toContain('What should I do?');
-    expect(wrapper.get('textarea').attributes('placeholder')).toBe('Message…');
+    expect(wrapper.get('textarea').attributes('placeholder')).toBe('Ask FibonAI to summarize, write or analyze…');
 
     await wrapper.get('textarea').setValue('خلاصه این متن را بنویس');
     await wrapper.get('textarea').trigger('keydown', { key: 'Enter' });

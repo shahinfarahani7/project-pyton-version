@@ -2,6 +2,7 @@
 import { RouterLink } from 'vue-router';
 
 import { useSession } from '../auth/session';
+import StrokeIcon from '../components/ui/StrokeIcon.vue';
 import { t } from '../i18n';
 
 const session = useSession();
@@ -16,9 +17,9 @@ const menuSections = [
   {
     titleKey: 'more.workspace',
     items: [
-      { name: 'files', labelKey: 'nav.files', icon: 'folder_open', permission: 'customer.tasks:read' },
-      { name: 'wallet', labelKey: 'nav.wallet', icon: 'account_balance_wallet', permission: 'customer.billing:read' },
-      { name: 'account', labelKey: 'nav.account', icon: 'person', permission: null },
+      { name: 'files', labelKey: 'nav.files', icon: 'file', permission: 'customer.tasks:read' },
+      { name: 'wallet', labelKey: 'nav.wallet', icon: 'wallet', permission: 'customer.billing:read' },
+      { name: 'account', labelKey: 'nav.account', icon: 'team', permission: null },
     ],
   },
 ];
@@ -35,31 +36,19 @@ const visibleSections = menuSections
 
 <template>
   <section class="em-page">
-    <article class="md-card em-sla-card">
-      <div class="em-sla-card__header">
-        <span class="em-status-pill em-status-pill--success">
-          <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
-          {{ t('more.systemsOperational') }}
-        </span>
-      </div>
-      <div class="em-sla-metrics">
-        <div><span>{{ t('more.slaUptime') }}</span><strong>100.0%</strong></div>
-        <div><span>{{ t('more.fallbackRate') }}</span><strong>0.15%</strong></div>
-        <div><span>{{ t('more.cloudFallback') }}</span><strong>12</strong></div>
-      </div>
-    </article>
-
-    <section v-for="section in visibleSections" :key="section.titleKey" class="em-more-section">
-      <h2 class="em-section-title">{{ t(section.titleKey) }}</h2>
-      <ul class="em-more-list">
-        <li v-for="item in section.items" :key="item.name">
-          <RouterLink :to="{ name: item.name }" class="em-more-link">
-            <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
-            <span>{{ t(item.labelKey) }}</span>
-            <span class="material-symbols-outlined em-more-link__chevron" aria-hidden="true">chevron_right</span>
-          </RouterLink>
-        </li>
-      </ul>
-    </section>
+    <div class="fn-tilegrid">
+      <template v-for="section in visibleSections" :key="section.titleKey">
+        <RouterLink
+          v-for="item in section.items"
+          :key="item.name"
+          :to="{ name: item.name }"
+          class="md-card fn-tile"
+        >
+          <span class="fn-tile__icon" aria-hidden="true"><StrokeIcon :name="item.icon" /></span>
+          <h2>{{ t(item.labelKey) }}</h2>
+          <p>{{ t(section.titleKey) }}</p>
+        </RouterLink>
+      </template>
+    </div>
   </section>
 </template>

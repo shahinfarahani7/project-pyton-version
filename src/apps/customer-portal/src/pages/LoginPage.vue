@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { authApi } from '../api/client';
+import BrandLockup from '../components/BrandLockup.vue';
 import { useSession } from '../auth/session';
 import { t } from '../i18n';
 import { trackEvent } from '../telemetry';
@@ -164,10 +165,7 @@ async function signInWithPassword() {
     <div class="login-layout">
       <section class="login-hero">
         <div class="login-brand">
-          <span class="login-brand__mark" aria-hidden="true">
-            <span class="material-symbols-outlined">hub</span>
-          </span>
-          <span class="login-brand__name">EdgeMint</span>
+          <BrandLockup class="fn-logo--login" />
         </div>
         <div class="login-hero__copy">
           <h1>{{ t('login.heroTitle') }}</h1>

@@ -5,7 +5,6 @@ import { portalApi } from '../api/client';
 import { useSession } from '../auth/session';
 import { useAsyncResource } from '../composables/useAsyncResource';
 import EmptyState from '../components/ui/EmptyState.vue';
-import StatusChip from '../components/ui/StatusChip.vue';
 import { t } from '../i18n';
 import { formatMicroEur, formatNumber } from '../utils/format';
 
@@ -31,57 +30,127 @@ const loading = computed(
 );
 
 const usedMicro = computed(() => usage.value?.computeMicroEur ?? 0);
-const limitMicro = computed(() => {
-  const available = balance.value?.availableMicroEur ?? 0;
-  const reserved = balance.value?.reservedMicroEur ?? 0;
-  return Math.max(usedMicro.value + available + reserved, 1);
-});
-const usagePct = computed(() => Math.min(100, Math.round((usedMicro.value / limitMicro.value) * 100)));
+const invoiceItems = computed(() => invoices.value?.items ?? []);
+const openInvoices = computed(() =>
+  invoiceItems.value.filter((invoice) => String(invoice.status || '').toLowerCase() === 'open'),
+);
+const amountDueMicro = computed(() =>
+  openInvoices.value.reduce((sum, invoice) => {
+    const amount = invoice.amountDueMicroEur;
+    return Number.isInteger(amount) ? sum + amount : sum;
+  }, 0),
+);
+
+function invoiceStatus(status) {
+  const value = String(status || '').toLowerCase();
+  if (value === 'paid') return { label: t('billing.statusPaid'), tone: '' };
+  if (value === 'open') return { label: t('billing.statusOpen'), tone: 'warn' };
+  if (value === 'draft') return { label: t('billing.statusDraft'), tone: 'neutral' };
+  if (value === 'void' || value === 'failed') return { label: String(status), tone: 'bad' };
+  return { label: status ? String(status) : '—', tone: 'neutral' };
+}
+
+function invoicePeriod(invoice) {
+  return invoice.period || invoice.billingPeriod || '—';
+}
+
+function invoiceDue(invoice) {
+  return invoice.dueDate || invoice.dueAt || '—';
+}
 </script>
 
 <template>
   <section class="em-page em-page--billing">
-    <div class="em-layout-billing-top">
-      <article class="md-card em-plan-card">
-        <p class="em-plan-card__label">{{ t('billing.currentPlan') }}</p>
-        <h2 class="em-plan-card__title">{{ t('billing.enterprisePlan') }}</h2>
-        <p class="em-plan-card__price">{{ t('billing.planPrice') }}</p>
-        <p class="md-hint">{{ usage?.period ?? '—' }}</p>
+    <div class="fn-billing-grid">
+      <article class="md-card fn-balance-card">
+        <div class="fn-card-head">
+          <h2 class="em-section-title">{{ t('billing.available') }}</h2>
+        </div>
+        <p class="fn-money">{{ formatMicroEur(balance?.availableMicroEur) }}</p>
+        <p class="fn-card-note">{{ t('billing.availableHint') }}</p>
+        <dl class="fn-kv">
+          <div>
+            <dt>{{ t('dashboard.reserved') }}</dt>
+            <dd>{{ formatMicroEur(balance?.reservedMicroEur) }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('billing.computePeriod') }}</dt>
+            <dd>{{ formatMicroEur(usedMicro) }}</dd>
+          </div>
+        </dl>
       </article>
 
       <article class="md-card">
-      <div class="em-usage-gauge__header">
-        <span>{{ t('billing.usageSummary') }}</span>
-        <strong>{{ formatMicroEur(usedMicro) }} / {{ formatMicroEur(limitMicro) }}</strong>
-      </div>
-      <div class="em-usage-gauge__track">
-        <div class="em-usage-gauge__fill" :style="{ width: `${usagePct}%` }" />
-      </div>
-      <p class="md-hint">{{ usagePct }}% · {{ formatNumber(usage?.taskCount) }} {{ t('dashboard.taskRuns') }}</p>
+        <div class="fn-card-head">
+          <h2 class="em-section-title">{{ t('billing.creditAtWork') }}</h2>
+        </div>
+        <p class="fn-card-sub">{{ t('billing.creditAtWorkBody') }}</p>
+        <dl class="fn-kv">
+          <div>
+            <dt>{{ t('billing.currency') }}</dt>
+            <dd>EUR</dd>
+          </div>
+          <div>
+            <dt>{{ t('dashboard.usagePeriod') }}</dt>
+            <dd>{{ usage?.period ?? '—' }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('billing.openInvoices') }}</dt>
+            <dd>{{ formatNumber(openInvoices.length) }}</dd>
+          </div>
+          <div>
+            <dt>{{ t('billing.amount') }}</dt>
+            <dd>{{ formatMicroEur(amountDueMicro) }}</dd>
+          </div>
+        </dl>
       </article>
     </div>
 
     <div v-if="loading" class="md-card"><div class="md-skeleton" style="height: 6rem" /></div>
 
-    <article v-else class="md-card">
-      <h2 class="em-section-title">{{ t('billing.invoicesTitle') }}</h2>
+    <article v-else class="md-card fn-recent">
+      <div class="fn-recent__head">
+        <h2 class="em-section-title">{{ t('billing.invoicesTitle') }}</h2>
+      </div>
       <EmptyState
-        v-if="!(invoices?.items?.length)"
+        v-if="!invoiceItems.length"
         :title="t('billing.invoicesEmpty')"
         icon="receipt_long"
       />
-      <ul v-else class="em-invoice-list">
-        <li v-for="invoice in invoices.items" :key="invoice.id">
-          <div>
-            <strong>{{ invoice.id }}</strong>
-            <p class="md-hint">{{ formatMicroEur(invoice.amountDueMicroEur) }}</p>
-          </div>
-          <StatusChip :status="invoice.status" />
-        </li>
-      </ul>
-      <button type="button" class="md-btn md-btn-filled md-btn-block" disabled>
-        {{ t('billing.viewInvoices') }}
-      </button>
+      <template v-else>
+        <div class="fn-table-wrap">
+          <table class="fn-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('billing.invoiceId') }}</th>
+                <th scope="col">{{ t('billing.colPeriod') }}</th>
+                <th scope="col">{{ t('billing.amount') }}</th>
+                <th scope="col">{{ t('billing.status') }}</th>
+                <th scope="col">{{ t('billing.colDue') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="invoice in invoiceItems" :key="invoice.id">
+                <td><strong>{{ invoice.id }}</strong></td>
+                <td>{{ invoicePeriod(invoice) }}</td>
+                <td>{{ formatMicroEur(invoice.amountDueMicroEur) }}</td>
+                <td>
+                  <span
+                    class="fn-badge"
+                    :class="invoiceStatus(invoice.status).tone ? `fn-badge--${invoiceStatus(invoice.status).tone}` : ''"
+                  >
+                    {{ invoiceStatus(invoice.status).label }}
+                  </span>
+                </td>
+                <td>{{ invoiceDue(invoice) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="fn-table-foot">
+          <span>{{ t('dashboard.recordCount', { count: invoiceItems.length }) }}</span>
+        </div>
+      </template>
     </article>
   </section>
 </template>

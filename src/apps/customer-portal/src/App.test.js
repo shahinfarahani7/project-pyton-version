@@ -164,7 +164,7 @@ describe('customer-portal shell', () => {
       expect(session.authenticated).toBe(true);
     });
     await vi.waitFor(() => {
-      expect(document.body.textContent).toMatch(/dashboard/i);
+      expect(document.body.textContent).toMatch(/overview/i);
     });
   });
 
@@ -213,7 +213,7 @@ describe('customer-portal shell', () => {
       expect(session.authenticated).toBe(true);
     });
     await vi.waitFor(() => {
-      expect(document.body.textContent).toMatch(/dashboard/i);
+      expect(document.body.textContent).toMatch(/overview/i);
     });
   });
 
@@ -315,7 +315,7 @@ describe('customer-portal shell', () => {
       expect(session.authenticated).toBe(true);
     });
     await vi.waitFor(() => {
-      expect(document.body.textContent).toMatch(/dashboard/i);
+      expect(document.body.textContent).toMatch(/overview/i);
     });
   });
 });

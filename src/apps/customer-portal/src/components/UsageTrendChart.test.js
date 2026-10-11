@@ -29,16 +29,15 @@ describe('UsageTrendChart', () => {
     expect(wrapper.findAll('circle.em-line-chart__dot')).toHaveLength(30);
   });
 
-  it('replaces success and failure cards with usage rate', async () => {
+  it('shows success rate, failed tasks, and a bar chart', async () => {
     session.workspaceId = null;
     const wrapper = mount(DashboardPage, {
       global: { stubs: { RouterLink: true } },
     });
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.text()).toContain('Usage Rate');
-    expect(wrapper.text()).not.toContain('Success Rate');
-    expect(wrapper.text()).not.toContain('Failed / Rejected');
+    expect(wrapper.text()).toContain('Success rate');
+    expect(wrapper.text()).toContain('Failed tasks');
     expect(wrapper.text()).toContain('Day');
     expect(wrapper.text()).toContain('Week');
     expect(wrapper.text()).toContain('Month');

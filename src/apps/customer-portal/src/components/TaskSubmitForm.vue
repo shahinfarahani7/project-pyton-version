@@ -2,6 +2,7 @@
 import { nextTick, ref, watch } from 'vue';
 
 import { resolveTaskTypeForIntake, taskTypeAccept } from '../config/taskTypeCatalog';
+import StrokeIcon from './ui/StrokeIcon.vue';
 import { t } from '../i18n';
 
 const props = defineProps({
@@ -158,29 +159,13 @@ function onComposerKeydown(event) {
       <p v-if="composerOnly && (localError || error)" class="md-alert md-alert--error" role="alert">
         {{ localError || error }}
       </p>
-      <p v-if="inputFile" class="em-chat__attachment">
-        <span class="material-symbols-outlined" aria-hidden="true">draft</span>
-        {{ inputFile.name }}
-        <button type="button" class="em-icon-btn" :aria-label="t('tasks.inputFileClear')" @click="clearFile">
-          <span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-      </p>
       <div class="em-chat__composer">
-        <button
-          type="button"
-          class="em-chat__icon-btn"
-          :aria-label="t('tasks.browseFiles')"
-          :disabled="submitting"
-          @click="browseFiles"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">attach_file</span>
-        </button>
         <label class="visually-hidden" for="task-chat-input">{{ t('tasks.instructionsLabel') }}</label>
         <textarea
           id="task-chat-input"
           ref="composerEl"
           v-model="instructions"
-          rows="1"
+          rows="2"
           :placeholder="t('tasks.chatPlaceholder')"
           :disabled="submitting"
           @input="resizeComposer"
@@ -194,11 +179,35 @@ function onComposerKeydown(event) {
           :disabled="submitting"
           @change="onFileChange"
         />
-        <button type="submit" class="em-chat__send" :aria-label="t('tasks.submitTask')" :disabled="submitting">
-          <span v-if="submitting" class="md-spinner md-spinner--inline" aria-hidden="true" />
-          <span v-else class="material-symbols-outlined" aria-hidden="true">send</span>
-        </button>
+        <div class="em-chat__composer-tools">
+          <div class="em-chat__composer-actions">
+            <button
+              type="button"
+              class="em-chat__icon-btn"
+              :aria-label="t('tasks.browseFiles')"
+              :disabled="submitting"
+              @click="browseFiles"
+            >
+              <StrokeIcon name="plus" />
+            </button>
+            <span v-if="inputFile" class="em-chat__composer-file">{{ inputFile.name }}</span>
+            <button
+              v-if="inputFile"
+              type="button"
+              class="em-chat__icon-btn"
+              :aria-label="t('tasks.inputFileClear')"
+              @click="clearFile"
+            >
+              <StrokeIcon name="close" />
+            </button>
+          </div>
+          <button type="submit" class="em-chat__send" :aria-label="t('tasks.submitTask')" :disabled="submitting">
+            <span v-if="submitting" class="md-spinner md-spinner--inline" aria-hidden="true" />
+            <StrokeIcon v-else name="arrow" />
+          </button>
+        </div>
       </div>
+      <p v-if="composerOnly" class="em-chat__composer-note">{{ t('tasks.composerNote') }}</p>
     </div>
 
     <button
