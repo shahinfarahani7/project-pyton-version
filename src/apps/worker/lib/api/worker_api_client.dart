@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'worker_assignment_models.dart';
+import 'worker_contribution_models.dart';
 import '../config/worker_config.dart';
 import 'worker_routes.dart';
 
@@ -194,6 +195,37 @@ class WorkerApiClient {
       requestId: requestId,
     );
     return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<WorkerContributionSummary> syncWorkerContribution({
+    required String accessToken,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    final response = await _post(
+      WorkerRoutes.syncWorkerContribution,
+      body: const {},
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
+    return WorkerContributionSummary.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Future<void> activateContributionBoost({
+    required String accessToken,
+    required String idempotencyKey,
+    String? requestId,
+  }) async {
+    await _post(
+      WorkerRoutes.activateContributionBoost,
+      body: const {},
+      accessToken: accessToken,
+      idempotencyKey: idempotencyKey,
+      requestId: requestId,
+    );
   }
 
   Future<CommandReceipt> replaceWorkerPreferences({

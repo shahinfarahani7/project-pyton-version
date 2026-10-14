@@ -41,6 +41,12 @@ spec:
   - code: AUTH_SCOPE_REQUIRED
     httpStatus: 403
     retryable: false
+  - code: BOOST_ALREADY_ACTIVE
+    httpStatus: 409
+    retryable: false
+  - code: BOOST_PRICE_NOT_CONFIGURED
+    httpStatus: 409
+    retryable: false
   - code: CHALLENGE_EXPIRED
     httpStatus: 409
     retryable: false
@@ -266,6 +272,12 @@ spec:
   - code: TOKEN_CLAIM_NOT_ENABLED
     httpStatus: 403
     retryable: true
+  - code: TOKEN_DEBIT_FAILED
+    httpStatus: 402
+    retryable: false
+  - code: TOKEN_WALLET_UNAVAILABLE
+    httpStatus: 503
+    retryable: false
   - code: TRANSFER_REFERENCE_MISMATCH
     httpStatus: 409
     retryable: false

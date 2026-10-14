@@ -133,6 +133,8 @@ function Apply-DevHotPatches {
     if (-not (Wait-BackendHealth -TimeoutSeconds 90)) {
         Write-Host '   WARN: backend slow to recover; continuing if worker-gateway is healthy.'
     }
+    Write-Host '   Applying pending PostgreSQL migrations (worker contribution XP, etc.)...'
+    docker compose --env-file .env.docker -f compose.yaml run --rm postgresql-init 2>$null | Out-Null
 }
 
 function Resolve-AdbDevice {

@@ -99,6 +99,8 @@ function Apply-DevHotPatches {
     if (-not (Wait-BackendHealth -TimeoutSeconds 120)) {
         Write-Host '   WARN: backend slow to recover after hot-patch.'
     }
+    Write-Host '   Applying pending PostgreSQL migrations (worker contribution XP, etc.)...'
+    docker compose --env-file .env.docker -f compose.yaml run --rm postgresql-init 2>$null | Out-Null
 }
 
 function Ensure-FirewallRule {

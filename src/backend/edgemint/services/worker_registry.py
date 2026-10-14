@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import UTC, datetime
 
 import httpx
 from fastapi import Header, Request
@@ -8,6 +9,9 @@ from fastapi.responses import JSONResponse, Response
 
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
+from edgemint.contribution.boost import ContributionError
+from edgemint.contribution.service import ContributionService
+from edgemint.contribution.sql_repository import SqlContributionRepository
 from edgemint.security.problems import request_trace_id
 from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
@@ -21,6 +25,7 @@ from edgemint.workers.schemas import (
     ReplaceWorkerPreferencesRequest,
     SubmitBenchmarkRequest,
 )
+from edgemint.workers.sessions import resolve_worker_session
 
 app = create_service_app("worker-registry")
 enrollment = WorkerEnrollmentService()
@@ -185,6 +190,63 @@ async def replace_worker_preferences(
     response = JSONResponse(body.model_dump(mode="json"), status_code=200)
     response.headers["X-Request-Id"] = request_trace_id(request)
     return response
+
+
+def _contribution_problem(request: Request, exc: ContributionError) -> JSONResponse:
+    return JSONResponse(
+        {
+            "type": f"https://problems.edgemint.io/{exc.code.lower().replace('_', '-')}",
+            "title": exc.code,
+            "status": exc.status,
+            "code": exc.code,
+            "traceId": request_trace_id(request),
+            "retryable": False,
+            **({"detail": exc.detail} if exc.detail else {}),
+        },
+        status_code=exc.status,
+        media_type="application/problem+json",
+    )
+
+
+@app.post("/worker-contribution:sync", tags=["contribution"])
+async def sync_worker_contribution(
+    token: WorkerBearerToken,
+    idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128),
+) -> JSONResponse:
+    async with transaction(isolation="READ COMMITTED") as connection:
+        session = await resolve_worker_session(connection, access_token=token)
+        service = ContributionService(repository=SqlContributionRepository(connection))
+        body = await service.summary(session.device_id, now=datetime.now(UTC))
+    return JSONResponse(body, status_code=200)
+
+
+@app.post("/worker-contribution/boosts", tags=["contribution"], status_code=201)
+async def purchase_worker_contribution_boost(
+    request: Request,
+    token: WorkerBearerToken,
+    idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=128),
+) -> JSONResponse:
+    try:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            session = await resolve_worker_session(connection, access_token=token)
+            service = ContributionService(repository=SqlContributionRepository(connection))
+            boost, replayed = await service.purchase_boost(
+                worker_id=session.worker_id,
+                worker_device_id=session.device_id,
+                idempotency_key=idempotency_key,
+                now=datetime.now(UTC),
+            )
+    except ContributionError as exc:
+        return _contribution_problem(request, exc)
+    return JSONResponse(
+        {
+            "boostId": str(boost.boost_id),
+            "expiresAt": boost.expires_at.isoformat(),
+            "remainingTasks": boost.remaining_tasks(),
+            "replayed": replayed,
+        },
+        status_code=200 if replayed else 201,
+    )
 
 
 def _dev_worker_assignments_enabled() -> bool:

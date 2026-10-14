@@ -2185,6 +2185,147 @@ paths:
         applicable, structured Problem responses, audit requirements, and optimistic concurrency defined by the canonical
         OperationContract. Availability is the only worker-controlled opt-in/out for new automatic assignments; it is not
         a per-task decision.
+  /worker-contribution:sync:
+    post:
+      operationId: syncWorkerContribution
+      summary: Score accepted results and return contribution XP, level and boost status
+      tags:
+      - contribution
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerContributionSummary'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      x-required-permissions:
+      - worker.contribution:write
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Contribution XP is awarded once per accepted result candidate with a reward entitlement, from
+        server assignment start/end times capped per task type. XP is not money and does not affect routing,
+        trust score or EUR worker rewards.
+  /worker-contribution/boosts:
+    post:
+      operationId: activateContributionBoost
+      summary: Activate a contribution XP boost by debiting contributor tokens
+      tags:
+      - contribution
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivateContributionBoostResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+        '200':
+          description: Idempotent replay of an existing activation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivateContributionBoostResponse'
+          headers:
+            X-Request-Id:
+              schema:
+                type: string
+        '401':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '402':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '422':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '503':
+          description: Error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      parameters:
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      x-required-permissions:
+      - worker.contribution:write
+      x-edgemint-owner: worker
+      x-edgemint-contract-version: 5.0.0
+      description: Activation happens only after a committed contributor-token debit. Customer EUR credit is never
+        used. Returns BOOST_PRICE_NOT_CONFIGURED or TOKEN_WALLET_UNAVAILABLE while tokens are disabled in GA1.
   /assignments/{assignmentId}/result-upload-intents:
     post:
       operationId: createAssignmentResultUploadIntent
@@ -3612,6 +3753,111 @@ components:
       - version
     CreateRewardClaimResponse:
       $ref: '#/components/schemas/Reward'
+    WorkerContributionSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - policyVersion
+      - level
+      - nextLevel
+      - totalCentiXp
+      - totalXp
+      - currentLevelMinCentiXp
+      - nextLevelMinCentiXp
+      - remainingCentiXp
+      - progressBps
+      - verifiedTaskCount
+      - acceptedProcessingMs
+      - boost
+      - boostPurchase
+      - scoringStatus
+      properties:
+        policyVersion:
+          type: string
+        level:
+          type: string
+          enum: [bronze, silver, gold, platinum]
+        nextLevel:
+          type: [string, 'null']
+          enum: [silver, gold, platinum, null]
+        totalCentiXp:
+          type: integer
+          minimum: 0
+        totalXp:
+          type: string
+          pattern: ^[0-9]+\.[0-9]{2}$
+        currentLevelMinCentiXp:
+          type: integer
+          minimum: 0
+        nextLevelMinCentiXp:
+          type: [integer, 'null']
+          minimum: 0
+        remainingCentiXp:
+          type: [integer, 'null']
+          minimum: 0
+        progressBps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        verifiedTaskCount:
+          type: integer
+          minimum: 0
+        acceptedProcessingMs:
+          type: [integer, 'null']
+          minimum: 0
+        boost:
+          type: object
+          additionalProperties: false
+          required: [active, bonusBps, expiresAt, remainingTasks]
+          properties:
+            active:
+              type: boolean
+            bonusBps:
+              type: integer
+              minimum: 0
+            expiresAt:
+              type: [string, 'null']
+              format: date-time
+            remainingTasks:
+              type: [integer, 'null']
+              minimum: 0
+        boostPurchase:
+          type: object
+          additionalProperties: false
+          required: [enabled, blockedReason, priceTokenMinorUnits, durationHours, taskQuota]
+          properties:
+            enabled:
+              type: boolean
+            blockedReason:
+              type: [string, 'null']
+              enum: [BOOST_PRICE_NOT_CONFIGURED, TOKEN_WALLET_UNAVAILABLE, BOOST_ALREADY_ACTIVE, null]
+            priceTokenMinorUnits:
+              type: [integer, 'null']
+              minimum: 1
+            durationHours:
+              type: integer
+              minimum: 1
+            taskQuota:
+              type: integer
+              minimum: 1
+        scoringStatus:
+          type: string
+          enum: [ok, degraded]
+    ActivateContributionBoostResponse:
+      type: object
+      additionalProperties: false
+      required: [boostId, expiresAt, remainingTasks, replayed]
+      properties:
+        boostId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        remainingTasks:
+          type: integer
+          minimum: 0
+        replayed:
+          type: boolean
     GetWorkerPreferencesResponse:
       $ref: '#/components/schemas/WorkerPreferences'
     ReplaceWorkerPreferencesRequest:

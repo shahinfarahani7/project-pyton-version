@@ -3,9 +3,9 @@
   "useCases": 60,
   "useCaseScenarios": 120,
   "allScenarios": 215,
-  "openApiOperations": 141,
-  "operationContracts": 141,
-  "sqlTables": 76,
+  "openApiOperations": 145,
+  "operationContracts": 143,
+  "sqlTables": 99,
   "rows": [
     {
       "requirement": "req-bill-001",
@@ -839,6 +839,14 @@
       ]
     },
     {
+      "operationId": "activateContributionBoost",
+      "api": "worker",
+      "method": "POST",
+      "path": "/worker-contribution/boosts",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
       "operationId": "activateEconomyKillSwitch",
       "api": "operations",
       "method": "POST",
@@ -1317,6 +1325,14 @@
       "useCases": []
     },
     {
+      "operationId": "getResourceContributionPolicy",
+      "api": "worker",
+      "method": "GET",
+      "path": "/policy/resource-contribution",
+      "classification": null,
+      "useCases": []
+    },
+    {
       "operationId": "getResumeDecision",
       "api": "worker",
       "method": "GET",
@@ -1386,6 +1402,14 @@
       "method": "GET",
       "path": "/webhook-deliveries/{id}",
       "classification": "supporting_query",
+      "useCases": []
+    },
+    {
+      "operationId": "getWorkerCalibrationProfile",
+      "api": "worker",
+      "method": "GET",
+      "path": "/workers/{workerId}/calibration",
+      "classification": null,
       "useCases": []
     },
     {
@@ -2033,6 +2057,14 @@
       "useCases": []
     },
     {
+      "operationId": "syncWorkerContribution",
+      "api": "worker",
+      "method": "POST",
+      "path": "/worker-contribution:sync",
+      "classification": "supporting_command",
+      "useCases": []
+    },
+    {
       "operationId": "testWebhookEndpoint",
       "api": "public",
       "method": "POST",
@@ -2057,5 +2089,7 @@
       "useCases": []
     }
   ],
-  "errors": []
+  "errors": [
+    "OperationContract/OpenAPI mismatch missing=['getResourceContributionPolicy', 'getWorkerCalibrationProfile'] extra=[]"
+  ]
 }

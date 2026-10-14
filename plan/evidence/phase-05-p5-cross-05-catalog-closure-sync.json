@@ -1,14 +1,18 @@
 {
-  "status": "passed",
+  "status": "failed",
   "test": "catalog-closure-sync",
-  "catalogTaskCount": 56,
-  "executableCount": 56,
+  "catalogTaskCount": 59,
+  "executableCount": 59,
   "nonExecutableCount": 0,
   "metadataIncompleteCount": 0,
-  "dslContractCompleteCount": 56,
+  "dslContractCompleteCount": 57,
   "goldenFixtureCount": 56,
   "contractCompleteCount": 56,
-  "contractIncompleteTaskTypes": [],
+  "contractIncompleteTaskTypes": [
+    "document.classify",
+    "document.summarize",
+    "text.direct"
+  ],
   "nonExecutableTaskTypes": [],
   "metadataIncomplete": []
 }

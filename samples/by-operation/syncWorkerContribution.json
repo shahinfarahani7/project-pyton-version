@@ -1,0 +1,52 @@
+{
+  "api": "edgemint-worker-api",
+  "operationId": "syncWorkerContribution",
+  "request": {
+    "method": "POST",
+    "path": "/worker-contribution:sync",
+    "pathParameters": {},
+    "query": {},
+    "headers": {
+      "X-Request-Id": "req_syncWorkerContribution_0001",
+      "Idempotency-Key": "idem_syncWorkerContribution_0001",
+      "Authorization": "Bearer worker_access_token_redacted"
+    },
+    "body": null
+  },
+  "expected": {
+    "successStatus": "200",
+    "successBody": {
+      "policyVersion": "worker-contribution-xp-v1@1.0.0",
+      "level": "silver",
+      "nextLevel": "gold",
+      "totalCentiXp": 125000,
+      "totalXp": "1250.00",
+      "currentLevelMinCentiXp": 50000,
+      "nextLevelMinCentiXp": 200000,
+      "remainingCentiXp": 75000,
+      "progressBps": 5000,
+      "verifiedTaskCount": 90,
+      "acceptedProcessingMs": 9000000,
+      "boost": {
+        "active": false,
+        "bonusBps": 2500,
+        "expiresAt": null,
+        "remainingTasks": null
+      },
+      "boostPurchase": {
+        "enabled": false,
+        "blockedReason": "BOOST_PRICE_NOT_CONFIGURED",
+        "priceTokenMinorUnits": null,
+        "durationHours": 24,
+        "taskQuota": 50
+      },
+      "scoringStatus": "ok"
+    },
+    "mutationIsIdempotent": true,
+    "operationMustBeAuthorized": true,
+    "requiredPermissions": [
+      "worker.contribution:write"
+    ],
+    "problemMediaType": "application/problem+json"
+  }
+}

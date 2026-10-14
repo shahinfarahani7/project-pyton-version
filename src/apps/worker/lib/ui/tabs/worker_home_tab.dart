@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -5,8 +7,9 @@ import '../../runtime/execution_status.dart';
 import '../../worker_app_controller.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
+import 'worker_contribution_section.dart';
 
-class WorkerHomeTab extends StatelessWidget {
+class WorkerHomeTab extends StatefulWidget {
   const WorkerHomeTab({
     super.key,
     required this.controller,
@@ -34,7 +37,24 @@ class WorkerHomeTab extends StatelessWidget {
   }
 
   @override
+  State<WorkerHomeTab> createState() => _WorkerHomeTabState();
+}
+
+class _WorkerHomeTabState extends State<WorkerHomeTab> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final c = widget.controller;
+      if (c.contribution == null && !c.contributionLoading && c.contributionError != null) {
+        unawaited(c.refreshContribution());
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = widget.controller;
     final wide = MediaQuery.sizeOf(context).width >= 900;
     return ListView(
       padding: EdgeInsets.fromLTRB(wide ? 24 : 16, 16, wide ? 24 : 16, 24),
@@ -43,11 +63,20 @@ class WorkerHomeTab extends StatelessWidget {
         const SizedBox(height: 16),
         _HomeStatRow(tasksCompleted: controller.tasksProcessed),
         const SizedBox(height: 16),
+        WorkerContributionSection(
+          summary: controller.contribution,
+          loading: controller.contributionLoading,
+          error: controller.contributionError,
+          activating: controller.boostActivating,
+          onRetry: controller.refreshContribution,
+          onActivateBoost: controller.activateContributionBoost,
+        ),
+        const SizedBox(height: 16),
         const _EarningsChart(),
         const SizedBox(height: 16),
         _BoostPrompt(
           available: controller.available,
-          onAvailabilityChanged: onAvailabilityChanged,
+          onAvailabilityChanged: widget.onAvailabilityChanged,
         ),
       ],
     );

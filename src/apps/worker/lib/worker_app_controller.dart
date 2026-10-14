@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 
 import 'api/worker_api_client.dart';
 import 'api/worker_assignment_models.dart';
+import 'api/worker_contribution_models.dart';
 import 'api/worker_routes.dart';
 import 'config/worker_config.dart';
 import 'contracts/worker_error.dart';
@@ -280,6 +281,66 @@ class WorkerAppController extends ChangeNotifier {
 
   int tasksProcessed = 0;
 
+  // Contributor XP is display-only state; it never gates task execution.
+  WorkerContributionSummary? contribution;
+  bool contributionLoading = false;
+  String? contributionError;
+  bool boostActivating = false;
+  int _contributionRequestSeq = 0;
+
+  String _contributionKey(String prefix) =>
+      '$prefix-${DateTime.now().toUtc().microsecondsSinceEpoch}-${++_contributionRequestSeq}';
+
+  Future<void> refreshContribution() async {
+    final token = _accessTokenProvider.current;
+    if (token.isEmpty || _disposed || contributionLoading) {
+      return;
+    }
+    contributionLoading = true;
+    notifyListeners();
+    try {
+      contribution = await _api.syncWorkerContribution(
+        accessToken: token,
+        idempotencyKey: _contributionKey('contribution-sync'),
+      );
+      contributionError = null;
+    } catch (error) {
+      contributionError = error is WorkerApiException ? error.code : 'CONTRIBUTION_UNAVAILABLE';
+    } finally {
+      contributionLoading = false;
+      if (!_disposed) {
+        notifyListeners();
+      }
+    }
+  }
+
+  /// Returns null on success, otherwise the server problem code.
+  Future<String?> activateContributionBoost() async {
+    final token = _accessTokenProvider.current;
+    if (token.isEmpty || boostActivating) {
+      return 'AUTH_REQUIRED';
+    }
+    boostActivating = true;
+    notifyListeners();
+    try {
+      await _api.activateContributionBoost(
+        accessToken: token,
+        idempotencyKey: _contributionKey('contribution-boost'),
+      );
+      return null;
+    } on WorkerApiException catch (error) {
+      return error.code;
+    } catch (_) {
+      return 'CONTRIBUTION_UNAVAILABLE';
+    } finally {
+      boostActivating = false;
+      if (!_disposed) {
+        notifyListeners();
+      }
+      unawaited(refreshContribution());
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Configuration
   // ---------------------------------------------------------------------------
@@ -356,6 +417,7 @@ class WorkerAppController extends ChangeNotifier {
     workerEnrolled = true;
     enrollmentMessage = null;
     _refreshHeartbeat();
+    unawaited(refreshContribution());
   }
 
   void updateWorkerAccessToken(String token) {
@@ -651,6 +713,10 @@ class WorkerAppController extends ChangeNotifier {
           phase: WorkerPipelineLog.assign,
         );
       }
+    }
+
+    if (workerEnrolled || hasManualCredentials) {
+      unawaited(refreshContribution());
     }
 
     _logTask(
@@ -1926,6 +1992,7 @@ class WorkerAppController extends ChangeNotifier {
 
       if (uploadAccepted && executionStatus.phase == ExecutionPhase.completed) {
         tasksProcessed++;
+        unawaited(refreshContribution());
       }
 
       _logTask(
