@@ -341,31 +341,11 @@ class WorkerMascotHero extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: workerHeroGradient(),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: WorkerColors.primary.withValues(alpha: 0.35)),
+        border: Border.all(color: const Color(0x604D6472)),
       ),
       child: Column(
         children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  WorkerColors.primary.withValues(alpha: 0.5),
-                  WorkerColors.primaryContainer.withValues(alpha: 0.2),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: WorkerColors.primary.withValues(alpha: 0.45),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: const Icon(Icons.smart_toy_rounded, size: 52, color: Colors.white),
-          ),
+          const FibonaiMark(size: 72),
           const SizedBox(height: 16),
           WorkerStatusChip(
             label: listening ? 'Listening for tasks' : 'Unavailable',

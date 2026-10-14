@@ -23,7 +23,7 @@ class EdgeMintWorkerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'EdgeMint Worker',
+      title: 'FibonAI Worker',
       theme: buildWorkerTheme(),
       home: const WorkerHomePage(),
     );

@@ -31,7 +31,7 @@ class WorkerShell extends StatelessWidget {
   final bool available;
 
   String get _title => switch (selectedIndex) {
-        0 => 'EdgeMint AI | Worker Panel',
+        0 => 'FibonAI | Worker Panel',
         1 => 'Missions',
         2 => 'Models',
         3 => 'Earnings',
@@ -285,22 +285,6 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: compact ? 36 : 40,
-      height: compact ? 36 : 40,
-      decoration: BoxDecoration(
-        color: WorkerColors.primary,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: WorkerColors.primary.withValues(alpha: 0.35),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: const Center(
-        child: Text('E', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-      ),
-    );
+    return FibonaiMark(size: compact ? 36 : 40);
   }
 }

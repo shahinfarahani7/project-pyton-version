@@ -25,3 +25,6 @@ dev_dependencies:
   test: ^1.25.0
 flutter:
   uses-material-design: true
+  assets:
+    - assets/character/idle/
+    - assets/character/working/

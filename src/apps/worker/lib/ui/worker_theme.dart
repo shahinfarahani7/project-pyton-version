@@ -1,43 +1,80 @@
 import 'package:flutter/material.dart';
 
-/// EdgeMint worker portal palette — aligned with customer portal dark theme.
+/// FibonAI palette (DESIGN.txt / fibonai-palette.svg), dark theme.
 abstract final class WorkerColors {
-  static const primary = Color(0xFF7C4DFF);
-  static const primaryContainer = Color(0xFF5B21B6);
-  static const secondary = Color(0xFFA78BFA);
-  static const surface = Color(0xFF0F172A);
-  static const surfaceDim = Color(0xFF0B1220);
-  static const surfaceContainer = Color(0xFF1E293B);
-  static const surfaceContainerHigh = Color(0xFF243044);
-  static const onSurface = Color(0xFFF1F5F9);
-  static const onSurfaceVariant = Color(0xFF94A3B8);
-  static const outlineVariant = Color(0xFF334155);
-  static const success = Color(0xFF34D399);
-  static const warning = Color(0xFFFBBF24);
-  static const error = Color(0xFFF87171);
-  static const info = Color(0xFF3B82F6);
-  static const accentOrange = Color(0xFFF97316);
+  static const primary = Color(0xFFCDAE6F);
+  static const primaryContainer = Color(0xFF262F38);
+  static const secondary = Color(0xFFCDAE6F);
+  static const goldDeep = Color(0xFFC0A064);
+  static const goldSoft = Color(0xFFF1E6CF);
+  static const brandLine = Color(0xFFECE8DF);
+  static const canvas = Color(0xFF0B0C0F);
+  static const surface = Color(0xFF0B0C0F);
+  static const surfaceDim = Color(0xFF101216);
+  static const surfaceContainer = Color(0xFF101216);
+  static const surfaceContainerHigh = Color(0xFF15171B);
+  static const row = Color(0xFF1A1C20);
+  static const onSurface = Color(0xFFFFFFFF);
+  static const onSurfaceVariant = Color(0xFFB3B5BD);
+  static const dim = Color(0xFF7A7C86);
+  static const outlineVariant = Color(0x17FFFFFF);
+  static const outlineHover = Color(0x33FFFFFF);
+  static const success = Color(0xFF19C7B4);
+  static const warning = Color(0xFFCDAE6F);
+  static const error = Color(0xFFE2456B);
+  static const info = Color(0xFF2C84FF);
+  static const accentOrange = Color(0xFFA6C0CB);
 }
 
 ThemeData buildWorkerTheme() {
   const scheme = ColorScheme.dark(
     primary: WorkerColors.primary,
-    onPrimary: Colors.white,
+    onPrimary: WorkerColors.canvas,
     primaryContainer: WorkerColors.primaryContainer,
-    onPrimaryContainer: Color(0xFFEDE9FE),
+    onPrimaryContainer: WorkerColors.goldSoft,
     secondary: WorkerColors.secondary,
-    onSecondary: Color(0xFF1E1B4B),
+    onSecondary: WorkerColors.canvas,
     surface: WorkerColors.surface,
     onSurface: WorkerColors.onSurface,
     onSurfaceVariant: WorkerColors.onSurfaceVariant,
+    outline: WorkerColors.dim,
     outlineVariant: WorkerColors.outlineVariant,
     error: WorkerColors.error,
+    onError: WorkerColors.canvas,
   );
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: WorkerColors.surface,
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: WorkerColors.primary,
+      linearTrackColor: WorkerColors.row,
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: WorkerColors.brandLine,
+        side: const BorderSide(color: WorkerColors.outlineVariant),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: WorkerColors.surfaceContainerHigh,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: WorkerColors.outlineVariant),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: WorkerColors.outlineVariant),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: WorkerColors.primary),
+      ),
+    ),
     cardTheme: CardThemeData(
       color: WorkerColors.surfaceContainer,
       elevation: 0,
@@ -54,7 +91,7 @@ ThemeData buildWorkerTheme() {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: WorkerColors.surfaceDim,
-      indicatorColor: WorkerColors.primary.withValues(alpha: 0.22),
+      indicatorColor: WorkerColors.primary.withValues(alpha: 0.09),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         final selected = states.contains(WidgetState.selected);
         return TextStyle(
@@ -74,9 +111,10 @@ ThemeData buildWorkerTheme() {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: WorkerColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: WorkerColors.canvas,
+        textStyle: const TextStyle(fontWeight: FontWeight.w600),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -91,7 +129,7 @@ ThemeData buildWorkerTheme() {
         if (states.contains(WidgetState.selected)) {
           return WorkerColors.primary.withValues(alpha: 0.35);
         }
-        return WorkerColors.outlineVariant;
+        return WorkerColors.row;
       }),
     ),
     dividerTheme: const DividerThemeData(color: WorkerColors.outlineVariant),
@@ -113,23 +151,56 @@ BoxDecoration workerPanelDecoration({Color? borderColor}) {
     color: WorkerColors.surfaceContainer,
     borderRadius: BorderRadius.circular(16),
     border: Border.all(color: borderColor ?? WorkerColors.outlineVariant),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: 0.25),
-        blurRadius: 12,
-        offset: const Offset(0, 4),
-      ),
-    ],
   );
 }
 
 LinearGradient workerHeroGradient() {
-  return LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [
-      WorkerColors.primaryContainer.withValues(alpha: 0.45),
-      WorkerColors.surface,
-    ],
+  return const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF15171B), Color(0xFF262F38)],
   );
+}
+
+/// FibonAI mark: line-colour frames with gold fills, per DESIGN.txt section 2.
+class FibonaiMark extends StatelessWidget {
+  const FibonaiMark({super.key, this.size = 40});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(painter: _FibonaiMarkPainter()),
+    );
+  }
+}
+
+class _FibonaiMarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final stroke = Paint()
+      ..color = WorkerColors.brandLine
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = s * 0.085;
+    final gold = Paint()..color = WorkerColors.goldDeep;
+
+    canvas.drawRect(Rect.fromLTRB(s * 0.06, s * 0.06, s * 0.66, s * 0.94), stroke);
+    canvas.drawRect(Rect.fromLTRB(s * 0.20, s * 0.06, s * 0.94, s * 0.62), stroke);
+
+    final arc = Path()
+      ..moveTo(s * 0.30, s * 0.50)
+      ..lineTo(s * 0.30, s * 0.34)
+      ..arcToPoint(Offset(s * 0.48, s * 0.16), radius: Radius.circular(s * 0.18))
+      ..lineTo(s * 0.56, s * 0.16)
+      ..lineTo(s * 0.56, s * 0.50)
+      ..close();
+    canvas.drawPath(arc, gold);
+    canvas.drawRect(Rect.fromLTRB(s * 0.66, s * 0.16, s * 0.82, s * 0.50), gold);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
