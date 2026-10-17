@@ -8,7 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('home shows the character, earnings chart, and boost prompt', (tester) async {
+  testWidgets('home shows the character and earnings chart without boost prompt', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     final controller = WorkerAppController(
       config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
       encryptedStore: InMemoryEncryptedStore(),
@@ -22,32 +28,40 @@ void main() {
         home: WorkerHomeTab(
           controller: controller,
           onDownloadModel: () {},
-          onAvailabilityChanged: controller.setAvailable,
           onNavigate: (_) {},
         ),
       ),
     );
     await tester.pump();
 
-    expect(find.bySemanticsLabel('Worker character waiting for a task'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Worker character waiting for a task'),
+      findsOneWidget,
+    );
     expect(find.text('Tasks completed'), findsOneWidget);
     expect(find.text('0'), findsOneWidget);
     expect(find.text('Balance'), findsOneWidget);
     expect(find.text(r'$0.00'), findsOneWidget);
+    expect(find.text('AI model'), findsOneWidget);
+    expect(find.text('Qwen3 0.6B model'), findsOneWidget);
+    expect(find.text('Uptime progress is not connected yet.'), findsOneWidget);
     expect(find.text('Earnings'), findsOneWidget);
     expect(find.textContaining('not guaranteed'), findsWidgets);
-    await tester.scrollUntilVisible(find.text('Turn availability on'), 200);
-    expect(find.text('Boost your worker'), findsOneWidget);
-    expect(find.text('Turn availability on'), findsOneWidget);
+    expect(find.text('Boost your worker'), findsNothing);
+    expect(find.text('Turn availability on'), findsNothing);
   });
 
-  testWidgets('home shows the running character while a task is active', (tester) async {
+  testWidgets('home shows the running character while a task is active', (
+    tester,
+  ) async {
     final controller = WorkerAppController(
       config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
       encryptedStore: InMemoryEncryptedStore(),
     );
     controller.setAvailable(false);
-    controller.executionStatus = const ExecutionStatus(phase: ExecutionPhase.running);
+    controller.executionStatus = const ExecutionStatus(
+      phase: ExecutionPhase.running,
+    );
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -56,14 +70,19 @@ void main() {
         home: WorkerHomeTab(
           controller: controller,
           onDownloadModel: () {},
-          onAvailabilityChanged: controller.setAvailable,
           onNavigate: (_) {},
         ),
       ),
     );
     await tester.pump();
 
-    expect(find.bySemanticsLabel('Worker character running a task'), findsOneWidget);
-    expect(find.bySemanticsLabel('Worker character waiting for a task'), findsNothing);
+    expect(
+      find.bySemanticsLabel('Worker character running a task'),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel('Worker character waiting for a task'),
+      findsNothing,
+    );
   });
 }

@@ -6,10 +6,26 @@ typedef WorkerNavItem = ({IconData icon, IconData selectedIcon, String label});
 
 const workerNavItems = <WorkerNavItem>[
   (icon: Icons.home_outlined, selectedIcon: Icons.home_rounded, label: 'Home'),
-  (icon: Icons.assignment_outlined, selectedIcon: Icons.assignment_rounded, label: 'Missions'),
-  (icon: Icons.view_in_ar_outlined, selectedIcon: Icons.view_in_ar_rounded, label: 'Models'),
-  (icon: Icons.account_balance_wallet_outlined, selectedIcon: Icons.account_balance_wallet_rounded, label: 'Earnings'),
-  (icon: Icons.person_outline, selectedIcon: Icons.person_rounded, label: 'Profile'),
+  (
+    icon: Icons.assignment_outlined,
+    selectedIcon: Icons.assignment_rounded,
+    label: 'Missions',
+  ),
+  (
+    icon: Icons.bolt_outlined,
+    selectedIcon: Icons.bolt_rounded,
+    label: 'Boost',
+  ),
+  (
+    icon: Icons.account_balance_wallet_outlined,
+    selectedIcon: Icons.account_balance_wallet_rounded,
+    label: 'Earnings',
+  ),
+  (
+    icon: Icons.person_outline,
+    selectedIcon: Icons.person_rounded,
+    label: 'Profile',
+  ),
 ];
 
 const _sidebarBreakpoint = 1024.0;
@@ -31,12 +47,12 @@ class WorkerShell extends StatelessWidget {
   final bool available;
 
   String get _title => switch (selectedIndex) {
-        0 => 'FibonAI | Worker Panel',
-        1 => 'Missions',
-        2 => 'Models',
-        3 => 'Earnings',
-        _ => 'Profile',
-      };
+    0 => 'FibonAI | Worker Panel',
+    1 => 'Missions',
+    2 => 'Boost',
+    3 => 'Earnings',
+    _ => 'Profile',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -130,9 +146,9 @@ class _WorkerTopBar extends StatelessWidget implements PreferredSizeWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: WorkerColors.onSurface,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: WorkerColors.onSurface,
+              ),
             ),
           ),
           IconButton(
@@ -168,7 +184,10 @@ class _WorkerTopBar extends StatelessWidget implements PreferredSizeWidget {
           CircleAvatar(
             radius: 18,
             backgroundColor: WorkerColors.primaryContainer,
-            child: const Text('EW', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'EW',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -188,19 +207,27 @@ class _WorkerTopBar extends StatelessWidget implements PreferredSizeWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
           ],
         ),
         actions: [
-          IconButton(onPressed: onRefresh, icon: const Icon(Icons.sync_rounded)),
+          IconButton(
+            onPressed: onRefresh,
+            icon: const Icon(Icons.sync_rounded),
+          ),
           const Padding(
             padding: EdgeInsets.only(right: 8),
             child: CircleAvatar(
               radius: 16,
               backgroundColor: WorkerColors.primaryContainer,
-              child: Text('EW', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              child: Text(
+                'EW',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -240,7 +267,10 @@ class _WorkerSidebar extends StatelessWidget {
                 final item = workerNavItems[index];
                 final selected = index == selectedIndex;
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   child: Material(
                     color: selected
                         ? WorkerColors.primary.withValues(alpha: 0.18)
@@ -253,7 +283,9 @@ class _WorkerSidebar extends StatelessWidget {
                         height: 48,
                         child: Icon(
                           selected ? item.selectedIcon : item.icon,
-                          color: selected ? WorkerColors.primary : WorkerColors.onSurfaceVariant,
+                          color: selected
+                              ? WorkerColors.primary
+                              : WorkerColors.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -265,10 +297,14 @@ class _WorkerSidebar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: IconButton(
-              onPressed: () => onNavChanged(4),
+              onPressed: () => onNavChanged(workerNavItems.length - 1),
               icon: Icon(
-                selectedIndex == 4 ? Icons.settings : Icons.settings_outlined,
-                color: selectedIndex == 4 ? WorkerColors.primary : WorkerColors.onSurfaceVariant,
+                selectedIndex == workerNavItems.length - 1
+                    ? Icons.settings
+                    : Icons.settings_outlined,
+                color: selectedIndex == workerNavItems.length - 1
+                    ? WorkerColors.primary
+                    : WorkerColors.onSurfaceVariant,
               ),
             ),
           ),

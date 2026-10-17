@@ -1,29 +1,26 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../runtime/execution_status.dart';
 import '../../worker_app_controller.dart';
+import '../worker_nav_index.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
-import 'worker_contribution_section.dart';
+import 'worker_models_tab.dart';
+import 'worker_uptime_section.dart';
 
 class WorkerHomeTab extends StatefulWidget {
   const WorkerHomeTab({
     super.key,
     required this.controller,
     required this.onDownloadModel,
-    required this.onAvailabilityChanged,
     required this.onNavigate,
   });
 
   final WorkerAppController controller;
 
-  /// Shell contract. Model download stays on the Models tab.
+  /// Shell contract. Model download also lives on the Profile tab.
   final VoidCallback onDownloadModel;
-
-  final ValueChanged<bool> onAvailabilityChanged;
 
   /// Shell contract. Other tabs stay on the existing navigation bar.
   final ValueChanged<int> onNavigate;
@@ -44,12 +41,6 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final c = widget.controller;
-      if (c.contribution == null && !c.contributionLoading && c.contributionError != null) {
-        unawaited(c.refreshContribution());
-      }
-    });
   }
 
   @override
@@ -59,44 +50,38 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
     return ListView(
       padding: EdgeInsets.fromLTRB(wide ? 24 : 16, 16, wide ? 24 : 16, 24),
       children: [
-        _WorkerCharacter(working: _hasActiveTask(controller.executionStatus.phase)),
+        _WorkerCharacter(
+          working: _hasActiveTask(controller.executionStatus.phase),
+        ),
         const SizedBox(height: 16),
         _HomeStatRow(tasksCompleted: controller.tasksProcessed),
         const SizedBox(height: 16),
-        WorkerContributionSection(
-          summary: controller.contribution,
-          loading: controller.contributionLoading,
-          error: controller.contributionError,
-          activating: controller.boostActivating,
-          onRetry: controller.refreshContribution,
-          onActivateBoost: controller.activateContributionBoost,
+        _HomeModelSection(
+          controller: controller,
+          onDownloadModel: widget.onDownloadModel,
+          onOpenProfile: () => widget.onNavigate(WorkerNavIndex.profile),
         ),
+        const SizedBox(height: 16),
+        const WorkerUptimeDashboardSection(uptime: null),
         const SizedBox(height: 16),
         const _EarningsChart(),
-        const SizedBox(height: 16),
-        _BoostPrompt(
-          available: controller.available,
-          onAvailabilityChanged: widget.onAvailabilityChanged,
-        ),
       ],
     );
   }
 }
 
 bool _hasActiveTask(ExecutionPhase phase) => switch (phase) {
-      ExecutionPhase.preparing ||
-      ExecutionPhase.running ||
-      ExecutionPhase.checkpointing ||
-      ExecutionPhase.submitting ||
-      ExecutionPhase.cleaningUp =>
-        true,
-      ExecutionPhase.idle ||
-      ExecutionPhase.waitingForAssignment ||
-      ExecutionPhase.paused ||
-      ExecutionPhase.failed ||
-      ExecutionPhase.completed =>
-        false,
-    };
+  ExecutionPhase.preparing ||
+  ExecutionPhase.running ||
+  ExecutionPhase.checkpointing ||
+  ExecutionPhase.submitting ||
+  ExecutionPhase.cleaningUp => true,
+  ExecutionPhase.idle ||
+  ExecutionPhase.waitingForAssignment ||
+  ExecutionPhase.paused ||
+  ExecutionPhase.failed ||
+  ExecutionPhase.completed => false,
+};
 
 class _WorkerCharacter extends StatelessWidget {
   const _WorkerCharacter({required this.working});
@@ -112,7 +97,9 @@ class _WorkerCharacter extends StatelessWidget {
         child: _CharacterLoop(
           key: ValueKey(working),
           folder: working ? 'working' : 'idle',
-          semanticLabel: working ? 'Worker character running a task' : 'Worker character waiting for a task',
+          semanticLabel: working
+              ? 'Worker character running a task'
+              : 'Worker character waiting for a task',
         ),
       ),
     );
@@ -121,7 +108,11 @@ class _WorkerCharacter extends StatelessWidget {
 
 /// Frame loop cut from the 5-second seamless character video (40 frames).
 class _CharacterLoop extends StatefulWidget {
-  const _CharacterLoop({super.key, required this.folder, required this.semanticLabel});
+  const _CharacterLoop({
+    super.key,
+    required this.folder,
+    required this.semanticLabel,
+  });
 
   static const frameCount = 40;
   static const loop = Duration(milliseconds: 5042);
@@ -133,12 +124,16 @@ class _CharacterLoop extends StatefulWidget {
   State<_CharacterLoop> createState() => _CharacterLoopState();
 }
 
-class _CharacterLoopState extends State<_CharacterLoop> with SingleTickerProviderStateMixin {
-  late final AnimationController _ticker =
-      AnimationController(vsync: this, duration: _CharacterLoop.loop)..repeat();
+class _CharacterLoopState extends State<_CharacterLoop>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ticker = AnimationController(
+    vsync: this,
+    duration: _CharacterLoop.loop,
+  )..repeat();
   var _precached = false;
 
-  String _frame(int i) => 'assets/character/${widget.folder}/${i.toString().padLeft(2, '0')}.png';
+  String _frame(int i) =>
+      'assets/character/${widget.folder}/${i.toString().padLeft(2, '0')}.png';
 
   @override
   void didChangeDependencies() {
@@ -161,7 +156,9 @@ class _CharacterLoopState extends State<_CharacterLoop> with SingleTickerProvide
     return AnimatedBuilder(
       animation: _ticker,
       builder: (context, _) {
-        final index = (_ticker.value * _CharacterLoop.frameCount).floor() % _CharacterLoop.frameCount;
+        final index =
+            (_ticker.value * _CharacterLoop.frameCount).floor() %
+            _CharacterLoop.frameCount;
         return Image.asset(
           _frame(index),
           height: 220,
@@ -170,6 +167,41 @@ class _CharacterLoopState extends State<_CharacterLoop> with SingleTickerProvide
           semanticLabel: widget.semanticLabel,
         );
       },
+    );
+  }
+}
+
+class _HomeModelSection extends StatelessWidget {
+  const _HomeModelSection({
+    required this.controller,
+    required this.onDownloadModel,
+    required this.onOpenProfile,
+  });
+
+  final WorkerAppController controller;
+  final VoidCallback onDownloadModel;
+  final VoidCallback onOpenProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'AI model',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            TextButton(onPressed: onOpenProfile, child: const Text('Profile')),
+          ],
+        ),
+        const SizedBox(height: 8),
+        WorkerModelCard(controller: controller, onDownload: onDownloadModel),
+      ],
     );
   }
 }
@@ -190,17 +222,11 @@ class _HomeStatRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: _StatCard(
-            label: 'Tasks completed',
-            value: '$tasksCompleted',
-          ),
+          child: _StatCard(label: 'Tasks completed', value: '$tasksCompleted'),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _StatCard(
-            label: 'Balance',
-            value: '\$$dollars.$cents',
-          ),
+          child: _StatCard(label: 'Balance', value: '\$$dollars.$cents'),
         ),
       ],
     );
@@ -223,15 +249,18 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 13),
+            style: const TextStyle(
+              color: WorkerColors.onSurfaceVariant,
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: WorkerColors.primary,
-                ),
+              fontWeight: FontWeight.w600,
+              color: WorkerColors.primary,
+            ),
           ),
         ],
       ),
@@ -252,12 +281,17 @@ class _EarningsChart extends StatelessWidget {
         children: [
           Text(
             'Earnings',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
           const Text(
             'No settled payout is loaded. Rewards are variable and are not guaranteed.',
-            style: TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 12),
+            style: TextStyle(
+              color: WorkerColors.onSurfaceVariant,
+              fontSize: 12,
+            ),
           ),
           const SizedBox(height: 16),
           const WorkerLineChart(
@@ -270,45 +304,3 @@ class _EarningsChart extends StatelessWidget {
   }
 }
 
-class _BoostPrompt extends StatelessWidget {
-  const _BoostPrompt({
-    required this.available,
-    required this.onAvailabilityChanged,
-  });
-
-  final bool available;
-  final ValueChanged<bool> onAvailabilityChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: workerPanelDecoration(
-        borderColor: WorkerColors.primary.withValues(alpha: 0.35),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Boost your worker',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            available
-                ? 'Availability is on. Keep this device open so it can take more tasks. Rewards stay variable and are not guaranteed.'
-                : 'Turn availability on to take more tasks. Rewards are variable and are not guaranteed.',
-            style: const TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 13, height: 1.45),
-          ),
-          if (!available) ...[
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () => onAvailabilityChanged(true),
-              child: const Text('Turn availability on'),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}

@@ -91,7 +91,7 @@ class WorkerModelDownloadLink extends StatelessWidget {
             ],
           ),
           const Text(
-            'Save to Downloads, then open Models and tap Prepare — or sideload from PC.',
+            'Save to Downloads, then open Profile and tap Prepare — or sideload from PC.',
             style: TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 11),
           ),
         ],

@@ -56,28 +56,3 @@ class WorkerPlaceholderTab extends StatelessWidget {
   }
 }
 
-class WorkerProfileTab extends StatelessWidget {
-  const WorkerProfileTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const WorkerPlaceholderTab(
-      title: 'Profile',
-      message: 'Worker profile settings will appear here.',
-      icon: Icons.person_outline,
-    );
-  }
-}
-
-class WorkerEarningsTab extends StatelessWidget {
-  const WorkerEarningsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const WorkerPlaceholderTab(
-      title: 'Earnings',
-      message: 'Payout history will appear here.',
-      icon: Icons.account_balance_wallet_outlined,
-    );
-  }
-}

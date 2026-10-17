@@ -54,6 +54,9 @@ import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_pipeline_log.dart';
 import 'runtime/worker_content_diagnostics.dart';
 import 'runtime/worker_session_lifecycle.dart';
+import 'runtime/worker_account_profile_store.dart';
+import 'runtime/worker_mission_progress_store.dart';
+import 'runtime/worker_payout_wallet_store.dart';
 import 'runtime/worker_session_store.dart';
 import 'tasks/task_execution_engine.dart';
 import 'tasks/task_type_mapper.dart';
@@ -89,7 +92,8 @@ class WorkerAppController extends ChangeNotifier {
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
     );
-    DeviceInferencePlan.instance.readResidentEngine = () => _runtimeManager.residentIdentity;
+    DeviceInferencePlan.instance.readResidentEngine = () =>
+        _runtimeManager.residentIdentity;
     const inferenceConfig = QwenInferenceConfig();
     _primaryInferenceAdapter = GemmaLiteRtInferenceAdapter(
       runtimeManager: _runtimeManager,
@@ -149,6 +153,9 @@ class WorkerAppController extends ChangeNotifier {
     );
 
     _sessionStore = WorkerSessionStore(_encryptedStore);
+    _payoutWalletStore = WorkerPayoutWalletStore(_encryptedStore);
+    _accountProfileStore = WorkerAccountProfileStore(_encryptedStore);
+    _missionProgressStore = WorkerMissionProgressStore(_encryptedStore);
     _sessionLifecycle = WorkerSessionLifecycle(
       api: _api,
       store: _sessionStore,
@@ -218,6 +225,9 @@ class WorkerAppController extends ChangeNotifier {
   late final AssignmentCoordinator _coordinator;
   late final ProcessLifecycleCoordinator _processLifecycle;
   late final WorkerSessionStore _sessionStore;
+  late final WorkerPayoutWalletStore _payoutWalletStore;
+  late final WorkerAccountProfileStore _accountProfileStore;
+  late final WorkerMissionProgressStore _missionProgressStore;
   late final WorkerSessionLifecycle _sessionLifecycle;
   final StoragePressureManager _storagePressure;
   WorkerHeartbeatService? _heartbeat;
@@ -305,7 +315,9 @@ class WorkerAppController extends ChangeNotifier {
       );
       contributionError = null;
     } catch (error) {
-      contributionError = error is WorkerApiException ? error.code : 'CONTRIBUTION_UNAVAILABLE';
+      contributionError = error is WorkerApiException
+          ? error.code
+          : 'CONTRIBUTION_UNAVAILABLE';
     } finally {
       contributionLoading = false;
       if (!_disposed) {
@@ -339,6 +351,149 @@ class WorkerAppController extends ChangeNotifier {
       }
       unawaited(refreshContribution());
     }
+  }
+
+  List<WorkerPayoutWalletRecord> payoutWallets = [];
+  bool payoutWalletsLoading = false;
+  String? payoutWalletNotice;
+  bool payoutWalletNoticeIsError = false;
+
+  Future<void> loadPayoutWallets() async {
+    if (_disposed) {
+      return;
+    }
+    payoutWalletsLoading = true;
+    notifyListeners();
+    try {
+      payoutWallets = await _payoutWalletStore.readAll();
+    } finally {
+      payoutWalletsLoading = false;
+      if (!_disposed) {
+        notifyListeners();
+      }
+    }
+  }
+
+  /// Returns a user-visible validation error, or null on success.
+  Future<String?> addPayoutWallet({
+    required WorkerPayoutWalletKind kind,
+    required String destination,
+    required String label,
+  }) async {
+    final trimmed = destination.trim();
+    if (trimmed.length < 8) {
+      return 'Enter a valid payout destination (at least 8 characters).';
+    }
+    if (trimmed.length > 256) {
+      return 'Destination is too long.';
+    }
+    final record = WorkerPayoutWalletRecord(
+      id: 'wallet-${DateTime.now().toUtc().microsecondsSinceEpoch}',
+      kind: kind,
+      label: label.trim().isEmpty ? kind.label : label.trim(),
+      destination: trimmed,
+      savedAtUtc: DateTime.now().toUtc(),
+    );
+    final next = [...payoutWallets, record];
+    await _payoutWalletStore.writeAll(next);
+    payoutWallets = next;
+    payoutWalletNotice = 'Wallet saved on this device only.';
+    payoutWalletNoticeIsError = false;
+    notifyListeners();
+    return null;
+  }
+
+  Future<void> removePayoutWallet(String id) async {
+    final next = payoutWallets.where((wallet) => wallet.id != id).toList();
+    await _payoutWalletStore.writeAll(next);
+    payoutWallets = next;
+    payoutWalletNotice = 'Wallet removed from this device.';
+    payoutWalletNoticeIsError = false;
+    notifyListeners();
+  }
+
+  WorkerAccountProfile? accountProfile;
+  bool accountProfileLoading = false;
+  String? accountProfileNotice;
+  bool accountProfileNoticeIsError = false;
+
+  Future<void> loadAccountProfile() async {
+    accountProfileLoading = true;
+    notifyListeners();
+    try {
+      accountProfile = await _accountProfileStore.read();
+    } finally {
+      accountProfileLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> saveAccountProfile({
+    required String username,
+    required String email,
+  }) async {
+    final trimmedUsername = username.trim();
+    final trimmedEmail = email.trim();
+    if (trimmedUsername.length < 2 || trimmedUsername.length > 64) {
+      return 'Username must be 2–64 characters.';
+    }
+    if (!isPlausibleEmail(trimmedEmail)) {
+      return 'Enter a valid email address.';
+    }
+    final profile = WorkerAccountProfile(
+      username: trimmedUsername,
+      email: trimmedEmail,
+      updatedAtUtc: DateTime.now().toUtc(),
+    );
+    await _accountProfileStore.write(profile);
+    accountProfile = profile;
+    accountProfileNotice =
+        'Saved on this device only. Server sync is not connected yet.';
+    accountProfileNoticeIsError = false;
+    notifyListeners();
+    return null;
+  }
+
+  /// Validates input locally; does not persist secrets. Returns an error
+  /// message, or null when validation passed but the server rejected the call.
+  Set<String> acknowledgedMissionIds = {};
+
+  Future<void> loadMissionProgress() async {
+    acknowledgedMissionIds =
+        await _missionProgressStore.readCompletedMissionIds();
+    notifyListeners();
+  }
+
+  bool isMissionAcknowledged(String missionId) {
+    return acknowledgedMissionIds.contains(missionId);
+  }
+
+  Future<void> acknowledgeMission(String missionId) async {
+    if (acknowledgedMissionIds.contains(missionId)) {
+      return;
+    }
+    acknowledgedMissionIds = {...acknowledgedMissionIds, missionId};
+    await _missionProgressStore.writeCompletedMissionIds(acknowledgedMissionIds);
+    notifyListeners();
+  }
+
+  Future<String?> requestPasswordChange({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    if (currentPassword.isEmpty) {
+      return 'Enter your current password.';
+    }
+    final validation = validateNewPassword(
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+    if (validation != null) {
+      return validation;
+    }
+    // No worker account password API on the gateway yet.
+    return 'Worker account password change is not connected to the server yet.';
   }
 
   // ---------------------------------------------------------------------------
@@ -488,7 +643,8 @@ class WorkerAppController extends ChangeNotifier {
   bool get mapEvidenceDiagnosticArmed => SummarizeDiagnosticMap.armed;
 
   /// Isolated Map evidence diagnostic — never uploads assignment output.
-  Future<SummarizeMapEvidenceDiagnosticResult> runIsolatedMapEvidenceDiagnostic({
+  Future<SummarizeMapEvidenceDiagnosticResult>
+  runIsolatedMapEvidenceDiagnostic({
     SummarizeMapEvidenceDiagnosticFixtureId fixtureId =
         SummarizeMapEvidenceDiagnosticFixtureId.baselineFactLines,
   }) async {
@@ -528,12 +684,16 @@ class WorkerAppController extends ChangeNotifier {
     return result;
   }
 
-  final Map<SummarizeMapEvidenceDiagnosticFixtureId, FactsOnlyExtractionSnapshot>
-      _factsOnlySnapshots = {};
+  final Map<
+    SummarizeMapEvidenceDiagnosticFixtureId,
+    FactsOnlyExtractionSnapshot
+  >
+  _factsOnlySnapshots = {};
 
   bool get factsOnlyDiagnosticSelected =>
       SummarizeDiagnosticMap.armed &&
-      SummarizeDiagnosticMap.promptVariant == SummarizeMapPromptVariant.factsOnly;
+      SummarizeDiagnosticMap.promptVariant ==
+          SummarizeMapPromptVariant.factsOnly;
 
   /// Latest accepted facts-only extraction not yet classified, if any.
   FactsOnlyExtractionSnapshot? classifiableFactsSnapshot(
@@ -547,7 +707,8 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   /// Facts-only Step 2 on the fixture's latest accepted extraction; never uploads.
-  Future<FactsClassificationDiagnosticResult> runFactsOnlyClassificationDiagnostic({
+  Future<FactsClassificationDiagnosticResult>
+  runFactsOnlyClassificationDiagnostic({
     required SummarizeMapEvidenceDiagnosticFixtureId fixtureId,
   }) async {
     SummarizeDiagnosticMap.assertArmedOrThrow();
@@ -673,6 +834,10 @@ class WorkerAppController extends ChangeNotifier {
     }
 
     await _refreshDeviceReadiness();
+
+    await loadPayoutWallets();
+    await loadAccountProfile();
+    await loadMissionProgress();
 
     try {
       await ensureModelReady();
@@ -812,7 +977,9 @@ class WorkerAppController extends ChangeNotifier {
         );
         notifyListeners();
         await Future<void>.delayed(delay);
-        if (_disposed || generation != _assignmentLoopGeneration || !available) {
+        if (_disposed ||
+            generation != _assignmentLoopGeneration ||
+            !available) {
           break;
         }
       }
@@ -855,7 +1022,9 @@ class WorkerAppController extends ChangeNotifier {
       isX86Android = snapshot.isX86Android;
 
       _runtimeManager.configurePreferredBackend(
-        WorkerModelCatalog.preferredInferenceBackend(isX86Android: isX86Android),
+        WorkerModelCatalog.preferredInferenceBackend(
+          isX86Android: isX86Android,
+        ),
       );
 
       freeStorageMb = snapshot.freeStorageMb;
@@ -1103,12 +1272,9 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
     final delay = nextAttempt.difference(DateTime.now());
-    _enrollmentRetryTimer = Timer(
-      delay.isNegative ? Duration.zero : delay,
-      () {
-        unawaited(_retryEnrollmentAfterBackoff());
-      },
-    );
+    _enrollmentRetryTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
+      unawaited(_retryEnrollmentAfterBackoff());
+    });
   }
 
   Future<void> _retryEnrollmentAfterBackoff() async {
@@ -1945,7 +2111,7 @@ class WorkerAppController extends ChangeNotifier {
 
           _logTask(
             'LLM model not ready - '
-            'open Models tab to finish '
+            'open Profile to finish '
             '${WorkerModelCatalog.displayName} setup',
           );
 
@@ -2548,10 +2714,7 @@ class WorkerAppController extends ChangeNotifier {
       kind: 'resultUpload',
       idempotencyKey: 'result-upload-${assignment.attemptId}',
       assignment: assignment,
-      body: {
-        'uploadUrl': uploadUrl.toString(),
-        'payload': payload,
-      },
+      body: {'uploadUrl': uploadUrl.toString(), 'payload': payload},
       outcome: outcome,
     );
     executionStatus = executionStatus.copyWith(

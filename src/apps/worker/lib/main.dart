@@ -4,8 +4,9 @@ import 'runtime/gemma_bootstrap.dart';
 import 'ui/gemma_download_dialog.dart';
 import 'ui/tabs/worker_home_tab.dart';
 import 'ui/tabs/worker_missions_tab.dart';
-import 'ui/tabs/worker_models_tab.dart';
-import 'ui/tabs/worker_placeholder_tab.dart';
+import 'ui/tabs/worker_boost_tab.dart';
+import 'ui/tabs/worker_earnings_tab.dart';
+import 'ui/tabs/worker_profile_tab.dart';
 import 'ui/worker_shell.dart';
 import 'ui/worker_theme.dart';
 import 'worker_app_controller.dart';
@@ -37,7 +38,8 @@ class WorkerHomePage extends StatefulWidget {
   State<WorkerHomePage> createState() => _WorkerHomePageState();
 }
 
-class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObserver {
+class _WorkerHomePageState extends State<WorkerHomePage>
+    with WidgetsBindingObserver {
   WorkerAppController? _controller;
   int _selectedNavIndex = 0;
 
@@ -108,10 +110,6 @@ class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObse
     super.dispose();
   }
 
-  void _setAvailability(bool value) {
-    _activeController.setAvailable(value);
-  }
-
   void _navigateTo(int index) {
     setState(() => _selectedNavIndex = index);
   }
@@ -120,9 +118,7 @@ class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObse
   Widget build(BuildContext context) {
     final controller = _controller;
     if (controller == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return WorkerShell(
@@ -135,23 +131,25 @@ class _WorkerHomePageState extends State<WorkerHomePage> with WidgetsBindingObse
           duration: const Duration(milliseconds: 200),
           child: switch (_selectedNavIndex) {
             0 => WorkerHomeTab(
-                key: const ValueKey('home'),
-                controller: controller,
-                onDownloadModel: _startGemmaDownload,
-                onAvailabilityChanged: _setAvailability,
-                onNavigate: _navigateTo,
-              ),
+              key: const ValueKey('home'),
+              controller: controller,
+              onDownloadModel: _startGemmaDownload,
+              onNavigate: _navigateTo,
+            ),
             1 => WorkerMissionsTab(
-                key: const ValueKey('missions'),
-                controller: controller,
-              ),
-            2 => WorkerModelsTab(
-                key: const ValueKey('models'),
-                controller: controller,
-                onDownload: _startGemmaDownload,
-              ),
-            3 => const WorkerEarningsTab(key: ValueKey('earnings')),
-            _ => const WorkerProfileTab(key: ValueKey('profile')),
+              key: const ValueKey('missions'),
+              controller: controller,
+              onNavigate: _navigateTo,
+            ),
+            2 => const WorkerBoostTab(key: ValueKey('boost')),
+            3 => WorkerEarningsTab(
+              key: const ValueKey('earnings'),
+              controller: controller,
+            ),
+            _ => WorkerProfileTab(
+              key: const ValueKey('profile'),
+              controller: controller,
+            ),
           },
         ),
       ),
