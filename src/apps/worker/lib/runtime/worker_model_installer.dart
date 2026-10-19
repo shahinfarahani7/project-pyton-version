@@ -10,6 +10,7 @@ import 'artifact_install_coordinator.dart';
 import 'gemma_bootstrap.dart';
 import 'identity_lifecycle_tracer.dart';
 import 'model_download_verify_hook.dart';
+import 'resumable_model_download.dart';
 import 'worker_model_format_gate.dart';
 import 'runtime_exceptions.dart';
 
@@ -745,10 +746,35 @@ abstract final class WorkerModelInstaller {
 
         log?.call('Starting network install: $downloadUrl (generation=$installGeneration)');
 
-        await WorkerModelCatalog.installBuilder()
-            .fromNetwork(downloadUrl, foreground: true)
-            .withProgress(onProgress)
-            .install();
+        final storage = await ServiceRegistry.instance.fileSystemService
+            .getModelStorageDirectory();
+        var foregroundStarted = false;
+        try {
+          if (Platform.isAndroid) {
+            await _runtimeChannel.invokeMethod<void>('startForegroundService', {
+              'assignmentId': WorkerModelCatalog.modelVersionId,
+              'taskType': 'model.download',
+            });
+            foregroundStarted = true;
+          }
+          final file = await ResumableModelDownload(
+            directory: Directory('$storage/resumable-models'),
+            fileName: WorkerModelCatalog.fileName,
+            completedFile: File(await ServiceRegistry.instance.fileSystemService
+                .getWriteTargetPath(WorkerModelCatalog.fileName)),
+            expectedBytes: WorkerModelCatalog.knownGeneralArtifactSizeBytes,
+            expectedSha256: WorkerModelCatalog.knownGeneralArtifactSha256,
+          ).download(
+            url: Uri.parse(downloadUrl),
+            onProgress: onProgress,
+            log: log,
+          );
+          await WorkerModelCatalog.installBuilder().fromFile(file.path).install();
+        } finally {
+          if (foregroundStarted) {
+            await _runtimeChannel.invokeMethod<void>('stopForegroundService');
+          }
+        }
 
         log?.call(
           '${WorkerModelCatalog.displayName} '

@@ -19,6 +19,13 @@ class _ArtifactSpec:
 
 
 _SUPPORTED_ARTIFACTS: dict[str, _ArtifactSpec] = {
+    "mdv_gemma_4_e4b_it": _ArtifactSpec(
+        hf_repo="litert-community/gemma-4-E4B-it-litert-lm",
+        file_name="gemma-4-E4B-it.litertlm",
+        requires_auth=False,
+        sha256="0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0",
+        size_bytes=3659530240,
+    ),
     "mdv_qwen2_5_0_5b": _ArtifactSpec(
         hf_repo="litert-community/Qwen2.5-0.5B-Instruct",
         file_name="Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
@@ -57,12 +64,21 @@ def upstream_artifact_url(model_version_id: str) -> str:
     return f"https://huggingface.co/{spec.hf_repo}/resolve/main/{spec.file_name}"
 
 
-async def stream_model_artifact(model_version_id: str) -> StreamingResponse:
+async def stream_model_artifact(
+    model_version_id: str,
+    *,
+    range_header: str | None = None,
+    if_range: str | None = None,
+) -> StreamingResponse:
     spec = _SUPPORTED_ARTIFACTS.get(model_version_id)
     if spec is None:
         raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
 
-    headers: dict[str, str] = {}
+    headers: dict[str, str] = {"Accept-Encoding": "identity"}
+    if range_header is not None:
+        headers["Range"] = range_header
+    if if_range is not None:
+        headers["If-Range"] = if_range
     if spec.requires_auth:
         token = huggingface_token()
         if token is None:
@@ -72,19 +88,23 @@ async def stream_model_artifact(model_version_id: str) -> StreamingResponse:
     url = upstream_artifact_url(model_version_id)
     client = httpx.AsyncClient(timeout=httpx.Timeout(600.0), follow_redirects=True)
     upstream = client.build_request("GET", url, headers=headers)
-    response = await client.send(upstream, stream=True)
-    if response.status_code != 200:
-        body = await response.aread()
+    try:
+        response = await client.send(upstream, stream=True)
+    except httpx.HTTPError as exc:
+        await client.aclose()
+        raise HTTPException(status_code=502, detail="UPSTREAM_DOWNLOAD_UNAVAILABLE") from exc
+    if response.status_code not in (200, 206, 416):
+        error_body = await response.aread()
         await response.aclose()
         await client.aclose()
         raise HTTPException(
             status_code=502,
-            detail=f"UPSTREAM_DOWNLOAD_FAILED:{response.status_code}:{body[:200]!r}",
+            detail=f"UPSTREAM_DOWNLOAD_FAILED:{response.status_code}:{error_body[:200]!r}",
         )
 
     async def body() -> AsyncIterator[bytes]:
         try:
-            async for chunk in response.aiter_bytes():
+            async for chunk in response.aiter_raw():
                 yield chunk
         finally:
             await response.aclose()
@@ -95,8 +115,14 @@ async def stream_model_artifact(model_version_id: str) -> StreamingResponse:
         **({"X-Artifact-SHA256": spec.sha256} if spec.sha256 else {}),
         **({"X-Artifact-Size": str(spec.size_bytes)} if spec.size_bytes else {}),
     }
-    content_length = response.headers.get("content-length")
-    if content_length:
-        response_headers["Content-Length"] = content_length
+    for header in (
+        "Content-Length", "Content-Range", "Accept-Ranges", "ETag",
+        "Last-Modified", "Content-Encoding",
+    ):
+        value = response.headers.get(header)
+        if value is not None:
+            response_headers[header] = value
     media_type = response.headers.get("content-type", "application/octet-stream")
-    return StreamingResponse(body(), media_type=media_type, headers=response_headers)
+    return StreamingResponse(
+        body(), status_code=response.status_code, media_type=media_type, headers=response_headers,
+    )

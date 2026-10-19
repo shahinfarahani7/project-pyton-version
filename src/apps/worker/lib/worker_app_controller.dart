@@ -40,7 +40,6 @@ import 'runtime/network_transport.dart';
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/gemma_inference_adapter.dart';
 import 'runtime/identity_lifecycle_tracer.dart';
-import 'runtime/model_download_verify_hook.dart';
 import 'runtime/process_lifecycle_coordinator.dart';
 import 'runtime/runtime_exceptions.dart';
 import 'runtime/runtime_exclusive_group_enforcer.dart';
@@ -1568,7 +1567,6 @@ class WorkerAppController extends ChangeNotifier {
       await GemmaBootstrap.ensureInitialized();
       final snapshot = await _platform.readDeviceSnapshot();
       _storagePressure.ensureHeadroomForWork(snapshot);
-      await _clearStaleDownloadTasks();
 
       final bundledAsset = WorkerModelCatalog.bundledAssetFromEnvironment();
 
@@ -1602,8 +1600,6 @@ class WorkerAppController extends ChangeNotifier {
         '(${WorkerModelCatalog.approximateDownloadSize})',
       );
 
-      final installer = WorkerModelCatalog.installBuilder();
-
       if (bundledAsset != null) {
         _logTask(
           'Installing model from bundled asset: '
@@ -1612,7 +1608,7 @@ class WorkerAppController extends ChangeNotifier {
 
         await WorkerModelInstaller.installBundledAsset(log: _logTask);
       } else {
-        await _installFromNetworkWithFallback(installer, downloadUrl);
+        await _installFromNetworkWithFallback(downloadUrl);
       }
 
       _logTask(
@@ -1652,11 +1648,10 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> _installFromNetworkWithFallback(
-    InferenceInstallationBuilder installer,
     String primaryUrl,
   ) async {
     try {
-      await _installFromNetwork(installer, primaryUrl);
+      await _installFromNetwork(primaryUrl);
     } catch (primaryError) {
       final fallbackUrl = WorkerModelCatalog.huggingFaceDownloadUrl;
 
@@ -1671,14 +1666,11 @@ class WorkerAppController extends ChangeNotifier {
       );
 
       // Do not uninstall an already downloaded model.
-      await _clearStaleDownloadTasks();
-
-      await _installFromNetwork(installer, fallbackUrl);
+      await _installFromNetwork(fallbackUrl);
     }
   }
 
   Future<void> _installFromNetwork(
-    InferenceInstallationBuilder installer,
     String downloadUrl,
   ) async {
     _logTask(
@@ -1686,31 +1678,24 @@ class WorkerAppController extends ChangeNotifier {
       '$downloadUrl',
     );
 
-    await installer.fromNetwork(downloadUrl, foreground: true).withProgress((
-      progress,
-    ) {
-      modelProgress = progress / 100.0;
-
-      if (progress == 0 || progress >= 100 || progress % 10 == 0) {
-        _logTask(
-          'Model download progress: '
-          '${progress.toStringAsFixed(0)}%',
-        );
-      }
-
-      notifyListeners();
-    }).install();
-
     final signingMaterial = await _platform.signingMaterial();
-    final path = await WorkerModelInstaller.installedModelPathForVerification();
-    if (path != null) {
-      await const ModelDownloadVerifyHook().verifyInstalledFileIfPinned(
-        path: path,
-        signingKey: signingMaterial,
-        modelVersionId: WorkerModelCatalog.modelVersionId,
-      );
-      _logTask('Post-download model digest/signature verification passed');
-    }
+    await WorkerModelInstaller.installFromNetwork(
+      downloadUrl: downloadUrl,
+      signingKey: signingMaterial,
+      log: _logTask,
+      onProgress: (progress) {
+        modelProgress = progress / 100.0;
+
+        if (progress == 0 || progress >= 100 || progress % 10 == 0) {
+          _logTask(
+            'Model download progress: '
+            '${progress.toStringAsFixed(0)}%',
+          );
+        }
+
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> _clearStaleDownloadTasks({bool forceReinstall = false}) async {

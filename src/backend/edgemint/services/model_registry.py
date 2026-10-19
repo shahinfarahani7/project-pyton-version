@@ -6,8 +6,8 @@ from fastapi import Depends, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from edgemint.building_blocks.app import create_service_app
-from edgemint.dev import model_artifact_proxy
 from edgemint.building_blocks.database import transaction
+from edgemint.dev import model_artifact_proxy
 from edgemint.models.errors import ModelServiceError
 from edgemint.models.registry import ModelRegistryService
 from edgemint.models.schemas import (
@@ -18,8 +18,8 @@ from edgemint.models.schemas import (
     RollbackModelRolloutRequest,
     StartModelRolloutRequest,
 )
-from edgemint.security.dependencies import AuthorizationDependency
 from edgemint.security.context import AuthorizationContext
+from edgemint.security.dependencies import AuthorizationDependency
 from edgemint.security.problems import request_trace_id
 from edgemint.workers.dependencies import WorkerBearerToken
 
@@ -176,13 +176,21 @@ async def rollback_model_rollout(
 
 
 @app.get("/models/{model_version_id}/artifact", tags=["models"])
-async def download_model_artifact(model_version_id: str) -> StreamingResponse:
-    return await model_artifact_proxy.stream_model_artifact(model_version_id)
+async def download_model_artifact(request: Request, model_version_id: str) -> StreamingResponse:
+    return await model_artifact_proxy.stream_model_artifact(
+        model_version_id,
+        range_header=request.headers.get("range"),
+        if_range=request.headers.get("if-range"),
+    )
 
 
 @app.get("/models/{model_version_id}/files/{file_name}", tags=["models"])
-async def download_model_file(model_version_id: str, file_name: str) -> StreamingResponse:
+async def download_model_file(request: Request, model_version_id: str, file_name: str) -> StreamingResponse:
     spec = model_artifact_proxy._SUPPORTED_ARTIFACTS.get(model_version_id)
     if spec is None or file_name != spec.file_name:
         raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
-    return await model_artifact_proxy.stream_model_artifact(model_version_id)
+    return await model_artifact_proxy.stream_model_artifact(
+        model_version_id,
+        range_header=request.headers.get("range"),
+        if_range=request.headers.get("if-range"),
+    )

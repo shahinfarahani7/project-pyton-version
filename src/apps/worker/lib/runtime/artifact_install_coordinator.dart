@@ -48,7 +48,9 @@ class ArtifactInstallCoordinator {
     final installGeneration = ++_generation;
     _phase = ArtifactInstallPhase.installing;
     final tracked = operation(installGeneration);
-    _inFlight = tracked.then((_) {});
+    // The caller awaits `tracked` below. This second future is only a busy
+    // marker and must not create an unhandled duplicate error on interruption.
+    _inFlight = tracked.then<void>((_) {}, onError: (Object _, StackTrace __) {});
     try {
       final result = await tracked;
       _activeModelVersionId = modelVersionId;

@@ -36,6 +36,25 @@ void main() {
         throwsA(isA<ModelIntegrityException>()),
       );
     });
+
+    test('failed download releases install lock and next attempt can continue', () async {
+      final coordinator = ArtifactInstallCoordinator.instance;
+      await expectLater(
+        coordinator.runExclusiveInstall<void>(
+          modelVersionId: 'mdv_a',
+          operation: (_) async => throw StateError('connection interrupted'),
+        ),
+        throwsStateError,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(coordinator.installInProgress, isFalse);
+      expect(coordinator.phase, ArtifactInstallPhase.idle);
+      await coordinator.runExclusiveInstall<void>(
+        modelVersionId: 'mdv_a',
+        operation: (_) async {},
+      );
+      expect(coordinator.activeModelVersionId, 'mdv_a');
+    });
   });
 
   group('InMemoryModelRuntimeManager upgrade guard', () {
