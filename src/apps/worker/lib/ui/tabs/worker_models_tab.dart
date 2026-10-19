@@ -62,7 +62,7 @@ class WorkerModelCard extends StatelessWidget {
         'Downloading ${(controller.modelProgress * 100).toStringAsFixed(0)}%',
       ModelInstallPhase.ready => controller.usesDevMockInference
           ? 'Dev mock ready (x86 emulator)'
-          : 'Ready (qwen3-0.6b)',
+          : 'Installed',
       ModelInstallPhase.failed => controller.modelError ?? 'Install failed',
     };
 
@@ -72,9 +72,7 @@ class WorkerModelCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Qwen3 0.6B model', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text(progressLabel, style: const TextStyle(color: WorkerColors.onSurfaceVariant)),
+          Text(progressLabel, style: Theme.of(context).textTheme.titleMedium),
           if (controller.modelPhase == ModelInstallPhase.downloading)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -92,9 +90,13 @@ class WorkerModelCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.tonalIcon(
-              onPressed: controller.canStartGemmaDownload && !controller.isGemmaReady ? onDownload : null,
-              icon: Icon(controller.isGemmaReady ? Icons.check_circle : Icons.cloud_download),
-              label: Text(controller.gemmaDownloadLabel),
+              onPressed: controller.canStartGemmaDownload && !controller.isGemmaReady
+                  ? onDownload
+                  : null,
+              icon: Icon(
+                controller.isGemmaReady ? Icons.check_circle : Icons.cloud_download,
+              ),
+              label: Text(controller.modelDownloadButtonLabel),
             ),
           ),
         ],

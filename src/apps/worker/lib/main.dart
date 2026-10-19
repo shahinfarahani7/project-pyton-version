@@ -4,7 +4,6 @@ import 'runtime/gemma_bootstrap.dart';
 import 'ui/gemma_download_dialog.dart';
 import 'ui/tabs/worker_home_tab.dart';
 import 'ui/tabs/worker_missions_tab.dart';
-import 'ui/tabs/worker_boost_tab.dart';
 import 'ui/tabs/worker_earnings_tab.dart';
 import 'ui/tabs/worker_profile_tab.dart';
 import 'ui/worker_shell.dart';
@@ -141,8 +140,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
               controller: controller,
               onNavigate: _navigateTo,
             ),
-            2 => const WorkerBoostTab(key: ValueKey('boost')),
-            3 => WorkerEarningsTab(
+            2 => WorkerEarningsTab(
               key: const ValueKey('earnings'),
               controller: controller,
             ),

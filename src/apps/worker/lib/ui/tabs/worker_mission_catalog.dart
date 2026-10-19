@@ -16,6 +16,8 @@ class WorkerMissionDefinition {
     required this.kind,
     required this.title,
     required this.description,
+    required this.howToComplete,
+    required this.rewardPointsLabel,
     required this.icon,
   });
 
@@ -23,6 +25,9 @@ class WorkerMissionDefinition {
   final WorkerMissionKind kind;
   final String title;
   final String description;
+  final String howToComplete;
+  /// Display-only until server mission rewards are connected.
+  final String rewardPointsLabel;
   final IconData icon;
 }
 
@@ -47,6 +52,31 @@ abstract final class WorkerMissionSocialLinks {
         WorkerMissionKind.socialTwitter => twitter,
         _ => null,
       };
+
+  /// Build-time override via `--dart-define=FIBONAI_*_URL`, else catalog default.
+  static Uri openUriForKind(WorkerMissionKind kind) {
+    final configured = forKind(kind);
+    if (configured != null) {
+      return configured;
+    }
+    return switch (kind) {
+      WorkerMissionKind.socialTelegram => defaultTelegram,
+      WorkerMissionKind.socialDiscord => defaultDiscord,
+      WorkerMissionKind.socialTwitter => defaultTwitter,
+      _ => throw ArgumentError('Not a social mission kind: $kind'),
+    };
+  }
+
+  static final Uri defaultTelegram = Uri.parse('https://t.me/FibonAI');
+  static final Uri defaultDiscord = Uri.parse('https://discord.gg/fibonai');
+  static final Uri defaultTwitter = Uri.parse('https://x.com/FibonAI');
+
+  static String openLabelForKind(WorkerMissionKind kind) => switch (kind) {
+        WorkerMissionKind.socialTelegram => 'Open Telegram',
+        WorkerMissionKind.socialDiscord => 'Open Discord',
+        WorkerMissionKind.socialTwitter => 'Open X',
+        _ => 'Open link',
+      };
 }
 
 abstract final class WorkerMissionCatalog {
@@ -55,7 +85,11 @@ abstract final class WorkerMissionCatalog {
       id: 'daily_online',
       kind: WorkerMissionKind.dailyOnline,
       title: 'Daily online',
-      description: 'Verified uptime each day. Progress is shown above.',
+      description: 'Verified uptime each day when the server tracks online time.',
+      howToComplete:
+          'Stay signed in with the worker running and heartbeats reaching the '
+          'server. Each verified online day counts once the server confirms uptime.',
+      rewardPointsLabel: '10 pts / verified day',
       icon: Icons.schedule_outlined,
     ),
     WorkerMissionDefinition(
@@ -63,6 +97,10 @@ abstract final class WorkerMissionCatalog {
       kind: WorkerMissionKind.socialTelegram,
       title: 'Join Telegram',
       description: 'Join the official FibonAI Telegram community.',
+      howToComplete:
+          'Open Telegram below, join the channel or group, then return here. '
+          'Server verification will replace the on-device check when connected.',
+      rewardPointsLabel: '25 pts (one-time)',
       icon: Icons.send_outlined,
     ),
     WorkerMissionDefinition(
@@ -70,6 +108,10 @@ abstract final class WorkerMissionCatalog {
       kind: WorkerMissionKind.socialDiscord,
       title: 'Follow Discord',
       description: 'Follow FibonAI on Discord.',
+      howToComplete:
+          'Open Discord below, join the server, then return here. '
+          'Server verification will replace the on-device check when connected.',
+      rewardPointsLabel: '25 pts (one-time)',
       icon: Icons.forum_outlined,
     ),
     WorkerMissionDefinition(
@@ -77,6 +119,10 @@ abstract final class WorkerMissionCatalog {
       kind: WorkerMissionKind.socialTwitter,
       title: 'Follow Twitter',
       description: 'Follow FibonAI on X (Twitter).',
+      howToComplete:
+          'Open X below, follow FibonAI, then return here. '
+          'Server verification will replace the on-device check when connected.',
+      rewardPointsLabel: '25 pts (one-time)',
       icon: Icons.alternate_email,
     ),
     WorkerMissionDefinition(
@@ -85,6 +131,10 @@ abstract final class WorkerMissionCatalog {
       title: 'Set up your payout wallet',
       description:
           'Add EUR payout details in Earnings. Verified when saved on the server.',
+      howToComplete:
+          'Open the Earnings tab → Payout wallets, add a valid payout destination, '
+          'and save. Points apply after the server verifies your wallet.',
+      rewardPointsLabel: '50 pts (one-time)',
       icon: Icons.account_balance_wallet_outlined,
     ),
   ];

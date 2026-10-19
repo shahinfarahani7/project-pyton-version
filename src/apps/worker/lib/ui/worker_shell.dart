@@ -12,11 +12,6 @@ const workerNavItems = <WorkerNavItem>[
     label: 'Missions',
   ),
   (
-    icon: Icons.bolt_outlined,
-    selectedIcon: Icons.bolt_rounded,
-    label: 'Boost',
-  ),
-  (
     icon: Icons.account_balance_wallet_outlined,
     selectedIcon: Icons.account_balance_wallet_rounded,
     label: 'Earnings',
@@ -49,8 +44,7 @@ class WorkerShell extends StatelessWidget {
   String get _title => switch (selectedIndex) {
     0 => 'FibonAI | Worker Panel',
     1 => 'Missions',
-    2 => 'Boost',
-    3 => 'Earnings',
+    2 => 'Earnings',
     _ => 'Profile',
   };
 

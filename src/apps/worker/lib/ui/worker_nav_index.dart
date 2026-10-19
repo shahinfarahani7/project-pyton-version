@@ -2,7 +2,6 @@
 abstract final class WorkerNavIndex {
   static const home = 0;
   static const missions = 1;
-  static const boost = 2;
-  static const earnings = 3;
-  static const profile = 4;
+  static const earnings = 2;
+  static const profile = 3;
 }

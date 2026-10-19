@@ -7,8 +7,6 @@ import '../worker_nav_index.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
 import 'worker_models_tab.dart';
-import 'worker_uptime_section.dart';
-
 class WorkerHomeTab extends StatefulWidget {
   const WorkerHomeTab({
     super.key,
@@ -61,8 +59,6 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
           onDownloadModel: widget.onDownloadModel,
           onOpenProfile: () => widget.onNavigate(WorkerNavIndex.profile),
         ),
-        const SizedBox(height: 16),
-        const WorkerUptimeDashboardSection(uptime: null),
         const SizedBox(height: 16),
         const _EarningsChart(),
       ],

@@ -43,8 +43,8 @@ void main() {
     expect(find.text('Balance'), findsOneWidget);
     expect(find.text(r'$0.00'), findsOneWidget);
     expect(find.text('AI model'), findsOneWidget);
-    expect(find.text('Qwen3 0.6B model'), findsOneWidget);
-    expect(find.text('Uptime progress is not connected yet.'), findsOneWidget);
+    expect(find.text('Download model'), findsOneWidget);
+    expect(find.textContaining('Qwen'), findsNothing);
     expect(find.text('Earnings'), findsOneWidget);
     expect(find.textContaining('not guaranteed'), findsWidgets);
     expect(find.text('Boost your worker'), findsNothing);
