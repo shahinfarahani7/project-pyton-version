@@ -34,6 +34,13 @@ def test_current_gemma_artifact_matches_worker_pin() -> None:
     assert spec.sha256 == "0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0"
 
 
+def test_artifact_delivery_payload_for_gemma() -> None:
+    body = model_artifact_proxy.artifact_delivery_payload("mdv_gemma_4_e4b_it")
+    assert body["downloadPath"] == "/models/mdv_gemma_4_e4b_it/files/gemma-4-E4B-it.litertlm"
+    assert body["artifactSha256"] == "0b2a8980ce155fd97673d8e820b4d29d9c7d99b8fa6806f425d969b145bd52e0"
+    assert body["sizeBytes"] == 3659530240
+
+
 class _Body(httpx.AsyncByteStream):
     closed = False
 

@@ -13,6 +13,10 @@ void main() {
 
   test('model delivery routes match worker API contract', () {
     expect(WorkerRoutes.modelManifest('mdv_test'), '/models/mdv_test/manifest');
+    expect(
+      WorkerRoutes.modelArtifactDelivery('mdv_test'),
+      '/models/mdv_test/artifact-delivery',
+    );
     expect(WorkerRoutes.reportModelInstall('mdv_test'), '/models/mdv_test:report-install');
   });
 

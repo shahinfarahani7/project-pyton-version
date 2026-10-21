@@ -1,12 +1,19 @@
+import 'worker_model_download_policy.dart';
+
 /// Runtime configuration for the worker HTTP client.
 class WorkerConfig {
   WorkerConfig({
     required this.baseUrl,
     this.requestTimeout = const Duration(seconds: 10),
-  });
+    WorkerModelDownloadSource? modelDownloadSource,
+  }) : modelDownloadSource =
+            modelDownloadSource ?? WorkerModelDownloadPolicy.fromEnvironment();
 
   Uri baseUrl;
   final Duration requestTimeout;
+
+  /// Where the worker resolves the on-device LLM download URL.
+  final WorkerModelDownloadSource modelDownloadSource;
 
   static WorkerConfig fromEnvironment() {
     const raw = String.fromEnvironment(

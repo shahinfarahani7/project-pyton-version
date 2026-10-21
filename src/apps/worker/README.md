@@ -103,10 +103,17 @@ Target path: `/sdcard/Edgemint/models/paddleocr/`. On x86 emulators without ONNX
 
 Example task manifest: `fixtures/tasks/ocr_extract_text.v1.json`.
 
-Optional build flags (direct Hugging Face download instead of backend proxy):
+Model download source (`WORKER_MODEL_DOWNLOAD_SOURCE`, default `direct`):
+
+| Value | Behavior |
+| --- | --- |
+| `direct` | Hugging Face URL (or `WORKER_MODEL_DOWNLOAD_URL` override) |
+| `backend` | Stream via worker gateway `/models/{id}/files/{file}` (legacy: `WORKER_USE_BACKEND_ARTIFACT=true`) |
+| `server` | `GET /models/{id}/artifact-delivery` then download using returned `downloadPath` |
 
 ```powershell
-flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081 --dart-define=WORKER_USE_BACKEND_ARTIFACT=false
+flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081 --dart-define=WORKER_MODEL_DOWNLOAD_SOURCE=server
+flutter run --dart-define=EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081 --dart-define=WORKER_USE_BACKEND_ARTIFACT=true
 ```
 
 ## Verification

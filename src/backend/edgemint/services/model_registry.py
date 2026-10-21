@@ -89,6 +89,16 @@ async def get_model_manifest(model_version_id: str, token: WorkerBearerToken) ->
     return JSONResponse(body.model_dump(mode="json"), status_code=200)
 
 
+@app.get("/models/{model_version_id}/artifact-delivery", tags=["models"])
+async def get_model_artifact_delivery(
+    model_version_id: str,
+    token: WorkerBearerToken,
+) -> JSONResponse:
+    _ = token
+    body = model_artifact_proxy.artifact_delivery_payload(model_version_id)
+    return JSONResponse(body, status_code=200)
+
+
 @app.post("/models/{model_version_id}:report-install", tags=["models"])
 async def report_model_install(
     request: Request,

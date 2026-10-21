@@ -7,6 +7,8 @@ abstract final class WorkerRoutes {
   static String workerBenchmark(String workerId) => '/workers/$workerId/benchmark';
   static String workerHeartbeat(String workerId) => '/workers/$workerId/heartbeat';
   static String modelManifest(String modelVersionId) => '/models/$modelVersionId/manifest';
+  static String modelArtifactDelivery(String modelVersionId) =>
+      '/models/$modelVersionId/artifact-delivery';
   static String reportModelInstall(String modelVersionId) => '/models/$modelVersionId:report-install';
 
   static const nextAssignment = '/assignments:next';

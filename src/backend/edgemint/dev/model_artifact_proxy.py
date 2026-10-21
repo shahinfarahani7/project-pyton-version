@@ -64,6 +64,29 @@ def upstream_artifact_url(model_version_id: str) -> str:
     return f"https://huggingface.co/{spec.hf_repo}/resolve/main/{spec.file_name}"
 
 
+def artifact_download_path(model_version_id: str) -> str:
+    spec = _SUPPORTED_ARTIFACTS.get(model_version_id)
+    if spec is None:
+        raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
+    return f"/models/{model_version_id}/files/{spec.file_name}"
+
+
+def artifact_delivery_payload(model_version_id: str) -> dict[str, object]:
+    spec = _SUPPORTED_ARTIFACTS.get(model_version_id)
+    if spec is None:
+        raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
+    payload: dict[str, object] = {
+        "modelVersionId": model_version_id,
+        "fileName": spec.file_name,
+        "downloadPath": artifact_download_path(model_version_id),
+    }
+    if spec.sha256 is not None:
+        payload["artifactSha256"] = spec.sha256
+    if spec.size_bytes is not None:
+        payload["sizeBytes"] = spec.size_bytes
+    return payload
+
+
 async def stream_model_artifact(
     model_version_id: str,
     *,

@@ -25,7 +25,9 @@ import 'inference/ocr/fake_ocr_engine.dart';
 import 'inference/ocr/ocr_engine.dart';
 import 'inference/ocr/paddle_ocr_engine.dart';
 import 'inference/ocr/paddle_ocr_installer.dart';
+import 'config/worker_model_download_policy.dart';
 import 'models/worker_model_catalog.dart';
+import 'models/worker_model_download_resolver.dart';
 import 'platform/worker_runtime_channel.dart';
 import 'runtime/assignment_coordinator.dart';
 import 'runtime/assignment_output_upload_coordinator.dart';
@@ -1570,29 +1572,11 @@ class WorkerAppController extends ChangeNotifier {
 
       final bundledAsset = WorkerModelCatalog.bundledAssetFromEnvironment();
 
-      var downloadUrl = WorkerModelCatalog.resolveDownloadUrl(_config.baseUrl);
-
-      if (bundledAsset == null &&
-          WorkerModelCatalog.usesBackendArtifactProxy()) {
-        if (backendOnline) {
-          _logTask(
-            'Using backend model proxy: '
-            '$downloadUrl',
-          );
-        } else {
-          downloadUrl = WorkerModelCatalog.huggingFaceDownloadUrl;
-
-          _logTask(
-            'Backend offline - '
-            'using direct Hugging Face URL: '
-            '$downloadUrl',
-          );
-        }
+      var downloadUrl = WorkerModelCatalog.huggingFaceDownloadUrl;
+      if (bundledAsset == null) {
+        downloadUrl = await _resolveModelDownloadUrl();
       } else {
-        _logTask(
-          'Model download URL: '
-          '$downloadUrl',
-        );
+        _logTask('Model download URL: (bundled asset)');
       }
 
       _logTask(
@@ -1644,6 +1628,50 @@ class WorkerAppController extends ChangeNotifier {
 
     if (available && isGemmaReady) {
       startAutoAssignmentLoop();
+    }
+  }
+
+  Future<String> _resolveModelDownloadUrl() async {
+    final source = _config.modelDownloadSource;
+    final token = _accessTokenProvider.current;
+    final usesGateway =
+        WorkerModelDownloadPolicy.usesWorkerGatewayArtifact(source);
+
+    if (usesGateway && !backendOnline) {
+      _logTask(
+        'Backend offline — using direct Hugging Face URL: '
+        '${WorkerModelCatalog.huggingFaceDownloadUrl}',
+      );
+      return WorkerModelCatalog.huggingFaceDownloadUrl;
+    }
+
+    try {
+      final resolved = await WorkerModelDownloadResolver.resolveForDownload(
+        config: _config,
+        source: source,
+        api: _api,
+        accessToken: token,
+      );
+      _logTask(
+        switch (source) {
+          WorkerModelDownloadSource.server =>
+            'Model download URL from server delivery: $resolved',
+          WorkerModelDownloadSource.backendProxy =>
+            'Using backend model proxy: $resolved',
+          WorkerModelDownloadSource.direct => 'Model download URL: $resolved',
+        },
+      );
+      return resolved;
+    } catch (error, stackTrace) {
+      if (source == WorkerModelDownloadSource.direct) {
+        rethrow;
+      }
+      _logError('Server model delivery unavailable', error, stackTrace);
+      _logTask(
+        'Falling back to Hugging Face: '
+        '${WorkerModelCatalog.huggingFaceDownloadUrl}',
+      );
+      return WorkerModelCatalog.huggingFaceDownloadUrl;
     }
   }
 
@@ -1746,11 +1774,10 @@ class WorkerAppController extends ChangeNotifier {
       return '';
     }
 
-    if (WorkerModelCatalog.usesBackendArtifactProxy() && backendOnline) {
-      return WorkerModelCatalog.resolveDownloadUrl(_config.baseUrl);
-    }
-
-    return WorkerModelCatalog.huggingFaceDownloadUrl;
+    return WorkerModelDownloadResolver.resolveStatic(
+      config: _config,
+      source: _config.modelDownloadSource,
+    );
   }
 
   /// User-facing download control on Home (no product name on the button).

@@ -99,6 +99,35 @@ class ModelManifestView {
   final DateTime updatedAt;
 }
 
+class ModelArtifactDeliveryView {
+  const ModelArtifactDeliveryView({
+    required this.modelVersionId,
+    required this.fileName,
+    this.downloadPath,
+    this.downloadUrl,
+    this.artifactSha256,
+    this.sizeBytes,
+  });
+
+  factory ModelArtifactDeliveryView.fromJson(Map<String, dynamic> json) {
+    return ModelArtifactDeliveryView(
+      modelVersionId: json['modelVersionId'] as String,
+      fileName: json['fileName'] as String,
+      downloadPath: json['downloadPath'] as String?,
+      downloadUrl: json['downloadUrl'] as String?,
+      artifactSha256: json['artifactSha256'] as String?,
+      sizeBytes: json['sizeBytes'] as int?,
+    );
+  }
+
+  final String modelVersionId;
+  final String fileName;
+  final String? downloadPath;
+  final String? downloadUrl;
+  final String? artifactSha256;
+  final int? sizeBytes;
+}
+
 class WorkerApiClient {
   WorkerApiClient({
     WorkerConfig? config,
@@ -243,6 +272,22 @@ class WorkerApiClient {
       requestId: requestId,
     );
     return ModelManifestView.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<ModelArtifactDeliveryView> getModelArtifactDelivery({
+    required String modelVersionId,
+    required String accessToken,
+    String? requestId,
+  }) async {
+    final path = WorkerRoutes.modelArtifactDelivery(modelVersionId);
+    final response = await _get(
+      path,
+      accessToken: accessToken,
+      requestId: requestId,
+    );
+    return ModelArtifactDeliveryView.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   Future<void> reportModelInstall({

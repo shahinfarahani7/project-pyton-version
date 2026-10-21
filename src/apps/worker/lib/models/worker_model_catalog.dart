@@ -1,6 +1,9 @@
 import 'package:flutter_gemma/flutter_gemma.dart';
 
+import '../config/worker_config.dart';
+import '../config/worker_model_download_policy.dart';
 import 'worker_model_artifact_descriptor.dart';
+import 'worker_model_download_resolver.dart';
 import '../runtime/encrypted_store.dart';
 import '../runtime/model_artifact_verifier.dart';
 
@@ -155,49 +158,50 @@ abstract final class WorkerModelCatalog {
     );
   }
 
-  static const _useBackendArtifact = bool.fromEnvironment(
-    'WORKER_USE_BACKEND_ARTIFACT',
-    defaultValue: false,
-  );
+  static String artifactDeliveryPath(String artifactModelVersionId) =>
+      '/models/$artifactModelVersionId/artifact-delivery';
 
+  static String huggingFaceDownloadUrlForFile(String artifactFileName) =>
+      'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/$artifactFileName';
+
+  static String backendArtifactFileUrl(
+    Uri workerBaseUrl, {
+    String artifactFileName = fileName,
+    String artifactModelVersionId = modelVersionId,
+  }) {
+    final basePath = workerBaseUrl.path.endsWith('/')
+        ? workerBaseUrl.path.substring(0, workerBaseUrl.path.length - 1)
+        : workerBaseUrl.path;
+    return workerBaseUrl
+        .replace(
+          path: '$basePath/models/$artifactModelVersionId/files/$artifactFileName',
+        )
+        .toString();
+  }
+
+  @Deprecated('Use WorkerModelDownloadPolicy and WorkerModelDownloadResolver')
   static bool usesBackendArtifactProxy() {
     const override = String.fromEnvironment('WORKER_MODEL_DOWNLOAD_URL');
-
     if (override.isNotEmpty) {
       return false;
     }
-
-    return _useBackendArtifact;
+    return WorkerModelDownloadPolicy.usesWorkerGatewayArtifact(
+      WorkerModelDownloadPolicy.fromEnvironment(),
+    );
   }
 
+  @Deprecated('Use WorkerModelDownloadResolver.resolveStatic or resolveForDownload')
   static String resolveDownloadUrl(
     Uri workerBaseUrl, {
     String artifactFileName = fileName,
     String artifactModelVersionId = modelVersionId,
   }) {
-    const override = String.fromEnvironment('WORKER_MODEL_DOWNLOAD_URL');
-
-    if (override.isNotEmpty) {
-      return override;
-    }
-
-    if (usesBackendArtifactProxy()) {
-      final basePath = workerBaseUrl.path.endsWith('/')
-          ? workerBaseUrl.path.substring(
-              0,
-              workerBaseUrl.path.length - 1,
-            )
-          : workerBaseUrl.path;
-
-      return workerBaseUrl
-          .replace(
-            path:
-                '$basePath/models/$artifactModelVersionId/files/$artifactFileName',
-          )
-          .toString();
-    }
-
-    return 'https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/$artifactFileName';
+    return WorkerModelDownloadResolver.resolveStatic(
+      config: WorkerConfig(baseUrl: workerBaseUrl),
+      source: WorkerModelDownloadPolicy.fromEnvironment(),
+      artifactFileName: artifactFileName,
+      artifactModelVersionId: artifactModelVersionId,
+    );
   }
 
   /// Optional `.litertlm` bundled asset path (`WORKER_MODEL_ASSET=none` disables).
