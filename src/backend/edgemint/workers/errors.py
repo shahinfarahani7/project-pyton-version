@@ -4,7 +4,18 @@ from __future__ import annotations
 class WorkerServiceError(Exception):
     """Worker-domain failure mapped to an RFC7807-style HTTP response."""
 
-    __slots__ = ("code", "status", "title", "detail")
+    # Include BaseException traceback/context slots (Python 3.13 + async `transaction()`).
+    __slots__ = (
+        "code",
+        "status",
+        "title",
+        "detail",
+        "__traceback__",
+        "__context__",
+        "__cause__",
+        "__suppress_context__",
+        "__notes__",
+    )
 
     def __init__(
         self,

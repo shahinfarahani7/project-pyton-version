@@ -1,0 +1,86 @@
+﻿docker :   File "/usr/local/lib/python3.13/site-packages/fastapi/routing.py", line 2692, in app
+At C:\Users\Admin\AppData\Local\Temp\ps-script-800ffaeb-ca08-4e94-8a48-6a86d00a5de1.ps1:88 char:1
++ docker logs edgemint-worker-registry-1 --tail 80 2>&1 | Out-File -Enc ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  File "/usr/lo...ne 2692, in app:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+INFO:     172.18.0.18:53138 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53152 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53164 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53168 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53178 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53190 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53192 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53198 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53214 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53222 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53236 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53246 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53248 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53256 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53258 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53266 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53280 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53286 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57642 - "GET /health/live HTTP/1.1" 200 OK
+INFO:     172.18.0.18:53298 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53306 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53322 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53330 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53346 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53360 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.22:47390 - "POST /sessions%3Arefresh HTTP/1.1" 422 Unprocessable Content
+INFO:     172.18.0.18:53366 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53376 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53392 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53396 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53410 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:53426 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51176 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51182 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51184 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51190 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51200 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51208 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51214 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51218 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51220 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51226 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51230 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51232 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51234 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51240 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+INFO:     172.18.0.18:51256 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.13/site-packages/fastapi/routing.py", line 1274, in handle
+    await super().handle(scope, receive, send)
+  File "/usr/local/lib/python3.13/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.13/site-packages/fastapi/routing.py", line 156, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.13/site-packages/fastapi/routing.py", line 142, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/fastapi/routing.py", line 698, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/usr/local/lib/python3.13/site-packages/fastapi/routing.py", line 350, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/src/backend/edgemint/services/worker_registry.py", line 79, in refresh_worker_session
+    async with transaction(isolation="READ COMMITTED") as connection:
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/contextlib.py", line 268, in __aexit__
+    exc.__traceback__ = traceback
+    ^^^^^^^^^^^^^^^^^
+  File "<string>", line 18, in __setattr__
+dataclasses.FrozenInstanceError: cannot assign to field '__traceback__'
+INFO:     172.18.0.18:51264 - "GET /internal/dev/assignments HTTP/1.1" 404 Not Found
