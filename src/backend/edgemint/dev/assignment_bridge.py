@@ -35,6 +35,32 @@ def clear_exclusive_device_pin_on_worker_registry() -> None:
         pass
 
 
+def fetch_open_assignment_task_ids_from_worker() -> set[str]:
+    """Task IDs already handed to a worker (or still queued) on worker-registry."""
+    url = f"{_WORKER_REGISTRY}/internal/dev/assignments"
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            response = client.get(url)
+            response.raise_for_status()
+            body = response.json()
+            active = body.get("activeTaskIds")
+            if isinstance(active, list):
+                return {str(task_id) for task_id in active if task_id}
+            items = body.get("items", body)
+            if isinstance(items, list):
+                return {
+                    str(assignment.get("taskId") or assignment.get("assignmentId"))
+                    for assignment in items
+                    if assignment.get("taskId") or assignment.get("assignmentId")
+                }
+    except (httpx.HTTPError, OSError, RuntimeError):
+        pass
+
+    from edgemint.dev.worker_assignments import task_ids_with_open_dev_assignments
+
+    return set(task_ids_with_open_dev_assignments())
+
+
 def fetch_pending_assignments_from_worker() -> list[dict[str, Any]]:
     """Return assignments still queued on worker-registry (survives api-gateway restart)."""
     url = f"{_WORKER_REGISTRY}/internal/dev/assignments"

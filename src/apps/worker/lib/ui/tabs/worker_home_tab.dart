@@ -52,7 +52,11 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
           working: _hasActiveTask(controller.executionStatus.phase),
         ),
         const SizedBox(height: 16),
-        _HomeStatRow(tasksCompleted: controller.tasksProcessed),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) =>
+              _HomeStatRow(tasksCompleted: controller.tasksProcessed),
+        ),
         const SizedBox(height: 16),
         _HomeModelSection(
           controller: controller,
@@ -207,13 +211,12 @@ class _HomeStatRow extends StatelessWidget {
 
   final int tasksCompleted;
 
-  /// No payout balance is loaded on the worker. Integer cents stay at zero.
-  static const _balanceCents = 0;
+  /// Dev display: Fibonai credited per successfully completed task.
+  static const fibonaiPerCompletedTask = 40;
 
   @override
   Widget build(BuildContext context) {
-    final dollars = _balanceCents ~/ 100;
-    final cents = (_balanceCents % 100).abs().toString().padLeft(2, '0');
+    final fibonaiTotal = tasksCompleted * fibonaiPerCompletedTask;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -222,7 +225,7 @@ class _HomeStatRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _StatCard(label: 'Balance', value: '\$$dollars.$cents'),
+          child: _StatCard(label: 'فیبونای', value: '$fibonaiTotal'),
         ),
       ],
     );

@@ -184,8 +184,27 @@ def list_pending_assignments() -> list[dict[str, Any]]:
     return [assignment for assignment in _pending if assignment["assignmentId"] not in _completed]
 
 
+def task_ids_with_open_dev_assignments() -> frozenset[str]:
+    """Task IDs that must not be re-enqueued by portal sync (queued, in-flight, or awaiting result)."""
+    open_ids: set[str] = set()
+    for assignment in _pending:
+        if assignment["assignmentId"] in _completed:
+            continue
+        task_id = assignment.get("taskId") or assignment.get("assignmentId")
+        if task_id:
+            open_ids.add(str(task_id))
+    for task_id in _in_flight_devices:
+        if task_id not in _completed:
+            open_ids.add(str(task_id))
+    for task_id in _delivered_devices:
+        if task_id not in _completed and task_id not in _cancelled_ids:
+            open_ids.add(str(task_id))
+    return frozenset(open_ids)
+
+
 def dev_assignment_state() -> dict[str, Any]:
     return {
         "exclusiveDeviceId": preferred_device_public_id(),
         "items": list_pending_assignments(),
+        "activeTaskIds": sorted(task_ids_with_open_dev_assignments()),
     }

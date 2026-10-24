@@ -39,9 +39,14 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Tasks completed'), findsOneWidget);
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('Balance'), findsOneWidget);
-    expect(find.text(r'$0.00'), findsOneWidget);
+    expect(find.text('فیبونای'), findsOneWidget);
+    expect(find.text('0'), findsNWidgets(2));
+    expect(find.text(r'$0.00'), findsNothing);
+    controller.tasksProcessed = 2;
+    controller.notifyListeners();
+    await tester.pump();
+    expect(find.text('2'), findsOneWidget);
+    expect(find.text('80'), findsOneWidget);
     expect(find.text('AI model'), findsOneWidget);
     expect(find.text('Download model'), findsOneWidget);
     expect(find.textContaining('Qwen'), findsNothing);

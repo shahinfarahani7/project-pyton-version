@@ -155,14 +155,11 @@ def _tasks_for_workspace(workspace_id: UUID) -> list[dict[str, Any]]:
 def _sync_pending_tasks_to_worker_queue(tasks: list[dict[str, Any]]) -> None:
     from edgemint.dev.assignment_bridge import (
         enqueue_assignment_for_worker,
-        fetch_pending_assignments_from_worker,
+        fetch_open_assignment_task_ids_from_worker,
     )
 
     try:
-        pending_ids = {
-            assignment.get("taskId") or assignment.get("assignmentId")
-            for assignment in fetch_pending_assignments_from_worker()
-        }
+        pending_ids = fetch_open_assignment_task_ids_from_worker()
     except Exception:
         return
 
