@@ -1,5 +1,7 @@
 import { onMounted, onUnmounted, watch } from 'vue';
 
+import { devSseLog } from '../api/devApiLog.js';
+
 export function useTaskEventStream(getWorkspaceId, { enabled = () => true, onTaskEvent } = {}) {
   let source = null;
 
@@ -21,14 +23,22 @@ export function useTaskEventStream(getWorkspaceId, { enabled = () => true, onTas
     }
 
     const base = import.meta.env.VITE_API_BASE_URL ?? '';
-    source = new EventSource(`${base}/v1/workspaces/${workspaceId}/tasks/events`, {
+    const streamPath = `/v1/workspaces/${workspaceId}/tasks/events`;
+    devSseLog('connect', streamPath);
+    source = new EventSource(`${base}${streamPath}`, {
       withCredentials: true,
+    });
+    source.addEventListener('open', () => {
+      devSseLog('open', streamPath);
+    });
+    source.addEventListener('error', () => {
+      devSseLog('error', { path: streamPath, readyState: source?.readyState });
     });
     source.addEventListener('task', (event) => {
       try {
         onTaskEvent?.(JSON.parse(event.data));
       } catch {
-        // Ignore malformed SSE payloads.
+        devSseLog('malformed task payload', streamPath);
       }
     });
   }

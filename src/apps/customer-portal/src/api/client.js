@@ -1,3 +1,5 @@
+import { devApiLogNetworkError, devApiLogResponse, devApiLogStart } from './devApiLog.js';
+
 const CSRF_HEADER = 'X-CSRF-Token';
 
 /** Normalize API/Problem+ and FastAPI error payloads into user-visible text. */
@@ -78,12 +80,20 @@ export async function fetchJson(path, options = {}) {
     headers[CSRF_HEADER] = csrfToken;
   }
 
-  const response = await fetch(`${apiBaseUrl()}${path}`, {
-    method: options.method ?? (options.body === undefined ? 'GET' : 'POST'),
-    credentials: 'include',
-    headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
-  });
+  const method = options.method ?? (options.body === undefined ? 'GET' : 'POST');
+  const logCtx = devApiLogStart(method, path);
+  let response;
+  try {
+    response = await fetch(`${apiBaseUrl()}${path}`, {
+      method,
+      credentials: 'include',
+      headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    });
+  } catch (error) {
+    devApiLogNetworkError(logCtx, error);
+    throw error;
+  }
 
   const csrfFromResponse = response.headers.get(CSRF_HEADER);
   if (csrfFromResponse) {
@@ -91,10 +101,12 @@ export async function fetchJson(path, options = {}) {
   }
 
   if (response.status === 204) {
+    devApiLogResponse(logCtx, response, '');
     return undefined;
   }
 
   const raw = await response.text();
+  devApiLogResponse(logCtx, response, raw);
   let payload;
   try {
     payload = raw ? JSON.parse(raw) : {};
@@ -116,17 +128,25 @@ export async function fetchForm(path, formData) {
   if (csrfToken) {
     headers[CSRF_HEADER] = csrfToken;
   }
-  const response = await fetch(`${apiBaseUrl()}${path}`, {
-    method: 'POST',
-    credentials: 'include',
-    headers,
-    body: formData,
-  });
+  const logCtx = devApiLogStart('POST', `${path} (multipart)`);
+  let response;
+  try {
+    response = await fetch(`${apiBaseUrl()}${path}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: formData,
+    });
+  } catch (error) {
+    devApiLogNetworkError(logCtx, error);
+    throw error;
+  }
   const csrfFromResponse = response.headers.get(CSRF_HEADER);
   if (csrfFromResponse) {
     csrfToken = csrfFromResponse;
   }
   const raw = await response.text();
+  devApiLogResponse(logCtx, response, raw);
   let payload;
   try {
     payload = raw ? JSON.parse(raw) : {};
