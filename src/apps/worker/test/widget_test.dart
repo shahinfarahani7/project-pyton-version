@@ -39,7 +39,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Tasks completed'), findsOneWidget);
-    expect(find.text('فیبونای'), findsOneWidget);
+    expect(find.text('Fibonai'), findsOneWidget);
     expect(find.text('0'), findsNWidgets(2));
     expect(find.text(r'$0.00'), findsNothing);
     controller.tasksProcessed = 2;

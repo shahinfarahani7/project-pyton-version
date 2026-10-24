@@ -225,7 +225,7 @@ class _HomeStatRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _StatCard(label: 'فیبونای', value: '$fibonaiTotal'),
+          child: _StatCard(label: 'Fibonai', value: '$fibonaiTotal'),
         ),
       ],
     );
