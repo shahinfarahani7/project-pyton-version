@@ -4,7 +4,7 @@ import os
 from datetime import UTC, datetime
 
 import httpx
-from fastapi import Header, Request
+from fastapi import Body, Header, Request
 from fastapi.responses import JSONResponse, Response
 
 from edgemint.building_blocks.app import create_service_app
@@ -502,12 +502,14 @@ if _dev_worker_assignments_enabled():
         taskType: str
 
     @app.post("/internal/dev/assignments", tags=["dev-assignments"], status_code=201)
-    async def dev_enqueue_assignment(payload: DevEnqueueAssignmentRequest) -> JSONResponse:
-        body = dev_worker_assignments.enqueue_dev_assignment(
+    async def dev_enqueue_assignment(
+        payload: DevEnqueueAssignmentRequest = Body(),
+    ) -> JSONResponse:
+        assignment = dev_worker_assignments.enqueue_dev_assignment(
             task_id=payload.taskId,
             task_type=payload.taskType,
         )
-        return JSONResponse(body, status_code=201)
+        return JSONResponse(assignment, status_code=201)
 
     @app.get("/internal/dev/assignments", tags=["dev-assignments"])
     async def dev_list_assignments() -> JSONResponse:

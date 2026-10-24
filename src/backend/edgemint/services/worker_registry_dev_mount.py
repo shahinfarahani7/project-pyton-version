@@ -5,11 +5,23 @@ from __future__ import annotations
 import os
 
 import httpx
-from fastapi import Header, Request
+from fastapi import Body, Header
 from fastapi.responses import JSONResponse, Response
 
 from edgemint.building_blocks.database import transaction
 from edgemint.workers.dependencies import WorkerBearerToken
+from pydantic import BaseModel
+
+
+class DevEnqueueAssignmentRequest(BaseModel):
+    taskId: str
+    taskType: str
+
+
+class DevFailAssignmentRequest(BaseModel):
+    errorCode: str = "WORKER_EXECUTION_FAILED"
+    retryable: bool = True
+    diagnostics: dict | None = None
 
 
 def _dev_worker_assignments_enabled() -> bool:
@@ -23,7 +35,6 @@ def mount_dev_routes(app) -> None:
         return
 
     from edgemint.dev import worker_assignments as dev_worker_assignments
-    from pydantic import BaseModel
 
     _API_GATEWAY = os.environ.get("EDGEMINT_API_GATEWAY_URL", "http://api-gateway:8080").rstrip("/")
 
@@ -34,17 +45,15 @@ def mount_dev_routes(app) -> None:
         except httpx.HTTPError:
             pass
 
-    class DevEnqueueAssignmentRequest(BaseModel):
-        taskId: str
-        taskType: str
-
     @app.post("/internal/dev/assignments", tags=["dev-assignments"], status_code=201)
-    async def dev_enqueue_assignment(payload: DevEnqueueAssignmentRequest) -> JSONResponse:
-        body = dev_worker_assignments.enqueue_dev_assignment(
+    async def dev_enqueue_assignment(
+        payload: DevEnqueueAssignmentRequest = Body(),
+    ) -> JSONResponse:
+        assignment = dev_worker_assignments.enqueue_dev_assignment(
             task_id=payload.taskId,
             task_type=payload.taskType,
         )
-        return JSONResponse(body, status_code=201)
+        return JSONResponse(assignment, status_code=201)
 
     @app.get("/internal/dev/assignments", tags=["dev-assignments"])
     async def dev_list_assignments() -> JSONResponse:
@@ -225,11 +234,6 @@ def mount_dev_routes(app) -> None:
             dev_worker_assignments.command_receipt("devAssignmentAbandon"),
             status_code=200,
         )
-
-    class DevFailAssignmentRequest(BaseModel):
-        errorCode: str = "WORKER_EXECUTION_FAILED"
-        retryable: bool = True
-        diagnostics: dict | None = None
 
     async def _notify_portal_task_failed(task_id: str, error_code: str) -> None:
         try:
