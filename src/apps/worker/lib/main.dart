@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'runtime/gemma_bootstrap.dart';
@@ -41,6 +43,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     with WidgetsBindingObserver {
   WorkerAppController? _controller;
   int _selectedNavIndex = 0;
+  bool _modelUpdatePromptOpen = false;
 
   @override
   void initState() {
@@ -58,6 +61,9 @@ class _WorkerHomePageState extends State<WorkerHomePage>
       return;
     }
     setState(() => _controller = controller);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_maybeShowModelUpdatePrompt());
+    });
   }
 
   void _onControllerChanged() {
@@ -74,16 +80,11 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     return controller;
   }
 
-  Future<void> _startGemmaDownload() async {
+  Future<void> _runGemmaDownload() async {
     final controller = _controller;
     if (controller == null ||
         !controller.canStartGemmaDownload ||
         controller.isGemmaReady) {
-      return;
-    }
-
-    final confirmed = await showGemmaDownloadDialog(context);
-    if (!mounted || confirmed != true) {
       return;
     }
 
@@ -94,6 +95,31 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(controller.modelError ?? 'Model download failed')),
     );
+  }
+
+  Future<void> _maybeShowModelUpdatePrompt() async {
+    final controller = _controller;
+    if (!mounted ||
+        controller == null ||
+        _selectedNavIndex != 0 ||
+        _modelUpdatePromptOpen) {
+      return;
+    }
+    if (controller.isGemmaReady ||
+        controller.isGemmaDownloading ||
+        controller.isGemmaDownloadPaused) {
+      return;
+    }
+
+    _modelUpdatePromptOpen = true;
+    final result = await showModelUpdatePromptDialog(context);
+    _modelUpdatePromptOpen = false;
+    if (!mounted) {
+      return;
+    }
+    if (result == ModelUpdatePromptResult.update) {
+      await _runGemmaDownload();
+    }
   }
 
   @override
@@ -111,6 +137,11 @@ class _WorkerHomePageState extends State<WorkerHomePage>
 
   void _navigateTo(int index) {
     setState(() => _selectedNavIndex = index);
+    if (index == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(_maybeShowModelUpdatePrompt());
+      });
+    }
   }
 
   @override
@@ -132,8 +163,6 @@ class _WorkerHomePageState extends State<WorkerHomePage>
             0 => WorkerHomeTab(
               key: const ValueKey('home'),
               controller: controller,
-              onDownloadModel: _startGemmaDownload,
-              onNavigate: _navigateTo,
             ),
             1 => WorkerMissionsTab(
               key: const ValueKey('missions'),

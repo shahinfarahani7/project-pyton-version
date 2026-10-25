@@ -63,7 +63,7 @@ import 'tasks/task_type_mapper.dart';
 import 'runtime/gemma_model_runtime_manager.dart';
 import 'runtime/worker_model_installer.dart';
 
-enum ModelInstallPhase { idle, downloading, ready, failed }
+enum ModelInstallPhase { idle, downloading, paused, ready, failed }
 
 /// Default OCR uses the resident Gemma multimodal path; opt in to Paddle ONNX.
 abstract final class WorkerOcrBackendPolicy {
@@ -259,6 +259,8 @@ class WorkerAppController extends ChangeNotifier {
   double modelProgress = 0;
 
   String? modelError;
+
+  bool _modelDownloadPauseRequested = false;
 
   ExecutionStatus executionStatus = const ExecutionStatus(
     phase: ExecutionPhase.idle,
@@ -566,7 +568,20 @@ class WorkerAppController extends ChangeNotifier {
 
   bool get isGemmaDownloading => modelPhase == ModelInstallPhase.downloading;
 
+  bool get isGemmaDownloadPaused => modelPhase == ModelInstallPhase.paused;
+
+  bool get showsModelDownloadProgressCard =>
+      isGemmaDownloading || isGemmaDownloadPaused;
+
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
+
+  void pauseGemmaModelDownload() {
+    if (modelPhase != ModelInstallPhase.downloading) {
+      return;
+    }
+    _modelDownloadPauseRequested = true;
+    _logTask('Model download pause requested');
+  }
 
   bool get canAcceptAssignments =>
       backendOnline &&
@@ -782,7 +797,8 @@ class WorkerAppController extends ChangeNotifier {
       _logError('Model check failed', error, stackTrace);
 
       if (!usesDevMockInference &&
-          modelPhase != ModelInstallPhase.downloading) {
+          modelPhase != ModelInstallPhase.downloading &&
+          modelPhase != ModelInstallPhase.paused) {
         modelPhase = ModelInstallPhase.idle;
       }
     }
@@ -1557,11 +1573,15 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
 
+    final resumeFromPause = modelPhase == ModelInstallPhase.paused;
     modelPhase = ModelInstallPhase.downloading;
 
-    modelProgress = 0;
+    if (!resumeFromPause) {
+      modelProgress = 0;
+    }
 
     modelError = null;
+    _modelDownloadPauseRequested = false;
 
     notifyListeners();
 
@@ -1613,13 +1633,22 @@ class WorkerAppController extends ChangeNotifier {
         'install verified - ready for inference',
       );
     } catch (error, stackTrace) {
-      _logError('Model setup failed', error, stackTrace);
+      if (error is ModelDownloadPausedException) {
+        modelPhase = ModelInstallPhase.paused;
+        modelError = null;
+        _logTask(
+          'Model download paused at '
+          '${(modelProgress * 100).toStringAsFixed(0)}%',
+        );
+      } else {
+        _logError('Model setup failed', error, stackTrace);
 
-      modelPhase = ModelInstallPhase.failed;
+        modelPhase = ModelInstallPhase.failed;
 
-      modelError = '$error';
+        modelError = '$error';
 
-      _logTask('Model setup failed: $error');
+        _logTask('Model setup failed: $error');
+      }
     }
 
     lastSync = _formatNow();
@@ -1681,6 +1710,9 @@ class WorkerAppController extends ChangeNotifier {
     try {
       await _installFromNetwork(primaryUrl);
     } catch (primaryError) {
+      if (primaryError is ModelDownloadPausedException) {
+        rethrow;
+      }
       final fallbackUrl = WorkerModelCatalog.huggingFaceDownloadUrl;
 
       if (primaryUrl == fallbackUrl) {
@@ -1723,6 +1755,7 @@ class WorkerAppController extends ChangeNotifier {
 
         notifyListeners();
       },
+      shouldAbortDownload: () => _modelDownloadPauseRequested,
     );
   }
 
@@ -1783,6 +1816,7 @@ class WorkerAppController extends ChangeNotifier {
   /// User-facing download control on Home (no product name on the button).
   String get modelDownloadButtonLabel => switch (modelPhase) {
     ModelInstallPhase.downloading => 'Downloading…',
+    ModelInstallPhase.paused => 'Resume download',
     _ => 'Download model',
   };
 

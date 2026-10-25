@@ -25,11 +25,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildWorkerTheme(),
-        home: WorkerHomeTab(
-          controller: controller,
-          onDownloadModel: () {},
-          onNavigate: (_) {},
-        ),
+        home: WorkerHomeTab(controller: controller),
       ),
     );
     await tester.pump();
@@ -47,8 +43,8 @@ void main() {
     await tester.pump();
     expect(find.text('2'), findsOneWidget);
     expect(find.text('80'), findsOneWidget);
-    expect(find.text('AI model'), findsOneWidget);
-    expect(find.text('Download model'), findsOneWidget);
+    expect(find.text('AI model'), findsNothing);
+    expect(find.text('Download model'), findsNothing);
     expect(find.textContaining('Qwen'), findsNothing);
     expect(find.text('Earnings'), findsOneWidget);
     expect(find.textContaining('not guaranteed'), findsWidgets);
@@ -72,11 +68,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildWorkerTheme(),
-        home: WorkerHomeTab(
-          controller: controller,
-          onDownloadModel: () {},
-          onNavigate: (_) {},
-        ),
+        home: WorkerHomeTab(controller: controller),
       ),
     );
     await tester.pump();
@@ -89,5 +81,52 @@ void main() {
       find.bySemanticsLabel('Worker character waiting for a task'),
       findsNothing,
     );
+  });
+
+  testWidgets('home shows download progress card while model is installing', (
+    tester,
+  ) async {
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    controller.setAvailable(false);
+    controller.modelPhase = ModelInstallPhase.downloading;
+    controller.modelProgress = 0.42;
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: WorkerHomeTab(controller: controller),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.textContaining('Downloading 42%'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.text('Pause'), findsOneWidget);
+
+    controller.modelProgress = 1;
+    controller.notifyListeners();
+    await tester.pump();
+
+    expect(find.text('Installing model…'), findsOneWidget);
+    expect(find.text('Pause'), findsNothing);
+
+    controller.modelPhase = ModelInstallPhase.paused;
+    controller.notifyListeners();
+    await tester.pump();
+
+    expect(find.textContaining('Paused at'), findsOneWidget);
+    expect(find.text('Resume'), findsOneWidget);
+    expect(find.text('Pause'), findsNothing);
+
+    controller.modelPhase = ModelInstallPhase.ready;
+    controller.notifyListeners();
+    await tester.pump();
+
+    expect(find.textContaining('Downloading'), findsNothing);
+    expect(find.text('Installing model…'), findsNothing);
   });
 }

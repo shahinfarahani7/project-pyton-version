@@ -64,3 +64,11 @@ class LeaseRevokedException implements Exception {
   @override
   String toString() => 'LeaseRevokedException()';
 }
+
+/// User paused an in-flight model transfer; partial bytes are kept on disk.
+class ModelDownloadPausedException implements Exception {
+  const ModelDownloadPausedException();
+
+  @override
+  String toString() => 'ModelDownloadPausedException()';
+}

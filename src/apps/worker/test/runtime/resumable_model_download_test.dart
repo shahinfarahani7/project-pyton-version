@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
 import '../../lib/runtime/resumable_model_download.dart';
+import '../../lib/runtime/runtime_exceptions.dart';
 
 void main() {
   final bytes = List<int>.generate(32768, (i) => i % 251);
@@ -321,4 +322,18 @@ void main() {
       expect(ranges.last, 'bytes=8192-');
     },
   );
+
+  test('shouldAbort pauses transfer and keeps partial bytes on disk', () async {
+    await seed(bytes.sublist(0, 16000));
+    final url = await serve(healthy);
+    await expectLater(
+      downloader().download(
+        url: url,
+        onProgress: (_) {},
+        shouldAbort: () => true,
+      ),
+      throwsA(isA<ModelDownloadPausedException>()),
+    );
+    expect(await partial().length(), 16000);
+  });
 }

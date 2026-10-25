@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'runtime_exceptions.dart';
+
 /// App-owned transfer state, independent of URL, signed redirects and plugin
 /// task lifetimes. Only a fully hashed artifact is handed to the installer.
 class ResumableModelDownload {
@@ -31,7 +33,13 @@ class ResumableModelDownload {
     required Uri url,
     required void Function(int percent) onProgress,
     void Function(String message)? log,
+    bool Function()? shouldAbort,
   }) async {
+    void checkAbort() {
+      if (shouldAbort?.call() ?? false) {
+        throw const ModelDownloadPausedException();
+      }
+    }
     if (expectedBytes <= 0 ||
         !RegExp(r'^[a-f0-9]{64}$').hasMatch(expectedSha256) ||
         maxAttempts < 1 ||
@@ -57,6 +65,7 @@ class ResumableModelDownload {
       }
       var failures = 0;
       while (true) {
+        checkAbort();
         final offset = await partial.exists() ? await partial.length() : 0;
         onProgress(_percent(offset));
         if (offset > expectedBytes) {
@@ -65,8 +74,17 @@ class ResumableModelDownload {
         if (offset == expectedBytes) break;
         log?.call('Model transfer: continuing at $offset/$expectedBytes bytes');
         try {
-          await _transfer(url, partial, offset, onProgress);
+          await _transfer(
+            url,
+            partial,
+            offset,
+            onProgress,
+            shouldAbort: shouldAbort,
+          );
         } on Object catch (error) {
+          if (error is ModelDownloadPausedException) {
+            rethrow;
+          }
           final retryable =
               error is SocketException ||
               error is HttpException ||
@@ -101,8 +119,9 @@ class ResumableModelDownload {
     Uri url,
     File partial,
     int offset,
-    void Function(int) onProgress,
-  ) async {
+    void Function(int) onProgress, {
+    bool Function()? shouldAbort,
+  }) async {
     final client = HttpClient()..autoUncompress = false;
     RandomAccessFile? output;
     try {
@@ -159,6 +178,9 @@ class ResumableModelDownload {
       var received = offset;
       var lastPercent = _percent(offset);
       await for (final bytes in response.timeout(idleTimeout)) {
+        if (shouldAbort?.call() ?? false) {
+          throw const ModelDownloadPausedException();
+        }
         if (received + bytes.length > end + 1) {
           throw StateError('Model response exceeded declared range');
         }

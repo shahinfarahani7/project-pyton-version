@@ -738,6 +738,7 @@ abstract final class WorkerModelInstaller {
     void Function(String message)? log,
     String? signingKey,
     ModelDownloadVerifyHook? verifyHook,
+    bool Function()? shouldAbortDownload,
   }) async {
     await ArtifactInstallCoordinator.instance.runExclusiveInstall<void>(
       modelVersionId: WorkerModelCatalog.modelVersionId,
@@ -768,6 +769,7 @@ abstract final class WorkerModelInstaller {
             url: Uri.parse(downloadUrl),
             onProgress: onProgress,
             log: log,
+            shouldAbort: shouldAbortDownload,
           );
           await WorkerModelCatalog.installBuilder().fromFile(file.path).install();
         } finally {

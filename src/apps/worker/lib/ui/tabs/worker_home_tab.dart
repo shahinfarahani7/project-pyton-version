@@ -1,35 +1,18 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../runtime/execution_status.dart';
 import '../../worker_app_controller.dart';
-import '../worker_nav_index.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
 import 'worker_models_tab.dart';
+
 class WorkerHomeTab extends StatefulWidget {
   const WorkerHomeTab({
     super.key,
     required this.controller,
-    required this.onDownloadModel,
-    required this.onNavigate,
   });
 
   final WorkerAppController controller;
-
-  /// Shell contract. Model download also lives on the Profile tab.
-  final VoidCallback onDownloadModel;
-
-  /// Shell contract. Other tabs stay on the existing navigation bar.
-  final ValueChanged<int> onNavigate;
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(ObjectFlagProperty.has('onDownloadModel', onDownloadModel))
-      ..add(ObjectFlagProperty.has('onNavigate', onNavigate));
-  }
 
   @override
   State<WorkerHomeTab> createState() => _WorkerHomeTabState();
@@ -51,17 +34,23 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
         _WorkerCharacter(
           working: _hasActiveTask(controller.executionStatus.phase),
         ),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) {
+            if (!controller.showsModelDownloadProgressCard) {
+              return const SizedBox.shrink();
+            }
+            return Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: WorkerModelDownloadProgressCard(controller: controller),
+            );
+          },
+        ),
         const SizedBox(height: 16),
         ListenableBuilder(
           listenable: controller,
           builder: (context, _) =>
               _HomeStatRow(tasksCompleted: controller.tasksProcessed),
-        ),
-        const SizedBox(height: 16),
-        _HomeModelSection(
-          controller: controller,
-          onDownloadModel: widget.onDownloadModel,
-          onOpenProfile: () => widget.onNavigate(WorkerNavIndex.profile),
         ),
         const SizedBox(height: 16),
         const _EarningsChart(),
@@ -167,41 +156,6 @@ class _CharacterLoopState extends State<_CharacterLoop>
           semanticLabel: widget.semanticLabel,
         );
       },
-    );
-  }
-}
-
-class _HomeModelSection extends StatelessWidget {
-  const _HomeModelSection({
-    required this.controller,
-    required this.onDownloadModel,
-    required this.onOpenProfile,
-  });
-
-  final WorkerAppController controller;
-  final VoidCallback onDownloadModel;
-  final VoidCallback onOpenProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'AI model',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const Spacer(),
-            TextButton(onPressed: onOpenProfile, child: const Text('Profile')),
-          ],
-        ),
-        const SizedBox(height: 8),
-        WorkerModelCard(controller: controller, onDownload: onDownloadModel),
-      ],
     );
   }
 }
