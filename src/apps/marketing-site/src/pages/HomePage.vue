@@ -3,9 +3,7 @@ import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import BrandMark from '../components/BrandMark.vue';
-import BrandWordmark from '../components/BrandWordmark.vue';
 import GlassShapes from '../components/GlassShapes.vue';
-import HeroVisual from '../components/HeroVisual.vue';
 import HeroSequence from '../components/HeroSequence.vue';
 import {
   capabilityChips,
@@ -41,30 +39,18 @@ function trackPointer(event) {
 <template>
   <div class="em-home" @pointermove="trackPointer">
     <HeroSequence>
-      <section class="hero hero--command">
-        <div class="container hero__grid">
-          <div class="hero__inner">
-            <p class="em-brand-pill">
-              <BrandMark :size="18" />
-              <BrandWordmark />
-              <span class="em-brand-pill__note">Edge-first AI inference</span>
-            </p>
-            <h1 class="hero__title">
-              {{ heroTitle.before }}<span class="em-highlight">{{ heroTitle.highlight }}</span>{{ heroTitle.after }}
-            </h1>
-            <p class="hero__subtitle">{{ hero.subtitle }}</p>
-            <div class="hero__actions">
-              <RouterLink class="em-pill em-pill--solid" :to="{ name: hero.primaryCta.to }">
-                {{ hero.primaryCta.label }} <span class="em-pill__chev">›</span>
-              </RouterLink>
-              <RouterLink class="em-pill em-pill--ghost" :to="{ name: hero.secondaryCta.to }">
-                {{ hero.secondaryCta.label }} <span class="em-pill__chev">›</span>
-              </RouterLink>
-            </div>
-          </div>
-          <div class="hero__visual">
-            <HeroVisual />
-          </div>
+      <section class="em-story-hero" aria-label="FibonAI">
+        <h1 class="em-story-hero__title">
+          {{ heroTitle.before }}<span class="em-highlight">{{ heroTitle.highlight }}</span>{{ heroTitle.after }}
+        </h1>
+        <p class="em-story-hero__subtitle">{{ hero.subtitle }}</p>
+        <div class="em-story-hero__actions">
+          <RouterLink class="em-pill em-pill--solid" :to="{ name: hero.primaryCta.to }">
+            {{ hero.primaryCta.label }} <span class="em-pill__chev">›</span>
+          </RouterLink>
+          <RouterLink class="em-pill em-pill--ghost" :to="{ name: hero.secondaryCta.to }">
+            {{ hero.secondaryCta.label }} <span class="em-pill__chev">›</span>
+          </RouterLink>
         </div>
       </section>
     </HeroSequence>
