@@ -11,7 +11,7 @@ import { portalUrl } from '../config/env.js';
     <section class="page-hero">
       <div class="container container--narrow">
         <p class="page-hero__eyebrow">Documentation</p>
-        <h1 class="page-hero__title">Build on the EdgeMint task API</h1>
+        <h1 class="page-hero__title">Build on the FibonAI task API</h1>
         <p class="page-hero__lead">
           OpenAPI-first contracts, async lifecycle events, and portal-based local development — everything you need to
           integrate document, vision, and language workloads.

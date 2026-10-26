@@ -8,7 +8,7 @@ import { contactChannels } from '../content/site.js';
     <section class="page-hero">
       <div class="container container--narrow">
         <p class="page-hero__eyebrow">Contact</p>
-        <h1 class="page-hero__title">Talk to the EdgeMint team</h1>
+        <h1 class="page-hero__title">Talk to the FibonAI team</h1>
         <p class="page-hero__lead">
           Request an enterprise demo, ask about pricing and regions, or get help integrating the task API into your
           product.

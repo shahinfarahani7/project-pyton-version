@@ -12,7 +12,7 @@ export const hero = {
   title: 'Run AI workloads where your policy allows — with a quote before every task.',
   titleHighlight: 'a quote',
   subtitle:
-    'EdgeMint routes document, vision, and language tasks to a verified edge worker network first, with explicit cloud fallback, EUR-denominated billing, and a full audit trail for regulated teams.',
+    'FibonAI routes document, vision, and language tasks to a verified edge worker network first, with explicit cloud fallback, EUR-denominated billing, and a full audit trail for regulated teams.',
   primaryCta: { label: 'Talk to sales', to: 'contact' },
   secondaryCta: { label: 'View documentation', to: 'docs' },
 };
@@ -62,7 +62,7 @@ export const flowSteps = [
   {
     step: '02',
     title: 'Receive a quote',
-    body: 'EdgeMint returns a deterministic EUR quote with policy hash, verification tier, and execution route before work begins.',
+    body: 'FibonAI returns a deterministic EUR quote with policy hash, verification tier, and execution route before work begins.',
   },
   {
     step: '03',

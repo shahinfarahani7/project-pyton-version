@@ -11,7 +11,7 @@ import { useCaseGroups } from '../content/site.js';
         <p class="page-hero__eyebrow">Use cases</p>
         <h1 class="page-hero__title">Production workloads across your document and AI stack</h1>
         <p class="page-hero__lead">
-          EdgeMint ships with a broad task catalog — from receipt OCR and invoice extraction to content moderation,
+          FibonAI ships with a broad task catalog — from receipt OCR and invoice extraction to content moderation,
           catalog enrichment, and ML validation pipelines.
         </p>
       </div>

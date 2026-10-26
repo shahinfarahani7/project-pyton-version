@@ -10,7 +10,7 @@ import { workerPoints } from '../content/site.js';
         <p class="page-hero__eyebrow">Workers</p>
         <h1 class="page-hero__title">Contribute compute on your terms</h1>
         <p class="page-hero__lead">
-          The EdgeMint Worker app runs assigned AI tasks on your device when you opt in. This is on-device inference —
+          The FibonAI Worker app runs assigned AI tasks on your device when you opt in. This is on-device inference —
           not cryptocurrency mining — with transparent, variable EUR rewards.
         </p>
       </div>
@@ -31,7 +31,7 @@ import { workerPoints } from '../content/site.js';
       <div class="container container--narrow prose">
         <h2>How assignment works</h2>
         <p>
-          When your availability toggle is on, EdgeMint assigns tasks that match your device tier and installed models.
+          When your availability toggle is on, FibonAI assigns tasks that match your device tier and installed models.
           You do not accept or reject individual tasks — availability is the control. Rewards move through estimated,
           pending, and verified states before payout.
         </p>

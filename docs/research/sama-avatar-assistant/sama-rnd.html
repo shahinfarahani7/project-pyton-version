@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>R&amp;D — Sama-style AI avatar assistant for a reservation system</title>
+<style>
+  @font-face { font-family: 'Cal Sans'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/cal-sans/files/cal-sans-latin-400-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Geist'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-sans/files/geist-sans-latin-400-normal.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Geist'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-sans/files/geist-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'Geist'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-sans/files/geist-sans-latin-600-normal.woff2') format('woff2'); font-weight: 600; }
+  @font-face { font-family: 'Geist Mono'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-mono/files/geist-mono-latin-400-normal.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Geist Mono'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-mono/files/geist-mono-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+
+  @page { size: A4; margin: 0; }
+  :root { --canvas:#0b0c0f; --panel:#101216; --panel-2:#15171b; --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.2);
+    --text:#fff; --muted:#b3b5bd; --dim:#7a7c86; --gold:#cdae6f; --check:#19c7b4; --hold:#e2456b; --steel:#a6c0cb; }
+  * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html, body { margin:0; background:var(--canvas); color:var(--muted); font:400 9.8pt/1.52 'Geist', system-ui, sans-serif; }
+  .page { width:210mm; height:297mm; padding:16mm 16mm 15mm; position:relative; overflow:hidden; page-break-after:always; background:var(--canvas); }
+  .page:last-child { page-break-after:auto; }
+  .page::before { content:''; position:absolute; inset:-30% -20% auto auto; width:140mm; height:140mm; background:radial-gradient(circle, rgba(166,192,203,.09), transparent 65%); }
+  .foot { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font:400 7.2pt 'Geist Mono', monospace; color:var(--dim); border-top:1px solid var(--line); padding-top:2.5mm; }
+  h1, h2, h3 { color:var(--text); font-family:'Cal Sans','Geist',sans-serif; font-weight:400; letter-spacing:-.005em; margin:0; }
+  h1 { font-size:34pt; line-height:1.04; } h2 { font-size:19pt; line-height:1.1; margin-bottom:4mm; } h3 { font-size:11.5pt; line-height:1.2; margin:0 0 1.8mm; }
+  p { margin:0 0 2.6mm; } strong { color:var(--text); font-weight:600; } em { color:var(--text); font-style:normal; }
+  .gold { color:var(--gold); }
+  .eyebrow { display:inline-flex; align-items:center; gap:2.4mm; font:500 7.2pt 'Geist Mono', monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:3.5mm; }
+  .eyebrow::before { content:''; width:6mm; height:1px; background:var(--gold); }
+  .lead { font-size:11pt; max-width:160mm; }
+  .grid { display:grid; gap:3.5mm; } .g2 { grid-template-columns:1fr 1fr; } .g3 { grid-template-columns:repeat(3,1fr); }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:4.2mm; }
+  .card--gold { border-color:rgba(205,174,111,.32); background:linear-gradient(160deg, rgba(205,174,111,.07), var(--panel) 55%); }
+  .card--hold { border-color:rgba(226,69,107,.4); } .card--ok { border-color:rgba(25,199,180,.35); }
+  .card > :last-child { margin-bottom:0; }
+  ul, ol { margin:0 0 2.6mm; padding-left:4.5mm; } li { margin-bottom:1mm; } li::marker { color:var(--gold); }
+  ul.x li::marker { content:'✕  '; color:var(--hold); } ul.ok li::marker { content:'✓  '; color:var(--check); }
+  table { width:100%; border-collapse:separate; border-spacing:0; font-size:8.6pt; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:3mm; }
+  th { text-align:left; font:500 7pt 'Geist Mono', monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); background:var(--panel-2); padding:2.2mm 2.6mm; border-bottom:1px solid var(--line); }
+  td { padding:2.1mm 2.6mm; border-bottom:1px solid var(--line); vertical-align:top; background:var(--panel); }
+  tr:last-child td { border-bottom:0; } td:first-child { color:var(--text); font-weight:500; }
+  .mono, code { font-family:'Geist Mono', monospace; font-size:8pt; color:var(--steel); }
+  pre { font:400 7.6pt/1.5 'Geist Mono', monospace; color:#d9dae5; background:#07080a; border:1px solid var(--line); border-radius:10px; padding:3.5mm; margin:0 0 3mm; white-space:pre-wrap; }
+  .chip { display:inline-block; font:500 7pt 'Geist Mono', monospace; padding:.5mm 2.2mm; border-radius:800px; border:1px solid var(--line-2); color:var(--muted); }
+  .chip--ok { color:var(--check); border-color:rgba(25,199,180,.45); } .chip--hold { color:var(--hold); border-color:rgba(226,69,107,.5); } .chip--gold { color:var(--gold); border-color:rgba(205,174,111,.5); }
+  .small { font-size:8pt; color:var(--dim); }
+  .flow { display:flex; align-items:stretch; gap:1.6mm; margin:2mm 0 4mm; }
+  .flow div { flex:1; background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:2.6mm 2mm; text-align:center; font-size:8pt; }
+  .flow div b { display:block; color:var(--text); font-weight:600; font-size:8.6pt; margin-bottom:.6mm; }
+  .flow span { align-self:center; color:var(--gold); font-size:10pt; }
+  .phase { display:flex; gap:4mm; align-items:baseline; margin-bottom:2mm; } .phase .n { font:400 24pt 'Cal Sans', sans-serif; color:var(--gold); line-height:1; }
+  .meta { display:flex; gap:2mm; flex-wrap:wrap; margin-bottom:3mm; }
+</style>
+</head>
+<body>
+
+<!-- 1 Cover -->
+<section class="page" style="display:flex;flex-direction:column;justify-content:space-between;padding-top:22mm;">
+  <div class="eyebrow">R&amp;D report · Draft 1 · 7 October 2026</div>
+  <div>
+    <h1>A Sama-style AI avatar<br /><span class="gold">for your reservation system</span></h1>
+    <p class="lead" style="margin-top:6mm;">What Qatar Airways built, how it works, and how to build a comparable assistant without owning a powerful GPU — with requirements, architecture options, costs and a phase-by-phase implementation guide.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card"><h3>Finding</h3><p>Sama is not one model. It is a conversation AI + knowledge base + booking tools + voice + an animated face, joined into one pipeline.</p></div>
+    <div class="card"><h3>No-GPU answer</h3><p>Rent the heavy parts as APIs (language model, speech, avatar video) or render a 3D avatar in the user's browser. Your server only orchestrates — a normal CPU machine is enough.</p></div>
+    <div class="card card--gold"><h3>Recommendation</h3><p>Build in order: text assistant → safe booking actions → voice → avatar. The avatar is the last 20%, not the first step.</p></div>
+  </div>
+  <div class="card card--hold">
+    <h3>Scope and honesty notes</h3>
+    <p class="small" style="color:var(--muted)">The Qatar Airways Sama page blocked automated access, so this report relies on Qatar Airways' newsroom, UneeQ's case study and press releases, NVIDIA's developer blog and vendor documentation (sources on the last page). Qatar Airways and UneeQ have not published the language model they use. Prices are third-party summaries dated September 2026 and must be re-checked on vendor pages before you commit. Your reservation system's API was not inspected; integration steps are written generically.</p>
+  </div>
+</section>
+
+<!-- 2 What Sama is -->
+<section class="page">
+  <div class="eyebrow">01 · Research</div>
+  <h2>What Qatar Airways' Sama actually is</h2>
+  <p class="lead">Sama ("sky" in Arabic) is Qatar Airways' AI "digital cabin crew": a photorealistic digital human that talks with customers by voice or chat, answers travel questions and can help book flights.</p>
+  <table>
+    <tr><th style="width:28%">Aspect</th><th>What is publicly stated</th></tr>
+    <tr><td>Builder</td><td>Developed with UneeQ (digital-human company). Sama 2.0 launched March 2024 at ITB Berlin; Sama 1.0 dated from 2022.</td></tr>
+    <tr><td>Face and animation</td><td>UneeQ <em>Synanim</em>: real-time facial animation, gestures and emotion; NVIDIA <em>Audio2Face</em> integrated for lip-sync. UneeQ states sub-1-second synchronised speech and expression.</td></tr>
+    <tr><td>Conversation</td><td>Generative AI with retrieval (RAG) over Qatar Airways content — "1,000 topics and data points" plus destination knowledge. UneeQ <em>Synapse</em> keeps answers safe, on-topic and private. The specific LLM is not disclosed.</td></tr>
+    <tr><td>Actions</td><td>Recommends destinations, builds itineraries, and since February 2025 supports AI booking on QVerse, app and website. Offers a human agent when it cannot help.</td></tr>
+    <tr><td>Channels</td><td>QVerse (web 3D experience), mobile app, website; WhatsApp and Instagram presence reported; holograms at trade shows.</td></tr>
+    <tr><td>Languages</td><td>Launched in English; Arabic added in 2025 on website and app. Third-party case study reports six languages.</td></tr>
+    <tr><td>Persona</td><td>Full character with name, backstory and cultural identity; tone adapts (empathetic for complaints, enthusiastic for trip planning).</td></tr>
+    <tr><td>Reported scale</td><td>About 58,000 passenger queries per month (third-party case study, not an official Qatar figure).</td></tr>
+  </table>
+  <h3 style="margin-top:4mm;">What this means for you</h3>
+  <div class="grid g2">
+    <div class="card card--ok"><h3>Copy these ideas</h3><ul class="ok"><li>Answers grounded in your own content, not the model's memory</li><li>Booking through real system tools, with confirmation</li><li>Human handoff when unsure</li><li>A defined persona and tone</li></ul></div>
+    <div class="card card--hold"><h3>Don't copy these first</h3><ul class="x"><li>Custom photoreal digital human (enterprise contract and budget)</li><li>Holograms and metaverse experiences</li><li>Many languages on day one</li></ul></div>
+  </div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>02</span></div>
+</section>
+
+<!-- 3 How it works -->
+<section class="page">
+  <div class="eyebrow">02 · Anatomy</div>
+  <h2>How an avatar assistant works, step by step</h2>
+  <div class="flow">
+    <div><b>Microphone / text</b>user speaks or types</div><span>→</span>
+    <div><b>Speech-to-text</b>voice → words</div><span>→</span>
+    <div><b>Brain (LLM)</b>understands, plans</div><span>→</span>
+    <div><b>Tools + knowledge</b>reservation API, FAQ</div><span>→</span>
+    <div><b>Text-to-speech</b>answer → voice</div><span>→</span>
+    <div><b>Avatar</b>lip-sync, face, gestures</div>
+  </div>
+  <table>
+    <tr><th style="width:20%">Layer</th><th style="width:40%">Job</th><th>Needs a GPU?</th></tr>
+    <tr><td>Front end</td><td>Chat window, mic button, avatar view, booking cards</td><td><span class="chip chip--ok">no</span> runs in the browser/app</td></tr>
+    <tr><td>Real-time transport</td><td>Streams audio/video both ways with low delay (WebRTC)</td><td><span class="chip chip--ok">no</span> hosted (LiveKit Cloud, Daily) or a CPU server</td></tr>
+    <tr><td>Orchestrator</td><td>Your backend: turn-taking, interruptions, calls the services and the reservation API</td><td><span class="chip chip--ok">no</span> CPU server (Pipecat / LiveKit Agents)</td></tr>
+    <tr><td>Speech-to-text</td><td>Transcribes the user</td><td><span class="chip chip--gold">vendor's</span> rent as API</td></tr>
+    <tr><td>Language model</td><td>Understands intent, writes answers, decides which tool to call</td><td><span class="chip chip--gold">vendor's</span> rent as API</td></tr>
+    <tr><td>Knowledge (RAG)</td><td>Searches your policies, FAQs, destination pages</td><td><span class="chip chip--ok">no</span> embeddings API + database</td></tr>
+    <tr><td>Reservation tools</td><td>Search availability, look up / hold / change / cancel bookings</td><td><span class="chip chip--ok">no</span> your existing system</td></tr>
+    <tr><td>Text-to-speech</td><td>Natural voice, ideally with word/viseme timings</td><td><span class="chip chip--gold">vendor's</span> rent as API</td></tr>
+    <tr><td>Avatar</td><td>Face video or 3D character synced to the voice</td><td><span class="chip chip--gold">vendor's</span> or <span class="chip chip--ok">user's device</span></td></tr>
+  </table>
+  <div class="card card--gold">
+    <h3>Key insight</h3>
+    <p>Every layer that needs a GPU can be rented per use, or pushed to the user's own device. That is why a strong GPU computer is <strong>not a requirement</strong>. What you do need is a stable reservation API, good content, and careful rules around bookings and payment.</p>
+  </div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>03</span></div>
+</section>
+
+<!-- 4 Options -->
+<section class="page">
+  <div class="eyebrow">03 · Options without a GPU</div>
+  <h2>Three ways to build the avatar</h2>
+  <div class="grid g3" style="margin-bottom:4mm;">
+    <div class="card card--gold"><span class="chip chip--gold">Option A · start here</span><h3 style="margin-top:2.5mm;">3D avatar in the browser</h3>
+      <p>A stylised 3D character (GLB file) is rendered on the user's device with Three.js. Open-source <em>TalkingHead</em> lip-syncs it from TTS audio with word or viseme timings.</p>
+      <ul><li>Lowest running cost: you pay only LLM + speech APIs</li><li>Your server needs no GPU</li><li>Looks like a game/3D character, not a real person</li><li>Needs a decent phone/PC with WebGL</li></ul></div>
+    <div class="card"><span class="chip">Option B · Sama-like</span><h3 style="margin-top:2.5mm;">Rented photoreal streaming avatar</h3>
+      <p>A vendor renders a realistic face on its GPUs and streams video to the user. You send it the voice audio.</p>
+      <ul><li>Photoreal, closest to Sama</li><li>Pay per streamed minute</li><li>Works on weak phones (it is just video)</li><li>Vendor lock-in, data leaves to vendor</li></ul></div>
+    <div class="card"><span class="chip">Option C · enterprise</span><h3 style="margin-top:2.5mm;">Full digital-human platform</h3>
+      <p>A vendor such as UneeQ builds a custom character, persona and conversation layer — what Qatar Airways did.</p>
+      <ul><li>Highest quality and branding</li><li>Enterprise contract; pricing not public</li><li>Longest lead time</li><li>Only worth it after proven usage</li></ul></div>
+  </div>
+  <h3>Vendor landscape (third-party price surveys, September 2026)</h3>
+  <table>
+    <tr><th style="width:22%">Type</th><th style="width:38%">Examples</th><th>Approximate cost per streamed minute</th></tr>
+    <tr><td>Face layer only — you bring STT, LLM, TTS</td><td>Simli, HeyGen LiveAvatar "Lite", Beyond Presence speech-to-video</td><td>about $0.01 – $0.18</td></tr>
+    <tr><td>Managed — vendor runs the whole conversation</td><td>Tavus, Anam, D-ID Agents, HeyGen LiveAvatar "Full"</td><td>about $0.11 – $0.37</td></tr>
+    <tr><td>Browser 3D (Option A)</td><td>TalkingHead (MIT licence) + Three.js + a GLB avatar</td><td>$0 for the avatar; speech + LLM API costs only</td></tr>
+  </table>
+  <p class="small">Watch for: minimum charge per session, minute rounding, session length and concurrency caps per plan, monthly-expiring minutes. Several vendors have LiveKit and Pipecat plugins, which makes switching vendors easier — design for that.</p>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>04</span></div>
+</section>
+
+<!-- 5 Requirements -->
+<section class="page">
+  <div class="eyebrow">04 · Requirements</div>
+  <h2>What you need before and during the build</h2>
+  <div class="grid g2">
+    <div class="card"><h3>Hardware and hosting</h3>
+      <ul><li><strong>No GPU.</strong> One cloud VM to start, e.g. 2–4 vCPU and 4–8 GB RAM for the orchestrator (load-test before launch; scale horizontally).</li><li>HTTPS domain; WebRTC needs TLS and, if self-hosting, TURN/UDP ports — a hosted transport (LiveKit Cloud or Daily) avoids that.</li><li>A database for conversations, knowledge chunks and audit logs (e.g. PostgreSQL with a vector extension).</li><li>Development laptop: any modern machine.</li></ul></div>
+    <div class="card"><h3>Reservation system</h3>
+      <ul><li>An API (REST/GraphQL) for: search availability, price, create hold, confirm, look up, modify, cancel.</li><li>A <strong>sandbox/test</strong> environment with fake data.</li><li>Holds that expire, and idempotent create calls (no double bookings on retry).</li><li>Payment through your existing checkout or a payment link — never typed card numbers in chat.</li><li>Customer identity: login or booking reference + last name / one-time code.</li></ul></div>
+    <div class="card"><h3>Accounts and services</h3>
+      <ul><li>LLM API with tool/function calling</li><li>Speech-to-text API (streaming)</li><li>Text-to-speech API, ideally returning word or viseme timings</li><li>Embeddings API for search</li><li>Option B only: streaming avatar vendor account</li><li>Error monitoring and log storage</li></ul></div>
+    <div class="card"><h3>Content and data</h3>
+      <ul><li>Policies: baggage, changes, refunds, cancellation, special assistance</li><li>FAQs and past support questions (anonymised)</li><li>Destination / product descriptions</li><li>Persona sheet: name, tone, words to avoid, escalation rules</li><li>A test set of 100–200 real questions with correct answers</li></ul></div>
+    <div class="card"><h3>People and skills</h3>
+      <ul><li>Backend developer (Python or Node; APIs; WebRTC basics)</li><li>Front-end developer (web/app, Three.js for Option A)</li><li>Content owner who maintains policies and answers</li><li>Designer/3D artist for the character (Option A) or persona video (Option B)</li><li>Support agent available for handoffs</li></ul></div>
+    <div class="card card--hold"><h3>Legal and trust</h3>
+      <ul><li>Clear notice that the user is talking to an AI (EU AI Act transparency rules and similar laws)</li><li>Consent and retention rules for voice recordings (GDPR or local law)</li><li>Data-processing agreements with each vendor; check data region</li><li>Payment data kept out of the AI pipeline (PCI DSS scope)</li><li>Licence for the avatar's likeness and voice</li></ul></div>
+  </div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>05</span></div>
+</section>
+
+<!-- 6 Architecture -->
+<section class="page">
+  <div class="eyebrow">05 · Reference architecture</div>
+  <h2>Recommended architecture</h2>
+  <pre>  Browser / app                       Your CPU server                     Rented services (their GPUs)
+ ┌──────────────────┐   WebRTC     ┌─────────────────────────────┐      ┌──────────────────────────┐
+ │ chat + mic       │◄────────────►│ Orchestrator                │─────►│ Speech-to-text           │
+ │ avatar view      │  audio/video │  · turn-taking, barge-in    │─────►│ LLM (tool calling)       │
+ │ booking cards    │              │  · prompt + persona         │─────►│ Text-to-speech           │
+ │ pay via checkout │   HTTPS      │  · tool router + guardrails │─────►│ Avatar video (Option B)  │
+ └──────────────────┘◄────────────►│  · audit log                │      └──────────────────────────┘
+                                   └──────┬───────────────┬──────┘
+                                          │               │
+                                ┌─────────▼─────┐  ┌──────▼──────────────┐
+                                │ Knowledge DB  │  │ Reservation API     │
+                                │ (RAG search)  │  │ search/hold/confirm │
+                                └───────────────┘  └─────────────────────┘</pre>
+  <div class="grid g2">
+    <div class="card"><h3>Example orchestration (Pipecat, Python)</h3>
+<pre style="margin:0;white-space:pre;font-size:6.9pt;">pipeline = Pipeline([
+    transport.input(),   # audio in
+    stt,                 # speech→text
+    user_aggregator,     # user turn
+    llm,                 # brain + tools
+    tts,                 # text→speech
+    avatar,              # Option B
+    transport.output(),  # audio/video out
+    assistant_aggregator,
+])</pre>
+      <p class="small" style="margin-top:2mm;">Shape taken from Pipecat's HeyGen LiveAvatar example. For Option A, remove <code>avatar</code> and send audio + timings to the browser.</p></div>
+    <div class="card"><h3>Example reservation tool</h3>
+<pre style="margin:0;white-space:pre;font-size:6.9pt;">{
+  "name": "search_availability",
+  "description": "Find options. Read-only.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "origin": {"type": "string"},
+      "destination": {"type": "string"},
+      "date": {"type": "string", "format":"date"},
+      "guests": {"type": "integer", "minimum":1}
+    },
+    "required": ["destination", "date", "guests"]
+  }
+}</pre></div>
+  </div>
+  <div class="card card--gold"><h3>Golden rule for bookings</h3><p>The AI <strong>proposes</strong>; the system and the customer <strong>decide</strong>. Read-only tools can run freely. Anything that holds, changes, cancels or charges shows a summary card and needs an explicit tap on "Confirm" in the UI — never only a spoken "yes" interpreted by the model. Prices always come from the reservation API, never from the model's text.</p></div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>06</span></div>
+</section>
+
+<!-- 7 Phases overview -->
+<section class="page">
+  <div class="eyebrow">06 · Roadmap</div>
+  <h2>Seven phases, avatar last</h2>
+  <table>
+    <tr><th style="width:6%">#</th><th style="width:24%">Phase</th><th>Outcome</th><th style="width:16%">Rough length*</th></tr>
+    <tr><td>0</td><td>Discovery and decisions</td><td>Scope, use cases, API audit, KPIs, budget, option A/B choice</td><td>1–2 weeks</td></tr>
+    <tr><td>1</td><td>Text assistant (read-only)</td><td>Chat answers from your content; searches availability; looks up bookings</td><td>3–4 weeks</td></tr>
+    <tr><td>2</td><td>Safe booking actions</td><td>Hold → confirm card → checkout; change/cancel; human handoff</td><td>3–5 weeks</td></tr>
+    <tr><td>3</td><td>Voice</td><td>Talk and listen with interruptions, under ~1.5 s reply start</td><td>2–3 weeks</td></tr>
+    <tr><td>4</td><td>Avatar and persona</td><td>Character with lip-sync; idle, listening, thinking states</td><td>3–4 weeks</td></tr>
+    <tr><td>5</td><td>Languages and channels</td><td>Second language; WhatsApp or app channel</td><td>2–4 weeks</td></tr>
+    <tr><td>6</td><td>Pilot, launch, operate</td><td>Limited traffic, metrics, review loop, full launch</td><td>4+ weeks, ongoing</td></tr>
+  </table>
+  <p class="small">* Estimates for a small team of 2–3 developers working on this full time; they are planning assumptions, not measurements. Each phase is usable on its own — you can stop after Phase 2 and already have a valuable assistant.</p>
+  <h3 style="margin-top:4mm;">Gate between every phase</h3>
+  <div class="grid g3">
+    <div class="card"><h3>Quality</h3><p>Test set passes the agreed accuracy; no wrong prices or policy answers in review.</p></div>
+    <div class="card"><h3>Safety</h3><p>No booking change without confirmation; handoff works; logs complete.</p></div>
+    <div class="card"><h3>Cost</h3><p>Measured cost per conversation is within budget at expected traffic.</p></div>
+  </div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>07</span></div>
+</section>
+
+<!-- 8 Phase 0-1 -->
+<section class="page">
+  <div class="eyebrow">07 · Guide — phases 0 and 1</div>
+  <div class="card" style="margin-bottom:4mm;">
+    <div class="phase"><span class="n">0</span><h2 style="margin:0;">Discovery and decisions</h2></div>
+    <ol>
+      <li>List the 10 most common customer questions and tasks (from support tickets, calls, chat logs). Pick 3–5 for the first release.</li>
+      <li>Audit the reservation API: which operations exist, auth method, sandbox, rate limits, hold/expiry, idempotency. Write down gaps.</li>
+      <li>Decide channels for launch (website first is easiest) and the first language.</li>
+      <li>Choose Option A (browser 3D) or B (rented photoreal) for Phase 4 — it affects budget, not Phases 1–3.</li>
+      <li>Define KPIs: answer accuracy, task completion, handoff rate, reply delay, cost per conversation, customer rating.</li>
+      <li>Pick vendors for LLM, STT, TTS; sign data-processing agreements; confirm data region.</li>
+    </ol>
+    <p class="small">Exit: one-page scope, API gap list, KPI targets, budget ceiling, vendor shortlist.</p>
+  </div>
+  <div class="card">
+    <div class="phase"><span class="n">1</span><h2 style="margin:0;">Text assistant (read-only)</h2></div>
+    <ol>
+      <li><strong>Knowledge base.</strong> Collect policies and FAQs, split into short sections with titles and dates, create embeddings, store in the database. Every answer must cite its section internally.</li>
+      <li><strong>System prompt + persona.</strong> Name, tone, what it may and may not do, "say you don't know and offer a human" rule, AI disclosure line.</li>
+      <li><strong>Read-only tools.</strong> <code>search_availability</code>, <code>get_price</code>, <code>get_booking</code> (after identity check). Validate every argument on the server.</li>
+      <li><strong>Chat UI.</strong> Message list, typing indicator, result cards (options, prices from the API), "Talk to a person" button always visible.</li>
+      <li><strong>Logging.</strong> Store each turn, tool call, tool result and latency, with personal data masked.</li>
+      <li><strong>Evaluation.</strong> Run the 100–200 question test set automatically after every prompt or content change; review failures weekly.</li>
+    </ol>
+    <p class="small">Exit: test-set accuracy target met; zero invented prices; internal staff use it for a week.</p>
+  </div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>08</span></div>
+</section>
+
+<!-- 9 Phase 2-3 -->
+<section class="page">
+  <div class="eyebrow">08 · Guide — phases 2 and 3</div>
+  <div class="card" style="margin-bottom:4mm;">
+    <div class="phase"><span class="n">2</span><h2 style="margin:0;">Safe booking actions</h2></div>
+    <ol>
+      <li>Add write tools: <code>create_hold</code>, <code>modify_booking</code>, <code>cancel_booking</code>. Each returns a summary, not a final result.</li>
+      <li>Show a <strong>confirmation card</strong> (who, what, when, price from the API, cancellation terms). Only a tap on "Confirm" calls the confirm endpoint.</li>
+      <li>Send payment to your existing checkout page or a payment link. The assistant never sees card data.</li>
+      <li>Use idempotency keys on every write so network retries cannot double-book.</li>
+      <li>Human handoff: pass the conversation summary and booking context to your support tool; tell the user the expected wait.</li>
+      <li>Limits: max actions per session, block unusual patterns, require re-verification for cancellations.</li>
+    </ol>
+    <p class="small">Exit: end-to-end bookings in sandbox; no write without confirmation in tests; handoff tested with real agents.</p>
+  </div>
+  <div class="card">
+    <div class="phase"><span class="n">3</span><h2 style="margin:0;">Voice</h2></div>
+    <ol>
+      <li>Add a real-time transport (LiveKit Cloud or Daily) and an orchestrator (Pipecat or LiveKit Agents) on your CPU server.</li>
+      <li>Streaming STT with voice-activity detection; streaming TTS that starts speaking before the full answer is written.</li>
+      <li><strong>Barge-in:</strong> when the user talks, stop the voice immediately and listen.</li>
+      <li>Keep spoken replies short (1–3 sentences) and put details — prices, times, lists — on cards on screen.</li>
+      <li>Read back key booking details (dates, names, destination) before showing the confirm card.</li>
+      <li>Measure delay from end of user speech to first audio; target about 1–1.5 s.</li>
+    </ol>
+    <p class="small">Exit: voice works on mid-range phones over mobile data; interruption works; delay within target.</p>
+  </div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>09</span></div>
+</section>
+
+<!-- 10 Phase 4-6 -->
+<section class="page">
+  <div class="eyebrow">09 · Guide — phases 4 to 6</div>
+  <div class="card" style="margin-bottom:3.5mm;">
+    <div class="phase"><span class="n">4</span><h2 style="margin:0;">Avatar and persona</h2></div>
+    <div class="grid g2">
+      <div><strong>Option A — browser 3D</strong>
+        <ol><li>Create a character as a GLB with a Mixamo-compatible rig and ARKit + Oculus viseme blend shapes (TalkingHead requirement).</li><li>Load it with TalkingHead / Three.js; lazy-load after the chat opens.</li><li>Feed TTS audio plus word or viseme timings to <code>speakAudio</code>.</li><li>Add idle, listening and thinking animations; keep a 2D fallback for weak devices.</li></ol></div>
+      <div><strong>Option B — rented photoreal</strong>
+        <ol><li>Choose a stock avatar or commission a custom one with signed likeness consent.</li><li>Use the vendor's LiveKit/Pipecat plugin so the vendor can be swapped later.</li><li>Start the video session only when the user opens the assistant; end it on idle to stop billing.</li><li>Fall back to voice-only if video fails.</li></ol></div>
+    </div>
+    <p class="small">Exit: lip-sync looks right to test users; avatar never delays the answer; cost per minute measured.</p>
+  </div>
+  <div class="grid g2" style="margin-bottom:3.5mm;">
+    <div class="card"><div class="phase"><span class="n">5</span><h3 style="margin:0;">Languages and channels</h3></div>
+      <ul><li>Translate the knowledge base properly — do not rely on the model translating policies live.</li><li>Pick STT/TTS voices per language; check lip-sync support per language.</li><li>Add a channel such as WhatsApp (text first, voice notes later).</li><li>Run the test set per language.</li></ul></div>
+    <div class="card"><div class="phase"><span class="n">6</span><h3 style="margin:0;">Pilot, launch, operate</h3></div>
+      <ul><li>Pilot with 5–10% of visitors; compare against normal booking flow.</li><li>Dashboard: accuracy, completion, handoffs, delay, cost, ratings.</li><li>Weekly review of failed conversations; update content, not just prompts.</li><li>Incident plan: switch to text-only or off with one setting.</li></ul></div>
+  </div>
+  <div class="card card--gold"><h3>Cost formula to fill in after Phase 3</h3>
+    <p class="mono" style="color:var(--text)">cost per conversation = STT minutes × rate + LLM tokens × rate + TTS characters × rate + avatar minutes × rate (Option B) + transport minutes × rate</p>
+    <p class="small">Measure real values in the pilot. Option A removes the avatar term; turning video off on idle cuts Option B costs.</p></div>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>10</span></div>
+</section>
+
+<!-- 11 Risks + sources -->
+<section class="page">
+  <div class="eyebrow">10 · Risks and sources</div>
+  <h2>Main risks</h2>
+  <table>
+    <tr><th style="width:26%">Risk</th><th>Mitigation</th></tr>
+    <tr><td>Wrong price or policy</td><td>Prices only from API; policy answers only from retrieved content; test set on every change</td></tr>
+    <tr><td>Unwanted booking change</td><td>UI confirmation for every write; idempotency; re-verification for cancellations</td></tr>
+    <tr><td>Slow or awkward voice</td><td>Streaming everywhere, short spoken answers, barge-in, cards for details</td></tr>
+    <tr><td>Avatar feels uncanny</td><td>Stylised 3D (Option A) is safer than weak photoreal; test with real users</td></tr>
+    <tr><td>Costs grow with traffic</td><td>Per-minute caps, idle shutdown, text-first default, monthly budget alerts</td></tr>
+    <tr><td>Vendor lock-in or shutdown</td><td>Use framework plugins (LiveKit/Pipecat) and keep your own prompts, content and logs</td></tr>
+    <tr><td>Privacy / legal</td><td>AI disclosure, voice consent, DPAs, data region, no card data in the pipeline</td></tr>
+  </table>
+  <h3 style="margin-top:4mm;">Sources (accessed 7 October 2026)</h3>
+  <ul class="small" style="color:var(--muted)">
+    <li>Qatar Airways Newsroom — "A First in Aviation: Qatar Airways Reinvents Travel Bookings with Sama at Web Summit Qatar 2025": qatarairways.com/press-releases/en-WW/247237</li>
+    <li>UneeQ — Qatar Airways case study: digitalhumans.com/case-studies/qatar-airways</li>
+    <li>UneeQ / Newsfile — Sama 2.0 launch release, 6 March 2024: newsfilecorp.com/release/200612</li>
+    <li>UneeQ — Synanim feature page: digitalhumans.com/features/synanim</li>
+    <li>NVIDIA Technical Blog — UneeQ spotlight (ACE, Audio2Face, RAG): developer.nvidia.com/blog/spotlight-uneeq-revolutionizes-customer-engagement-with-ai-powered-digital-humans</li>
+    <li>Adweek — "Qatar Airways Readies Gen AI Agent Sama to Help Book Travel"</li>
+    <li>Global Marketing Nexus — Sama 2.0 case study (source of the 58,000 queries/month and six-language figures; third party)</li>
+    <li>Doha News — Arabic version announced at ATM 2025</li>
+    <li>Price surveys: gofranz.com "Real-time AI avatars: what they actually cost"; meetcody.ai "Real-time AI avatar models compared"; blog.akapulu.com real-time avatar pricing index (September 2026)</li>
+    <li>TalkingHead (MIT): github.com/met4citizen/TalkingHead</li>
+    <li>Pipecat HeyGen docs and example: docs.pipecat.ai; github.com/pipecat-ai/pipecat/examples/video-avatar</li>
+    <li>LiveKit Agents: docs.livekit.io/agents</li>
+  </ul>
+  <div class="foot"><span>Sama-style assistant · R&amp;D</span><span>11</span></div>
+</section>
+
+</body>
+</html>

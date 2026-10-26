@@ -2,7 +2,11 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
+import BrandMark from '../components/BrandMark.vue';
+import BrandWordmark from '../components/BrandWordmark.vue';
+import GlassShapes from '../components/GlassShapes.vue';
 import HeroVisual from '../components/HeroVisual.vue';
+import HeroSequence from '../components/HeroSequence.vue';
 import {
   capabilityChips,
   fanTargets,
@@ -36,28 +40,34 @@ function trackPointer(event) {
 
 <template>
   <div class="em-home" @pointermove="trackPointer">
-    <section class="hero hero--command">
-      <div class="hero__scene" aria-hidden="true"></div>
-      <div class="container hero__grid">
-        <div class="hero__inner">
-          <h1 class="hero__title">
-            {{ heroTitle.before }}<span class="em-highlight">{{ heroTitle.highlight }}</span>{{ heroTitle.after }}
-          </h1>
-          <p class="hero__subtitle">{{ hero.subtitle }}</p>
-          <div class="hero__actions">
-            <RouterLink class="em-pill em-pill--solid" :to="{ name: hero.primaryCta.to }">
-              {{ hero.primaryCta.label }} <span class="em-pill__chev">›</span>
-            </RouterLink>
-            <RouterLink class="em-pill em-pill--ghost" :to="{ name: hero.secondaryCta.to }">
-              {{ hero.secondaryCta.label }} <span class="em-pill__chev">›</span>
-            </RouterLink>
+    <HeroSequence>
+      <section class="hero hero--command">
+        <div class="container hero__grid">
+          <div class="hero__inner">
+            <p class="em-brand-pill">
+              <BrandMark :size="18" />
+              <BrandWordmark />
+              <span class="em-brand-pill__note">Edge-first AI inference</span>
+            </p>
+            <h1 class="hero__title">
+              {{ heroTitle.before }}<span class="em-highlight">{{ heroTitle.highlight }}</span>{{ heroTitle.after }}
+            </h1>
+            <p class="hero__subtitle">{{ hero.subtitle }}</p>
+            <div class="hero__actions">
+              <RouterLink class="em-pill em-pill--solid" :to="{ name: hero.primaryCta.to }">
+                {{ hero.primaryCta.label }} <span class="em-pill__chev">›</span>
+              </RouterLink>
+              <RouterLink class="em-pill em-pill--ghost" :to="{ name: hero.secondaryCta.to }">
+                {{ hero.secondaryCta.label }} <span class="em-pill__chev">›</span>
+              </RouterLink>
+            </div>
+          </div>
+          <div class="hero__visual">
+            <HeroVisual />
           </div>
         </div>
-        <div class="hero__visual">
-          <HeroVisual />
-        </div>
-      </div>
-    </section>
+      </section>
+    </HeroSequence>
 
     <section v-reveal class="em-section">
       <div class="container">
@@ -197,7 +207,7 @@ function trackPointer(event) {
                 <path d="M150 80 C 200 80, 210 102, 290 102" />
                 <path d="M150 80 C 200 80, 210 146, 290 146" />
               </svg>
-              <span class="em-fan__hub">EM</span>
+              <span class="em-fan__hub"><BrandMark :size="20" /></span>
               <ul class="em-fan__targets">
                 <li v-for="target in fanTargets" :key="target.label" :class="`em-fan__target--${target.tone}`">{{ target.label }}</li>
               </ul>
@@ -265,7 +275,7 @@ function trackPointer(event) {
             <h3>Integrations</h3>
             <p>REST, server-sent events, signed webhooks, and a generated TypeScript client from the OpenAPI contract.</p>
             <div class="em-orbit" aria-hidden="true">
-              <span class="em-orbit__core">EM</span>
+              <span class="em-orbit__core"><BrandMark :size="42" /></span>
               <span v-for="(item, index) in integrations" :key="item" class="em-orbit__item" :style="{ '--i': index }">{{ item }}</span>
             </div>
           </article>
@@ -296,11 +306,7 @@ function trackPointer(event) {
             </div>
           </div>
         </div>
-        <div class="em-glass" aria-hidden="true">
-          <span class="em-glass__cone"></span>
-          <span class="em-glass__torus"></span>
-          <span class="em-glass__cube"></span>
-        </div>
+        <GlassShapes />
       </div>
     </section>
 

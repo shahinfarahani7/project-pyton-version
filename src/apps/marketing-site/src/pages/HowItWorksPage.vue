@@ -10,7 +10,7 @@ import { flowSteps, pillars } from '../content/site.js';
     <PageHero
       eyebrow="How it works"
       title="Quote, route, execute, audit"
-      lead="EdgeMint is an async task platform. Customers submit workloads, receive deterministic quotes, and track execution across edge workers and optional cloud fallback — with every decision recorded."
+      lead="FibonAI is an async task platform. Customers submit workloads, receive deterministic quotes, and track execution across edge workers and optional cloud fallback — with every decision recorded."
       :badges="['Async', 'Edge-first', 'Auditable']"
     />
 
@@ -45,7 +45,7 @@ import { flowSteps, pillars } from '../content/site.js';
       <div class="container container--narrow prose">
         <h2>Execution policies</h2>
         <p>
-          Choose how aggressively EdgeMint uses edge workers versus cloud capacity:
+          Choose how aggressively FibonAI uses edge workers versus cloud capacity:
           <strong>edge-only</strong>, <strong>edge-preferred</strong> (default), or
           <strong>fastest available</strong>. Private pools are available for enterprise workspaces.
         </p>
