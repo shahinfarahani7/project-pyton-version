@@ -15,6 +15,7 @@ _completed: list[str] = []
 _delivered_devices: dict[str, set[str]] = {}
 _in_flight_devices: dict[str, set[str]] = {}
 _failed_devices: dict[str, dict[str, str]] = {}
+_delivered_at: dict[str, dict[str, str]] = {}
 # Assignments the portal cancelled, including ones a worker already claimed.
 _cancelled_ids: set[str] = set()
 _exclusive_device_public_id: str | None = (
@@ -101,6 +102,7 @@ def note_task_delivery(task_id: str, device_id: str | None) -> None:
     recipient = (device_id or "").strip() or "unattributed"
     _delivered_devices.setdefault(task_id, set()).add(recipient)
     _in_flight_devices.setdefault(task_id, set()).add(recipient)
+    _delivered_at.setdefault(task_id, {})[recipient] = _now().isoformat()
 
 
 def record_worker_failure(
@@ -202,9 +204,40 @@ def task_ids_with_open_dev_assignments() -> frozenset[str]:
     return frozenset(open_ids)
 
 
+def _delivery_state(task_id: str, device_id: str) -> str:
+    if device_id in _failed_devices.get(task_id, {}):
+        return "failed"
+    if task_id in _cancelled_ids:
+        return "cancelled"
+    if device_id in _in_flight_devices.get(task_id, set()):
+        return "running"
+    if task_id in _completed:
+        return "completed"
+    return "delivered"
+
+
+def delivery_ledger() -> dict[str, list[dict[str, Any]]]:
+    """Per task, every device that received it and how that delivery ended."""
+    ledger: dict[str, list[dict[str, Any]]] = {}
+    for task_id, devices in _delivered_devices.items():
+        failures = _failed_devices.get(task_id, {})
+        times = _delivered_at.get(task_id, {})
+        ledger[task_id] = [
+            {
+                "deviceId": device_id,
+                "state": _delivery_state(task_id, device_id),
+                "errorCode": failures.get(device_id),
+                "deliveredAt": times.get(device_id),
+            }
+            for device_id in sorted(devices)
+        ]
+    return ledger
+
+
 def dev_assignment_state() -> dict[str, Any]:
     return {
         "exclusiveDeviceId": preferred_device_public_id(),
         "items": list_pending_assignments(),
         "activeTaskIds": sorted(task_ids_with_open_dev_assignments()),
+        "deliveries": delivery_ledger(),
     }

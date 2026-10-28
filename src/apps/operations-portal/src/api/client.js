@@ -53,6 +53,8 @@ export const opsApi = {
   logout: () => fetchJson('/internal/operations/session:logout', { method: 'POST' }),
   search: (view) => fetchJson(`/internal/operations/views/${view}`),
   workerDevices: () => fetchJson('/internal/operations/worker-devices'),
+  taskMonitor: () => fetchJson('/internal/operations/task-monitor'),
+  overview: () => fetchJson('/internal/operations/overview'),
   submitAction: (body) => fetchJson('/internal/operations/actions:submit', { method: 'POST', body }),
   approve: (approvalId, body) =>
     fetchJson(`/internal/operations/approvals/${approvalId}:approve`, { method: 'POST', body }),

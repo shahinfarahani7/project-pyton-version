@@ -168,6 +168,13 @@ async def ensure_worker_task_input(task_id: str, payload: DevEnsureTaskInputRequ
     worker_task_inputs.ensure_registered(task_id=task_id, task_type=payload.taskType)
 
 
+@router.get("/internal/dev/tasks")
+async def list_monitor_tasks() -> dict[str, Any]:
+    if not _dev_enabled():
+        raise HTTPException(503, "DEV_WORKER_API_DISABLED")
+    return {"items": fixtures.monitor_task_rows()}
+
+
 @router.post("/internal/dev/sync-worker-queue")
 async def sync_worker_queue() -> dict[str, str]:
     if not _dev_enabled():

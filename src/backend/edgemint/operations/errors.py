@@ -21,6 +21,8 @@ def operations_error(code: str, *, detail: str | None = None) -> OperationsServi
         "MFA_REQUIRED": (403, "MFA verification required"),
         "PORTAL_SESSION_REQUIRED": (401, "Sign in to the portal first"),
         "SSO_NOT_CONFIGURED": (501, "Operator SSO not configured"),
+        "TASK_MONITOR_UNAVAILABLE": (501, "Task monitor not available in this environment"),
+        "UPSTREAM_UNAVAILABLE": (503, "Upstream service unavailable"),
         "BREAK_GLASS_EXPIRED": (409, "Break-glass session expired"),
         "ETAG_MISMATCH": (412, "Concurrency token mismatch"),
         "IDEMPOTENCY_CONFLICT": (409, "Idempotency conflict"),

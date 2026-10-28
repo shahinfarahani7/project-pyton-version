@@ -62,6 +62,9 @@ class WorkerRuntimeChannel {
       processPrivateDirtyKb: raw['processPrivateDirtyKb'] as int?,
       javaHeapKb: raw['javaHeapKb'] as int?,
       nativeHeapKb: raw['nativeHeapKb'] as int?,
+      deviceManufacturer: raw['deviceManufacturer'] as String?,
+      deviceModel: raw['deviceModel'] as String?,
+      deviceName: raw['deviceName'] as String?,
     );
   }
 
@@ -101,6 +104,9 @@ class WorkerRuntimeChannel {
     int? processPrivateDirtyKb,
     int? javaHeapKb,
     int? nativeHeapKb,
+    String? deviceManufacturer,
+    String? deviceModel,
+    String? deviceName,
   }) {
     var emulator = isEmulator;
     var percent = batteryPercent;
@@ -137,6 +143,9 @@ class WorkerRuntimeChannel {
       processPrivateDirtyKb: processPrivateDirtyKb,
       javaHeapKb: javaHeapKb,
       nativeHeapKb: nativeHeapKb,
+      deviceManufacturer: deviceManufacturer,
+      deviceModel: deviceModel,
+      deviceName: deviceName,
     );
   }
 

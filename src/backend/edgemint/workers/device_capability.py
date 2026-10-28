@@ -45,9 +45,20 @@ class NetworkSpec(BaseModel):
     type: Literal["offline", "cellular", "wifi", "ethernet"]
 
 
+class DeviceIdentitySpec(BaseModel):
+    manufacturer: str | None = Field(default=None, min_length=1, max_length=64)
+    model: str | None = Field(default=None, min_length=1, max_length=64)
+    name: str | None = Field(default=None, min_length=1, max_length=128)
+    cpuCoreCount: int | None = Field(default=None, ge=1)
+    totalRamBytes: int | None = Field(default=None, ge=1)
+
+    model_config = {"extra": "forbid"}
+
+
 class DeviceCapabilityReport(BaseModel):
     """Worker-reported snapshot aligned with dsl/schemas/devicecapability.schema.json spec."""
 
+    device: DeviceIdentitySpec | None = None
     platform: PlatformSpec
     deviceTier: str = Field(pattern=r"^T[1-4]$")
     regionCode: str = Field(min_length=2, max_length=16)

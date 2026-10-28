@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from typing import Annotated
 
 from fastapi import Depends, Request
@@ -21,6 +22,13 @@ from edgemint.operations.auth import (
 from edgemint.operations.errors import OperationsServiceError, operations_error
 from edgemint.operations.portal_admin import admin_roles, portal_email_for_principal
 from edgemint.operations.service import OperationsService
+from edgemint.operations.task_monitor import (
+    TaskMonitorUnavailable,
+    build_task_monitor,
+    device_ids_in,
+    fetch_dev_sources,
+    load_devices,
+)
 from edgemint.operations.worker_device_overview import list_worker_device_overview
 from edgemint.security.tokens import BrowserSessionStore
 
@@ -168,6 +176,63 @@ async def worker_devices(operator: Operator) -> JSONResponse:
     async with transaction(isolation="READ COMMITTED") as connection:
         items = await list_worker_device_overview(connection)
     return JSONResponse({"items": items}, status_code=200)
+
+
+async def _task_monitor() -> dict[str, object]:
+    if not dev_login_enabled(get_settings()):
+        raise operations_error("TASK_MONITOR_UNAVAILABLE", detail="only dev task state is wired")
+    try:
+        tasks, state = await fetch_dev_sources()
+    except TaskMonitorUnavailable as exc:
+        raise operations_error("UPSTREAM_UNAVAILABLE", detail=exc.source) from exc
+    async with transaction(isolation="READ COMMITTED") as connection:
+        devices = await load_devices(connection, device_ids_in(state))
+    return build_task_monitor(tasks, state, devices)
+
+
+@app.get("/internal/operations/task-monitor", tags=["operations"])
+async def task_monitor(operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
+    return JSONResponse(await _task_monitor(), status_code=200)
+
+
+@app.get("/internal/operations/overview", tags=["operations"])
+async def overview(operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
+    async with transaction(isolation="READ COMMITTED") as connection:
+        workers = await list_worker_device_overview(connection)
+    tasks: dict[str, object] | None
+    task_error: str | None = None
+    try:
+        tasks = (await _task_monitor())["summary"]  # type: ignore[assignment]
+    except OperationsServiceError as exc:
+        tasks = None
+        task_error = exc.detail or exc.code
+    return JSONResponse(
+        {
+            "workers": {
+                "total": len(workers),
+                "byPresence": dict(Counter(w["presence"] for w in workers)),
+                "byActivity": dict(Counter(w["activity"] for w in workers)),
+                "lowBattery": sum(
+                    1
+                    for w in workers
+                    if w["presence"] == "online"
+                    and w["battery"]["levelBps"] is not None
+                    and w["battery"]["levelBps"] < 2_000
+                    and not w["battery"]["charging"]
+                ),
+                "hotDevices": sum(
+                    1
+                    for w in workers
+                    if w["presence"] == "online" and w["thermalState"] in {"serious", "critical"}
+                ),
+            },
+            "tasks": tasks,
+            "tasksError": task_error,
+        },
+        status_code=200,
+    )
 
 
 @app.post("/internal/operations/actions:submit", tags=["operations"])

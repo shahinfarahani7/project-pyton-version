@@ -64,6 +64,35 @@
         "memory"
       ],
       "properties": {
+        "device": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "manufacturer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "cpuCoreCount": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "totalRamBytes": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
         "platform": {
           "additionalProperties": false,
           "type": "object",

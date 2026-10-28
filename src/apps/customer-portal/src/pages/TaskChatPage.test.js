@@ -95,6 +95,43 @@ describe('TaskChatPage', () => {
     wrapper.unmount();
   });
 
+  it('shows one history entry when the stream event arrives before the create response', async () => {
+    session.workspaceId = 'ws-chat';
+    session.permissions = ['customer.tasks:read', 'customer.tasks:write'];
+    const listeners = {};
+    vi.stubGlobal(
+      'EventSource',
+      class {
+        addEventListener(name, handler) {
+          listeners[name] = handler;
+        }
+        close() {}
+      },
+    );
+    const task = { id: 'tsk_race', createdAt: '2026-10-28T10:00:00Z', lifecycleStatus: 'queued', instructions: 'hi' };
+    vi.spyOn(portalApi, 'tasks').mockResolvedValue({ items: [] });
+    vi.spyOn(portalApi, 'task').mockResolvedValue(task);
+    let resolveCreate;
+    vi.spyOn(portalApi, 'createTask').mockReturnValue(
+      new Promise((resolve) => {
+        resolveCreate = resolve;
+      }),
+    );
+
+    const wrapper = mount(TaskChatPage, { global: { stubs: { RouterLink: true } } });
+    await flushPromises();
+    await wrapper.get('textarea').setValue('hi');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    listeners.task({ data: JSON.stringify({ event: 'created', taskId: 'tsk_race', task }) });
+    resolveCreate(task);
+    await flushPromises();
+
+    expect(wrapper.findAll('.em-chat-list button')).toHaveLength(1);
+    wrapper.unmount();
+  });
+
   it('copies a text answer and downloads a result file', async () => {
     session.workspaceId = 'ws-chat';
     session.permissions = ['customer.tasks:read', 'customer.tasks:write'];

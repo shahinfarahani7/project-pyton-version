@@ -50,10 +50,27 @@ def _int_or_none(value: Any) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
+def _text_or_none(value: Any) -> str | None:
+    return value.strip() or None if isinstance(value, str) else None
+
+
+def _device_identity(device: Mapping[str, Any]) -> dict[str, Any]:
+    manufacturer = _text_or_none(device.get("manufacturer"))
+    model = _text_or_none(device.get("model"))
+    name = _text_or_none(device.get("name"))
+    if name is None and model is not None:
+        if manufacturer and not model.lower().startswith(manufacturer.lower()):
+            name = f"{manufacturer[:1].upper()}{manufacturer[1:]} {model}"
+        else:
+            name = model
+    return {"name": name, "manufacturer": manufacturer, "model": model}
+
+
 def overview_item_from_row(row: Mapping[str, Any], *, now: datetime) -> dict[str, Any]:
     capability = row.get("heartbeat_capability") or row.get("device_capability") or {}
     resource_vector = capability.get("resourceVector") or {}
     memory = capability.get("memory") or {}
+    device = capability.get("device") or {}
     telemetry = row.get("telemetry_json") or {}
     leases = row.get("current_leases_json") or []
     observed_at: datetime | None = row.get("observed_at_utc")
@@ -78,16 +95,19 @@ def overview_item_from_row(row: Mapping[str, Any], *, now: datetime) -> dict[str
         "platform": row["platform"],
         "deviceTier": row["device_tier"],
         "appVersion": row["app_version"],
+        "device": _device_identity(device),
         "presence": presence,
         "activity": activity,
         "currentLeaseCount": len(leases),
         "lastHeartbeatAt": observed_at.isoformat() if observed_at else None,
         "cpu": {
             "capacityUnits": _int_or_none(resource_vector.get("cpuUnits")),
+            "cores": _int_or_none(device.get("cpuCoreCount")),
             "usageBps": _int_or_none(telemetry.get("cpuUsageBps")),
         },
         "ram": {
-            "totalBytes": _int_or_none(memory.get("totalRamBytes")),
+            "totalBytes": _int_or_none(device.get("totalRamBytes"))
+            or _int_or_none(memory.get("totalRamBytes")),
             "freeBytes": _int_or_none(row.get("free_ram_bytes")),
         },
         "battery": {

@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Debug
 import android.os.Environment
 import android.os.PowerManager
+import android.provider.Settings
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -274,6 +275,10 @@ class WorkerRuntimePlugin(
             "performanceCoreCount" to cpu["performanceCoreCount"],
             "efficiencyCoreCount" to cpu["efficiencyCoreCount"],
 
+            "deviceManufacturer" to Build.MANUFACTURER,
+            "deviceModel" to Build.MODEL,
+            "deviceName" to readDeviceName(),
+
             "processPssKb" to
                     memory["processPssKb"],
 
@@ -519,6 +524,17 @@ class WorkerRuntimePlugin(
             else -> {
                 "unknown"
             }
+        }
+    }
+
+    private fun readDeviceName(): String? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return null
+        return try {
+            Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+        } catch (_: SecurityException) {
+            null
         }
     }
 

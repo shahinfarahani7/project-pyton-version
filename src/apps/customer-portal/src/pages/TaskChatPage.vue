@@ -343,12 +343,15 @@ async function submit(payload) {
     hasInstructions: Boolean(payload.instructions),
   });
   try {
-    const task = await portalApi.createTask(session.workspaceId, payload);
+    const created = await portalApi.createTask(session.workspaceId, payload);
+    // The event stream can deliver this task before the create response arrives.
+    const streamed = turns.value.find((turn) => turn.localId !== localId && turn.task?.id === created.id);
+    turns.value = turns.value.filter((turn) => turn.localId === localId || turn.task?.id !== created.id);
     replaceTurn(localId, {
       localId,
-      prompt: payload.instructions || taskListTitle(task),
+      prompt: payload.instructions || taskListTitle(created),
       fileName: payload.inputFile?.name || '',
-      task,
+      task: streamed?.task ?? created,
       error: '',
     });
     formKey.value += 1;

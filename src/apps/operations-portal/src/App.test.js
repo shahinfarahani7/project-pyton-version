@@ -179,6 +179,18 @@ describe('operations-portal', () => {
     expect(verify).toHaveBeenCalledWith({ email: 'boss@example.com', challengeId: 'chl_1', code: '123456' });
   });
 
+  it('sign out returns to the login page', async () => {
+    vi.spyOn(opsApi, 'logout').mockResolvedValue({ status: 'signed_out' });
+    const wrapper = await renderApp('/login');
+    await wrapper.findAll('button').find((b) => b.text().match(/development sign-in/i)).trigger('click');
+    await vi.waitFor(() => expect(document.querySelector('nav[aria-label="Operations"]')).toBeTruthy());
+    await wrapper.vm.$router.push('/workers');
+    await wrapper.findAll('button').find((b) => b.text() === 'Sign out').trigger('click');
+    await vi.waitFor(() => expect(wrapper.vm.$router.currentRoute.value.path).toBe('/login'));
+    expect(session.authenticated).toBe(false);
+    expect(document.body.textContent).toMatch(/admin sign-in/i);
+  });
+
   it('hides break-glass navigation without permission', async () => {
     const wrapper = await renderApp('/login');
     const buttons = wrapper.findAll('button');

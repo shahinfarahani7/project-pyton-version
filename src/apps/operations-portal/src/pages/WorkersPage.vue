@@ -1,10 +1,11 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed } from 'vue';
 
 import { opsApi } from '../api/client';
+import { usePolling } from '../composables/polling';
 
-const items = ref([]);
-const error = ref(null);
+const { data, error, refresh: load } = usePolling(() => opsApi.workerDevices());
+const items = computed(() => data.value?.items ?? []);
 
 const ACTIVITY_LABELS = { busy: 'Running task', idle: 'Idle', unknown: 'Unknown' };
 
@@ -17,7 +18,15 @@ function gib(bytes) {
 }
 
 function cpuLabel(cpu) {
-  return cpu.usageBps === null ? 'not reported' : `${percent(cpu.usageBps)} used`;
+  const usage = cpu.usageBps === null || cpu.usageBps === undefined ? 'not reported' : `${percent(cpu.usageBps)} used`;
+  return cpu.cores ? `${cpu.cores} cores · ${usage}` : usage;
+}
+
+function deviceDetail(item) {
+  const device = item.device ?? {};
+  return [device.model && device.model !== device.name ? device.model : null, item.platform]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 function batteryLabel(battery) {
@@ -25,20 +34,6 @@ function batteryLabel(battery) {
   return battery.charging ? `${level} (charging)` : level;
 }
 
-function load() {
-  opsApi
-    .workerDevices()
-    .then((body) => {
-      items.value = body.items;
-      error.value = null;
-    })
-    .catch((err) => {
-      items.value = [];
-      error.value = err.message ?? 'Failed to load workers';
-    });
-}
-
-onMounted(load);
 </script>
 
 <template>
@@ -50,6 +45,7 @@ onMounted(load);
       <thead>
         <tr>
           <th scope="col">Device</th>
+          <th scope="col">Device ID</th>
           <th scope="col">Worker</th>
           <th scope="col">Status</th>
           <th scope="col">Presence</th>
@@ -62,6 +58,10 @@ onMounted(load);
       </thead>
       <tbody>
         <tr v-for="item in items" :key="item.id" :data-activity="item.activity">
+          <td class="device-name">
+            <strong>{{ item.device?.name ?? 'Unknown device' }}</strong>
+            <small v-if="deviceDetail(item)">{{ deviceDetail(item) }}</small>
+          </td>
           <td>{{ item.id }}</td>
           <td>{{ item.workerId }}</td>
           <td>{{ item.status }}</td>
@@ -73,7 +73,7 @@ onMounted(load);
           <td>{{ item.lastHeartbeatAt ?? '—' }}</td>
         </tr>
         <tr v-if="!items.length && !error">
-          <td colspan="9">No workers registered.</td>
+          <td colspan="10">No workers registered.</td>
         </tr>
       </tbody>
     </table>

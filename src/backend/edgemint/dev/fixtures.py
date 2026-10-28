@@ -216,6 +216,30 @@ def dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
     return None
 
 
+_MONITOR_TASK_FIELDS = (
+    "id",
+    "taskType",
+    "lifecycleStatus",
+    "executionStatus",
+    "version",
+    "createdAt",
+    "updatedAt",
+    "assignmentId",
+    "failureReasonCode",
+)
+
+
+def monitor_task_rows() -> list[dict[str, Any]]:
+    """Task metadata across every dev workspace, without customer input or results."""
+    rows: list[dict[str, Any]] = []
+    for workspace_id in sorted({*DEV_WORKSPACE_IDS, *_created_tasks}, key=str):
+        for task in _tasks_for_workspace(workspace_id):
+            row = {key: task[key] for key in _MONITOR_TASK_FIELDS if key in task}
+            row["workspaceId"] = str(workspace_id)
+            rows.append(row)
+    return rows
+
+
 def find_task_workspace(task_id: str) -> UUID | None:
     for workspace_id, tasks in _created_tasks.items():
         if any(task["id"] == task_id for task in tasks):
