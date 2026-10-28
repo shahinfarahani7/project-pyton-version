@@ -1,42 +1,54 @@
 from __future__ import annotations
 
-from fastapi import Request
+from typing import Annotated
+
+from fastapi import Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from edgemint.building_blocks.app import create_service_app
-from edgemint.operations.errors import OperationsServiceError
+from edgemint.building_blocks.database import transaction
+from edgemint.building_blocks.settings import get_settings
+from edgemint.operations.auth import (
+    CSRF_HEADER,
+    OPERATOR_SESSION_TTL,
+    OperatorSession,
+    cookie_name,
+    dev_login_enabled,
+    issue_operator_session,
+    require_operator,
+)
+from edgemint.operations.errors import OperationsServiceError, operations_error
+from edgemint.operations.portal_admin import admin_roles, portal_email_for_principal
 from edgemint.operations.service import OperationsService
+from edgemint.operations.worker_device_overview import list_worker_device_overview
+from edgemint.security.tokens import BrowserSessionStore
 
 app = create_service_app("operations")
 operations_service = OperationsService()
 
+Operator = Annotated[OperatorSession, Depends(require_operator)]
+
+
+class DevLoginRequest(BaseModel):
+    operatorId: str = "op_dev_1"
+    role: str = "operator.approver"
+
 
 class OperatorActionRequest(BaseModel):
-    operatorId: str
-    role: str
     action: str
     resourceId: str
     reasonCode: str
     ticketId: str
-    permission: str
     expectedVersion: int | None = None
 
 
-class ApprovalRequest(BaseModel):
-    approverId: str
-    role: str = "operator.approver"
-
-
 class BreakGlassRequest(BaseModel):
-    operatorId: str
-    role: str = "operator.break_glass"
     reasonCode: str
     ticketId: str
 
 
 class ExportRequest(BaseModel):
-    operatorId: str
     view: str
 
 
@@ -54,43 +66,141 @@ async def operations_service_error_handler(_: Request, exc: OperationsServiceErr
     )
 
 
+def _session_body(session: OperatorSession) -> dict[str, object]:
+    return {
+        "operatorId": session.operator_id,
+        "role": session.role,
+        "mfaVerified": session.mfa_verified,
+        "permissions": sorted(session.permissions),
+        "expiresAt": session.expires_at.isoformat(),
+    }
+
+
+def _session_response(session: OperatorSession, status_code: int = 200) -> JSONResponse:
+    response = JSONResponse(_session_body(session), status_code=status_code)
+    response.headers[CSRF_HEADER] = session.csrf_token
+    return response
+
+
+@app.post("/internal/operations/session:dev-login", tags=["operations-auth"])
+async def dev_login(payload: DevLoginRequest) -> JSONResponse:
+    settings = get_settings()
+    if not dev_login_enabled(settings):
+        raise operations_error("DEV_LOGIN_DISABLED")
+    token, session = issue_operator_session(
+        operator_id=payload.operatorId,
+        role=payload.role,
+        mfa_verified=True,
+        settings=settings,
+    )
+    return _signed_in_response(token, session)
+
+
+@app.post("/internal/operations/session:portal", tags=["operations-auth"])
+async def portal_login(request: Request) -> JSONResponse:
+    settings = get_settings()
+    if not dev_login_enabled(settings):
+        raise operations_error("DEV_LOGIN_DISABLED")
+    portal_token = BrowserSessionStore.read_session_cookie(
+        request.cookies, environment=settings.environment
+    )
+    if not portal_token:
+        raise operations_error("PORTAL_SESSION_REQUIRED")
+    async with transaction(isolation="READ COMMITTED") as connection:
+        record = await BrowserSessionStore().load_by_token(connection, session_token=portal_token)
+        if record is None or not record.is_active():
+            raise operations_error("PORTAL_SESSION_REQUIRED")
+        email = await portal_email_for_principal(connection, record.principal_id)
+    role = admin_roles(settings).get(email) if email else None
+    if email is None or role is None:
+        raise operations_error("AUTH_SCOPE_REQUIRED", detail="portal account is not an operations admin")
+    token, session = issue_operator_session(
+        operator_id=email,
+        role=role,
+        mfa_verified=True,
+        settings=settings,
+    )
+    return _signed_in_response(token, session)
+
+
+def _signed_in_response(token: str, session: OperatorSession) -> JSONResponse:
+    settings = get_settings()
+    response = _session_response(session, status_code=201)
+    response.set_cookie(
+        cookie_name(settings),
+        token,
+        max_age=int(OPERATOR_SESSION_TTL.total_seconds()),
+        httponly=True,
+        secure=settings.environment not in {"development", "test"},
+        samesite="strict",
+        path="/",
+    )
+    return response
+
+
+@app.get("/internal/operations/session:sso", tags=["operations-auth"])
+async def sso_login() -> JSONResponse:
+    raise operations_error("SSO_NOT_CONFIGURED")
+
+
+@app.get("/internal/operations/session", tags=["operations-auth"])
+async def current_session(operator: Operator) -> JSONResponse:
+    return _session_response(operator)
+
+
+@app.post("/internal/operations/session:logout", tags=["operations-auth"])
+async def logout(_: Operator) -> JSONResponse:
+    response = JSONResponse({"status": "signed_out"}, status_code=200)
+    response.delete_cookie(cookie_name(get_settings()), path="/")
+    return response
+
+
 @app.get("/internal/operations/views/{view_name}", tags=["operations"])
-async def search_view(view_name: str) -> JSONResponse:
+async def search_view(view_name: str, operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
     items = operations_service.search(view=view_name)
     return JSONResponse({"items": items, "page": {"limit": 50, "hasMore": False}}, status_code=200)
 
 
+@app.get("/internal/operations/worker-devices", tags=["operations"])
+async def worker_devices(operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
+    async with transaction(isolation="READ COMMITTED") as connection:
+        items = await list_worker_device_overview(connection)
+    return JSONResponse({"items": items}, status_code=200)
+
+
 @app.post("/internal/operations/actions:submit", tags=["operations"])
-async def submit_action(payload: OperatorActionRequest) -> JSONResponse:
+async def submit_action(payload: OperatorActionRequest, operator: Operator) -> JSONResponse:
     body = operations_service.submit_mutating_action(
-        operator_id=payload.operatorId,
-        role=payload.role,
+        operator_id=operator.operator_id,
+        role=operator.role,
         action=payload.action,
         resource_id=payload.resourceId,
         reason_code=payload.reasonCode,
         ticket_id=payload.ticketId,
         expected_version=payload.expectedVersion,
-        permission=payload.permission,
+        permission="operations.mutate.low",
     )
     status = 202 if body.get("status") == "pending_approval" else 200
     return JSONResponse(body, status_code=status)
 
 
 @app.post("/internal/operations/approvals/{approval_id}:approve", tags=["operations"])
-async def approve_action(approval_id: str, payload: ApprovalRequest) -> JSONResponse:
+async def approve_action(approval_id: str, operator: Operator) -> JSONResponse:
     body = operations_service.approve_action(
-        approver_id=payload.approverId,
-        role=payload.role,
+        approver_id=operator.operator_id,
+        role=operator.role,
         approval_id=approval_id,
     )
     return JSONResponse(body, status_code=200)
 
 
 @app.post("/internal/operations/break-glass:activate", tags=["operations"])
-async def activate_break_glass(payload: BreakGlassRequest) -> JSONResponse:
+async def activate_break_glass(payload: BreakGlassRequest, operator: Operator) -> JSONResponse:
     session = operations_service.activate_break_glass(
-        operator_id=payload.operatorId,
-        role=payload.role,
+        operator_id=operator.operator_id,
+        role=operator.role,
         reason_code=payload.reasonCode,
         ticket_id=payload.ticketId,
     )
@@ -106,15 +216,17 @@ async def activate_break_glass(payload: BreakGlassRequest) -> JSONResponse:
 
 
 @app.post("/internal/operations/exports:audited", tags=["operations"])
-async def export_audited(payload: ExportRequest) -> JSONResponse:
+async def export_audited(payload: ExportRequest, operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
     return JSONResponse(
-        operations_service.export_audited_view(view=payload.view, operator_id=payload.operatorId),
+        operations_service.export_audited_view(view=payload.view, operator_id=operator.operator_id),
         status_code=200,
     )
 
 
 @app.get("/internal/operations/audit-log", tags=["operations"])
-async def audit_log() -> JSONResponse:
+async def audit_log(operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
     return JSONResponse(
         {
             "items": [
@@ -137,5 +249,6 @@ async def audit_log() -> JSONResponse:
 
 
 @app.get("/internal/operations/session-recording/hooks", tags=["operations"])
-async def session_recording_hooks() -> JSONResponse:
+async def session_recording_hooks(operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
     return JSONResponse({"items": operations_service.session_recording_hooks}, status_code=200)

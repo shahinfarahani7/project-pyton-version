@@ -20,8 +20,6 @@ const status = ref('');
       @click="
         opsApi
           .activateBreakGlass({
-            operatorId: session.operatorId,
-            role: 'operator.break_glass',
             reasonCode: 'incident_response',
             ticketId: 'INC-BG-1',
           })

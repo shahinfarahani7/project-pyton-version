@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     lease_credential_encryption_key: str | None = None
     catalog_closure_mode: Literal["warn_only", "baseline", "strict"] = "baseline"
     worker_api_public_base_url: str = "http://worker-gateway:8080"
+    operations_admin_emails: str | None = None
 
     @model_validator(mode="after")
     def reject_insecure_production_configuration(self) -> Settings:

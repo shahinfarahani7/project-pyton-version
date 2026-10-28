@@ -40,6 +40,7 @@ class ResumableModelDownload {
         throw const ModelDownloadPausedException();
       }
     }
+
     if (expectedBytes <= 0 ||
         !RegExp(r'^[a-f0-9]{64}$').hasMatch(expectedSha256) ||
         maxAttempts < 1 ||
@@ -82,8 +83,9 @@ class ResumableModelDownload {
             shouldAbort: shouldAbort,
           );
         } on Object catch (error) {
-          if (error is ModelDownloadPausedException) {
-            rethrow;
+          if (error is ModelDownloadPausedException ||
+              (shouldAbort?.call() ?? false)) {
+            throw const ModelDownloadPausedException();
           }
           final retryable =
               error is SocketException ||
@@ -95,7 +97,7 @@ class ResumableModelDownload {
             'Model connection interrupted; saved bytes retained. '
             'Retry $failures/${maxAttempts - 1}',
           );
-          await Future<void>.delayed(retryDelay * failures);
+          await _sleepUnlessAborted(retryDelay * failures, shouldAbort);
         }
       }
       if (!await partial.exists() || await partial.length() != expectedBytes) {
@@ -115,6 +117,30 @@ class ResumableModelDownload {
 
   int _percent(int bytes) => ((bytes * 100) ~/ expectedBytes).clamp(0, 99);
 
+  Future<void> _sleepUnlessAborted(
+    Duration duration,
+    bool Function()? shouldAbort,
+  ) async {
+    if (duration <= Duration.zero) {
+      await Future<void>.delayed(Duration.zero);
+      if (shouldAbort?.call() ?? false) {
+        throw const ModelDownloadPausedException();
+      }
+      return;
+    }
+    const step = Duration(milliseconds: 100);
+    var elapsed = Duration.zero;
+    while (elapsed < duration) {
+      if (shouldAbort?.call() ?? false) {
+        throw const ModelDownloadPausedException();
+      }
+      final remaining = duration - elapsed;
+      final slice = remaining < step ? remaining : step;
+      await Future<void>.delayed(slice);
+      elapsed += slice;
+    }
+  }
+
   Future<void> _transfer(
     Uri url,
     File partial,
@@ -123,8 +149,35 @@ class ResumableModelDownload {
     bool Function()? shouldAbort,
   }) async {
     final client = HttpClient()..autoUncompress = false;
+    var clientClosed = false;
+    void closeClient() {
+      if (clientClosed) return;
+      clientClosed = true;
+      client.close(force: true);
+    }
+
+    StreamIterator<List<int>>? body;
+    Timer? abortWatch;
+    if (shouldAbort != null) {
+      abortWatch = Timer.periodic(const Duration(milliseconds: 100), (_) {
+        if (clientClosed || !shouldAbort()) return;
+        closeClient();
+        final active = body;
+        if (active != null) {
+          unawaited(
+            active.cancel().then<void>(
+              (_) {},
+              onError: (Object _, StackTrace _) {},
+            ),
+          );
+        }
+      });
+    }
     RandomAccessFile? output;
     try {
+      if (shouldAbort?.call() ?? false) {
+        throw const ModelDownloadPausedException();
+      }
       client.connectionTimeout = idleTimeout;
       final request = await client.getUrl(url).timeout(idleTimeout);
       request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
@@ -177,10 +230,13 @@ class ResumableModelDownload {
       output = await partial.open(mode: FileMode.append);
       var received = offset;
       var lastPercent = _percent(offset);
-      await for (final bytes in response.timeout(idleTimeout)) {
-        if (shouldAbort?.call() ?? false) {
+      final iterator = StreamIterator<List<int>>(response.timeout(idleTimeout));
+      body = iterator;
+      while (await iterator.moveNext()) {
+        if ((shouldAbort?.call() ?? false) || clientClosed) {
           throw const ModelDownloadPausedException();
         }
+        final bytes = iterator.current;
         if (received + bytes.length > end + 1) {
           throw StateError('Model response exceeded declared range');
         }
@@ -197,7 +253,22 @@ class ResumableModelDownload {
           'Model connection closed before range completed',
         );
       }
+    } on ModelDownloadPausedException {
+      rethrow;
+    } on Object {
+      if ((shouldAbort?.call() ?? false) || clientClosed) {
+        throw const ModelDownloadPausedException();
+      }
+      rethrow;
     } finally {
+      abortWatch?.cancel();
+      final activeBody = body;
+      body = null;
+      try {
+        await activeBody?.cancel();
+      } catch (_) {
+        // The response is already being torn down.
+      }
       try {
         if (output != null) {
           try {
@@ -207,7 +278,7 @@ class ResumableModelDownload {
           }
         }
       } finally {
-        client.close(force: true);
+        closeClient();
       }
     }
   }

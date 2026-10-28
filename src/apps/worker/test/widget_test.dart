@@ -8,49 +8,50 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('home shows the character and earnings chart without boost prompt', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 1600);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final controller = WorkerAppController(
-      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
-      encryptedStore: InMemoryEncryptedStore(),
-    );
-    controller.setAvailable(false);
-    addTearDown(controller.dispose);
+  testWidgets(
+    'home shows the character and earnings chart without boost prompt',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final controller = WorkerAppController(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+        encryptedStore: InMemoryEncryptedStore(),
+      );
+      controller.setAvailable(false);
+      addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: buildWorkerTheme(),
-        home: WorkerHomeTab(controller: controller),
-      ),
-    );
-    await tester.pump();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildWorkerTheme(),
+          home: WorkerHomeTab(controller: controller),
+        ),
+      );
+      await tester.pump();
 
-    expect(
-      find.bySemanticsLabel('Worker character waiting for a task'),
-      findsOneWidget,
-    );
-    expect(find.text('Tasks completed'), findsOneWidget);
-    expect(find.text('Fibonai'), findsOneWidget);
-    expect(find.text('0'), findsNWidgets(2));
-    expect(find.text(r'$0.00'), findsNothing);
-    controller.tasksProcessed = 2;
-    controller.notifyListeners();
-    await tester.pump();
-    expect(find.text('2'), findsOneWidget);
-    expect(find.text('80'), findsOneWidget);
-    expect(find.text('AI model'), findsNothing);
-    expect(find.text('Download model'), findsNothing);
-    expect(find.textContaining('Qwen'), findsNothing);
-    expect(find.text('Earnings'), findsOneWidget);
-    expect(find.textContaining('not guaranteed'), findsWidgets);
-    expect(find.text('Boost your worker'), findsNothing);
-    expect(find.text('Turn availability on'), findsNothing);
-  });
+      expect(
+        find.bySemanticsLabel('Worker character waiting for a task'),
+        findsOneWidget,
+      );
+      expect(find.text('Tasks completed'), findsOneWidget);
+      expect(find.text('Fibonai'), findsOneWidget);
+      expect(find.text('0'), findsNWidgets(2));
+      expect(find.text(r'$0.00'), findsNothing);
+      controller.tasksProcessed = 2;
+      controller.notifyListeners();
+      await tester.pump();
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('80'), findsOneWidget);
+      expect(find.text('AI model'), findsNothing);
+      expect(find.text('Download model'), findsNothing);
+      expect(find.textContaining('Qwen'), findsNothing);
+      expect(find.text('Earnings'), findsOneWidget);
+      expect(find.textContaining('not guaranteed'), findsWidgets);
+      expect(find.text('Boost your worker'), findsNothing);
+      expect(find.text('Turn availability on'), findsNothing);
+    },
+  );
 
   testWidgets('home shows the running character while a task is active', (
     tester,
@@ -112,6 +113,17 @@ void main() {
     await tester.pump();
 
     expect(find.text('Installing model…'), findsOneWidget);
+    expect(find.text('Pause'), findsNothing);
+
+    controller.modelProgress = 0.42;
+    controller.notifyListeners();
+    await tester.pump();
+
+    await tester.tap(find.text('Pause'));
+    await tester.pump();
+
+    expect(controller.isGemmaDownloadPausePending, isTrue);
+    expect(find.text('Pausing…'), findsWidgets);
     expect(find.text('Pause'), findsNothing);
 
     controller.modelPhase = ModelInstallPhase.paused;

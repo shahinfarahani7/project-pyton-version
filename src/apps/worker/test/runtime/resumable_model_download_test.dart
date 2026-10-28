@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -295,8 +296,12 @@ void main() {
       final url = await serve((request) async {
         final socket = await request.response.detachSocket(writeHeaders: false);
         addTearDown(socket.destroy);
-        socket.add(ascii.encode('HTTP/1.1 200 OK\r\nContent-Length: ${bytes.length}\r\n'
-            'Connection: close\r\n\r\n'));
+        socket.add(
+          ascii.encode(
+            'HTTP/1.1 200 OK\r\nContent-Length: ${bytes.length}\r\n'
+            'Connection: close\r\n\r\n',
+          ),
+        );
         socket.add(bytes.sublist(0, 8192));
         await socket.flush();
       });
@@ -336,4 +341,93 @@ void main() {
     );
     expect(await partial().length(), 16000);
   });
+
+  test(
+    'shouldAbort during an open body stops before the file is complete',
+    () async {
+      final url = await serve((request) async {
+        request.response.statusCode = 200;
+        request.response.contentLength = bytes.length;
+        const chunk = 1024;
+        for (var offset = 0; offset < bytes.length; offset += chunk) {
+          final end = offset + chunk > bytes.length
+              ? bytes.length
+              : offset + chunk;
+          request.response.add(bytes.sublist(offset, end));
+          await request.response.flush();
+          await Future<void>.delayed(const Duration(milliseconds: 15));
+        }
+        await request.response.close();
+      });
+      var abort = false;
+      await expectLater(
+        downloader().download(
+          url: url,
+          onProgress: (percent) {
+            if (percent >= 12) abort = true;
+          },
+          shouldAbort: () => abort,
+        ),
+        throwsA(isA<ModelDownloadPausedException>()),
+      );
+      final saved = await partial().length();
+      expect(saved, greaterThan(0));
+      expect(saved, lessThan(bytes.length));
+    },
+  );
+
+  test(
+    'pause during a stalled body stops without waiting for more bytes',
+    () async {
+      final release = Completer<void>();
+      final url = await serve((request) async {
+        request.response.statusCode = 200;
+        request.response.bufferOutput = false;
+        request.response.contentLength = bytes.length;
+        request.response.add(bytes.sublist(0, 4096));
+        await request.response.flush();
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        try {
+          await release.future.timeout(const Duration(seconds: 4));
+        } on TimeoutException {
+          // Client did not abort; more bytes would arrive.
+        }
+        try {
+          request.response.add(bytes.sublist(4096));
+          await request.response.close();
+        } catch (_) {
+          // Connection already closed by pause.
+        }
+      });
+      var abort = false;
+      final started = DateTime.now();
+      try {
+        await expectLater(
+          ResumableModelDownload(
+            directory: directory,
+            fileName: 'model.litertlm',
+            expectedBytes: bytes.length,
+            expectedSha256: digest,
+            maxAttempts: 3,
+            idleTimeout: const Duration(seconds: 30),
+            retryDelay: const Duration(seconds: 5),
+          ).download(
+            url: url,
+            onProgress: (percent) {
+              if (percent > 0) abort = true;
+            },
+            shouldAbort: () => abort,
+          ),
+          throwsA(isA<ModelDownloadPausedException>()),
+        );
+      } finally {
+        if (!release.isCompleted) release.complete();
+      }
+      expect(
+        DateTime.now().difference(started),
+        lessThan(const Duration(seconds: 2)),
+      );
+      expect(await partial().length(), lessThan(bytes.length));
+    },
+  );
 }

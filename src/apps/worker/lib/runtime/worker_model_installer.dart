@@ -47,11 +47,11 @@ abstract final class WorkerModelInstaller {
   ];
 
   static List<String> externalSideloadPathsFor(String fileName) => [
-        '/sdcard/Edgemint/models/$fileName',
-        '/storage/emulated/0/Edgemint/models/$fileName',
-        '/sdcard/Download/$fileName',
-        '/storage/emulated/0/Download/$fileName',
-      ];
+    '/sdcard/Edgemint/models/$fileName',
+    '/storage/emulated/0/Edgemint/models/$fileName',
+    '/sdcard/Download/$fileName',
+    '/storage/emulated/0/Download/$fileName',
+  ];
 
   /// Installs a validated `.litertlm` bundled asset when configured.
   static Future<bool> installBundledAsset({
@@ -66,9 +66,7 @@ abstract final class WorkerModelInstaller {
       assetPath,
     );
     if (!validation.accepted) {
-      log?.call(
-        '${validation.reasonCode}: ${validation.detail}',
-      );
+      log?.call('${validation.reasonCode}: ${validation.detail}');
       return false;
     }
 
@@ -359,9 +357,7 @@ abstract final class WorkerModelInstaller {
     if (dartCopy != null && dartCopy.isNotEmpty) {
       return dartCopy;
     }
-    log?.call(
-      'Shared-storage import failed; native engine may not open $path',
-    );
+    log?.call('Shared-storage import failed; native engine may not open $path');
     return path;
   }
 
@@ -378,7 +374,9 @@ abstract final class WorkerModelInstaller {
       if (!await source.exists()) {
         return null;
       }
-      final filesDir = await _runtimeChannel.invokeMethod<String>('localStorePath');
+      final filesDir = await _runtimeChannel.invokeMethod<String>(
+        'localStorePath',
+      );
       if (filesDir == null || filesDir.isEmpty) {
         return null;
       }
@@ -455,10 +453,7 @@ abstract final class WorkerModelInstaller {
     );
     if (!format.accepted) {
       log?.call('${format.reasonCode}: ${format.detail}');
-      throw ModelFormatUnsupportedException(
-        format.reasonCode,
-        format.detail,
-      );
+      throw ModelFormatUnsupportedException(format.reasonCode, format.detail);
     }
 
     log?.call(
@@ -568,8 +563,7 @@ abstract final class WorkerModelInstaller {
     final fileName = file.uri.pathSegments.isNotEmpty
         ? file.uri.pathSegments.last
         : WorkerModelCatalog.fileName;
-    final expected =
-        WorkerModelCatalog.descriptorForArtifactFileName(fileName);
+    final expected = WorkerModelCatalog.descriptorForArtifactFileName(fileName);
     final format = await WorkerModelFormatGate.validateFileOnDisk(
       expected: expected,
       filePath: path,
@@ -745,11 +739,15 @@ abstract final class WorkerModelInstaller {
       operation: (installGeneration) async {
         await GemmaBootstrap.ensureInitialized();
 
-        log?.call('Starting network install: $downloadUrl (generation=$installGeneration)');
+        log?.call(
+          'Starting network install: $downloadUrl (generation=$installGeneration)',
+        );
 
         final storage = await ServiceRegistry.instance.fileSystemService
             .getModelStorageDirectory();
         var foregroundStarted = false;
+        Object? failure;
+        StackTrace? failureStack;
         try {
           if (Platform.isAndroid) {
             await _runtimeChannel.invokeMethod<void>('startForegroundService', {
@@ -758,24 +756,43 @@ abstract final class WorkerModelInstaller {
             });
             foregroundStarted = true;
           }
-          final file = await ResumableModelDownload(
-            directory: Directory('$storage/resumable-models'),
-            fileName: WorkerModelCatalog.fileName,
-            completedFile: File(await ServiceRegistry.instance.fileSystemService
-                .getWriteTargetPath(WorkerModelCatalog.fileName)),
-            expectedBytes: WorkerModelCatalog.knownGeneralArtifactSizeBytes,
-            expectedSha256: WorkerModelCatalog.knownGeneralArtifactSha256,
-          ).download(
-            url: Uri.parse(downloadUrl),
-            onProgress: onProgress,
-            log: log,
-            shouldAbort: shouldAbortDownload,
-          );
-          await WorkerModelCatalog.installBuilder().fromFile(file.path).install();
+          final file =
+              await ResumableModelDownload(
+                directory: Directory('$storage/resumable-models'),
+                fileName: WorkerModelCatalog.fileName,
+                completedFile: File(
+                  await ServiceRegistry.instance.fileSystemService
+                      .getWriteTargetPath(WorkerModelCatalog.fileName),
+                ),
+                expectedBytes: WorkerModelCatalog.knownGeneralArtifactSizeBytes,
+                expectedSha256: WorkerModelCatalog.knownGeneralArtifactSha256,
+              ).download(
+                url: Uri.parse(downloadUrl),
+                onProgress: onProgress,
+                log: log,
+                shouldAbort: shouldAbortDownload,
+              );
+          await WorkerModelCatalog.installBuilder()
+              .fromFile(file.path)
+              .install();
+        } catch (error, stackTrace) {
+          failure = error;
+          failureStack = stackTrace;
         } finally {
           if (foregroundStarted) {
-            await _runtimeChannel.invokeMethod<void>('stopForegroundService');
+            try {
+              await _runtimeChannel.invokeMethod<void>('stopForegroundService');
+            } catch (error, stackTrace) {
+              log?.call(
+                'Could not stop model download foreground service: $error',
+              );
+              failure ??= error;
+              failureStack ??= stackTrace;
+            }
           }
+        }
+        if (failure != null) {
+          Error.throwWithStackTrace(failure, failureStack ?? StackTrace.empty);
         }
 
         log?.call(
@@ -805,11 +822,12 @@ abstract final class WorkerModelInstaller {
           ArtifactInstallCoordinator.instance.markVerifying();
           final path = await _installedModelPath(WorkerModelCatalog.fileName);
           if (path != null) {
-            await (verifyHook ?? const ModelDownloadVerifyHook()).verifyInstalledFileIfPinned(
-              path: path,
-              signingKey: signingKey,
-              modelVersionId: WorkerModelCatalog.modelVersionId,
-            );
+            await (verifyHook ?? const ModelDownloadVerifyHook())
+                .verifyInstalledFileIfPinned(
+                  path: path,
+                  signingKey: signingKey,
+                  modelVersionId: WorkerModelCatalog.modelVersionId,
+                );
             log?.call(
               '${WorkerModelCatalog.displayName} '
               'post-download digest/signature verification passed',

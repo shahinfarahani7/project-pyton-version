@@ -26,13 +26,33 @@ export async function fetchJson(path, options = {}) {
   });
   const csrf = response.headers.get(CSRF_HEADER);
   if (csrf) csrfToken = csrf;
-  const payload = await response.json();
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new ApiClientError({
+      status: response.status,
+      code: 'SERVICE_UNAVAILABLE',
+      title: `Service unavailable (HTTP ${response.status}). Is the backend running?`,
+    });
+  }
   if (!response.ok) throw new ApiClientError(payload);
   return payload;
 }
 
+export const authApi = {
+  loginWithPassword: (body) => fetchJson('/auth/email-password', { method: 'POST', body }),
+  requestEmailOtp: (email) => fetchJson('/auth/email-otp/challenges', { method: 'POST', body: { email } }),
+  verifyEmailOtp: (body) => fetchJson('/auth/email-otp/verify', { method: 'POST', body }),
+};
+
 export const opsApi = {
+  devLogin: (body) => fetchJson('/internal/operations/session:dev-login', { method: 'POST', body }),
+  portalLogin: () => fetchJson('/internal/operations/session:portal', { method: 'POST' }),
+  currentSession: () => fetchJson('/internal/operations/session'),
+  logout: () => fetchJson('/internal/operations/session:logout', { method: 'POST' }),
   search: (view) => fetchJson(`/internal/operations/views/${view}`),
+  workerDevices: () => fetchJson('/internal/operations/worker-devices'),
   submitAction: (body) => fetchJson('/internal/operations/actions:submit', { method: 'POST', body }),
   approve: (approvalId, body) =>
     fetchJson(`/internal/operations/approvals/${approvalId}:approve`, { method: 'POST', body }),

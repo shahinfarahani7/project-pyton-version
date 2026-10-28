@@ -24,7 +24,7 @@ const message = ref('');
       type="button"
       @click="
         opsApi
-          .approve(approvalId, { approverId: session.operatorId, role: 'operator.approver' })
+          .approve(approvalId, {})
           .then((body) => {
             message = String(body.status ?? 'approved');
           })

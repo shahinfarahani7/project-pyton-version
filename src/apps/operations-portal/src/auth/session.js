@@ -1,35 +1,72 @@
 import { reactive } from 'vue';
 
-const ROLE_PERMISSIONS = {
-  'operator.readonly': ['operations.read'],
-  'operator.standard': ['operations.read', 'operations.mutate.low'],
-  'operator.approver': ['operations.read', 'operations.mutate.low', 'operations.approve'],
-  'operator.break_glass': ['operations.read', 'operations.mutate.low', 'operations.approve', 'operations.break_glass'],
-};
+import { opsApi, setCsrfToken } from '../api/client';
+
+let restorePromise = null;
+
+function applySession(body) {
+  session.authenticated = true;
+  session.operatorId = body.operatorId;
+  session.role = body.role;
+  session.mfaVerified = Boolean(body.mfaVerified);
+  session.permissions = body.permissions ?? [];
+}
+
+function clearSession() {
+  session.authenticated = false;
+  session.operatorId = null;
+  session.role = null;
+  session.mfaVerified = false;
+  session.permissions = [];
+  setCsrfToken(null);
+}
+
+async function signIn(request) {
+  try {
+    applySession(await request());
+    session.error = null;
+    session.errorCode = null;
+  } catch (err) {
+    clearSession();
+    session.error = err.message;
+    session.errorCode = err.problem?.code ?? null;
+  }
+}
 
 export const session = reactive({
   authenticated: false,
   operatorId: null,
   role: null,
   mfaVerified: false,
+  permissions: [],
+  error: null,
+  errorCode: null,
   loginSso() {
-    window.location.assign('/auth/oidc/login?audience=operations');
+    window.location.assign('/internal/operations/session:sso');
   },
   loginDev() {
-    session.authenticated = true;
-    session.operatorId = 'op_dev_1';
-    session.role = 'operator.approver';
-    session.mfaVerified = true;
+    return signIn(() => opsApi.devLogin({}));
   },
-  logout() {
-    session.authenticated = false;
-    session.operatorId = null;
-    session.role = null;
-    session.mfaVerified = false;
+  loginPortal() {
+    return signIn(() => opsApi.portalLogin());
+  },
+  restore() {
+    restorePromise ??= opsApi
+      .currentSession()
+      .then(applySession)
+      .catch(clearSession);
+    return restorePromise;
+  },
+  async logout() {
+    try {
+      await opsApi.logout();
+    } finally {
+      clearSession();
+      restorePromise = null;
+    }
   },
   hasPermission(permission) {
-    if (!session.role) return false;
-    return (ROLE_PERMISSIONS[session.role] ?? []).includes(permission);
+    return session.permissions.includes(permission);
   },
 });
 

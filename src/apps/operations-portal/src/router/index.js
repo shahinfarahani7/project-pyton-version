@@ -38,7 +38,8 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  await session.restore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   if (requiresAuth && (!session.authenticated || !session.mfaVerified)) {
     return { path: '/login' };

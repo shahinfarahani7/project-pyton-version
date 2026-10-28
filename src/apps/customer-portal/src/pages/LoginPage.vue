@@ -10,6 +10,8 @@ import { trackEvent } from '../telemetry';
 
 const session = useSession();
 const router = useRouter();
+const adminLoginUrl =
+  import.meta.env.VITE_OPERATIONS_PORTAL_URL ?? `${window.location.protocol}//${window.location.hostname}:5174/login`;
 
 const email = ref('dev-user@edgemint.local');
 const password = ref('');
@@ -401,6 +403,10 @@ async function signInWithPassword() {
             {{ t('login.createAccount') }}
           </button>
         </div>
+        <a class="login-admin-entry" :href="adminLoginUrl" data-testid="login-admin-entry">
+          <span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>
+          {{ t('login.adminEntry') }}
+        </a>
       </section>
     </div>
   </div>
