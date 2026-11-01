@@ -224,6 +224,23 @@ export const portalApi = {
   },
   webhooks: () => fetchJson('/v1/webhook-endpoints'),
   apiKeys: () => fetchJson('/v1/api-keys'),
+  apiKeyUsage: (range) => fetchJson(`/v1/api-keys/usage?range=${encodeURIComponent(range)}`),
+  createApiKey: (body, idempotencyKey) =>
+    fetchJson('/v1/api-keys', {
+      method: 'POST',
+      body,
+      idempotencyKey,
+    }),
+  rotateApiKey: (keyId, idempotencyKey) =>
+    fetchJson(`/v1/api-keys/${keyId}:rotate`, {
+      method: 'POST',
+      idempotencyKey,
+    }),
+  revokeApiKey: (keyId, idempotencyKey) =>
+    fetchJson(`/v1/api-keys/${keyId}:revoke`, {
+      method: 'POST',
+      idempotencyKey,
+    }),
   usage: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/usage`),
   balance: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/credit-balance`),
   wallets: (workspaceId) => fetchJson(`/v1/workspaces/${workspaceId}/wallets`),

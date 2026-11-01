@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -11,10 +12,11 @@ from pydantic import BaseModel, Field
 
 from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.settings import get_settings
-from edgemint.dev import email_otp
-from edgemint.dev import fixtures
-from edgemint.dev import task_events
-from edgemint.dev import task_type_catalog
+from edgemint.dev import email_otp, fixtures, task_events, task_type_catalog
+from edgemint.security import api_key_store
+from edgemint.security.api_key_directory import ApiKeyError
+from edgemint.security.api_key_directory import directory as api_key_directory
+from edgemint.security.api_key_usage import usage as api_key_usage
 from edgemint.security.problems import raise_auth_error
 from edgemint.security.tokens import BrowserSessionRecord, BrowserSessionStore
 
@@ -72,6 +74,76 @@ class DevCreateTaskRequest(BaseModel):
     inputText: str | None = Field(default=None, max_length=32_000)
     instructions: str | None = Field(default=None, max_length=8_000)
     summarizeOptions: dict[str, Any] | None = None
+
+
+class DevCreateApiKeyRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    scopes: list[str] = Field(min_length=1, max_length=8)
+    expiresAt: datetime | None = None
+    allowedCidrs: list[str] = Field(default_factory=list, max_length=20)
+
+
+_API_KEY_HEADER = "X-EdgeMint-Key"
+
+
+def _idempotency_key(request: Request) -> str:
+    raw = request.headers.get("Idempotency-Key")
+    if raw is None or not raw.strip():
+        raise HTTPException(400, "IDEMPOTENCY_KEY_REQUIRED")
+    key = raw.strip()
+    if len(key) < 16 or len(key) > 128:
+        raise HTTPException(400, "IDEMPOTENCY_KEY_INVALID")
+    return key
+
+
+def _client_ip(request: Request) -> str | None:
+    if request.client is None:
+        return None
+    return request.client.host
+
+
+async def _hydrate_api_keys(workspace_id: UUID) -> None:
+    if not get_settings().database_url or api_key_directory.is_hydrated(workspace_id):
+        return
+    async with transaction(workspace_id=workspace_id) as connection:
+        await api_key_store.hydrate(connection, api_key_directory, workspace_id)
+
+
+async def _authorize_task_workspace(
+    request: Request, workspace_id: UUID, *, write: bool, record_success: bool = True
+) -> str | None:
+    """Accept a browser session or a workspace task API key; return the key id when a key was used."""
+    raw_key = request.headers.get(_API_KEY_HEADER)
+    if raw_key is not None:
+        await _hydrate_api_keys(workspace_id)
+        client_ip = _client_ip(request)
+        decision = api_key_directory.authenticate(raw_key, client_ip=client_ip)
+        if decision is None:
+            raise_auth_error("AUTH_INVALID_CREDENTIAL")
+            return None
+
+        def deny(status: int, code: str) -> None:
+            api_key_usage.record(
+                decision.key_id, decision.workspace_id, kind="request", ok=False, client_ip=client_ip
+            )
+            raise HTTPException(status, code)
+
+        if decision.denied_code is not None:
+            deny(403, decision.denied_code)
+        if decision.workspace_id != workspace_id:
+            deny(403, "WORKSPACE_SESSION_MISMATCH")
+        scope = "customer.tasks:write" if write else "customer.tasks:read"
+        if scope not in decision.scopes:
+            api_key_usage.record(
+                decision.key_id, decision.workspace_id, kind="request", ok=False, client_ip=client_ip
+            )
+            raise_auth_error("AUTH_SCOPE_REQUIRED", status=403)
+        if record_success:
+            api_key_usage.record(decision.key_id, workspace_id, kind="request", ok=True, client_ip=client_ip)
+        return decision.key_id
+    session = await require_dev_portal_session(request)
+    _ensure_workspace_access(session, workspace_id)
+    return None
 
 
 async def _read_uploaded_file(upload: object | None) -> tuple[str | None, str | None, bytes | None]:
@@ -225,11 +297,8 @@ async def list_task_types(
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks")
-async def list_tasks(
-    workspace_id: UUID,
-    session: BrowserSessionRecord = Depends(require_dev_portal_session),
-) -> dict:
-    _ensure_workspace_access(session, workspace_id)
+async def list_tasks(workspace_id: UUID, request: Request) -> dict:
+    await _authorize_task_workspace(request, workspace_id, write=False)
     return task_type_catalog.enrich_task_list(fixtures.dev_tasks(workspace_id))
 
 
@@ -267,12 +336,20 @@ async def stream_task_events(
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks", status_code=201)
-async def create_task(
-    request: Request,
-    workspace_id: UUID,
-    session: BrowserSessionRecord = Depends(require_dev_portal_session),
-) -> dict:
-    _ensure_workspace_access(session, workspace_id)
+async def create_task(request: Request, workspace_id: UUID) -> dict:
+    key_id = await _authorize_task_workspace(request, workspace_id, write=True, record_success=False)
+    if key_id is None:
+        return await _create_task_body(request, workspace_id)
+    try:
+        created = await _create_task_body(request, workspace_id)
+    except Exception:
+        api_key_usage.record(key_id, workspace_id, kind="task", ok=False, client_ip=_client_ip(request))
+        raise
+    api_key_usage.record(key_id, workspace_id, kind="task", ok=True, client_ip=_client_ip(request))
+    return created
+
+
+async def _create_task_body(request: Request, workspace_id: UUID) -> dict:
     content_type = request.headers.get("content-type", "")
     try:
         if "multipart/form-data" in content_type:
@@ -329,12 +406,8 @@ async def create_task(
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}")
-async def get_task(
-    workspace_id: UUID,
-    task_id: str,
-    session: BrowserSessionRecord = Depends(require_dev_portal_session),
-) -> dict:
-    _ensure_workspace_access(session, workspace_id)
+async def get_task(workspace_id: UUID, task_id: str, request: Request) -> dict:
+    await _authorize_task_workspace(request, workspace_id, write=False)
     task = fixtures.dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
@@ -342,12 +415,8 @@ async def get_task(
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks/{task_id}:cancel")
-async def cancel_task(
-    workspace_id: UUID,
-    task_id: str,
-    session: BrowserSessionRecord = Depends(require_dev_portal_session),
-) -> dict:
-    _ensure_workspace_access(session, workspace_id)
+async def cancel_task(workspace_id: UUID, task_id: str, request: Request) -> dict:
+    await _authorize_task_workspace(request, workspace_id, write=True)
     task = fixtures.cancel_dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
@@ -358,11 +427,11 @@ async def cancel_task(
 async def get_task_result_file(
     workspace_id: UUID,
     task_id: str,
-    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+    request: Request,
 ):
     from edgemint.dev import worker_task_inputs
 
-    _ensure_workspace_access(session, workspace_id)
+    await _authorize_task_workspace(request, workspace_id, write=False)
     task = fixtures.dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
@@ -377,9 +446,111 @@ async def list_webhooks(session: BrowserSessionRecord = Depends(require_dev_port
     return fixtures.dev_webhooks(session.workspace_id)
 
 
+@router.get("/v1/api-keys/usage")
+async def api_key_usage_summary(
+    range: str = "week",  # noqa: A002
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    try:
+        return api_key_usage.summary(session.workspace_id, range)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
 @router.get("/v1/api-keys")
 async def list_api_keys(session: BrowserSessionRecord = Depends(require_dev_portal_session)) -> dict:
-    return fixtures.dev_api_keys(session.workspace_id)
+    await _hydrate_api_keys(session.workspace_id)
+    return api_key_directory.list_public(session.workspace_id)
+
+
+@router.post("/v1/api-keys", status_code=201)
+async def create_api_key(
+    request: Request,
+    body: DevCreateApiKeyRequest,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    idempotency_key = _idempotency_key(request)
+    try:
+        if get_settings().database_url:
+            async with transaction(workspace_id=session.workspace_id) as connection:
+                return await api_key_store.create_api_key(
+                    connection,
+                    api_key_directory,
+                    workspace_id=session.workspace_id,
+                    principal_id=session.principal_id,
+                    name=body.name,
+                    scopes=body.scopes,
+                    expires_at=body.expiresAt,
+                    allowed_cidrs=body.allowedCidrs,
+                    idempotency_key=idempotency_key,
+                )
+        return api_key_directory.create(
+            workspace_id=session.workspace_id,
+            principal_id=session.principal_id,
+            name=body.name,
+            scopes=body.scopes,
+            expires_at=body.expiresAt,
+            allowed_cidrs=body.allowedCidrs,
+            idempotency_key=idempotency_key,
+        )
+    except ApiKeyError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+
+
+@router.post("/v1/api-keys/{key_id}:rotate")
+async def rotate_api_key(
+    key_id: str,
+    request: Request,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    idempotency_key = _idempotency_key(request)
+    try:
+        if get_settings().database_url:
+            async with transaction(workspace_id=session.workspace_id) as connection:
+                return await api_key_store.rotate_api_key(
+                    connection,
+                    api_key_directory,
+                    workspace_id=session.workspace_id,
+                    principal_id=session.principal_id,
+                    key_id=key_id,
+                    idempotency_key=idempotency_key,
+                )
+        return api_key_directory.rotate(
+            workspace_id=session.workspace_id,
+            principal_id=session.principal_id,
+            key_id=key_id,
+            idempotency_key=idempotency_key,
+        )
+    except ApiKeyError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
+
+
+@router.post("/v1/api-keys/{key_id}:revoke")
+async def revoke_api_key(
+    key_id: str,
+    request: Request,
+    session: BrowserSessionRecord = Depends(require_dev_portal_session),
+) -> dict:
+    idempotency_key = _idempotency_key(request)
+    try:
+        if get_settings().database_url:
+            async with transaction(workspace_id=session.workspace_id) as connection:
+                return await api_key_store.revoke_api_key(
+                    connection,
+                    api_key_directory,
+                    workspace_id=session.workspace_id,
+                    principal_id=session.principal_id,
+                    key_id=key_id,
+                    idempotency_key=idempotency_key,
+                )
+        return api_key_directory.revoke(
+            workspace_id=session.workspace_id,
+            principal_id=session.principal_id,
+            key_id=key_id,
+            idempotency_key=idempotency_key,
+        )
+    except ApiKeyError as exc:
+        raise HTTPException(exc.status, exc.code) from exc
 
 
 @router.get("/v1/workspaces/{workspace_id}/usage")

@@ -18,6 +18,8 @@ const portalPermissions = [
   'customer.webhooks:read',
   'customer.webhooks:write',
   'customer.apikeys:read',
+  'customer.api-keys:read',
+  'customer.api-keys:write',
   'customer.billing:read',
   'customer.team:read',
 ];

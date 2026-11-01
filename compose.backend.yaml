@@ -48,6 +48,10 @@ services:
       EDGEMINT_SERVICE_NAME: api-gateway
     ports:
       - "8080:8080"
+    volumes:
+      - ./dsl:/app/dsl:ro
+      - ./src/shared:/app/src/shared:ro
+      - ./src/backend/edgemint:/app/src/backend/edgemint:ro
 
   event-relay:
     <<: *backend-service

@@ -19,6 +19,8 @@ services:
       - ./src/backend/edgemint/tasks:/app/src/backend/edgemint/tasks:ro
       - ./src/backend/edgemint/dev/dev_worker_api.py:/app/src/backend/edgemint/dev/dev_worker_api.py:ro
       - ./src/backend/edgemint/dev/portal_api.py:/app/src/backend/edgemint/dev/portal_api.py:ro
+      - ./src/backend/edgemint/security/api_key_directory.py:/app/src/backend/edgemint/security/api_key_directory.py:ro
+      - ./src/backend/edgemint/security/api_key_store.py:/app/src/backend/edgemint/security/api_key_store.py:ro
       - ./src/backend/edgemint/dev/task_type_catalog.py:/app/src/backend/edgemint/dev/task_type_catalog.py:ro
       - ./src/backend/edgemint/dev/worker_task_inputs.py:/app/src/backend/edgemint/dev/worker_task_inputs.py:ro
       - ./src/backend/edgemint/dev/worker_assignments.py:/app/src/backend/edgemint/dev/worker_assignments.py:ro
