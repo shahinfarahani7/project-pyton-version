@@ -561,7 +561,7 @@ onUnmounted(stopPoll);
       </div>
 
       <TaskSubmitForm
-        v-if="session.hasPermission('customer.tasks:write')"
+        v-if="!selectedTurn && session.hasPermission('customer.tasks:write')"
         composer-only
         :submitting="creating"
         :reset-key="formKey"

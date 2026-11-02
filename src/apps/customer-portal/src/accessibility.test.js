@@ -19,7 +19,6 @@ import MorePage from './pages/MorePage.vue';
 import TaskDetailPage from './pages/TaskDetailPage.vue';
 import TaskChatPage from './pages/TaskChatPage.vue';
 import UsagePage from './pages/UsagePage.vue';
-import WalletPage from './pages/WalletPage.vue';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -96,7 +95,7 @@ function createTestRouter(initialRoute = '/login') {
           { path: 'more', name: 'more', component: MorePage },
           { path: 'files', name: 'files', component: FilesPage },
           { path: 'api-keys', name: 'api-keys', component: ApiKeysPage },
-          { path: 'wallet', name: 'wallet', component: WalletPage },
+          { path: 'wallet', redirect: { name: 'billing' } },
           { path: 'account', name: 'account', component: AccountPage },
         ],
       },

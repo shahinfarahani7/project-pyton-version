@@ -49,6 +49,7 @@ describe('TaskChatPage', () => {
     expect(wrapper.get('.em-chat__bubble--user').text()).toContain('سلام');
     expect(wrapper.text()).toContain('این جواب تسک است');
     expect(wrapper.get('.em-chat__bubble--assistant').text()).toContain('این جواب تسک است');
+    expect(wrapper.find('form').exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -83,6 +84,7 @@ describe('TaskChatPage', () => {
 
     expect(wrapper.get('.em-chat-list').text()).toContain('درباره مورچه‌ها بنویس');
     expect(wrapper.find('.em-chat__bubble--assistant').exists()).toBe(false);
+    expect(wrapper.find('form').exists()).toBe(true);
 
     await wrapper.get('.em-chat-list button').trigger('click');
     await flushPromises();
@@ -92,6 +94,11 @@ describe('TaskChatPage', () => {
     expect(wrapper.get('.em-chat__bubble--user').text()).toContain('درباره مورچه‌ها بنویس');
     expect(wrapper.text()).toContain('مورچه‌ها گروهی زندگی می‌کنند.');
     expect(wrapper.text()).not.toContain('tsk_old');
+    expect(wrapper.find('form').exists()).toBe(false);
+    expect(wrapper.find('textarea').exists()).toBe(false);
+
+    await wrapper.get('.em-chat-history__new').trigger('click');
+    expect(wrapper.find('form').exists()).toBe(true);
     wrapper.unmount();
   });
 

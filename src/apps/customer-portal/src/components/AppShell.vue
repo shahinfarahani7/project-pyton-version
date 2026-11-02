@@ -30,7 +30,6 @@ const navGroups = [
     labelKey: 'nav.groupFinance',
     items: [
       { name: 'billing', labelKey: 'nav.billing', icon: 'wallet', permission: 'customer.billing:read' },
-      { name: 'wallet', labelKey: 'nav.wallet', icon: 'wallet', permission: 'customer.billing:read' },
     ],
   },
   {
@@ -53,7 +52,6 @@ const pageSubtitles = {
   tasks: 'shell.tasksSubtitle',
   usage: 'shell.usageSubtitle',
   billing: 'shell.billingSubtitle',
-  wallet: 'shell.walletSubtitle',
   'api-keys': 'shell.keysSubtitle',
   files: 'shell.filesSubtitle',
   account: 'shell.accountSubtitle',

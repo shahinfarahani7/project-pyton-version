@@ -18,7 +18,7 @@ const menuSections = [
     titleKey: 'more.workspace',
     items: [
       { name: 'files', labelKey: 'nav.files', icon: 'file', permission: 'customer.tasks:read' },
-      { name: 'wallet', labelKey: 'nav.wallet', icon: 'wallet', permission: 'customer.billing:read' },
+      { name: 'billing', labelKey: 'nav.billing', icon: 'wallet', permission: 'customer.billing:read' },
       { name: 'account', labelKey: 'nav.account', icon: 'team', permission: null },
     ],
   },
