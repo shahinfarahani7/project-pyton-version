@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from edgemint.operations.worker_device_overview import overview_item_from_row
+from edgemint.operations.worker_device_overview import device_type_label, overview_item_from_row
 
 NOW = datetime(2026, 10, 28, 10, 0, tzinfo=UTC)
 
@@ -19,7 +19,8 @@ def _row(**overrides: Any) -> dict[str, Any]:
         "app_version": "1.0.0",
         "last_seen_at_utc": NOW,
         "device_capability": None,
-        "observed_at_utc": NOW - timedelta(seconds=30),
+        "observed_at_utc": NOW - timedelta(seconds=4),
+        "received_at_utc": NOW - timedelta(seconds=4),
         "battery_bps": 8_500,
         "charging": True,
         "thermal_state": "nominal",
@@ -69,6 +70,16 @@ def test_reported_device_identity_and_hardware_are_exposed() -> None:
     assert item["ram"]["totalBytes"] == 12_000_000_000
 
 
+def test_device_type_label_uses_model_not_nickname() -> None:
+    assert device_type_label(
+        {"device": {"manufacturer": "samsung", "model": "SM-S928B", "name": "Amirmahdi"}}
+    ) == "Samsung SM-S928B"
+    assert device_type_label({"device": {"manufacturer": "samsung", "name": "Galaxy S24"}}) == (
+        "Samsung Galaxy S24"
+    )
+    assert device_type_label({"memory": {}}) is None
+
+
 def test_device_name_falls_back_to_manufacturer_and_model() -> None:
     capability = {"device": {"manufacturer": "samsung", "model": "SM-S928B"}}
     item = overview_item_from_row(_row(heartbeat_capability=capability), now=NOW)
@@ -85,15 +96,40 @@ def test_online_worker_without_lease_is_idle() -> None:
 
 
 def test_stale_heartbeat_is_offline_and_activity_unknown() -> None:
-    item = overview_item_from_row(_row(observed_at_utc=NOW - timedelta(minutes=10)), now=NOW)
+    stale = NOW - timedelta(minutes=10)
+    item = overview_item_from_row(
+        _row(observed_at_utc=stale, received_at_utc=stale),
+        now=NOW,
+    )
     assert item["presence"] == "offline"
     assert item["activity"] == "unknown"
+
+
+def test_future_client_clock_does_not_keep_a_silent_phone_online() -> None:
+    item = overview_item_from_row(
+        _row(
+            observed_at_utc=NOW + timedelta(hours=2),
+            received_at_utc=NOW - timedelta(seconds=45),
+        ),
+        now=NOW,
+    )
+    assert item["presence"] == "offline"
+    assert item["activity"] == "unknown"
+
+
+def test_heartbeat_received_within_the_live_window_stays_online() -> None:
+    item = overview_item_from_row(
+        _row(received_at_utc=NOW - timedelta(seconds=5)),
+        now=NOW,
+    )
+    assert item["presence"] == "online"
 
 
 def test_device_without_heartbeat_falls_back_to_registered_capability() -> None:
     item = overview_item_from_row(
         _row(
             observed_at_utc=None,
+            received_at_utc=None,
             battery_bps=None,
             charging=None,
             free_ram_bytes=None,

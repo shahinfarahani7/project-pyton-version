@@ -80,7 +80,7 @@ class WorkerHeartbeatTelemetryContext {
     this.currentLeases = const [],
     this.installedModels = const [],
     this.loadedModelIds = const [],
-    this.cpuUsageBps = 0,
+    this.cpuUsageBps,
     this.runtimeExclusiveGroups,
     this.runtimeSessionsOverride,
     this.calibrationView,
@@ -95,7 +95,7 @@ class WorkerHeartbeatTelemetryContext {
   final List<String> currentLeases;
   final List<Map<String, String>> installedModels;
   final List<String> loadedModelIds;
-  final int cpuUsageBps;
+  final int? cpuUsageBps;
   final RuntimeExclusiveGroupEnforcer? runtimeExclusiveGroups;
   final Map<String, int>? runtimeSessionsOverride;
   final WorkerCalibrationView? calibrationView;
@@ -129,7 +129,7 @@ abstract final class WorkerHeartbeatTelemetry {
       'currentLeases': context.currentLeases,
       'installedModels': context.installedModels,
       if (context.includeCapabilitySnapshot) 'capabilitySnapshot': capability,
-      'cpuUsageBps': context.cpuUsageBps,
+      if (context.cpuUsageBps != null) 'cpuUsageBps': context.cpuUsageBps,
       'loadedModelIds': context.loadedModelIds,
       'runtimeSessions': runtimeSessions,
       'consentSnapshot': {

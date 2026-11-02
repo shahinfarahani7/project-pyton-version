@@ -133,7 +133,7 @@ async def worker_task_output(task_id: str, payload: DevWorkerOutputRequest) -> d
             result_file_bytes = base64.b64decode(payload.resultFileBase64)
         except ValueError as exc:
             raise HTTPException(422, "RESULT_FILE_INVALID_BASE64") from exc
-    worker_task_inputs.record_output(
+    newly_succeeded = worker_task_inputs.record_output(
         task_id=task_id,
         result_text=payload.resultText,
         metrics=payload.metrics,
@@ -141,7 +141,19 @@ async def worker_task_output(task_id: str, payload: DevWorkerOutputRequest) -> d
         result_file_name=payload.resultFileName,
         result_mime_type=payload.resultMimeType,
     )
-    return {"taskId": task_id, "status": "accepted", "hasResultFile": bool(result_file_bytes)}
+    fibonai = None
+    raw_device_id = payload.metrics.get("deviceId")
+    if newly_succeeded and isinstance(raw_device_id, str) and raw_device_id.strip():
+        from edgemint.dev.fibonai_credits import credit_completed_task
+
+        fibonai = await credit_completed_task(
+            device_public_id=raw_device_id,
+            task_id=task_id,
+        )
+    body = {"taskId": task_id, "status": "accepted", "hasResultFile": bool(result_file_bytes)}
+    if fibonai is not None:
+        body["fibonai"] = fibonai
+    return body
 
 
 @router.post("/internal/dev/tasks/{task_id}/fail", status_code=204)
@@ -166,6 +178,42 @@ async def ensure_worker_task_input(task_id: str, payload: DevEnsureTaskInputRequ
     if not _dev_enabled():
         raise HTTPException(503, "DEV_WORKER_API_DISABLED")
     worker_task_inputs.ensure_registered(task_id=task_id, task_type=payload.taskType)
+
+
+def cancel_monitor_task(task_id: str) -> dict[str, Any]:
+    """Cancel a dev task in this process and stop worker delivery."""
+    if not _dev_enabled():
+        raise HTTPException(503, "DEV_WORKER_API_DISABLED")
+    workspace_id = fixtures.find_task_workspace(task_id)
+    if workspace_id is None:
+        raise HTTPException(404, "TASK_NOT_FOUND")
+    task = fixtures.cancel_dev_task(workspace_id, task_id)
+    if task is None:
+        raise HTTPException(404, "TASK_NOT_FOUND")
+    return {
+        "id": task["id"],
+        "workspaceId": str(workspace_id),
+        "taskType": task.get("taskType"),
+        "lifecycleStatus": task.get("lifecycleStatus"),
+        "executionStatus": task.get("executionStatus"),
+    }
+
+
+@router.post("/internal/dev/tasks/{task_id}:cancel")
+async def cancel_monitor_task_route(task_id: str) -> dict[str, Any]:
+    return cancel_monitor_task(task_id)
+
+
+@router.get("/v1/dev/worker/devices/{device_id}/fibonai")
+async def worker_fibonai_balance(device_id: str) -> dict[str, Any]:
+    if not _dev_enabled():
+        raise HTTPException(503, "DEV_WORKER_API_DISABLED")
+    from edgemint.dev.fibonai_credits import balance_for_device
+
+    balance = await balance_for_device(device_id)
+    if balance is None:
+        raise HTTPException(404, "DEVICE_NOT_FOUND")
+    return balance
 
 
 @router.get("/internal/dev/tasks")

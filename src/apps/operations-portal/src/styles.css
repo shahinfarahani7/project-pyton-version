@@ -142,7 +142,7 @@ main {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr));
   gap: 0.75rem;
   margin: 1rem 0;
 }
@@ -151,6 +151,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
   padding: 0.85rem 1rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -167,6 +168,19 @@ main {
 .stat strong {
   font-size: 1.5rem;
   color: #f1e6cf;
+}
+
+.stat strong.stat-text {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.stat small {
+  color: #8b8e98;
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
 }
 
 a.stat:hover {
@@ -214,6 +228,21 @@ a.stat:hover {
 .pill[data-status='failed'] {
   background: rgba(226, 69, 107, 0.15);
   color: #f3a7b8;
+}
+
+.pill[data-presence='online'] {
+  background: rgba(25, 199, 180, 0.15);
+  color: #19c7b4;
+}
+
+.pill[data-presence='offline'] {
+  background: rgba(226, 69, 107, 0.15);
+  color: #f3a7b8;
+}
+
+.pill[data-presence='never_seen'] {
+  background: #262f38;
+  color: #b3b5bd;
 }
 
 .device-list {
@@ -439,5 +468,156 @@ button {
 
 .device-name small {
   color: #7a7c86;
+}
+
+h1,
+h2 {
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+h2 {
+  margin: 1.6rem 0 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b8e98;
+}
+
+.page-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.page-header p {
+  margin: 0;
+}
+
+.topbar .badge {
+  margin-left: auto;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #181b22;
+  font-size: 0.75rem;
+}
+
+nav a {
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+}
+
+nav a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4f1ea;
+}
+
+nav a.active {
+  background: rgba(205, 174, 111, 0.14);
+}
+
+button,
+.ghost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #181b22;
+  color: #f4f1ea;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover,
+.ghost:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+button.danger {
+  color: #f3a7b8;
+  border-color: rgba(226, 77, 107, 0.45);
+  background: rgba(226, 77, 107, 0.1);
+}
+
+button.danger:hover {
+  background: rgba(226, 77, 107, 0.18);
+}
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.table-wrap table {
+  min-width: 760px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: #161920;
+  color: #8b8e98;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+th,
+td {
+  padding: 0.72rem 0.8rem;
+  vertical-align: middle;
+}
+
+.filters {
+  margin-bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.filters label {
+  color: #8b8e98;
+  font-size: 0.75rem;
+}
+
+.filters input,
+.filters select {
+  margin: 0.3rem 0 0;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0;
+}
+
+dt {
+  color: #8b8e98;
+}
+
+dd {
+  margin: 0;
+}
+
+.page-header h1 {
+  margin-right: auto;
 }
 

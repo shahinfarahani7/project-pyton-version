@@ -235,6 +235,9 @@ class WorkerRuntimePlugin(
         val cpu =
             readCpuSnapshot()
 
+        val cpuJiffies =
+            readCpuJiffies()
+
         return mapOf(
             "available" to available,
             "batteryPercent" to percent,
@@ -274,6 +277,8 @@ class WorkerRuntimePlugin(
             "highestCoreMaxFrequencyMHz" to cpu["highestCoreMaxFrequencyMHz"],
             "performanceCoreCount" to cpu["performanceCoreCount"],
             "efficiencyCoreCount" to cpu["efficiencyCoreCount"],
+            "cpuTotalJiffies" to cpuJiffies?.first,
+            "cpuIdleJiffies" to cpuJiffies?.second,
 
             "deviceManufacturer" to Build.MANUFACTURER,
             "deviceModel" to Build.MODEL,
@@ -410,6 +415,24 @@ class WorkerRuntimePlugin(
             "performanceCoreCount" to performance,
             "efficiencyCoreCount" to efficiency,
         )
+    }
+
+    private fun readCpuJiffies(): Pair<Long, Long>? {
+        return try {
+            val line = File("/proc/stat").bufferedReader().use { it.readLine() } ?: return null
+            val parts = line.trim().split(Regex("\\s+"))
+            if (parts.size < 5 || parts[0] != "cpu") {
+                return null
+            }
+            val values = parts.drop(1).mapNotNull { it.toLongOrNull() }
+            if (values.size < 4) {
+                return null
+            }
+            val idle = values[3] + (values.getOrNull(4) ?: 0L)
+            values.sum() to idle
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun readCoreMaxMhz(index: Int): Int? {

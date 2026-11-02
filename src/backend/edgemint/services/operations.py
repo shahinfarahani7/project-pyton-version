@@ -24,7 +24,9 @@ from edgemint.operations.portal_admin import admin_roles, portal_email_for_princ
 from edgemint.operations.service import OperationsService
 from edgemint.operations.task_monitor import (
     TaskMonitorUnavailable,
+    TaskNotFound,
     build_task_monitor,
+    cancel_monitored_task,
     device_ids_in,
     fetch_dev_sources,
     load_devices,
@@ -194,6 +196,20 @@ async def _task_monitor() -> dict[str, object]:
 async def task_monitor(operator: Operator) -> JSONResponse:
     operator.require("operations.read")
     return JSONResponse(await _task_monitor(), status_code=200)
+
+
+@app.post("/internal/operations/tasks/{task_id}:cancel", tags=["operations"])
+async def cancel_task(task_id: str, operator: Operator) -> JSONResponse:
+    operator.require("operations.mutate.low")
+    if not dev_login_enabled(get_settings()):
+        raise operations_error("TASK_MONITOR_UNAVAILABLE", detail="only dev task state is wired")
+    try:
+        body = await cancel_monitored_task(task_id)
+    except TaskNotFound:
+        raise operations_error("TENANT_RESOURCE_NOT_FOUND") from None
+    except TaskMonitorUnavailable as exc:
+        raise operations_error("UPSTREAM_UNAVAILABLE", detail=exc.source) from exc
+    return JSONResponse(body, status_code=200)
 
 
 @app.get("/internal/operations/overview", tags=["operations"])

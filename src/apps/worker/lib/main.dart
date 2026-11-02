@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'runtime/gemma_bootstrap.dart';
+import 'ui/fibonai_splash.dart';
 import 'ui/gemma_download_dialog.dart';
 import 'ui/tabs/worker_home_tab.dart';
 import 'ui/tabs/worker_missions_tab.dart';
@@ -44,6 +45,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
   WorkerAppController? _controller;
   int _selectedNavIndex = 0;
   bool _modelUpdatePromptOpen = false;
+  bool _splashDone = false;
 
   @override
   void initState() {
@@ -147,8 +149,15 @@ class _WorkerHomePageState extends State<WorkerHomePage>
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    if (controller == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (controller == null || !_splashDone) {
+      return FibonaiSplashScreen(
+        key: const ValueKey('fibonai-splash'),
+        onFinished: () {
+          if (mounted) {
+            setState(() => _splashDone = true);
+          }
+        },
+      );
     }
 
     return WorkerShell(

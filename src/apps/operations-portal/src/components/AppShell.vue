@@ -53,7 +53,7 @@ const visibleGroups = computed(() => {
     <header class="topbar">
       <strong class="brand-lockup"><img :src="markUrl" alt="" />FibonAI Operations</strong>
       <span class="badge">{{ session.mfaVerified ? 'MFA verified' : 'MFA required' }}</span>
-      <button type="button" @click="signOut">Sign out</button>
+      <button type="button" class="ghost" @click="signOut">Sign out</button>
     </header>
     <div class="layout">
       <nav aria-label="Operations">

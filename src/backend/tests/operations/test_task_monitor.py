@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 from edgemint.dev import fixtures, worker_assignments
-from edgemint.operations.task_monitor import build_task_monitor, device_ids_in
+from edgemint.operations.task_monitor import build_task_monitor, device_ids_in, device_record_from_row
 
 
 @pytest.fixture(autouse=True)
@@ -81,7 +81,14 @@ def test_build_task_monitor_joins_tasks_deliveries_and_devices() -> None:
             "tsk_3": [delivery("dev_unknown", "failed", "OOM")],
         },
     }
-    devices = {"dev_A": {"workerId": "wrk_1", "platform": "android", "deviceTier": "B"}}
+    devices = {
+        "dev_A": {
+            "workerId": "wrk_1",
+            "platform": "android",
+            "deviceTier": "B",
+            "deviceName": "Samsung Galaxy S24",
+        }
+    }
     assert device_ids_in(state) == ["dev_A", "dev_unknown"]
 
     result = build_task_monitor(tasks, state, devices)
@@ -90,6 +97,7 @@ def test_build_task_monitor_joins_tasks_deliveries_and_devices() -> None:
     by_id = {item["id"]: item for item in result["items"]}
     assert by_id["tsk_1"]["devices"][0]["workerId"] == "wrk_1"
     assert by_id["tsk_1"]["devices"][0]["platform"] == "android"
+    assert by_id["tsk_1"]["devices"][0]["deviceName"] == "Samsung Galaxy S24"
     assert by_id["tsk_2"]["inWorkerQueue"] is True
     assert by_id["tsk_2"]["devices"] == []
     assert by_id["tsk_3"]["devices"][0]["workerId"] is None
@@ -100,7 +108,52 @@ def test_build_task_monitor_joins_tasks_deliveries_and_devices() -> None:
         "running": 1,
         "failedDeliveries": 1,
         "pinnedDeviceId": "dev_A",
+        "pinnedDeviceName": "Samsung Galaxy S24",
     }
+
+
+def test_internal_cancel_marks_task_cancelled_and_drops_worker_queue(monkeypatch: pytest.MonkeyPatch) -> None:
+    from fastapi import HTTPException
+
+    from edgemint.dev.dev_worker_api import cancel_monitor_task
+
+    monkeypatch.setattr(
+        "edgemint.dev.assignment_bridge.enqueue_assignment_for_worker",
+        lambda **_: {},
+    )
+    monkeypatch.setattr(
+        "edgemint.dev.assignment_bridge.cancel_assignment_for_worker",
+        lambda **_: None,
+    )
+    workspace_id = fixtures.DEV_WORKSPACE_PRIMARY
+    task = fixtures.create_dev_task(workspace_id, task_type="text.summarize", input_text="cancel me")
+    try:
+        cancelled = cancel_monitor_task(task["id"])
+        assert cancelled["lifecycleStatus"] == "cancelled"
+        assert cancelled["executionStatus"] == "cancelled"
+        assert cancelled["workspaceId"] == str(workspace_id)
+    finally:
+        fixtures._created_tasks[workspace_id].remove(task)
+
+    with pytest.raises(HTTPException) as raised:
+        cancel_monitor_task("tsk_missing")
+    assert raised.value.status_code == 404
+
+
+def test_device_record_prefers_heartbeat_model_over_registration() -> None:
+    record = device_record_from_row(
+        {
+            "worker_public_id": "wrk_1",
+            "platform": "android",
+            "device_tier": "T4",
+            "device_capability": {"device": {"manufacturer": "samsung", "model": "old"}},
+            "heartbeat_capability": {
+                "device": {"manufacturer": "samsung", "model": "SM-S928B", "name": "Amirmahdi"}
+            },
+        }
+    )
+    assert record["deviceName"] == "Samsung SM-S928B"
+    assert record["workerId"] == "wrk_1"
 
 
 def test_unknown_workspace_tasks_are_listed() -> None:

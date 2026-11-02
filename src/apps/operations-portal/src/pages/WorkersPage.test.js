@@ -36,6 +36,17 @@ describe('WorkersPage', () => {
           battery: { levelBps: null, charging: null },
           lastHeartbeatAt: null,
         },
+        {
+          id: 'dev_3',
+          workerId: 'wrk_3',
+          status: 'active',
+          presence: 'offline',
+          activity: 'unknown',
+          cpu: { cores: 8, usageBps: 9000 },
+          ram: { totalBytes: 8 * 1024 ** 3, freeBytes: 1024 ** 3 },
+          battery: { levelBps: 4000, charging: false },
+          lastHeartbeatAt: '2026-10-28T09:00:00+00:00',
+        },
       ],
     });
 
@@ -43,7 +54,8 @@ describe('WorkersPage', () => {
     await flushPromises();
 
     const rows = wrapper.findAll('tbody tr');
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(3);
+    expect(rows[0].text()).toContain('Online');
     expect(rows[0].text()).toContain('Running task');
     expect(rows[0].find('.device-name strong').text()).toBe('Galaxy S24 Ultra');
     expect(rows[0].find('.device-name small').text()).toBe('SM-S928B · android');
@@ -54,6 +66,9 @@ describe('WorkersPage', () => {
     expect(rows[0].text()).toContain('85% (charging)');
     expect(rows[1].text()).toContain('Idle');
     expect(rows[1].text()).toContain('—');
+    expect(rows[2].text()).toContain('Offline');
+    expect(rows[2].text()).not.toContain('90%');
+    expect(rows[2].text()).toContain('—');
   });
 
   it('shows an error when loading fails', async () => {

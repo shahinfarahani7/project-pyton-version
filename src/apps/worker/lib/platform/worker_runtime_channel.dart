@@ -65,6 +65,8 @@ class WorkerRuntimeChannel {
       deviceManufacturer: raw['deviceManufacturer'] as String?,
       deviceModel: raw['deviceModel'] as String?,
       deviceName: raw['deviceName'] as String?,
+      cpuTotalJiffies: _optionalInt(raw['cpuTotalJiffies']),
+      cpuIdleJiffies: _optionalInt(raw['cpuIdleJiffies']),
     );
   }
 
@@ -107,6 +109,8 @@ class WorkerRuntimeChannel {
     String? deviceManufacturer,
     String? deviceModel,
     String? deviceName,
+    int? cpuTotalJiffies,
+    int? cpuIdleJiffies,
   }) {
     var emulator = isEmulator;
     var percent = batteryPercent;
@@ -146,6 +150,8 @@ class WorkerRuntimeChannel {
       deviceManufacturer: deviceManufacturer,
       deviceModel: deviceModel,
       deviceName: deviceName,
+      cpuTotalJiffies: cpuTotalJiffies,
+      cpuIdleJiffies: cpuIdleJiffies,
     );
   }
 
@@ -177,6 +183,16 @@ class WorkerRuntimeChannel {
       withinSchedule: true,
       consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
     );
+  }
+
+  int? _optionalInt(Object? raw) {
+    if (raw is int) {
+      return raw;
+    }
+    if (raw is num) {
+      return raw.toInt();
+    }
+    return null;
   }
 
   List<int> _intList(Object? raw) {

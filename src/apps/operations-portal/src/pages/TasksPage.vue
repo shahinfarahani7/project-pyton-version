@@ -8,6 +8,28 @@ const { data, error, updatedAt, refresh } = usePolling(() => opsApi.taskMonitor(
 
 const statusFilter = ref('all');
 const search = ref('');
+const cancellingId = ref(null);
+const actionError = ref(null);
+
+const TERMINAL = new Set(['succeeded', 'failed', 'cancelled', 'expired']);
+
+function canCancel(task) {
+  return !TERMINAL.has(task.lifecycleStatus);
+}
+
+async function cancel(task) {
+  if (!window.confirm(`Cancel ${task.id}? The worker will stop receiving it.`)) return;
+  cancellingId.value = task.id;
+  actionError.value = null;
+  try {
+    await opsApi.cancelTask(task.id);
+    await refresh();
+  } catch (err) {
+    actionError.value = err?.message ?? 'Could not cancel task';
+  } finally {
+    cancellingId.value = null;
+  }
+}
 
 const items = computed(() => data.value?.items ?? []);
 const summary = computed(() => data.value?.summary ?? null);
@@ -18,7 +40,7 @@ const filtered = computed(() => {
   return items.value.filter((task) => {
     if (statusFilter.value !== 'all' && task.lifecycleStatus !== statusFilter.value) return false;
     if (!needle) return true;
-    const haystack = [task.id, task.taskType, ...task.devices.map((d) => `${d.deviceId} ${d.workerId ?? ''}`)]
+    const haystack = [task.id, task.taskType, ...task.devices.map((d) => `${d.deviceName ?? ''} ${d.deviceId} ${d.workerId ?? ''}`)]
       .join(' ')
       .toLowerCase();
     return haystack.includes(needle);
@@ -32,6 +54,22 @@ function time(value) {
 function short(value) {
   return value ? String(value).slice(0, 8) : '—';
 }
+
+function deviceLabel(device) {
+  return device.deviceName || device.deviceId;
+}
+
+const pinnedDevice = computed(() => {
+  const id = summary.value?.pinnedDeviceId;
+  if (!id) return null;
+  const known = items.value
+    .flatMap((task) => task.devices ?? [])
+    .find((device) => device.deviceId === id);
+  return {
+    id,
+    name: summary.value?.pinnedDeviceName || known?.deviceName || null,
+  };
+});
 </script>
 
 <template>
@@ -39,16 +77,21 @@ function short(value) {
     <header class="page-header">
       <h1>Task monitor</h1>
       <span class="muted">Updated {{ updatedAt ? updatedAt.toLocaleTimeString() : '—' }}</span>
-      <button type="button" @click="refresh">Refresh</button>
+      <button type="button" class="ghost" @click="refresh">Refresh</button>
     </header>
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
+    <p v-if="actionError" class="alert" role="alert">{{ actionError }}</p>
 
     <div v-if="summary" class="stat-grid">
       <div class="stat"><span>Total</span><strong>{{ summary.total }}</strong></div>
       <div class="stat"><span>Running on device</span><strong>{{ summary.running }}</strong></div>
       <div class="stat"><span>Waiting in worker queue</span><strong>{{ summary.queueDepth }}</strong></div>
       <div class="stat"><span>Failed deliveries</span><strong>{{ summary.failedDeliveries }}</strong></div>
-      <div class="stat"><span>Pinned device</span><strong class="mono">{{ summary.pinnedDeviceId ?? 'none' }}</strong></div>
+      <div class="stat stat-wide">
+        <span>Pinned device</span>
+        <strong class="stat-text">{{ pinnedDevice?.name || pinnedDevice?.id || 'None' }}</strong>
+        <small v-if="pinnedDevice?.name" class="mono">{{ pinnedDevice.id }}</small>
+      </div>
     </div>
 
     <div class="filters">
@@ -65,6 +108,7 @@ function short(value) {
       </label>
     </div>
 
+    <div class="table-wrap">
     <table>
       <thead>
         <tr>
@@ -76,6 +120,7 @@ function short(value) {
           <th scope="col">Failure</th>
           <th scope="col">Created</th>
           <th scope="col">Updated</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -95,22 +140,31 @@ function short(value) {
             </span>
             <ul v-else class="device-list">
               <li v-for="device in task.devices" :key="device.deviceId">
-                <span class="mono">{{ device.deviceId }}</span>
-                <span class="pill" :data-status="device.state">{{ device.state }}</span>
-                <span v-if="device.workerId" class="muted">{{ device.workerId }} · {{ device.platform }} · {{ device.deviceTier }}</span>
+                <strong>{{ deviceLabel(device) }}</strong>
                 <span v-if="device.errorCode" class="error-text">{{ device.errorCode }}</span>
-                <span class="muted">at {{ time(device.deliveredAt) }}</span>
               </li>
             </ul>
           </td>
           <td class="error-text">{{ task.failureReasonCode ?? '' }}</td>
           <td>{{ time(task.createdAt) }}</td>
           <td>{{ time(task.updatedAt) }}</td>
+          <td>
+            <button
+              v-if="canCancel(task)"
+              type="button"
+              class="danger"
+              :disabled="cancellingId === task.id"
+              @click="cancel(task)"
+            >
+              {{ cancellingId === task.id ? 'Cancelling…' : 'Cancel' }}
+            </button>
+          </td>
         </tr>
         <tr v-if="!filtered.length && !error">
-          <td colspan="8" class="muted">No tasks match.</td>
+          <td colspan="9" class="muted">No tasks match.</td>
         </tr>
       </tbody>
     </table>
+    </div>
   </section>
 </template>

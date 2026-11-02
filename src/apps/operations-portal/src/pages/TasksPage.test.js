@@ -27,7 +27,7 @@ const monitor = {
       executionStatus: 'running',
       inWorkerQueue: false,
       devices: [
-        { deviceId: 'dev_PHONE1', state: 'running', workerId: 'wrk_1', platform: 'android', deviceTier: 'B', errorCode: null, deliveredAt: '2026-10-28T10:00:00Z' },
+        { deviceId: 'dev_PHONE1', state: 'running', workerId: 'wrk_1', platform: 'android', deviceTier: 'B', deviceName: 'Samsung Galaxy S24', errorCode: null, deliveredAt: '2026-10-28T10:00:00Z' },
       ],
     },
     {
@@ -52,9 +52,11 @@ describe('TasksPage', () => {
 
     const rows = wrapper.findAll('tbody tr');
     expect(rows).toHaveLength(2);
-    expect(rows[0].text()).toContain('dev_PHONE1');
-    expect(rows[0].text()).toContain('wrk_1');
-    expect(rows[1].text()).toContain('dev_PHONE2');
+    const phone = rows[0].find('.device-list');
+    expect(phone.text()).toContain('Samsung Galaxy S24');
+    expect(phone.text()).not.toContain('running');
+    expect(phone.find('.pill').exists()).toBe(false);
+    expect(rows[1].find('.device-list').text()).toContain('dev_PHONE2');
     expect(rows[1].text()).toContain('OOM');
 
     await wrapper.find('select').setValue('failed');
@@ -65,6 +67,25 @@ describe('TasksPage', () => {
     await wrapper.find('.filters input').setValue('PHONE1');
     expect(wrapper.findAll('tbody tr')).toHaveLength(1);
     expect(wrapper.find('tbody').text()).toContain('tsk_a');
+    wrapper.unmount();
+  });
+
+  it('cancels an open task and hides cancel on a finished task', async () => {
+    vi.spyOn(opsApi, 'taskMonitor').mockResolvedValue(monitor);
+    const cancel = vi.spyOn(opsApi, 'cancelTask').mockResolvedValue({
+      id: 'tsk_a',
+      lifecycleStatus: 'cancelled',
+    });
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const wrapper = mount(TasksPage);
+    await flushPromises();
+
+    const buttons = wrapper.findAll('tbody button');
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].text()).toBe('Cancel');
+    await buttons[0].trigger('click');
+    await flushPromises();
+    expect(cancel).toHaveBeenCalledWith('tsk_a');
     wrapper.unmount();
   });
 

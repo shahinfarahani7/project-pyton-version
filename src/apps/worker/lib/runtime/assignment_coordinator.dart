@@ -1005,7 +1005,7 @@ class AssignmentCoordinator {
     RuntimeExclusiveGroupEnforcer? runtimeExclusiveGroups,
     List<Map<String, String>> installedModels = const [],
     List<String> loadedModelIds = const [],
-    int cpuUsageBps = 0,
+    int? cpuUsageBps,
     WorkerCalibrationView? calibrationView,
     String contributionModeId = 'balanced',
     Map<String, dynamic>? identityLifecycleView,

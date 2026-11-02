@@ -54,6 +54,7 @@ export const opsApi = {
   search: (view) => fetchJson(`/internal/operations/views/${view}`),
   workerDevices: () => fetchJson('/internal/operations/worker-devices'),
   taskMonitor: () => fetchJson('/internal/operations/task-monitor'),
+  cancelTask: (taskId) => fetchJson(`/internal/operations/tasks/${encodeURIComponent(taskId)}:cancel`, { method: 'POST' }),
   overview: () => fetchJson('/internal/operations/overview'),
   submitAction: (body) => fetchJson('/internal/operations/actions:submit', { method: 'POST', body }),
   approve: (approvalId, body) =>

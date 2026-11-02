@@ -34,6 +34,7 @@ import 'runtime/assignment_output_upload_coordinator.dart';
 import 'runtime/checkpoint_manager.dart';
 import 'runtime/dev_mock_inference_adapter.dart';
 import 'runtime/device_inference_plan.dart';
+import 'runtime/device_cpu_usage.dart';
 import 'runtime/device_snapshot.dart';
 import 'runtime/encrypted_store.dart';
 import 'runtime/model_admission_policy.dart';
@@ -53,6 +54,7 @@ import 'runtime/worker_process_memory_telemetry.dart';
 import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_pipeline_log.dart';
 import 'runtime/worker_content_diagnostics.dart';
+import 'runtime/worker_fibonai_credit_store.dart';
 import 'runtime/worker_session_lifecycle.dart';
 import 'runtime/worker_account_profile_store.dart';
 import 'runtime/worker_mission_progress_store.dart';
@@ -156,6 +158,7 @@ class WorkerAppController extends ChangeNotifier {
     _payoutWalletStore = WorkerPayoutWalletStore(_encryptedStore);
     _accountProfileStore = WorkerAccountProfileStore(_encryptedStore);
     _missionProgressStore = WorkerMissionProgressStore(_encryptedStore);
+    _fibonaiCreditStore = WorkerFibonaiCreditStore(_encryptedStore);
     _sessionLifecycle = WorkerSessionLifecycle(
       api: _api,
       store: _sessionStore,
@@ -228,9 +231,16 @@ class WorkerAppController extends ChangeNotifier {
   late final WorkerPayoutWalletStore _payoutWalletStore;
   late final WorkerAccountProfileStore _accountProfileStore;
   late final WorkerMissionProgressStore _missionProgressStore;
+  late final WorkerFibonaiCreditStore _fibonaiCreditStore;
+  Set<String> _creditedAssignmentIds = {};
+  bool _lastUploadIncludedFibonai = false;
   late final WorkerSessionLifecycle _sessionLifecycle;
   final StoragePressureManager _storagePressure;
   WorkerHeartbeatService? _heartbeat;
+  final DeviceCpuUsageSampler _cpuUsageSampler = DeviceCpuUsageSampler();
+  Timer? _liveHeartbeatTimer;
+  bool _heartbeatSendInFlight = false;
+  static const _liveHeartbeatInterval = Duration(seconds: 5);
 
   DevMockInferenceAdapter? _devMockAdapter;
 
@@ -404,6 +414,74 @@ class WorkerAppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadFibonaiCredits() async {
+    _creditedAssignmentIds = await _fibonaiCreditStore
+        .readCreditedAssignmentIds();
+    tasksProcessed = _creditedAssignmentIds.length;
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
+  void _applyServerFibonai(String body) {
+    _lastUploadIncludedFibonai = false;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is! Map) {
+        return;
+      }
+      final fibonai = decoded['fibonai'];
+      if (fibonai is! Map || fibonai['knownDevice'] != true) {
+        return;
+      }
+      final tasks = fibonai['tasksCompleted'];
+      if (tasks is int && tasks >= 0) {
+        tasksProcessed = tasks;
+        _lastUploadIncludedFibonai = true;
+      }
+    } catch (_) {
+      return;
+    }
+  }
+
+  Future<void> refreshFibonaiFromServer() async {
+    final deviceId = _runtimeDeviceId;
+    if (deviceId == null || deviceId.isEmpty || _disposed) {
+      return;
+    }
+    try {
+      final response = await _http
+          .get(_config.resolve('/v1/dev/worker/devices/$deviceId/fibonai'))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode != 200) {
+        return;
+      }
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map || decoded['knownDevice'] != true) {
+        return;
+      }
+      final tasks = decoded['tasksCompleted'];
+      if (tasks is int && tasks >= 0) {
+        tasksProcessed = tasks;
+        notifyListeners();
+      }
+    } catch (error) {
+      _logTask('Fibonai balance unavailable: $error');
+    }
+  }
+
+  Future<void> _creditCompletedAssignment(String assignmentId) async {
+    if (assignmentId.isEmpty ||
+        _creditedAssignmentIds.contains(assignmentId)) {
+      return;
+    }
+    _creditedAssignmentIds = {..._creditedAssignmentIds, assignmentId};
+    tasksProcessed = _creditedAssignmentIds.length;
+    await _fibonaiCreditStore.writeCreditedAssignmentIds(
+      _creditedAssignmentIds,
+    );
+  }
+
   bool isMissionAcknowledged(String missionId) {
     return acknowledgedMissionIds.contains(missionId);
   }
@@ -537,9 +615,30 @@ class WorkerAppController extends ChangeNotifier {
         accessToken: token,
       );
       _heartbeat!.resetSequence(_lastHeartbeatSequence);
+      _ensureLiveHeartbeat();
       return;
     }
     _heartbeat = null;
+    _stopLiveHeartbeat();
+  }
+
+  void _ensureLiveHeartbeat() {
+    if (_disposed || !available || _heartbeat == null) {
+      _stopLiveHeartbeat();
+      return;
+    }
+    if (_liveHeartbeatTimer != null) {
+      return;
+    }
+    _liveHeartbeatTimer = Timer.periodic(_liveHeartbeatInterval, (_) {
+      unawaited(_sendHeartbeatIfConfigured());
+    });
+    unawaited(_sendHeartbeatIfConfigured());
+  }
+
+  void _stopLiveHeartbeat() {
+    _liveHeartbeatTimer?.cancel();
+    _liveHeartbeatTimer = null;
   }
 
   Future<void> _persistHeartbeatSequence(int sequence) async {
@@ -799,6 +898,8 @@ class WorkerAppController extends ChangeNotifier {
     await loadPayoutWallets();
     await loadAccountProfile();
     await loadMissionProgress();
+    await loadFibonaiCredits();
+    await refreshFibonaiFromServer();
 
     try {
       await ensureModelReady();
@@ -867,10 +968,12 @@ class WorkerAppController extends ChangeNotifier {
       _logTask('Worker availability enabled - listening for assignments');
 
       startAutoAssignmentLoop();
+      _ensureLiveHeartbeat();
     } else {
       _logTask('Worker availability disabled - auto-assignment paused');
 
       stopAutoAssignmentLoop();
+      _stopLiveHeartbeat();
 
       if (executionStatus.phase == ExecutionPhase.waitingForAssignment) {
         executionStatus = const ExecutionStatus(phase: ExecutionPhase.idle);
@@ -1303,13 +1406,21 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> _sendHeartbeatIfConfigured() async {
+    if (_disposed || _heartbeatSendInFlight || !available) {
+      return;
+    }
     final heartbeat = _heartbeat;
     if (heartbeat == null) {
       return;
     }
+    _heartbeatSendInFlight = true;
 
     try {
       final snapshot = await _platform.readDeviceSnapshot();
+      final cpuUsageBps = _cpuUsageSampler.sample(
+        totalJiffies: snapshot.cpuTotalJiffies,
+        idleJiffies: snapshot.cpuIdleJiffies,
+      );
       final installedModels = isGemmaReady
           ? [
               {
@@ -1332,6 +1443,7 @@ class WorkerAppController extends ChangeNotifier {
           runtimeExclusiveGroups: _exclusiveGroups,
           installedModels: installedModels,
           loadedModelIds: loadedModelIds,
+          cpuUsageBps: cpuUsageBps,
           identityLifecycleView: IdentityLifecycleTracer.instance.heartbeatView(
             runtimeGeneration: _processLifecycle.runtimeGeneration,
             nativeHandlesInvalidated:
@@ -1348,6 +1460,8 @@ class WorkerAppController extends ChangeNotifier {
         stackTrace,
         WorkerPipelineLog.heartbeat,
       );
+    } finally {
+      _heartbeatSendInFlight = false;
     }
   }
 
@@ -2125,8 +2239,10 @@ class WorkerAppController extends ChangeNotifier {
 
       final uploadAccepted = await _uploadAssignmentOutput(assignment);
 
-      if (uploadAccepted && executionStatus.phase == ExecutionPhase.completed) {
-        tasksProcessed++;
+      if (uploadAccepted &&
+          executionStatus.phase == ExecutionPhase.completed &&
+          !_lastUploadIncludedFibonai) {
+        await _creditCompletedAssignment(assignment.assignmentId);
       }
 
       _logTask(
@@ -2518,6 +2634,8 @@ class WorkerAppController extends ChangeNotifier {
         'taskType': assignment.taskType,
         'taskId': assignment.taskId,
         'assignmentId': assignment.assignmentId,
+        if (_runtimeDeviceId != null && _runtimeDeviceId!.isNotEmpty)
+          'deviceId': _runtimeDeviceId,
       };
 
       if (pipelineResult != null) {
@@ -2586,6 +2704,7 @@ class WorkerAppController extends ChangeNotifier {
 
           if (response.statusCode >= 200 && response.statusCode < 300) {
             _outputUploadCoordinator.markAccepted(assignmentId);
+            _applyServerFibonai(response.body);
             _logTask(
               'Portal task '
               '${assignment.taskId ?? "?"} '
@@ -2761,6 +2880,7 @@ class WorkerAppController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _enrollmentRetryTimer?.cancel();
+    _stopLiveHeartbeat();
 
     stopAutoAssignmentLoop();
 

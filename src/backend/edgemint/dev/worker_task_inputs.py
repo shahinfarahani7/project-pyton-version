@@ -467,7 +467,7 @@ def record_output(
     result_file_bytes: bytes | None = None,
     result_file_name: str | None = None,
     result_mime_type: str | None = None,
-) -> None:
+) -> bool:
     from edgemint.dev import fixtures
 
     model_transcript = result_text
@@ -491,7 +491,7 @@ def record_output(
         "cancelled",
         "expired",
     }:
-        return
+        return False
     if existing is not None and existing.get("lifecycleStatus") == "succeeded":
         _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
         _TASK_INPUTS[task_id]["lastOutput"] = {
@@ -500,7 +500,7 @@ def record_output(
             "metrics": metrics or {},
             "hasResultFile": bool(result_file_bytes),
         }
-        return
+        return False
 
     workspace_id = _workspace_id_for_task(task_id)
     result_artifact_url = None
@@ -533,3 +533,4 @@ def record_output(
         "metrics": metrics or {},
         "hasResultFile": bool(result_file_bytes),
     }
+    return True

@@ -36,6 +36,8 @@ class DeviceSnapshot {
     this.deviceManufacturer,
     this.deviceModel,
     this.deviceName,
+    this.cpuTotalJiffies,
+    this.cpuIdleJiffies,
   });
 
   final bool available;
@@ -70,6 +72,10 @@ class DeviceSnapshot {
 
   /// User-visible device name from system settings, e.g. "Galaxy S24 Ultra".
   final String? deviceName;
+
+  /// Cumulative `/proc/stat` jiffies for the whole device. Usage is the delta.
+  final int? cpuTotalJiffies;
+  final int? cpuIdleJiffies;
 
   ProcessMemorySnapshot toProcessMemorySnapshot() {
     return ProcessMemorySnapshot(
@@ -140,6 +146,8 @@ class DeviceSnapshot {
       deviceManufacturer: deviceManufacturer,
       deviceModel: deviceModel,
       deviceName: deviceName,
+      cpuTotalJiffies: cpuTotalJiffies,
+      cpuIdleJiffies: cpuIdleJiffies,
     );
   }
 }

@@ -745,3 +745,12 @@ if _dev_worker_assignments_enabled():
             dev_worker_assignments.command_receipt("devAssignmentFail"),
             status_code=202,
         )
+
+    @app.get("/v1/dev/worker/devices/{device_id}/fibonai", tags=["dev-assignments"])
+    async def dev_worker_fibonai_balance(device_id: str) -> JSONResponse:
+        from edgemint.dev.fibonai_credits import balance_for_device
+
+        balance = await balance_for_device(device_id)
+        if balance is None:
+            return JSONResponse({"detail": "DEVICE_NOT_FOUND"}, status_code=404)
+        return JSONResponse(balance, status_code=200)

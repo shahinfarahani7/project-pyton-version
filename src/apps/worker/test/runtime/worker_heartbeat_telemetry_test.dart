@@ -43,6 +43,12 @@ void main() {
 
     expect(payload['sequence'], 1842);
     expect(payload['cpuUsageBps'], 2100);
+    expect(
+      WorkerHeartbeatTelemetry.build(
+        WorkerHeartbeatTelemetryContext(sequence: 1, snapshot: snapshot),
+      ).containsKey('cpuUsageBps'),
+      isFalse,
+    );
     expect(payload['loadedModelIds'], ['mdv_qwen2_5_0_5b']);
     expect(payload['runtimeSessions'], {'mediapipe_llm': 0, 'paddle_ocr': 0});
     expect(payload['currentLeases'], ['asg-1']);
