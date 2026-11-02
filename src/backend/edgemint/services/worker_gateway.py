@@ -62,6 +62,11 @@ def _is_artifact_download(path: str) -> bool:
     )
 
 
+def response_should_stream(path: str) -> bool:
+    """Large worker payloads must not be buffered in the gateway process."""
+    return path == "/worker-app/release/apk" or _is_artifact_download(path)
+
+
 async def _forward_artifact_stream(
     *,
     upstream: str,
@@ -105,7 +110,7 @@ async def forward_worker_request(full_path: str, request: Request) -> Response:
         for key, value in request.headers.items()
         if key.lower() not in {"host", "content-length"}
     }
-    if _is_artifact_download(path) and request.method == "GET":
+    if response_should_stream(path) and request.method == "GET":
         return await _forward_artifact_stream(
             upstream=upstream,
             path=path,

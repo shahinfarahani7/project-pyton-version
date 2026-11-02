@@ -1,0 +1,261 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
+import 'package:edgemint_worker/config/worker_config.dart';
+import 'package:edgemint_worker/platform/worker_runtime_channel.dart';
+import 'package:edgemint_worker/runtime/encrypted_store.dart';
+import 'package:edgemint_worker/runtime/worker_app_update.dart';
+import 'package:edgemint_worker/worker_app_controller.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+
+void main() {
+  const installed = InstalledAppVersion(
+    versionName: '5.0.0',
+    versionCode: 40100,
+  );
+
+  WorkerAppRelease release({
+    int versionCode = 40200,
+    String versionName = '5.1.0',
+    String? sha256Hex,
+    int? sizeBytes,
+    String downloadPath = '/worker-app/release/apk',
+    bool mandatory = false,
+  }) {
+    return WorkerAppRelease.fromJson({
+      'versionName': versionName,
+      'versionCode': versionCode,
+      'downloadPath': downloadPath,
+      'sha256': sha256Hex ?? 'ab' * 32,
+      'sizeBytes': sizeBytes ?? 12,
+      'notes': 'Fixes startup',
+      'mandatory': mandatory,
+    });
+  }
+
+  test('a higher build number is an update and the same build is not', () {
+    expect(
+      workerAppReleaseIsNewer(installed: installed, release: release()),
+      isTrue,
+    );
+    expect(
+      workerAppReleaseIsNewer(
+        installed: installed,
+        release: release(versionCode: 40100, versionName: '5.0.0'),
+      ),
+      isFalse,
+    );
+    expect(
+      workerAppReleaseIsNewer(
+        installed: installed,
+        release: release(versionCode: 40000, versionName: '4.9.0'),
+      ),
+      isFalse,
+    );
+  });
+
+  test('release catalog rejects a foreign download address and a bad checksum', () {
+    expect(
+      () => release(downloadPath: 'https://evil.example/worker.apk'),
+      throwsFormatException,
+    );
+    expect(() => release(sha256Hex: 'ABCD' * 16), throwsFormatException);
+    expect(() => release(versionCode: 0), throwsFormatException);
+    expect(() => release(sizeBytes: 0), throwsFormatException);
+  });
+
+  test('download keeps the apk only when the checksum matches', () async {
+    final bytes = utf8.encode('worker-apk');
+    final digest = sha256.convert(bytes).toString();
+    final dir = await Directory.systemTemp.createTemp('worker-app-update');
+    addTearDown(() async {
+      if (dir.existsSync()) {
+        await dir.delete(recursive: true);
+      }
+    });
+    final config = WorkerConfig(baseUrl: Uri.parse('http://10.0.2.2:8081'));
+
+    final accepted = MockClient.streaming((request, _) async {
+      expect(
+        request.url,
+        Uri.parse('http://10.0.2.2:8081/worker-app/release/apk'),
+      );
+      return http.StreamedResponse(
+        Stream<List<int>>.value(bytes),
+        200,
+        contentLength: bytes.length,
+      );
+    });
+    addTearDown(accepted.close);
+    final file = await downloadWorkerAppRelease(
+      config: config,
+      release: release(sha256Hex: digest, sizeBytes: bytes.length),
+      destinationDirectory: dir,
+      client: accepted,
+    );
+    expect(await file.readAsBytes(), bytes);
+    expect(file.uri.pathSegments.last, 'worker-update.apk');
+
+    final rejected = MockClient.streaming((request, _) async {
+      return http.StreamedResponse(
+        Stream<List<int>>.value(bytes),
+        200,
+        contentLength: bytes.length,
+      );
+    });
+    addTearDown(rejected.close);
+    await expectLater(
+      downloadWorkerAppRelease(
+        config: config,
+        release: release(sha256Hex: '0' * 64, sizeBytes: bytes.length),
+        destinationDirectory: dir,
+        client: rejected,
+      ),
+      throwsA(
+        isA<WorkerAppUpdateException>().having(
+          (error) => error.code,
+          'code',
+          'RELEASE_HASH_MISMATCH',
+        ),
+      ),
+    );
+    expect(
+      File.fromUri(dir.uri.resolve('worker-update.apk.partial')).existsSync(),
+      isFalse,
+    );
+  });
+
+  test('download rejects a short body', () async {
+    final bytes = utf8.encode('short');
+    final client = MockClient.streaming((request, _) async {
+      return http.StreamedResponse(Stream<List<int>>.value(bytes), 200);
+    });
+    final dir = await Directory.systemTemp.createTemp('worker-app-update-short');
+    addTearDown(() async {
+      client.close();
+      if (dir.existsSync()) {
+        await dir.delete(recursive: true);
+      }
+    });
+    await expectLater(
+      downloadWorkerAppRelease(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+        release: release(sha256Hex: 'ab' * 32, sizeBytes: 99),
+        destinationDirectory: dir,
+        client: client,
+      ),
+      throwsA(
+        isA<WorkerAppUpdateException>().having(
+          (error) => error.code,
+          'code',
+          'RELEASE_SIZE_MISMATCH',
+        ),
+      ),
+    );
+  });
+
+  test('controller shows a newer release and installs the verified apk', () async {
+    final bytes = utf8.encode('worker-apk');
+    final digest = sha256.convert(bytes).toString();
+    final dir = await Directory.systemTemp.createTemp('worker-app-update-controller');
+    addTearDown(() async {
+      if (dir.existsSync()) {
+        await dir.delete(recursive: true);
+      }
+    });
+    final platform = NoopWorkerRuntimeChannel(
+      installedAppVersion: installed,
+      storePath: dir.path,
+    );
+    final client = MockClient((request) async {
+      if (request.url.path == '/worker-app/release') {
+        return http.Response(
+          jsonEncode({
+            'versionName': '5.1.0',
+            'versionCode': 40200,
+            'downloadPath': '/worker-app/release/apk',
+            'sha256': digest,
+            'sizeBytes': bytes.length,
+            'notes': 'Fixes startup',
+            'mandatory': false,
+          }),
+          200,
+        );
+      }
+      if (request.url.path == '/worker-app/release/apk') {
+        return http.Response.bytes(bytes, 200);
+      }
+      return http.Response('missing', 404);
+    });
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: client,
+      platform: platform,
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.refreshAppUpdate();
+    expect(controller.showsAppUpdateCard, isTrue);
+    expect(controller.appUpdateVersionName, '5.1.0');
+    expect(controller.appUpdateNotes, 'Fixes startup');
+    expect(controller.appUpdatePhase, WorkerAppUpdatePhase.available);
+
+    await controller.installOfferedAppUpdate();
+    expect(platform.installedApkPath, endsWith('worker-update.apk'));
+    expect(controller.appUpdatePhase, WorkerAppUpdatePhase.available);
+    expect(controller.appUpdateError, isNull);
+    expect(
+      await File(platform.installedApkPath!).readAsBytes(),
+      bytes,
+    );
+  });
+
+  test('controller hides the card when the server has no newer build', () async {
+    final dir = await Directory.systemTemp.createTemp('worker-app-update-current');
+    addTearDown(() async {
+      if (dir.existsSync()) {
+        await dir.delete(recursive: true);
+      }
+    });
+    final client = MockClient((request) async {
+      return http.Response(
+        jsonEncode({
+          'versionName': '5.0.0',
+          'versionCode': 40100,
+          'downloadPath': '/worker-app/release/apk',
+          'sha256': 'ab' * 32,
+          'sizeBytes': 4,
+        }),
+        200,
+      );
+    });
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: client,
+      platform: NoopWorkerRuntimeChannel(installedAppVersion: installed),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.refreshAppUpdate();
+    expect(controller.showsAppUpdateCard, isFalse);
+
+    controller.appUpdatePhase = WorkerAppUpdatePhase.available;
+    controller.appUpdateVersionName = '9.0.0';
+    final missing = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: MockClient((request) async => http.Response('none', 404)),
+      platform: NoopWorkerRuntimeChannel(installedAppVersion: installed),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    addTearDown(missing.dispose);
+    missing.appUpdatePhase = WorkerAppUpdatePhase.available;
+    missing.appUpdateVersionName = '9.0.0';
+    await missing.refreshAppUpdate();
+    expect(missing.showsAppUpdateCard, isFalse);
+  });
+}

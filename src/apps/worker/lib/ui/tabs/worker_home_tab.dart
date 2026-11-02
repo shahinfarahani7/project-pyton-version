@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../runtime/execution_status.dart';
+import '../../runtime/worker_app_update.dart';
 import '../../worker_app_controller.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
@@ -31,6 +34,18 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
     return ListView(
       padding: EdgeInsets.fromLTRB(wide ? 24 : 16, 16, wide ? 24 : 16, 24),
       children: [
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) {
+            if (!controller.showsAppUpdateCard) {
+              return const SizedBox.shrink();
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _AppUpdateCard(controller: controller),
+            );
+          },
+        ),
         _WorkerCharacter(
           working: _hasActiveTask(controller.executionStatus.phase),
         ),
@@ -252,6 +267,113 @@ class _EarningsChart extends StatelessWidget {
             color: WorkerColors.primary,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AppUpdateCard extends StatelessWidget {
+  const _AppUpdateCard({required this.controller});
+
+  final WorkerAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final phase = controller.appUpdatePhase;
+    final busy =
+        phase == WorkerAppUpdatePhase.downloading ||
+        phase == WorkerAppUpdatePhase.installing;
+    final title = switch (phase) {
+      WorkerAppUpdatePhase.downloading =>
+        'Downloading update ${(controller.appUpdateProgress * 100).toStringAsFixed(0)}%',
+      WorkerAppUpdatePhase.installing => 'Opening installer…',
+      WorkerAppUpdatePhase.failed => 'Update failed',
+      WorkerAppUpdatePhase.available ||
+      WorkerAppUpdatePhase.idle =>
+        controller.appUpdateMandatory ? 'Required update' : 'Update available',
+    };
+    final actionLabel = phase == WorkerAppUpdatePhase.failed
+        ? 'Try again'
+        : 'Update';
+
+    return Semantics(
+      container: true,
+      label: 'App update',
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: workerPanelDecoration(
+          borderColor: WorkerColors.primary.withValues(alpha: 0.25),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.system_update_alt, color: WorkerColors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            if (controller.appUpdateVersionName != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Version ${controller.appUpdateVersionName}',
+                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ],
+            if (controller.appUpdateNotes != null &&
+                phase != WorkerAppUpdatePhase.downloading &&
+                phase != WorkerAppUpdatePhase.installing) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.appUpdateNotes!,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ],
+            if (controller.appUpdateError != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.appUpdateError!,
+                style: const TextStyle(color: WorkerColors.error),
+              ),
+            ],
+            if (busy)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: phase == WorkerAppUpdatePhase.installing
+                        ? null
+                        : controller.appUpdateProgress.clamp(0.0, 1.0),
+                    backgroundColor: WorkerColors.outlineVariant,
+                    color: WorkerColors.primary,
+                    minHeight: 8,
+                  ),
+                ),
+              ),
+            if (!busy)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton(
+                    onPressed: () {
+                      unawaited(controller.installOfferedAppUpdate());
+                    },
+                    child: Text(actionLabel),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

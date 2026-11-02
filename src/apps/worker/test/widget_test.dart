@@ -1,6 +1,7 @@
 import 'package:edgemint_worker/config/worker_config.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/execution_status.dart';
+import 'package:edgemint_worker/runtime/worker_app_update.dart';
 import 'package:edgemint_worker/ui/tabs/worker_home_tab.dart';
 import 'package:edgemint_worker/ui/worker_theme.dart';
 import 'package:edgemint_worker/worker_app_controller.dart';
@@ -50,6 +51,8 @@ void main() {
       expect(find.textContaining('not guaranteed'), findsWidgets);
       expect(find.text('Boost your worker'), findsNothing);
       expect(find.text('Turn availability on'), findsNothing);
+      expect(find.text('Update available'), findsNothing);
+      expect(find.text('Required update'), findsNothing);
     },
   );
 
@@ -140,5 +143,60 @@ void main() {
 
     expect(find.textContaining('Downloading'), findsNothing);
     expect(find.text('Installing model…'), findsNothing);
+  });
+
+  testWidgets('home shows a published app update and reports a failed install', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    controller.setAvailable(false);
+    controller.appUpdatePhase = WorkerAppUpdatePhase.available;
+    controller.appUpdateVersionName = '9.9.9';
+    controller.appUpdateNotes = 'Faster mission startup';
+    controller.appUpdateMandatory = true;
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: WorkerHomeTab(controller: controller),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Required update'), findsOneWidget);
+    expect(find.text('Version 9.9.9'), findsOneWidget);
+    expect(find.text('Faster mission startup'), findsOneWidget);
+    expect(find.text('Update'), findsOneWidget);
+
+    controller.appUpdatePhase = WorkerAppUpdatePhase.downloading;
+    controller.appUpdateProgress = 0.4;
+    controller.notifyListeners();
+    await tester.pump();
+
+    expect(find.text('Downloading update 40%'), findsOneWidget);
+    expect(find.text('Update'), findsNothing);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+
+    controller.appUpdatePhase = WorkerAppUpdatePhase.available;
+    controller.notifyListeners();
+    await tester.pump();
+
+    await tester.tap(find.text('Update'));
+    await tester.pump();
+
+    expect(find.text('Update failed'), findsOneWidget);
+    expect(
+      find.text('Update details are unavailable. Refresh and try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('Try again'), findsOneWidget);
   });
 }

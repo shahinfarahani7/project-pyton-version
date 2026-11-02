@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -51,6 +51,39 @@ class Settings(BaseSettings):
     catalog_closure_mode: Literal["warn_only", "baseline", "strict"] = "baseline"
     worker_api_public_base_url: str = "http://worker-gateway:8080"
     operations_admin_emails: str | None = None
+    worker_app_release_version_name: str | None = None
+    worker_app_release_version_code: int | None = None
+    worker_app_release_apk_path: str | None = None
+    worker_app_release_sha256: str | None = None
+    worker_app_release_notes: str | None = None
+    worker_app_release_mandatory: bool = False
+
+    @field_validator(
+        "worker_app_release_version_name",
+        "worker_app_release_apk_path",
+        "worker_app_release_sha256",
+        "worker_app_release_notes",
+        mode="before",
+    )
+    @classmethod
+    def blank_release_string_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @field_validator("worker_app_release_version_code", mode="before")
+    @classmethod
+    def blank_release_version_code_is_unset(cls, value: object) -> object:
+        if value == "":
+            return None
+        return value
+
+    @field_validator("worker_app_release_mandatory", mode="before")
+    @classmethod
+    def blank_release_mandatory_is_false(cls, value: object) -> object:
+        if value is None or value == "":
+            return False
+        return value
 
     @model_validator(mode="after")
     def reject_insecure_production_configuration(self) -> Settings:

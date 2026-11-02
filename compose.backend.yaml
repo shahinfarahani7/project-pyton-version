@@ -24,6 +24,7 @@ x-backend-service: &backend-service
   volumes:
     - ./dsl:/app/dsl:ro
     - ./src/shared:/app/src/shared:ro
+    - ./dist/android-worker:/var/edgemint/worker-app:ro
   healthcheck:
     test:
       - CMD
@@ -155,6 +156,12 @@ services:
     environment:
       <<: *backend-environment
       EDGEMINT_SERVICE_NAME: worker-registry
+      EDGEMINT_WORKER_APP_RELEASE_VERSION_NAME: ${EDGEMINT_WORKER_APP_RELEASE_VERSION_NAME:-}
+      EDGEMINT_WORKER_APP_RELEASE_VERSION_CODE: ${EDGEMINT_WORKER_APP_RELEASE_VERSION_CODE:-}
+      EDGEMINT_WORKER_APP_RELEASE_APK_PATH: ${EDGEMINT_WORKER_APP_RELEASE_APK_PATH:-}
+      EDGEMINT_WORKER_APP_RELEASE_SHA256: ${EDGEMINT_WORKER_APP_RELEASE_SHA256:-}
+      EDGEMINT_WORKER_APP_RELEASE_NOTES: ${EDGEMINT_WORKER_APP_RELEASE_NOTES:-}
+      EDGEMINT_WORKER_APP_RELEASE_MANDATORY: ${EDGEMINT_WORKER_APP_RELEASE_MANDATORY:-false}
 
   result:
     <<: *backend-service

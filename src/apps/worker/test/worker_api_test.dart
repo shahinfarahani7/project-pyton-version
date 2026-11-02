@@ -8,6 +8,8 @@ void main() {
     expect(WorkerRoutes.registerDevice, '/workers/register');
     expect(WorkerRoutes.refreshSession, '/sessions:refresh');
     expect(WorkerRoutes.workerHeartbeat('wrk_test'), '/workers/wrk_test/heartbeat');
+    expect(WorkerRoutes.workerAppRelease, '/worker-app/release');
+    expect(WorkerRoutes.workerAppReleaseApk, '/worker-app/release/apk');
     expect(WorkerRoutes.enrollmentRoutes.length, 4);
   });
 

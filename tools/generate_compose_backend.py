@@ -52,9 +52,47 @@ def service_block(name: str) -> str:
         "      <<: *backend-environment",
         f"      EDGEMINT_SERVICE_NAME: {name}",
     ]
+    if name == "worker-registry":
+        lines.extend(
+            [
+                "      EDGEMINT_WORKER_APP_RELEASE_VERSION_NAME: ${EDGEMINT_WORKER_APP_RELEASE_VERSION_NAME:-}",
+                "      EDGEMINT_WORKER_APP_RELEASE_VERSION_CODE: ${EDGEMINT_WORKER_APP_RELEASE_VERSION_CODE:-}",
+                "      EDGEMINT_WORKER_APP_RELEASE_APK_PATH: ${EDGEMINT_WORKER_APP_RELEASE_APK_PATH:-}",
+                "      EDGEMINT_WORKER_APP_RELEASE_SHA256: ${EDGEMINT_WORKER_APP_RELEASE_SHA256:-}",
+                "      EDGEMINT_WORKER_APP_RELEASE_NOTES: ${EDGEMINT_WORKER_APP_RELEASE_NOTES:-}",
+                "      EDGEMINT_WORKER_APP_RELEASE_MANDATORY: ${EDGEMINT_WORKER_APP_RELEASE_MANDATORY:-false}",
+            ]
+        )
+    if name == "model-registry":
+        lines.extend(
+            [
+                "      EDGEMINT_MODEL_STORE_DIR: /var/lib/edgemint/models",
+                "      EDGEMINT_MODEL_DOWNLOAD_SIGNING_KEY: ${EDGEMINT_MODEL_DOWNLOAD_SIGNING_KEY:-}",
+                "      EDGEMINT_MODEL_DOWNLOAD_URL_TTL_SECONDS: ${EDGEMINT_MODEL_DOWNLOAD_URL_TTL_SECONDS:-21600}",
+            ]
+        )
     if name in EXPOSED_PORTS:
         lines.append("    ports:")
         lines.append(f'      - "{EXPOSED_PORTS[name]}"')
+    if name == "api-gateway":
+        lines.extend(
+            [
+                "    volumes:",
+                "      - ./dsl:/app/dsl:ro",
+                "      - ./src/shared:/app/src/shared:ro",
+                "      - ./src/backend/edgemint:/app/src/backend/edgemint:ro",
+            ]
+        )
+    if name == "model-registry":
+        lines.extend(
+            [
+                "    volumes:",
+                "      - ./dsl:/app/dsl:ro",
+                "      - ./src/shared:/app/src/shared:ro",
+                "      - ./src/backend/edgemint:/app/src/backend/edgemint:ro",
+                "      - ${EDGEMINT_MODEL_STORE_HOST_DIR:-./var/models}:/var/lib/edgemint/models:ro",
+            ]
+        )
     return "\n".join(lines)
 
 
@@ -85,6 +123,7 @@ x-backend-service: &backend-service
   volumes:
     - ./dsl:/app/dsl:ro
     - ./src/shared:/app/src/shared:ro
+    - ./dist/android-worker:/var/edgemint/worker-app:ro
   healthcheck:
     test:
       - CMD

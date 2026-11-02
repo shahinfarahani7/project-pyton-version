@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from datetime import UTC, datetime
 
 import httpx
 from fastapi import Body, Header, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
 from edgemint.security.problems import request_trace_id
+from edgemint.workers.app_release import WorkerAppReleaseError, resolve_worker_app_release
 from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
 from edgemint.workers.errors import WorkerServiceError
@@ -187,6 +189,37 @@ async def replace_worker_preferences(
     response = JSONResponse(body.model_dump(mode="json"), status_code=200)
     response.headers["X-Request-Id"] = request_trace_id(request)
     return response
+
+
+def _worker_app_release_error(exc: WorkerAppReleaseError) -> JSONResponse:
+    return JSONResponse({"code": exc.code, "detail": exc.detail}, status_code=exc.status)
+
+
+@app.get("/worker-app/release", tags=["app-release"])
+async def get_worker_app_release() -> JSONResponse:
+    """Public catalog for the installed worker. Unset releases stay hidden."""
+    from edgemint.building_blocks.settings import get_settings
+
+    try:
+        release = await asyncio.to_thread(resolve_worker_app_release, get_settings())
+    except WorkerAppReleaseError as exc:
+        return _worker_app_release_error(exc)
+    return JSONResponse(release.public_view(), status_code=200)
+
+
+@app.get("/worker-app/release/apk", tags=["app-release"])
+async def download_worker_app_release() -> Response:
+    from edgemint.building_blocks.settings import get_settings
+
+    try:
+        release = await asyncio.to_thread(resolve_worker_app_release, get_settings())
+    except WorkerAppReleaseError as exc:
+        return _worker_app_release_error(exc)
+    return FileResponse(
+        path=release.apk_path,
+        media_type="application/vnd.android.package-archive",
+        filename="edgemint-worker.apk",
+    )
 
 
 def _dev_worker_assignments_enabled() -> bool:

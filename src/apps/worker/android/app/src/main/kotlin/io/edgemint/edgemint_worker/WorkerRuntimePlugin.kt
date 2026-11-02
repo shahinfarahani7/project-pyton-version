@@ -1,17 +1,21 @@
 package io.edgemint.edgemint_worker
 
 import android.app.ActivityManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Debug
 import android.os.Environment
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.content.FileProvider
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -111,8 +115,101 @@ class WorkerRuntimePlugin(
                 result.success(imported)
             }
 
+            "readInstalledAppVersion" -> {
+                result.success(readInstalledAppVersion())
+            }
+
+            "installDownloadedApk" -> {
+                val path = call.argument<String>("path")
+                if (path.isNullOrBlank()) {
+                    result.error("INVALID_APK", "Missing update file", null)
+                    return
+                }
+                installDownloadedApk(path, result)
+            }
+
             else -> result.notImplemented()
         }
+    }
+
+    private fun readInstalledAppVersion(): Map<String, Any?> {
+        val packageInfo =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageInfo(
+                    context.packageName,
+                    PackageManager.PackageInfoFlags.of(0L),
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageInfo(context.packageName, 0)
+            }
+        val versionCode =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode.toLong()
+            }
+        return mapOf(
+            "versionName" to packageInfo.versionName,
+            "versionCode" to versionCode,
+        )
+    }
+
+    private fun installDownloadedApk(
+        path: String,
+        result: MethodChannel.Result,
+    ) {
+        val updatesDir = File(context.filesDir, "app-updates").canonicalFile
+        val apk = File(path).canonicalFile
+        val storedInUpdateDirectory =
+            apk.parentFile?.canonicalFile == updatesDir &&
+                apk.name == "worker-update.apk" &&
+                apk.isFile
+        if (!storedInUpdateDirectory) {
+            result.error(
+                "INVALID_APK",
+                "Update file is not in the app update directory",
+                null,
+            )
+            return
+        }
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            !context.packageManager.canRequestPackageInstalls()
+        ) {
+            val settingsIntent =
+                Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            context.startActivity(settingsIntent)
+            result.success("permissionRequired")
+            return
+        }
+        val uri =
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                apk,
+            )
+        val installIntent =
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        try {
+            context.startActivity(installIntent)
+        } catch (_: ActivityNotFoundException) {
+            result.error(
+                "INSTALL_UNAVAILABLE",
+                "No package installer is available",
+                null,
+            )
+            return
+        }
+        result.success("installerLaunched")
     }
 
     private fun importSideloadedModel(

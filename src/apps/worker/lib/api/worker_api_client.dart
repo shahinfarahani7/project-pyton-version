@@ -539,6 +539,24 @@ class WorkerApiClient {
     return CommandReceipt.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
+  /// Published worker APK catalog. 404 means no update is published.
+  Future<Map<String, dynamic>?> fetchWorkerAppRelease() async {
+    const path = WorkerRoutes.workerAppRelease;
+    final response = await _http
+        .get(_config.resolve(path), headers: _headers())
+        .timeout(_config.requestTimeout);
+    _audit('GET', path, response.statusCode);
+    if (response.statusCode == 404) {
+      return null;
+    }
+    _ensureSuccess(response, method: 'GET', path: path);
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map) {
+      throw const FormatException('worker app release');
+    }
+    return Map<String, dynamic>.from(decoded);
+  }
+
   Future<http.Response> _get(
     String path, {
     required String accessToken,

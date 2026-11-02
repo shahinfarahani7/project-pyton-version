@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:http/http.dart' as http;
@@ -50,6 +51,7 @@ import 'runtime/inference_adapter.dart';
 import 'runtime/storage_pressure_manager.dart';
 import 'runtime/switchable_inference_adapter.dart';
 import 'runtime/worker_access_token_provider.dart';
+import 'runtime/worker_app_update.dart';
 import 'runtime/worker_process_memory_telemetry.dart';
 import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_pipeline_log.dart';
@@ -269,6 +271,26 @@ class WorkerAppController extends ChangeNotifier {
   double modelProgress = 0;
 
   String? modelError;
+
+  WorkerAppUpdatePhase appUpdatePhase = WorkerAppUpdatePhase.idle;
+
+  String? appUpdateVersionName;
+
+  String? appUpdateNotes;
+
+  bool appUpdateMandatory = false;
+
+  double appUpdateProgress = 0;
+
+  String? appUpdateError;
+
+  WorkerAppRelease? _offeredAppRelease;
+
+  bool _appUpdateInFlight = false;
+
+  bool get showsAppUpdateCard =>
+      appUpdateVersionName != null &&
+      appUpdatePhase != WorkerAppUpdatePhase.idle;
 
   bool _modelDownloadPauseRequested = false;
 
@@ -891,6 +913,7 @@ class WorkerAppController extends ChangeNotifier {
 
     if (backendOnline) {
       await _ensureWorkerSession();
+      await refreshAppUpdate();
     }
 
     await _refreshDeviceReadiness();
@@ -951,6 +974,140 @@ class WorkerAppController extends ChangeNotifier {
       'x86=$isX86Android, '
       'mock=$usesDevMockInference',
     );
+  }
+
+  Future<void> refreshAppUpdate() async {
+    if (_disposed || _appUpdateInFlight) {
+      return;
+    }
+    try {
+      final installed = await _platform.readInstalledAppVersion();
+      if (_disposed || installed == null) {
+        return;
+      }
+      final payload = await _api.fetchWorkerAppRelease();
+      if (_disposed) {
+        return;
+      }
+      final release = payload == null
+          ? null
+          : WorkerAppRelease.fromJson(payload);
+      if (release == null ||
+          !workerAppReleaseIsNewer(installed: installed, release: release)) {
+        _clearAppUpdateOffer();
+        return;
+      }
+      _offeredAppRelease = release;
+      appUpdateVersionName = release.versionName;
+      appUpdateNotes = release.notes;
+      appUpdateMandatory = release.mandatory;
+      appUpdatePhase = WorkerAppUpdatePhase.available;
+      appUpdateError = null;
+      appUpdateProgress = 0;
+      notifyListeners();
+    } catch (error, stackTrace) {
+      _logError('App update check failed', error, stackTrace);
+    }
+  }
+
+  Future<void> installOfferedAppUpdate() async {
+    if (_disposed || _appUpdateInFlight) {
+      return;
+    }
+    final release = _offeredAppRelease;
+    if (release == null) {
+      if (appUpdateVersionName != null) {
+        appUpdatePhase = WorkerAppUpdatePhase.failed;
+        appUpdateError =
+            'Update details are unavailable. Refresh and try again.';
+        notifyListeners();
+      }
+      return;
+    }
+
+    _appUpdateInFlight = true;
+    appUpdatePhase = WorkerAppUpdatePhase.downloading;
+    appUpdateProgress = 0;
+    appUpdateError = null;
+    notifyListeners();
+    var lastPercent = -1;
+    try {
+      final root = await _platform.localStorePath();
+      if (_disposed) {
+        return;
+      }
+      if (root == null || root.isEmpty) {
+        throw const WorkerAppUpdateException('UPDATE_DIRECTORY_UNAVAILABLE');
+      }
+      final directory = Directory('$root${Platform.pathSeparator}app-updates');
+      final file = await downloadWorkerAppRelease(
+        config: _config,
+        release: release,
+        destinationDirectory: directory,
+        client: _http,
+        onProgress: (progress) {
+          if (_disposed) {
+            return;
+          }
+          final percent = (progress * 100).floor();
+          if (percent == lastPercent) {
+            return;
+          }
+          lastPercent = percent;
+          appUpdateProgress = progress;
+          notifyListeners();
+        },
+      );
+      if (_disposed) {
+        return;
+      }
+      appUpdatePhase = WorkerAppUpdatePhase.installing;
+      appUpdateProgress = 1;
+      notifyListeners();
+      final prompt = await _platform.installDownloadedApk(file.path);
+      if (_disposed) {
+        return;
+      }
+      if (prompt == WorkerAppInstallPrompt.permissionRequired) {
+        appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateError = workerAppUpdateUserMessage(
+          const WorkerAppUpdateException('INSTALL_PERMISSION_REQUIRED'),
+        );
+      } else {
+        appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateProgress = 0;
+        appUpdateError = null;
+      }
+    } on WorkerAppUpdateException catch (error) {
+      appUpdatePhase = WorkerAppUpdatePhase.failed;
+      appUpdateError = workerAppUpdateUserMessage(error);
+    } on PlatformException catch (error) {
+      appUpdatePhase = WorkerAppUpdatePhase.failed;
+      appUpdateError = error.message ?? 'Could not open the installer.';
+    } catch (error, stackTrace) {
+      _logError('App update failed', error, stackTrace);
+      appUpdatePhase = WorkerAppUpdatePhase.failed;
+      appUpdateError = 'Could not install the update.';
+    } finally {
+      _appUpdateInFlight = false;
+      if (!_disposed) {
+        notifyListeners();
+      }
+    }
+  }
+
+  void _clearAppUpdateOffer() {
+    final hadCard = showsAppUpdateCard;
+    _offeredAppRelease = null;
+    appUpdateVersionName = null;
+    appUpdateNotes = null;
+    appUpdateMandatory = false;
+    appUpdateProgress = 0;
+    appUpdateError = null;
+    appUpdatePhase = WorkerAppUpdatePhase.idle;
+    if (hadCard && !_disposed) {
+      notifyListeners();
+    }
   }
 
   // ---------------------------------------------------------------------------

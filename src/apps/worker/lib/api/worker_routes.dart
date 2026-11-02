@@ -4,6 +4,8 @@ abstract final class WorkerRoutes {
   static const String registerDevice = '/workers/register';
   static const String refreshSession = '/sessions:refresh';
   static const String workerPreferences = '/worker-preferences';
+  static const String workerAppRelease = '/worker-app/release';
+  static const String workerAppReleaseApk = '/worker-app/release/apk';
   static String workerBenchmark(String workerId) => '/workers/$workerId/benchmark';
   static String workerHeartbeat(String workerId) => '/workers/$workerId/heartbeat';
   static String modelManifest(String modelVersionId) => '/models/$modelVersionId/manifest';

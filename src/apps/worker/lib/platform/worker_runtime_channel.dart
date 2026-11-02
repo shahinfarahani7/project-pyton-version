@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../runtime/device_snapshot.dart';
+import '../runtime/worker_app_update.dart';
 
 /// Platform bridge for foreground service, device probes, and signing material.
 class WorkerRuntimeChannel {
@@ -76,6 +77,39 @@ class WorkerRuntimeChannel {
 
   Future<String?> localStorePath() async {
     return _channel.invokeMethod<String>('localStorePath');
+  }
+
+  Future<InstalledAppVersion?> readInstalledAppVersion() async {
+    try {
+      final raw = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'readInstalledAppVersion',
+      );
+      if (raw == null) {
+        return null;
+      }
+      final versionName = raw['versionName'];
+      final versionCode = raw['versionCode'];
+      final code = versionCode is int
+          ? versionCode
+          : versionCode is num
+          ? versionCode.toInt()
+          : null;
+      if (versionName is! String || versionName.isEmpty || code == null || code <= 0) {
+        return null;
+      }
+      return InstalledAppVersion(versionName: versionName, versionCode: code);
+    } on MissingPluginException {
+      return null;
+    } on PlatformException {
+      return null;
+    }
+  }
+
+  Future<WorkerAppInstallPrompt> installDownloadedApk(String path) async {
+    final raw = await _channel.invokeMethod<String>('installDownloadedApk', {
+      'path': path,
+    });
+    return parseWorkerAppInstallPrompt(raw);
   }
 
   DeviceSnapshot _normalizeSnapshot({
@@ -230,19 +264,29 @@ class WorkerRuntimeChannel {
 }
 
 class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
-  NoopWorkerRuntimeChannel({this.snapshot = const DeviceSnapshot(
-    available: true,
-    batteryPercent: 100,
-    isCharging: true,
-    thermalState: ThermalState.normal,
-    network: NetworkKind.wifi,
-    freeStorageMb: 8192,
-    withinSchedule: true,
-    consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
-  ), this.material = 'test-signing-material'});
+  NoopWorkerRuntimeChannel({
+    this.snapshot = const DeviceSnapshot(
+      available: true,
+      batteryPercent: 100,
+      isCharging: true,
+      thermalState: ThermalState.normal,
+      network: NetworkKind.wifi,
+      freeStorageMb: 8192,
+      withinSchedule: true,
+      consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
+    ),
+    this.material = 'test-signing-material',
+    this.installedAppVersion,
+    this.storePath,
+    this.installPrompt = WorkerAppInstallPrompt.installerLaunched,
+  });
 
   final DeviceSnapshot snapshot;
   final String material;
+  final InstalledAppVersion? installedAppVersion;
+  final String? storePath;
+  final WorkerAppInstallPrompt installPrompt;
+  String? installedApkPath;
 
   @override
   Future<DeviceSnapshot> readDeviceSnapshot() async => snapshot;
@@ -252,6 +296,18 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
 
   @override
   Future<String?> importSideloadedModel({required String fileName}) async => null;
+
+  @override
+  Future<String?> localStorePath() async => storePath;
+
+  @override
+  Future<InstalledAppVersion?> readInstalledAppVersion() async => installedAppVersion;
+
+  @override
+  Future<WorkerAppInstallPrompt> installDownloadedApk(String path) async {
+    installedApkPath = path;
+    return installPrompt;
+  }
 
   @override
   Future<void> startForegroundService({required String assignmentId, required String taskType}) async {}
