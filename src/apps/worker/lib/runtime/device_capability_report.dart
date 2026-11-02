@@ -26,8 +26,10 @@ abstract final class DeviceCapabilityReport {
     final freeStorageBytes = snapshot.freeStorageMb * 1024 * 1024;
     final availableRamBytes = (totalRamBytes * 0.67).round();
     final runtimeClasses = RuntimeClassCatalog.fromTaskCapabilities(taskCapabilities);
+    final device = _device(snapshot);
 
     return {
+      if (device.isNotEmpty) 'device': device,
       'platform': {
         'os': platformOs,
         'abi': abi,
@@ -81,6 +83,27 @@ abstract final class DeviceCapabilityReport {
       platformOs: platformOs,
       abi: abi,
     );
+  }
+
+  static Map<String, dynamic> _device(DeviceSnapshot snapshot) {
+    String? text(String? value, int maxLength) {
+      final trimmed = value?.trim() ?? '';
+      if (trimmed.isEmpty) return null;
+      return trimmed.length > maxLength ? trimmed.substring(0, maxLength) : trimmed;
+    }
+
+    final manufacturer = text(snapshot.deviceManufacturer, 64);
+    final model = text(snapshot.deviceModel, 64);
+    final name = text(snapshot.deviceName, 128);
+    final cores = snapshot.cpuCoreCount;
+    final totalRamMb = snapshot.deviceTotalRamMb;
+    return {
+      'manufacturer': ?manufacturer,
+      'model': ?model,
+      'name': ?name,
+      if (cores != null && cores > 0) 'cpuCoreCount': cores,
+      if (totalRamMb != null && totalRamMb > 0) 'totalRamBytes': totalRamMb * 1024 * 1024,
+    };
   }
 
   static String _thermalState(ThermalState state) => switch (state) {

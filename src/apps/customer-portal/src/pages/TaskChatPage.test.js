@@ -49,6 +49,7 @@ describe('TaskChatPage', () => {
     expect(wrapper.get('.em-chat__bubble--user').text()).toContain('سلام');
     expect(wrapper.text()).toContain('این جواب تسک است');
     expect(wrapper.get('.em-chat__bubble--assistant').text()).toContain('این جواب تسک است');
+    expect(wrapper.find('form').exists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -83,6 +84,7 @@ describe('TaskChatPage', () => {
 
     expect(wrapper.get('.em-chat-list').text()).toContain('درباره مورچه‌ها بنویس');
     expect(wrapper.find('.em-chat__bubble--assistant').exists()).toBe(false);
+    expect(wrapper.find('form').exists()).toBe(true);
 
     await wrapper.get('.em-chat-list button').trigger('click');
     await flushPromises();
@@ -92,6 +94,48 @@ describe('TaskChatPage', () => {
     expect(wrapper.get('.em-chat__bubble--user').text()).toContain('درباره مورچه‌ها بنویس');
     expect(wrapper.text()).toContain('مورچه‌ها گروهی زندگی می‌کنند.');
     expect(wrapper.text()).not.toContain('tsk_old');
+    expect(wrapper.find('form').exists()).toBe(false);
+    expect(wrapper.find('textarea').exists()).toBe(false);
+
+    await wrapper.get('.em-chat-history__new').trigger('click');
+    expect(wrapper.find('form').exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it('shows one history entry when the stream event arrives before the create response', async () => {
+    session.workspaceId = 'ws-chat';
+    session.permissions = ['customer.tasks:read', 'customer.tasks:write'];
+    const listeners = {};
+    vi.stubGlobal(
+      'EventSource',
+      class {
+        addEventListener(name, handler) {
+          listeners[name] = handler;
+        }
+        close() {}
+      },
+    );
+    const task = { id: 'tsk_race', createdAt: '2026-10-28T10:00:00Z', lifecycleStatus: 'queued', instructions: 'hi' };
+    vi.spyOn(portalApi, 'tasks').mockResolvedValue({ items: [] });
+    vi.spyOn(portalApi, 'task').mockResolvedValue(task);
+    let resolveCreate;
+    vi.spyOn(portalApi, 'createTask').mockReturnValue(
+      new Promise((resolve) => {
+        resolveCreate = resolve;
+      }),
+    );
+
+    const wrapper = mount(TaskChatPage, { global: { stubs: { RouterLink: true } } });
+    await flushPromises();
+    await wrapper.get('textarea').setValue('hi');
+    await wrapper.get('form').trigger('submit');
+    await flushPromises();
+
+    listeners.task({ data: JSON.stringify({ event: 'created', taskId: 'tsk_race', task }) });
+    resolveCreate(task);
+    await flushPromises();
+
+    expect(wrapper.findAll('.em-chat-list button')).toHaveLength(1);
     wrapper.unmount();
   });
 

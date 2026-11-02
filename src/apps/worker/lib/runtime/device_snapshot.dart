@@ -33,6 +33,9 @@ class DeviceSnapshot {
     this.processPrivateDirtyKb,
     this.javaHeapKb,
     this.nativeHeapKb,
+    this.deviceManufacturer,
+    this.deviceModel,
+    this.deviceName,
   });
 
   final bool available;
@@ -62,6 +65,11 @@ class DeviceSnapshot {
   final int? processPrivateDirtyKb;
   final int? javaHeapKb;
   final int? nativeHeapKb;
+  final String? deviceManufacturer;
+  final String? deviceModel;
+
+  /// User-visible device name from system settings, e.g. "Galaxy S24 Ultra".
+  final String? deviceName;
 
   ProcessMemorySnapshot toProcessMemorySnapshot() {
     return ProcessMemorySnapshot(
@@ -129,6 +137,9 @@ class DeviceSnapshot {
       processPrivateDirtyKb: processPrivateDirtyKb,
       javaHeapKb: javaHeapKb,
       nativeHeapKb: nativeHeapKb,
+      deviceManufacturer: deviceManufacturer,
+      deviceModel: deviceModel,
+      deviceName: deviceName,
     );
   }
 }

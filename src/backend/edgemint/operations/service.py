@@ -289,7 +289,7 @@ class OperationsService:
             expected_version=expected_version,
             break_glass=self.break_glass_active(operator_id=operator_id) is not None,
         )
-        self._record_session_hook("mutation.executed", operator_id, receipt["operationId"])
+        self._record_session_hook("mutation.executed", operator_id, str(receipt["operationId"]))
         return receipt
 
     def _validate_reason(self, reason_code: str, ticket_id: str) -> None:

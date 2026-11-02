@@ -48,6 +48,10 @@ services:
       EDGEMINT_SERVICE_NAME: api-gateway
     ports:
       - "8080:8080"
+    volumes:
+      - ./dsl:/app/dsl:ro
+      - ./src/shared:/app/src/shared:ro
+      - ./src/backend/edgemint:/app/src/backend/edgemint:ro
 
   event-relay:
     <<: *backend-service
@@ -250,6 +254,14 @@ services:
     environment:
       <<: *backend-environment
       EDGEMINT_SERVICE_NAME: model-registry
+      EDGEMINT_MODEL_STORE_DIR: /var/lib/edgemint/models
+      EDGEMINT_MODEL_DOWNLOAD_SIGNING_KEY: ${EDGEMINT_MODEL_DOWNLOAD_SIGNING_KEY:-}
+      EDGEMINT_MODEL_DOWNLOAD_URL_TTL_SECONDS: ${EDGEMINT_MODEL_DOWNLOAD_URL_TTL_SECONDS:-21600}
+    volumes:
+      - ./dsl:/app/dsl:ro
+      - ./src/shared:/app/src/shared:ro
+      - ./src/backend/edgemint:/app/src/backend/edgemint:ro
+      - ${EDGEMINT_MODEL_STORE_HOST_DIR:-./var/models}:/var/lib/edgemint/models:ro
 
   notification:
     <<: *backend-service

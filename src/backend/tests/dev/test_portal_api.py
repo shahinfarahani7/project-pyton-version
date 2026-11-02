@@ -35,6 +35,67 @@ def gateway_client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     return TestClient(api_gateway.app)
 
 
+def test_api_key_submits_task_without_database(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+
+    from edgemint.dev import portal_api
+
+    monkeypatch.setattr(
+        portal_api,
+        "get_settings",
+        lambda: SimpleNamespace(database_url=None, environment="test"),
+    )
+    created = fixtures.issue_dev_api_key(fixtures.DEV_WORKSPACE_PRIMARY, name="Offline partner")
+    secret = created["secret"]
+    client = TestClient(api_gateway.app)
+    try:
+        submitted = client.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+            headers={"X-EdgeMint-Key": secret},
+            json={"taskType": "text.summarize", "inputText": "Submitted with an API key."},
+        )
+        assert submitted.status_code == 201, submitted.text
+        task_id = submitted.json()["id"]
+
+        fetched = client.get(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks/{task_id}",
+            headers={"X-EdgeMint-Key": secret},
+        )
+        assert fetched.status_code == 200
+        assert fetched.json()["taskType"] == "text.summarize"
+
+        wrong_workspace = client.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_STAGING}/tasks",
+            headers={"X-EdgeMint-Key": secret},
+            json={"taskType": "text.summarize", "inputText": "Wrong workspace."},
+        )
+        assert wrong_workspace.status_code == 403
+
+        rejected = client.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+            headers={"X-EdgeMint-Key": f"{secret}x"},
+            json={"taskType": "text.summarize", "inputText": "Rejected key."},
+        )
+        assert rejected.status_code == 401
+
+        from edgemint.security.api_key_usage import usage
+
+        summary = usage.summary(fixtures.DEV_WORKSPACE_PRIMARY, "day")
+        [item] = [row for row in summary["items"] if row["keyId"] == created["id"]]
+        assert item["rangeTasks"] == 1
+        assert item["rangeRequests"] == 3
+        assert item["rangeErrors"] == 1
+    finally:
+        revoked = fixtures.revoke_dev_api_key(fixtures.DEV_WORKSPACE_PRIMARY, created["id"])
+        assert revoked is not None and revoked["status"] == "revoked"
+        after = client.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+            headers={"X-EdgeMint-Key": secret},
+            json={"taskType": "text.summarize", "inputText": "Revoked key."},
+        )
+        assert after.status_code == 401
+
+
 @requires_postgres
 def test_dev_portal_routes_require_session(gateway_client: TestClient) -> None:
     response = gateway_client.get("/v1/workspaces")
@@ -253,3 +314,88 @@ def test_dev_portal_task_responses_include_task_type_meta(gateway_client: TestCl
     matched = next(item for item in listed.json()["items"] if item["id"] == body["id"])
     assert matched["taskTypeLabel"] == "OCR receipt"
     assert matched["taskTypeMeta"]["value"] == "ocr.receipt"
+
+
+@requires_postgres
+def test_dev_api_key_submits_task_without_browser_session(gateway_client: TestClient) -> None:
+    login = gateway_client.post(
+        "/auth/sessions",
+        json={
+            "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+            "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+            "permissions": ["customer.tasks:read", "customer.tasks:write", "customer.apikeys:read"],
+        },
+    )
+    assert login.status_code == 200, login.text
+
+    created_key = gateway_client.post(
+        "/v1/api-keys",
+        headers={"Idempotency-Key": "partner-task-key-0001"},
+        json={
+            "name": "Partner task key",
+            "scopes": ["customer.tasks:read", "customer.tasks:write"],
+        },
+    )
+    assert created_key.status_code == 201, created_key.text
+    key_body = created_key.json()
+    secret = key_body["secret"]
+    assert secret.startswith("emk_")
+    key_id = key_body["id"]
+
+    try:
+        listed = gateway_client.get("/v1/api-keys")
+        assert listed.status_code == 200
+        published = next(item for item in listed.json()["items"] if item["id"] == key_id)
+        assert "secret" not in published
+        assert published["prefix"] == secret[:11]
+
+        anonymous = TestClient(api_gateway.app)
+        denied = anonymous.get("/v1/api-keys", headers={"X-EdgeMint-Key": secret})
+        assert denied.status_code == 401
+
+        submitted = anonymous.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+            headers={"X-EdgeMint-Key": secret},
+            json={
+                "taskType": "text.summarize",
+                "inputText": "Submitted with an API key.",
+            },
+        )
+        assert submitted.status_code == 201, submitted.text
+        task_id = submitted.json()["id"]
+
+        fetched = anonymous.get(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks/{task_id}",
+            headers={"X-EdgeMint-Key": secret},
+        )
+        assert fetched.status_code == 200
+        assert fetched.json()["id"] == task_id
+
+        wrong_workspace = anonymous.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_STAGING}/tasks",
+            headers={"X-EdgeMint-Key": secret},
+            json={"taskType": "text.summarize", "inputText": "Wrong workspace."},
+        )
+        assert wrong_workspace.status_code == 403
+
+        rejected = anonymous.post(
+            f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+            headers={"X-EdgeMint-Key": f"{secret}x"},
+            json={"taskType": "text.summarize", "inputText": "Rejected key."},
+        )
+        assert rejected.status_code == 401
+    finally:
+        revoked = gateway_client.post(
+            f"/v1/api-keys/{key_id}:revoke",
+            headers={"Idempotency-Key": "partner-task-key-revoke"},
+        )
+        assert revoked.status_code == 200, revoked.text
+        assert revoked.json()["status"] == "revoked"
+
+    anonymous = TestClient(api_gateway.app)
+    after_revoke = anonymous.post(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks",
+        headers={"X-EdgeMint-Key": secret},
+        json={"taskType": "text.summarize", "inputText": "Revoked key."},
+    )
+    assert after_revoke.status_code == 401

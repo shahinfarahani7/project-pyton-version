@@ -399,8 +399,8 @@ class WorkerAppController extends ChangeNotifier {
   Set<String> acknowledgedMissionIds = {};
 
   Future<void> loadMissionProgress() async {
-    acknowledgedMissionIds =
-        await _missionProgressStore.readCompletedMissionIds();
+    acknowledgedMissionIds = await _missionProgressStore
+        .readCompletedMissionIds();
     notifyListeners();
   }
 
@@ -413,7 +413,9 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
     acknowledgedMissionIds = {...acknowledgedMissionIds, missionId};
-    await _missionProgressStore.writeCompletedMissionIds(acknowledgedMissionIds);
+    await _missionProgressStore.writeCompletedMissionIds(
+      acknowledgedMissionIds,
+    );
     notifyListeners();
   }
 
@@ -570,17 +572,24 @@ class WorkerAppController extends ChangeNotifier {
 
   bool get isGemmaDownloadPaused => modelPhase == ModelInstallPhase.paused;
 
+  /// Pause was tapped and the transfer has not left `downloading` yet.
+  bool get isGemmaDownloadPausePending =>
+      _modelDownloadPauseRequested &&
+      modelPhase == ModelInstallPhase.downloading;
+
   bool get showsModelDownloadProgressCard =>
       isGemmaDownloading || isGemmaDownloadPaused;
 
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
 
   void pauseGemmaModelDownload() {
-    if (modelPhase != ModelInstallPhase.downloading) {
+    if (modelPhase != ModelInstallPhase.downloading ||
+        _modelDownloadPauseRequested) {
       return;
     }
     _modelDownloadPauseRequested = true;
     _logTask('Model download pause requested');
+    notifyListeners();
   }
 
   bool get canAcceptAssignments =>
@@ -1663,8 +1672,9 @@ class WorkerAppController extends ChangeNotifier {
   Future<String> _resolveModelDownloadUrl() async {
     final source = _config.modelDownloadSource;
     final token = _accessTokenProvider.current;
-    final usesGateway =
-        WorkerModelDownloadPolicy.usesWorkerGatewayArtifact(source);
+    final usesGateway = WorkerModelDownloadPolicy.usesWorkerGatewayArtifact(
+      source,
+    );
 
     if (usesGateway && !backendOnline) {
       _logTask(
@@ -1681,15 +1691,13 @@ class WorkerAppController extends ChangeNotifier {
         api: _api,
         accessToken: token,
       );
-      _logTask(
-        switch (source) {
-          WorkerModelDownloadSource.server =>
-            'Model download URL from server delivery: $resolved',
-          WorkerModelDownloadSource.backendProxy =>
-            'Using backend model proxy: $resolved',
-          WorkerModelDownloadSource.direct => 'Model download URL: $resolved',
-        },
-      );
+      _logTask(switch (source) {
+        WorkerModelDownloadSource.server =>
+          'Model download URL from server delivery: $resolved',
+        WorkerModelDownloadSource.backendProxy =>
+          'Using backend model proxy: $resolved',
+        WorkerModelDownloadSource.direct => 'Model download URL: $resolved',
+      });
       return resolved;
     } catch (error, stackTrace) {
       if (source == WorkerModelDownloadSource.direct) {
@@ -1704,9 +1712,7 @@ class WorkerAppController extends ChangeNotifier {
     }
   }
 
-  Future<void> _installFromNetworkWithFallback(
-    String primaryUrl,
-  ) async {
+  Future<void> _installFromNetworkWithFallback(String primaryUrl) async {
     try {
       await _installFromNetwork(primaryUrl);
     } catch (primaryError) {
@@ -1730,9 +1736,7 @@ class WorkerAppController extends ChangeNotifier {
     }
   }
 
-  Future<void> _installFromNetwork(
-    String downloadUrl,
-  ) async {
+  Future<void> _installFromNetwork(String downloadUrl) async {
     _logTask(
       'Starting network install: '
       '$downloadUrl',

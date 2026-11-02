@@ -27,7 +27,7 @@ abstract final class WorkerModelDownloadPolicy {
     if (legacyBackend) {
       return WorkerModelDownloadSource.backendProxy;
     }
-    return WorkerModelDownloadSource.direct;
+    return WorkerModelDownloadSource.server;
   }
 
   static WorkerModelDownloadSource _parse(String raw) {

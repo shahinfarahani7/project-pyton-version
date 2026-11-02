@@ -55,3 +55,32 @@ def test_dev_billing_payloads() -> None:
 def test_dev_principal_constant() -> None:
     assert fixtures.is_dev_principal(fixtures.DEV_PRINCIPAL_ID)
     assert not fixtures.is_dev_principal(UUID(int=99))
+
+
+def test_issued_api_key_authenticates_tasks_until_revoked() -> None:
+    workspace_id = UUID(int=42)
+    fixtures.api_key_directory.forget_workspace(workspace_id)
+    created = fixtures.issue_dev_api_key(workspace_id, name=" Partner ")
+    assert created["name"] == "Partner"
+    assert created["secret"].startswith("emk_")
+    assert created["prefix"] == created["secret"][:11]
+    assert created["scopes"] == ["customer.tasks:read", "customer.tasks:write"]
+
+    listed = fixtures.dev_api_keys(workspace_id)
+    published = next(item for item in listed["items"] if item["id"] == created["id"])
+    assert "secret" not in published
+    assert "secretHash" not in published
+
+    authenticated = fixtures.authenticate_dev_api_key(created["secret"])
+    assert authenticated is not None
+    assert authenticated["workspaceId"] == workspace_id
+    assert fixtures.authenticate_dev_api_key(created["secret"] + "x") is None
+    assert fixtures.authenticate_dev_api_key("") is None
+
+    revoked = fixtures.revoke_dev_api_key(workspace_id, created["id"])
+    assert revoked is not None
+    assert revoked["status"] == "revoked"
+    assert fixtures.authenticate_dev_api_key(created["secret"]) is None
+    with pytest.raises(ValueError, match="API_KEY_NAME_INVALID"):
+        fixtures.issue_dev_api_key(workspace_id, name="   ")
+    fixtures.api_key_directory.forget_workspace(workspace_id)

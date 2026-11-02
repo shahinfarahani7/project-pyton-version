@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink, RouterView, useRouter } from 'vue-router';
 
 import markUrl from '../assets/brand/fibonai-mark.png';
 import { useSession } from '../auth/session';
@@ -19,6 +19,16 @@ const NAV = [
 ];
 
 const session = useSession();
+const router = useRouter();
+
+async function signOut() {
+  try {
+    await session.logout();
+  } catch {
+    // Local session is already cleared even if the server call failed.
+  }
+  await router.replace('/login');
+}
 
 const visibleNav = computed(() => NAV.filter((item) => session.hasPermission(item.permission)));
 
@@ -43,7 +53,7 @@ const visibleGroups = computed(() => {
     <header class="topbar">
       <strong class="brand-lockup"><img :src="markUrl" alt="" />FibonAI Operations</strong>
       <span class="badge">{{ session.mfaVerified ? 'MFA verified' : 'MFA required' }}</span>
-      <button type="button" @click="session.logout()">Sign out</button>
+      <button type="button" @click="signOut">Sign out</button>
     </header>
     <div class="layout">
       <nav aria-label="Operations">

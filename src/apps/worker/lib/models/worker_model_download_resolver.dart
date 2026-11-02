@@ -92,7 +92,12 @@ abstract final class WorkerModelDownloadResolver {
         if (path == null || path.isEmpty) {
           throw StateError('Server model delivery did not include a download path');
         }
-        return config.resolve(path).toString();
+        final relative = Uri.parse(path);
+        final resolved = config.resolve(relative.path);
+        return (relative.hasQuery
+                ? resolved.replace(query: relative.query)
+                : resolved)
+            .toString();
     }
   }
 }

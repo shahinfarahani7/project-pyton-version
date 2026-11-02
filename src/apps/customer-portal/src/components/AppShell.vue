@@ -24,13 +24,7 @@ const navGroups = [
       { name: 'dashboard', labelKey: 'nav.dashboard', icon: 'grid', permission: null },
       { name: 'tasks', labelKey: 'nav.tasks', icon: 'spark', permission: 'customer.tasks:read' },
       { name: 'usage', labelKey: 'nav.usage', icon: 'chart', permission: 'customer.billing:read' },
-    ],
-  },
-  {
-    labelKey: 'nav.groupFinance',
-    items: [
       { name: 'billing', labelKey: 'nav.billing', icon: 'wallet', permission: 'customer.billing:read' },
-      { name: 'wallet', labelKey: 'nav.wallet', icon: 'wallet', permission: 'customer.billing:read' },
     ],
   },
   {
@@ -40,20 +34,15 @@ const navGroups = [
       { name: 'files', labelKey: 'nav.files', icon: 'file', permission: 'customer.tasks:read' },
     ],
   },
-  {
-    labelKey: 'nav.groupPersonal',
-    items: [
-      { name: 'account', labelKey: 'nav.account', icon: 'team', permission: null },
-    ],
-  },
 ];
+
+const accountItem = { name: 'account', labelKey: 'nav.account', icon: 'team' };
 
 const pageSubtitles = {
   dashboard: 'shell.overviewSubtitle',
   tasks: 'shell.tasksSubtitle',
   usage: 'shell.usageSubtitle',
   billing: 'shell.billingSubtitle',
-  wallet: 'shell.walletSubtitle',
   'api-keys': 'shell.keysSubtitle',
   files: 'shell.filesSubtitle',
   account: 'shell.accountSubtitle',
@@ -151,9 +140,7 @@ onMounted(() => {
 
     <aside class="em-sidebar" aria-label="Primary">
       <div class="em-sidebar__brand md-brand">
-        <BrandLockup>
-          <p class="md-brand__subtitle">{{ t('nav.groupWorkspace') }}</p>
-        </BrandLockup>
+        <BrandLockup />
       </div>
 
       <div class="fn-workspace">
@@ -175,17 +162,27 @@ onMounted(() => {
                 :class="{ active: isNavActive(item.name) }"
               >
                 <StrokeIcon :name="item.icon" />
-                {{ t(item.labelKey) }}
+                <span>{{ t(item.labelKey) }}</span>
               </RouterLink>
             </li>
           </ul>
         </template>
       </nav>
 
-      <button type="button" class="md-btn md-btn-text em-sidebar__signout" @click="signOut">
-        <StrokeIcon name="logout" />
-        {{ t('auth.signOut') }}
-      </button>
+      <div class="em-sidebar__foot">
+        <RouterLink
+          :to="{ name: accountItem.name }"
+          class="em-sidebar__link"
+          :class="{ active: isNavActive(accountItem.name) }"
+        >
+          <StrokeIcon :name="accountItem.icon" />
+          <span>{{ t(accountItem.labelKey) }}</span>
+        </RouterLink>
+        <button type="button" class="em-sidebar__link em-sidebar__signout" @click="signOut">
+          <StrokeIcon name="logout" />
+          <span>{{ t('auth.signOut') }}</span>
+        </button>
+      </div>
     </aside>
 
     <div class="em-app-frame">
@@ -249,9 +246,7 @@ onMounted(() => {
       <aside class="em-drawer__panel">
         <div class="em-drawer__header">
           <div class="md-brand">
-            <BrandLockup>
-              <p class="md-brand__subtitle">{{ t('nav.groupWorkspace') }}</p>
-            </BrandLockup>
+            <BrandLockup />
           </div>
           <button type="button" class="em-icon-btn" aria-label="Close menu" @click="closeDrawer">
             <StrokeIcon name="close" />
@@ -268,17 +263,33 @@ onMounted(() => {
           <p class="fn-nav-group">{{ t(group.labelKey) }}</p>
           <ul class="em-drawer__list">
             <li v-for="item in group.items" :key="item.name">
-              <RouterLink :to="{ name: item.name }" class="em-drawer__link" @click="onNavigate">
+              <RouterLink
+                :to="{ name: item.name }"
+                class="em-drawer__link"
+                :class="{ active: isNavActive(item.name) }"
+                @click="onNavigate"
+              >
                 <StrokeIcon :name="item.icon" />
-                {{ t(item.labelKey) }}
+                <span>{{ t(item.labelKey) }}</span>
               </RouterLink>
             </li>
           </ul>
         </template>
-        <button type="button" class="md-btn md-btn-text em-drawer__signout" @click="signOut">
-          <StrokeIcon name="logout" />
-          {{ t('auth.signOut') }}
-        </button>
+        <div class="em-sidebar__foot">
+          <RouterLink
+            :to="{ name: accountItem.name }"
+            class="em-drawer__link"
+            :class="{ active: isNavActive(accountItem.name) }"
+            @click="onNavigate"
+          >
+            <StrokeIcon :name="accountItem.icon" />
+            <span>{{ t(accountItem.labelKey) }}</span>
+          </RouterLink>
+          <button type="button" class="em-drawer__link em-drawer__signout" @click="signOut">
+            <StrokeIcon name="logout" />
+            <span>{{ t('auth.signOut') }}</span>
+          </button>
+        </div>
       </aside>
     </nav>
   </div>

@@ -12,7 +12,6 @@ import MorePage from '../pages/MorePage.vue';
 import TaskChatPage from '../pages/TaskChatPage.vue';
 import TaskDetailPage from '../pages/TaskDetailPage.vue';
 import UsagePage from '../pages/UsagePage.vue';
-import WalletPage from '../pages/WalletPage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -47,7 +46,7 @@ const router = createRouter({
         { path: 'more', name: 'more', component: MorePage, meta: { titleKey: 'nav.more' } },
         { path: 'files', name: 'files', component: FilesPage, meta: { titleKey: 'nav.files', hideBottomNav: true } },
         { path: 'api-keys', name: 'api-keys', component: ApiKeysPage, meta: { titleKey: 'nav.apiKeys', hideBottomNav: true } },
-        { path: 'wallet', name: 'wallet', component: WalletPage, meta: { titleKey: 'nav.wallet', hideBottomNav: true } },
+        { path: 'wallet', redirect: { name: 'billing' } },
         { path: 'account', name: 'account', component: AccountPage, meta: { titleKey: 'nav.account', hideBottomNav: true } },
       ],
     },

@@ -5,6 +5,9 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
+from edgemint.security.api_key_directory import ApiKeyError
+from edgemint.security.api_key_directory import directory as api_key_directory
+
 DEV_ORGANIZATION_ID = UUID("00000000-0000-0000-0000-000000000001")
 DEV_PRINCIPAL_ID = UUID("00000000-0000-0000-0000-00000000000a")
 DEV_WORKSPACE_PRIMARY = UUID("00000000-0000-0000-0000-00000000000b")
@@ -214,6 +217,30 @@ def dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
         if task["id"] == task_id:
             return task
     return None
+
+
+_MONITOR_TASK_FIELDS = (
+    "id",
+    "taskType",
+    "lifecycleStatus",
+    "executionStatus",
+    "version",
+    "createdAt",
+    "updatedAt",
+    "assignmentId",
+    "failureReasonCode",
+)
+
+
+def monitor_task_rows() -> list[dict[str, Any]]:
+    """Task metadata across every dev workspace, without customer input or results."""
+    rows: list[dict[str, Any]] = []
+    for workspace_id in sorted({*DEV_WORKSPACE_IDS, *_created_tasks}, key=str):
+        for task in _tasks_for_workspace(workspace_id):
+            row = {key: task[key] for key in _MONITOR_TASK_FIELDS if key in task}
+            row["workspaceId"] = str(workspace_id)
+            rows.append(row)
+    return rows
 
 
 def find_task_workspace(task_id: str) -> UUID | None:
@@ -442,9 +469,54 @@ def dev_webhooks(workspace_id: UUID) -> dict[str, Any]:
     return {"items": items, "page": PAGE}
 
 
+_TASK_API_KEY_SCOPES = ["customer.tasks:read", "customer.tasks:write"]
+
+
+def issue_dev_api_key(workspace_id: UUID, *, name: str) -> dict[str, Any]:
+    """Issue a workspace task key. The raw secret is returned only from this call."""
+    try:
+        return api_key_directory.create(
+            workspace_id=workspace_id,
+            principal_id=DEV_PRINCIPAL_ID,
+            name=name,
+            scopes=_TASK_API_KEY_SCOPES,
+            expires_at=None,
+            allowed_cidrs=[],
+            idempotency_key=f"fixture-{secrets.token_hex(16)}",
+        )
+    except ApiKeyError as exc:
+        raise ValueError(exc.code) from exc
+
+
+def revoke_dev_api_key(workspace_id: UUID, key_id: str) -> dict[str, Any] | None:
+    try:
+        return api_key_directory.revoke(
+            workspace_id=workspace_id,
+            principal_id=DEV_PRINCIPAL_ID,
+            key_id=key_id,
+            idempotency_key=f"fixture-revoke-{secrets.token_hex(16)}",
+        )
+    except ApiKeyError as exc:
+        if exc.code == "API_KEY_NOT_FOUND":
+            return None
+        raise ValueError(exc.code) from exc
+
+
+def authenticate_dev_api_key(raw_secret: str) -> dict[str, Any] | None:
+    decision = api_key_directory.authenticate(raw_secret, client_ip=None)
+    if decision is None or decision.denied_code is not None:
+        return None
+    return {
+        "id": decision.key_id,
+        "workspaceId": decision.workspace_id,
+        "scopes": decision.scopes,
+        "status": "active",
+    }
+
+
 def dev_api_keys(workspace_id: UUID) -> dict[str, Any]:
     if workspace_id == DEV_WORKSPACE_PRIMARY:
-        items = [
+        items: list[dict[str, Any]] = [
             {"id": "key_dev_primary_live", "status": "active", "version": 3},
             {"id": "key_dev_primary_ro", "status": "active", "version": 1},
         ]
@@ -452,7 +524,8 @@ def dev_api_keys(workspace_id: UUID) -> dict[str, Any]:
         items = [{"id": "key_dev_staging", "status": "active", "version": 1}]
     else:
         items = []
-    return {"items": items, "page": PAGE}
+    issued = api_key_directory.list_public(workspace_id)["items"]
+    return {"items": [*items, *issued], "page": PAGE}
 
 
 def dev_usage(workspace_id: UUID) -> dict[str, Any]:
