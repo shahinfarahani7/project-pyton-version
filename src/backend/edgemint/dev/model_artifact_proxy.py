@@ -6,7 +6,9 @@ from dataclasses import dataclass
 
 import httpx
 from fastapi import HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
+
+from edgemint.models import artifact_store
 
 
 @dataclass(frozen=True)
@@ -71,20 +73,75 @@ def artifact_download_path(model_version_id: str) -> str:
     return f"/models/{model_version_id}/files/{spec.file_name}"
 
 
+def pinned_artifact(model_version_id: str) -> _ArtifactSpec | None:
+    return _SUPPORTED_ARTIFACTS.get(model_version_id)
+
+
+def local_artifact(model_version_id: str) -> artifact_store.StoredArtifact | None:
+    spec = _SUPPORTED_ARTIFACTS.get(model_version_id)
+    if spec is None or spec.sha256 is None or spec.size_bytes is None:
+        return None
+    return artifact_store.find_artifact(
+        model_version_id,
+        pinned_file_name=spec.file_name,
+        pinned_sha256=spec.sha256,
+        pinned_size_bytes=spec.size_bytes,
+    )
+
+
 def artifact_delivery_payload(model_version_id: str) -> dict[str, object]:
     spec = _SUPPORTED_ARTIFACTS.get(model_version_id)
     if spec is None:
         raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
+    local = local_artifact(model_version_id)
+    signed_path = artifact_store.signed_download_path(local) if local is not None else None
     payload: dict[str, object] = {
         "modelVersionId": model_version_id,
         "fileName": spec.file_name,
-        "downloadPath": artifact_download_path(model_version_id),
+        "downloadPath": signed_path or artifact_download_path(model_version_id),
+        "source": "self-hosted" if signed_path else "huggingface-proxy",
     }
     if spec.sha256 is not None:
         payload["artifactSha256"] = spec.sha256
     if spec.size_bytes is not None:
         payload["sizeBytes"] = spec.size_bytes
     return payload
+
+
+_SIGNATURE_STATUS = {
+    "MODEL_DOWNLOAD_SIGNING_DISABLED": 503,
+    "MODEL_DOWNLOAD_SIGNATURE_INVALID": 403,
+    "MODEL_DOWNLOAD_LINK_EXPIRED": 403,
+}
+
+
+def serve_signed_local_artifact(
+    model_version_id: str,
+    file_name: str,
+    *,
+    expires: str | None,
+    signature: str | None,
+) -> FileResponse:
+    spec = _SUPPORTED_ARTIFACTS.get(model_version_id)
+    if spec is None or file_name != spec.file_name:
+        raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
+    try:
+        artifact_store.verify_signature(model_version_id, file_name, expires=expires, signature=signature)
+    except artifact_store.ArtifactStoreError as exc:
+        raise HTTPException(status_code=_SIGNATURE_STATUS.get(exc.code, 403), detail=exc.code) from exc
+    local = local_artifact(model_version_id)
+    if local is None:
+        raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_STAGED")
+    return FileResponse(
+        local.path,
+        media_type="application/octet-stream",
+        filename=local.file_name,
+        headers={
+            "Cache-Control": "private, no-store",
+            "X-Artifact-SHA256": local.sha256,
+            "X-Artifact-Size": str(local.size_bytes),
+        },
+    )
 
 
 async def stream_model_artifact(

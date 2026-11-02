@@ -9,7 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 class _RecordingClient extends http.BaseClient {
+  _RecordingClient({this.downloadPath});
+
   final http.Client _inner = http.Client();
+  final String? downloadPath;
   String? lastPath;
 
   @override
@@ -19,7 +22,7 @@ class _RecordingClient extends http.BaseClient {
       final payload = jsonEncode({
         'modelVersionId': WorkerModelCatalog.modelVersionId,
         'fileName': WorkerModelCatalog.fileName,
-        'downloadPath':
+        'downloadPath': downloadPath ??
             '/models/${WorkerModelCatalog.modelVersionId}/files/${WorkerModelCatalog.fileName}',
         'artifactSha256': WorkerModelCatalog.knownGeneralArtifactSha256,
         'sizeBytes': WorkerModelCatalog.knownGeneralArtifactSizeBytes,
@@ -60,6 +63,36 @@ void main() {
     expect(
       url,
       'http://127.0.0.1:8081/models/${WorkerModelCatalog.modelVersionId}/files/${WorkerModelCatalog.fileName}',
+    );
+  });
+
+  test('default source asks the server where to download', () {
+    expect(
+      WorkerModelDownloadPolicy.fromEnvironment(),
+      WorkerModelDownloadSource.server,
+    );
+  });
+
+  test('server source keeps the signed query of a self-hosted link', () async {
+    const signedPath =
+        '/models/${WorkerModelCatalog.modelVersionId}/files/${WorkerModelCatalog.fileName}'
+        '?expires=1900000000&signature=abc123';
+    final recording = _RecordingClient(downloadPath: signedPath);
+    final config = WorkerConfig(
+      baseUrl: Uri.parse('http://10.0.0.5:8081/gw'),
+      modelDownloadSource: WorkerModelDownloadSource.server,
+    );
+    final api = WorkerApiClient(config: config, httpClient: recording);
+    final url = await WorkerModelDownloadResolver.resolveForDownload(
+      config: config,
+      source: WorkerModelDownloadSource.server,
+      api: api,
+      accessToken: 'tok',
+    );
+    expect(
+      url,
+      'http://10.0.0.5:8081/gw/models/${WorkerModelCatalog.modelVersionId}/files/${WorkerModelCatalog.fileName}'
+      '?expires=1900000000&signature=abc123',
     );
   });
 

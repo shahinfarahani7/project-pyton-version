@@ -39,3 +39,7 @@ src/apps/worker/**/ephemeral/
 src/backend/.ruff_cache/
 
 /artifacts/worker-installed-debug.apk
+
+# Self-hosted model artifacts (multi-GB, never commit)
+/var/models/
+

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
@@ -195,10 +195,20 @@ async def download_model_artifact(request: Request, model_version_id: str) -> St
 
 
 @app.get("/models/{model_version_id}/files/{file_name}", tags=["models"])
-async def download_model_file(request: Request, model_version_id: str, file_name: str) -> StreamingResponse:
-    spec = model_artifact_proxy._SUPPORTED_ARTIFACTS.get(model_version_id)
+async def download_model_file(
+    request: Request,
+    model_version_id: str,
+    file_name: str,
+    expires: str | None = None,
+    signature: str | None = None,
+) -> Response:
+    spec = model_artifact_proxy.pinned_artifact(model_version_id)
     if spec is None or file_name != spec.file_name:
         raise HTTPException(status_code=404, detail="MODEL_ARTIFACT_NOT_FOUND")
+    if signature is not None:
+        return model_artifact_proxy.serve_signed_local_artifact(
+            model_version_id, file_name, expires=expires, signature=signature
+        )
     return await model_artifact_proxy.stream_model_artifact(
         model_version_id,
         range_header=request.headers.get("range"),
