@@ -389,8 +389,11 @@ class LongFormCompletionDecision {
       'finalStopReason=$finalStopReason';
 }
 
-/// Long-form continues in fresh sessions of the stage cap. Each session closes
-/// before the next one opens; the resident model is not reloaded here.
+/// Long-form continues in fresh sessions of the stage cap. A short, medium,
+/// or detailed answer that stops on the output cap with an unfinished
+/// sentence or an unclosed code fence continues the same way, without the
+/// long-form section plan. Each session closes before the next one opens;
+/// the resident model is not reloaded here. A finished answer stays one session.
 class GemmaStagedDirectGeneration {
   static Future<GemmaStagePiece> run({
     required GemmaOutputLimitDecision decision,
@@ -404,7 +407,15 @@ class GemmaStagedDirectGeneration {
     int Function()? readElapsedMs,
   }) async {
     if (!decision.staged) {
-      return generateStage(0, prompt);
+      return _continueCutOffAnswer(
+        prompt: prompt,
+        generateStage: generateStage,
+        estimator: estimator,
+        hardMaxStages: hardMaxStages,
+        executionBudget: executionBudget,
+        readSignals: readSignals,
+        readElapsedMs: readElapsedMs,
+      );
     }
 
     final stageBudget = maxStages ??
@@ -637,6 +648,154 @@ class GemmaStagedDirectGeneration {
       endedIncomplete: incomplete,
     );
     return GemmaStageMerger.continuationPrompt(original: original, tail: tail);
+  }
+
+  /// One session when the model finishes. A cap hit that leaves a sentence or
+  /// code fence open continues from the tail until EOS, the device stage cap,
+  /// or the lease budget.
+  static Future<GemmaStagePiece> _continueCutOffAnswer({
+    required String prompt,
+    required Future<GemmaStagePiece> Function(int stageIndex, String stagePrompt) generateStage,
+    required TokenEstimator estimator,
+    required int? hardMaxStages,
+    required LongFormExecutionBudget? executionBudget,
+    required LongFormRuntimeSignals Function()? readSignals,
+    required int Function()? readElapsedMs,
+  }) async {
+    final hardBudget = hardMaxStages ??
+        executionBudget?.hardMaxStages ??
+        GemmaGenerationOutputLimit.longFormHardMaxStages;
+    final safetyLimit = hardBudget < 1 ? 1 : hardBudget;
+    final first = await generateStage(0, prompt);
+    if (safetyLimit < 2 || !_outputCutIsIncomplete(first)) {
+      return first;
+    }
+
+    var accumulated = first.text;
+    var generatedChunks = first.generatedChunks;
+    var stopReason = first.stopReason;
+    var stagesUsed = 1;
+    final executionClock = Stopwatch()..start();
+    int elapsedNow() => readElapsedMs?.call() ?? executionClock.elapsedMilliseconds;
+
+    while (stagesUsed < safetyLimit) {
+      if (executionBudget != null) {
+        final base = readSignals?.call() ?? executionBudget.initialSignals;
+        final gate = executionBudget.evaluate(
+          stageIndex: stagesUsed,
+          stageCount: stagesUsed,
+          signals: LongFormRuntimeSignals(
+            elapsedMs: elapsedNow(),
+            leaseRemainingMs: base.leaseRemainingMs,
+            batteryPercent: base.batteryPercent,
+            isCharging: base.isCharging,
+            thermalState: base.thermalState,
+          ),
+        );
+        if (!gate.shouldContinue) {
+          final incomplete = _textStillOpen(accumulated);
+          final leaseStop = gate.reason == 'lease_budget_exhausted';
+          return GemmaStagePiece(
+            text: accumulated,
+            stopReason: leaseStop
+                ? GemmaGenerationOutputLimit.leaseBudgetExhausted
+                : GemmaGenerationOutputLimit.longFormStageLimit,
+            generatedChunks: generatedChunks,
+            generatedTokens: estimator.estimate(accumulated),
+            complete: false,
+            truncated: incomplete || leaseStop,
+            stagesUsed: stagesUsed,
+          );
+        }
+      }
+
+      final previousEndedIncomplete = _textStillOpen(accumulated);
+      final tail = GemmaStageMerger.continuationTail(
+        accumulated,
+        endedIncomplete: previousEndedIncomplete,
+      );
+      final stagePrompt = GemmaStageMerger.continuationPrompt(
+        original: prompt,
+        tail: tail,
+      );
+      final piece = await generateStage(stagesUsed, stagePrompt);
+      final stageIndex = stagesUsed;
+      stagesUsed += 1;
+      generatedChunks += piece.generatedChunks;
+      stopReason = piece.stopReason;
+      if (piece.text.trim().isEmpty) {
+        _logStage(
+          stageIndex: stageIndex,
+          stageInputTailChars: tail.length,
+          stageOutputChars: 0,
+          overlapRemovedChars: 0,
+          duplicateBlocksRemoved: 0,
+          previousEndedIncomplete: previousEndedIncomplete,
+          stageStopReason: piece.stopReason,
+        );
+        break;
+      }
+      final merge = GemmaStageMerger.merge(
+        previousText: accumulated,
+        nextText: piece.text,
+        previousEndedIncomplete: previousEndedIncomplete,
+      );
+      _logStage(
+        stageIndex: stageIndex,
+        stageInputTailChars: tail.length,
+        stageOutputChars: piece.text.length,
+        overlapRemovedChars: merge.overlapRemovedChars,
+        duplicateBlocksRemoved: merge.duplicateBlocksRemoved,
+        previousEndedIncomplete: previousEndedIncomplete,
+        stageStopReason: piece.stopReason,
+      );
+      final madeProgress = merge.text != accumulated;
+      accumulated = merge.text;
+      final stillCut = _outputCutIsIncomplete(
+        GemmaStagePiece(
+          text: accumulated,
+          stopReason: stopReason,
+          generatedChunks: generatedChunks,
+          generatedTokens: piece.generatedTokens,
+        ),
+      );
+      if (!stillCut || !madeProgress) {
+        break;
+      }
+    }
+
+    final stillOpen = _textStillOpen(accumulated);
+    final finished = stopReason == GemmaGenerationOutputLimit.eos || stopReason == 'model_eos';
+    final truncated = !finished && stillOpen && accumulated.trim().isNotEmpty;
+    return GemmaStagePiece(
+      text: accumulated,
+      stopReason: truncated ? GemmaGenerationOutputLimit.longFormStageLimit : stopReason,
+      generatedChunks: generatedChunks,
+      generatedTokens: estimator.estimate(accumulated),
+      complete: finished || !stillOpen,
+      truncated: truncated,
+      stagesUsed: stagesUsed,
+    );
+  }
+
+  static bool _outputCutIsIncomplete(GemmaStagePiece piece) {
+    final hitLimit = piece.stopReason == GemmaGenerationOutputLimit.outputLimit ||
+        piece.stopReason == 'output_limit';
+    if (!hitLimit || piece.text.trim().isEmpty) {
+      return false;
+    }
+    return _textStillOpen(piece.text);
+  }
+
+  static bool _textStillOpen(String text) {
+    final trimmed = text.trimRight();
+    if (trimmed.isEmpty) {
+      return true;
+    }
+    if ('```'.allMatches(trimmed).length.isOdd) {
+      return true;
+    }
+    return LongFormCompletion.textIsIncomplete(trimmed);
   }
 }
 

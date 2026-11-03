@@ -26,10 +26,10 @@ class WorkerAccountProfile {
   final DateTime updatedAtUtc;
 
   Map<String, dynamic> toJson() => {
-        'username': username,
-        'email': email,
-        'updatedAtUtc': updatedAtUtc.toUtc().toIso8601String(),
-      };
+    'username': username,
+    'email': email,
+    'updatedAtUtc': updatedAtUtc.toUtc().toIso8601String(),
+  };
 
   String get maskedEmail {
     final value = email.trim();
@@ -65,6 +65,16 @@ class WorkerAccountProfileStore {
   Future<void> clear() async {
     await _store.delete(_storageKey);
   }
+}
+
+/// Display name derived from the mailbox. Server display names stay authoritative.
+String usernameFromEmail(String email) {
+  final local = email.split('@').first.trim();
+  final cleaned = local.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '');
+  if (cleaned.length >= 2) {
+    return cleaned.length > 64 ? cleaned.substring(0, 64) : cleaned;
+  }
+  return 'worker';
 }
 
 /// Basic email shape check; server remains authoritative when connected.

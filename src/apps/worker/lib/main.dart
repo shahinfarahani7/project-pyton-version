@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/worker_app_update.dart';
 import 'ui/fibonai_splash.dart';
+import 'ui/worker_login_screen.dart';
 import 'ui/gemma_download_dialog.dart';
 import 'ui/tabs/worker_home_tab.dart';
 import 'ui/tabs/worker_missions_tab.dart';
@@ -104,6 +105,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     final controller = _controller;
     if (!mounted ||
         controller == null ||
+        controller.needsEmailSignIn ||
         _selectedNavIndex != 0 ||
         _modelUpdatePromptOpen) {
       return;
@@ -163,6 +165,10 @@ class _WorkerHomePageState extends State<WorkerHomePage>
           }
         },
       );
+    }
+
+    if (controller.needsEmailSignIn) {
+      return WorkerLoginScreen(controller: controller);
     }
 
     return WorkerShell(

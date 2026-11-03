@@ -11,6 +11,7 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:http/http.dart' as http;
 
 import 'api/worker_api_client.dart';
+import 'api/worker_email_auth_client.dart';
 import 'api/worker_assignment_models.dart';
 import 'api/worker_routes.dart';
 import 'config/worker_config.dart';
@@ -57,8 +58,10 @@ import 'runtime/worker_heartbeat_service.dart';
 import 'runtime/worker_pipeline_log.dart';
 import 'runtime/worker_content_diagnostics.dart';
 import 'runtime/worker_fibonai_credit_store.dart';
+import 'runtime/worker_fibonai_earnings.dart';
 import 'runtime/worker_session_lifecycle.dart';
 import 'runtime/worker_account_profile_store.dart';
+import 'runtime/worker_email_session_store.dart';
 import 'runtime/worker_mission_progress_store.dart';
 import 'runtime/worker_payout_wallet_store.dart';
 import 'runtime/worker_session_store.dart';
@@ -159,6 +162,7 @@ class WorkerAppController extends ChangeNotifier {
     _sessionStore = WorkerSessionStore(_encryptedStore);
     _payoutWalletStore = WorkerPayoutWalletStore(_encryptedStore);
     _accountProfileStore = WorkerAccountProfileStore(_encryptedStore);
+    _emailSessionStore = WorkerEmailSessionStore(_encryptedStore);
     _missionProgressStore = WorkerMissionProgressStore(_encryptedStore);
     _fibonaiCreditStore = WorkerFibonaiCreditStore(_encryptedStore);
     _sessionLifecycle = WorkerSessionLifecycle(
@@ -232,6 +236,7 @@ class WorkerAppController extends ChangeNotifier {
   late final WorkerSessionStore _sessionStore;
   late final WorkerPayoutWalletStore _payoutWalletStore;
   late final WorkerAccountProfileStore _accountProfileStore;
+  late final WorkerEmailSessionStore _emailSessionStore;
   late final WorkerMissionProgressStore _missionProgressStore;
   late final WorkerFibonaiCreditStore _fibonaiCreditStore;
   Set<String> _creditedAssignmentIds = {};
@@ -344,6 +349,10 @@ class WorkerAppController extends ChangeNotifier {
 
   int tasksProcessed = 0;
 
+  /// Fibonai points per local day for the home earnings chart.
+  /// Oldest day first, today last.
+  List<double> fibonaiDailyPoints = emptyFibonaiDailyPoints;
+
   List<WorkerPayoutWalletRecord> payoutWallets = [];
   bool payoutWalletsLoading = false;
   String? payoutWalletNotice;
@@ -404,6 +413,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   WorkerAccountProfile? accountProfile;
+  WorkerEmailSession? emailSession;
   bool accountProfileLoading = false;
   String? accountProfileNotice;
   bool accountProfileNoticeIsError = false;
@@ -445,14 +455,215 @@ class WorkerAppController extends ChangeNotifier {
     return null;
   }
 
+  bool get emailSignedIn {
+    final session = emailSession;
+    return session != null && session.isActiveAt(DateTime.now());
+  }
+
+  /// Scripted worker credentials skip the email gate. Everyone else must sign in.
+  bool get needsEmailSignIn => !hasManualCredentials && !emailSignedIn;
+
+  Future<void> loadEmailSession() async {
+    final stored = await _emailSessionStore.read();
+    if (stored == null || !stored.isActiveAt(DateTime.now())) {
+      if (stored != null) {
+        await _emailSessionStore.clear();
+      }
+      emailSession = null;
+      return;
+    }
+    emailSession = stored;
+    accountProfile ??= await _accountProfileStore.read();
+    await _recordDailyMissionForSignIn(notify: false);
+  }
+
+  Future<String?> signUpWithEmail({
+    required String email,
+    required String password,
+    required String confirmPassword,
+  }) {
+    final address = email.trim();
+    if (!isPlausibleEmail(address)) {
+      return Future.value('Enter a valid email address.');
+    }
+    if (password.length < WorkerEmailAuthClient.minPasswordLength) {
+      return Future.value('Use a password of at least 8 characters.');
+    }
+    if (password != confirmPassword) {
+      return Future.value('Passwords do not match.');
+    }
+    return _openEmailSession(
+      () => _emailAuthClient().signUp(email: address, password: password),
+      email: address,
+    );
+  }
+
+  Future<String?> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) {
+    final address = email.trim();
+    if (!isPlausibleEmail(address)) {
+      return Future.value('Enter a valid email address.');
+    }
+    if (password.isEmpty) {
+      return Future.value('Enter your password.');
+    }
+    return _openEmailSession(
+      () => _emailAuthClient().signInWithPassword(
+        email: address,
+        password: password,
+      ),
+      email: address,
+    );
+  }
+
+  Future<({String? error, WorkerEmailCodeIssue? challenge})>
+  requestEmailSignInCode(String email) async {
+    final address = email.trim();
+    if (!isPlausibleEmail(address)) {
+      return (error: 'Enter a valid email address.', challenge: null);
+    }
+    try {
+      final challenge = await _emailAuthClient().requestCode(address);
+      return (error: null, challenge: challenge);
+    } on WorkerEmailAuthException catch (error) {
+      return (error: error.message, challenge: null);
+    }
+  }
+
+  Future<String?> verifyEmailSignInCode({
+    required String email,
+    required String challengeId,
+    required String code,
+  }) {
+    final address = email.trim();
+    final submitted = code.trim();
+    if (!isPlausibleEmail(address)) {
+      return Future.value('Enter a valid email address.');
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(submitted)) {
+      return Future.value('Enter the 6-digit code.');
+    }
+    return _openEmailSession(
+      () => _emailAuthClient().verifyCode(
+        email: address,
+        challengeId: challengeId,
+        code: submitted,
+      ),
+      email: address,
+    );
+  }
+
+  Future<void> signOutEmail() async {
+    final session = emailSession;
+    emailSession = null;
+    accountProfile = null;
+    accountProfileNotice = null;
+    stopAutoAssignmentLoop();
+    notifyListeners();
+    await _emailSessionStore.clear();
+    await _accountProfileStore.clear();
+    try {
+      await _emailAuthClient().logout(
+        sessionCookie: session?.sessionCookie,
+        csrfToken: session?.csrfToken,
+      );
+    } catch (error) {
+      _logTask('Email sign-out request failed: $error');
+    }
+  }
+
+  WorkerEmailAuthClient _emailAuthClient() {
+    return WorkerEmailAuthClient(
+      baseUrl: _config.apiGatewayBaseUrl,
+      httpClient: _http,
+    );
+  }
+
+  Future<String?> _openEmailSession(
+    Future<WorkerEmailAuthResult> Function() request, {
+    required String email,
+  }) async {
+    final WorkerEmailAuthResult result;
+    try {
+      result = await request();
+    } on WorkerEmailAuthException catch (error) {
+      return error.message;
+    }
+    final existing = accountProfile;
+    final normalized = email.trim().toLowerCase();
+    final username =
+        existing != null && existing.email.trim().toLowerCase() == normalized
+        ? existing.username
+        : usernameFromEmail(normalized);
+    final profile = WorkerAccountProfile(
+      username: username,
+      email: normalized,
+      updatedAtUtc: DateTime.now().toUtc(),
+    );
+    final session = WorkerEmailSession(
+      email: normalized,
+      sessionPublicId: result.sessionPublicId,
+      expiresAtUtc: result.expiresAtUtc,
+      sessionCookie: result.sessionCookie,
+      csrfToken: result.csrfToken,
+    );
+    await _accountProfileStore.write(profile);
+    await _emailSessionStore.write(session);
+    accountProfile = profile;
+    emailSession = session;
+    accountProfileNotice = null;
+    accountProfileNoticeIsError = false;
+    await _recordDailyMissionForSignIn(notify: false);
+    notifyListeners();
+    if (!_disposed) {
+      unawaited(_continueAfterEmailSignIn());
+    }
+    return null;
+  }
+
+  Future<void> _continueAfterEmailSignIn() async {
+    if (_disposed || needsEmailSignIn) {
+      return;
+    }
+    if (!workerEnrolled && !hasManualCredentials) {
+      await _ensureWorkerSession();
+    }
+    if (_disposed || needsEmailSignIn || !available) {
+      return;
+    }
+    startAutoAssignmentLoop();
+  }
+
   /// Validates input locally; does not persist secrets. Returns an error
   /// message, or null when validation passed but the server rejected the call.
   Set<String> acknowledgedMissionIds = {};
+  String? dailyMissionDay;
+
+  bool get isDailyMissionCompletedToday =>
+      dailyMissionDay == workerLocalCalendarDay(DateTime.now());
 
   Future<void> loadMissionProgress() async {
     acknowledgedMissionIds = await _missionProgressStore
         .readCompletedMissionIds();
+    dailyMissionDay = await _missionProgressStore.readDailyMissionDay();
     notifyListeners();
+  }
+
+  Future<void> _recordDailyMissionForSignIn({required bool notify}) async {
+    if (!emailSignedIn || _disposed) {
+      return;
+    }
+    final day = workerLocalCalendarDay(DateTime.now());
+    if (dailyMissionDay == day) {
+      return;
+    }
+    dailyMissionDay = day;
+    await _missionProgressStore.writeDailyMissionDay(day);
+    if (notify && !_disposed) {
+      notifyListeners();
+    }
   }
 
   Future<void> loadFibonaiCredits() async {
@@ -472,16 +683,32 @@ class WorkerAppController extends ChangeNotifier {
         return;
       }
       final fibonai = decoded['fibonai'];
-      if (fibonai is! Map || fibonai['knownDevice'] != true) {
+      if (fibonai is! Map) {
         return;
       }
-      final tasks = fibonai['tasksCompleted'];
-      if (tasks is int && tasks >= 0) {
-        tasksProcessed = tasks;
-        _lastUploadIncludedFibonai = true;
-      }
+      _adoptFibonaiBalance(fibonai, fromUpload: true);
     } catch (_) {
       return;
+    }
+  }
+
+  void _adoptFibonaiBalance(
+    Map<dynamic, dynamic> fibonai, {
+    required bool fromUpload,
+  }) {
+    if (fibonai['knownDevice'] != true) {
+      return;
+    }
+    final tasks = fibonai['tasksCompleted'];
+    if (tasks is int && tasks >= 0) {
+      tasksProcessed = tasks;
+    }
+    if (fromUpload && fibonaiBalanceOwnsLedger(fibonai)) {
+      _lastUploadIncludedFibonai = true;
+    }
+    final daily = fibonaiDailyPointsFromBalance(fibonai, now: DateTime.now());
+    if (daily != null) {
+      fibonaiDailyPoints = daily;
     }
   }
 
@@ -498,12 +725,11 @@ class WorkerAppController extends ChangeNotifier {
         return;
       }
       final decoded = jsonDecode(response.body);
-      if (decoded is! Map || decoded['knownDevice'] != true) {
+      if (decoded is! Map) {
         return;
       }
-      final tasks = decoded['tasksCompleted'];
-      if (tasks is int && tasks >= 0) {
-        tasksProcessed = tasks;
+      _adoptFibonaiBalance(decoded, fromUpload: false);
+      if (!_disposed) {
         notifyListeners();
       }
     } catch (error) {
@@ -512,12 +738,15 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> _creditCompletedAssignment(String assignmentId) async {
-    if (assignmentId.isEmpty ||
-        _creditedAssignmentIds.contains(assignmentId)) {
+    if (assignmentId.isEmpty || _creditedAssignmentIds.contains(assignmentId)) {
       return;
     }
     _creditedAssignmentIds = {..._creditedAssignmentIds, assignmentId};
     tasksProcessed = _creditedAssignmentIds.length;
+    fibonaiDailyPoints = addFibonaiPointsToday(
+      fibonaiDailyPoints,
+      fibonaiPointsPerCompletedTask,
+    );
     await _fibonaiCreditStore.writeCreditedAssignmentIds(
       _creditedAssignmentIds,
     );
@@ -930,15 +1159,19 @@ class WorkerAppController extends ChangeNotifier {
 
     await _refreshBackendHealth();
 
+    await loadAccountProfile();
+    await loadEmailSession();
+
     if (backendOnline) {
-      await _ensureWorkerSession();
+      if (!needsEmailSignIn) {
+        await _ensureWorkerSession();
+      }
       await refreshAppUpdate();
     }
 
     await _refreshDeviceReadiness();
 
     await loadPayoutWallets();
-    await loadAccountProfile();
     await loadMissionProgress();
     await loadFibonaiCredits();
     await refreshFibonaiFromServer();

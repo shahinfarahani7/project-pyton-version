@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../runtime/execution_status.dart';
 import '../../runtime/worker_app_update.dart';
+import '../../runtime/worker_fibonai_earnings.dart';
 import '../../worker_app_controller.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
@@ -80,7 +81,11 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
               _HomeStatRow(tasksCompleted: controller.tasksProcessed),
         ),
         const SizedBox(height: 16),
-        const _EarningsChart(),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) =>
+              _EarningsChart(values: controller.fibonaiDailyPoints),
+        ),
       ],
     );
   }
@@ -192,12 +197,9 @@ class _HomeStatRow extends StatelessWidget {
 
   final int tasksCompleted;
 
-  /// Dev display: Fibonai credited per successfully completed task.
-  static const fibonaiPerCompletedTask = 40;
-
   @override
   Widget build(BuildContext context) {
-    final fibonaiTotal = tasksCompleted * fibonaiPerCompletedTask;
+    final fibonaiTotal = tasksCompleted * fibonaiPointsPerCompletedTask;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -249,10 +251,19 @@ class _StatCard extends StatelessWidget {
 }
 
 class _EarningsChart extends StatelessWidget {
-  const _EarningsChart();
+  const _EarningsChart({required this.values});
+
+  final List<double> values;
 
   @override
   Widget build(BuildContext context) {
+    final earned = values.fold<double>(0, (sum, value) => sum + value);
+    final hasEarnings = earned > 0;
+    final summary = hasEarnings
+        ? '${earned.round()} Fibonai over the last 7 days. '
+            'Rewards are variable and are not guaranteed.'
+        : 'No Fibonai earned in the last 7 days. '
+            'Rewards are variable and are not guaranteed.';
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: workerPanelDecoration(),
@@ -266,16 +277,16 @@ class _EarningsChart extends StatelessWidget {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'No settled payout is loaded. Rewards are variable and are not guaranteed.',
-            style: TextStyle(
+          Text(
+            summary,
+            style: const TextStyle(
               color: WorkerColors.onSurfaceVariant,
               fontSize: 12,
             ),
           ),
           const SizedBox(height: 16),
-          const WorkerLineChart(
-            values: [0, 0, 0, 0, 0, 0, 0],
+          WorkerLineChart(
+            values: values,
             color: WorkerColors.primary,
           ),
         ],

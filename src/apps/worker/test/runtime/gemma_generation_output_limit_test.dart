@@ -364,6 +364,220 @@ void main() {
       expect(calls, 1);
     });
 
+    test('a finished short sentence stays one session even at the output cap', () async {
+      const prompt = 'Say hello';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      expect(decision.staged, isFalse);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          expect(stagePrompt, prompt);
+          return const GemmaStagePiece(
+            text: 'Hello.',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 2,
+          );
+        },
+      );
+      expect(calls, 1);
+      expect(result.stopReason, GemmaGenerationOutputLimit.outputLimit);
+      expect(result.text, 'Hello.');
+    });
+  });
+
+  group('cut-off short answers', () {
+    test('an unfinished code answer continues without the long-form plan', () async {
+      const prompt = 'تابع فیبوناچی را در Rust بنویس';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      expect(decision.answerClass, 'short');
+      expect(decision.staged, isFalse);
+      expect(decision.effectiveOutputLimit, 256);
+      const cut = 'fn fibonacci_iterative(n: u64) -> Vec<u64> {\n'
+          '    // عدد بعدی = دو عدد قبلی جمع';
+      expect(LongFormCompletion.textIsIncomplete(cut), isTrue);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          if (stageIndex == 0) {
+            expect(stagePrompt, prompt);
+            expect(stagePrompt, isNot(contains('Current section')));
+            expect(stagePrompt, isNot(contains('EDGEMINT_DONE')));
+            return const GemmaStagePiece(
+              text: cut,
+              stopReason: GemmaGenerationOutputLimit.outputLimit,
+              generatedChunks: 256,
+              generatedTokens: 200,
+            );
+          }
+          expect(stagePrompt, contains('ادامه'));
+          expect(stagePrompt, contains('عدد بعدی'));
+          expect(stagePrompt, isNot(contains('Current section')));
+          expect(stagePrompt, isNot(contains('EDGEMINT_DONE')));
+          return const GemmaStagePiece(
+            text: 'let next = a + b;\n}',
+            stopReason: GemmaGenerationOutputLimit.eos,
+            generatedChunks: 20,
+            generatedTokens: 12,
+          );
+        },
+      );
+
+      expect(calls, 2);
+      expect(result.text, contains('fn fibonacci_iterative'));
+      expect(result.text, contains('let next = a + b;'));
+      expect(result.stopReason, GemmaGenerationOutputLimit.eos);
+      expect(result.truncated, isFalse);
+      expect(result.complete, isTrue);
+      expect(result.generatedChunks, 276);
+      final task = DirectPromptHandler.resultFor(
+        request: _request(),
+        generation: DirectGenerationReceipt(
+          text: result.text,
+          stopReason: result.stopReason,
+          configuredOutputLimit: 256,
+          generatedChunks: result.generatedChunks,
+          generatedTokens: result.generatedTokens,
+        ),
+        metrics: WorkerTaskMetrics(),
+        truncated: result.truncated,
+      );
+      expect(task.status, WorkerResultStatus.succeeded);
+      expect(task.output?['truncated'], isFalse);
+      expect(task.output?['rawText'], contains('let next = a + b;'));
+    });
+
+    test('an open code fence continues even when the last line ends a sentence', () async {
+      const prompt = 'Write a fibonacci function in Rust';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      expect(decision.staged, isFalse);
+      const cut = '```rust\nfn fib() { return 1; }\n// تمام شد.';
+      expect(LongFormCompletion.textIsIncomplete(cut), isFalse);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          if (stageIndex == 0) {
+            return const GemmaStagePiece(
+              text: cut,
+              stopReason: GemmaGenerationOutputLimit.outputLimit,
+              generatedChunks: 256,
+              generatedTokens: 40,
+            );
+          }
+          return const GemmaStagePiece(
+            text: '```',
+            stopReason: GemmaGenerationOutputLimit.eos,
+            generatedChunks: 2,
+            generatedTokens: 1,
+          );
+        },
+      );
+      expect(calls, 2);
+      expect(result.text, contains('fn fib()'));
+      expect(result.text, contains('```'));
+      expect(result.stopReason, GemmaGenerationOutputLimit.eos);
+      expect(result.truncated, isFalse);
+    });
+
+    test('the device stage cap stops an unfinished short answer', () async {
+      const prompt = 'تابع فیبوناچی را در Rust بنویس';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        hardMaxStages: 2,
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          return GemmaStagePiece(
+            text: 'fn fib() { step $stageIndex',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 20,
+          );
+        },
+      );
+      expect(calls, 2);
+      expect(result.complete, isFalse);
+      expect(result.truncated, isTrue);
+      expect(result.stopReason, GemmaGenerationOutputLimit.longFormStageLimit);
+      expect(result.text, contains('step 0'));
+      expect(result.text, contains('step 1'));
+      final task = DirectPromptHandler.resultFor(
+        request: _request(),
+        generation: DirectGenerationReceipt(
+          text: result.text,
+          stopReason: result.stopReason,
+          configuredOutputLimit: 256,
+          generatedChunks: result.generatedChunks,
+          generatedTokens: result.generatedTokens,
+        ),
+        metrics: WorkerTaskMetrics(),
+        truncated: result.truncated,
+      );
+      expect(task.status, WorkerResultStatus.succeededWithTruncation);
+      expect(task.output?['truncated'], isTrue);
+      expect(task.output?['stopReason'], 'LONG_FORM_STAGE_LIMIT');
+    });
+
+    test('a short lease blocks the continuation stage', () async {
+      const prompt = 'تابع فیبوناچی را در Rust بنویس';
+      final decision = GemmaGenerationOutputLimit.resolveTextDirect(prompt: prompt);
+      var calls = 0;
+      final result = await GemmaStagedDirectGeneration.run(
+        decision: decision,
+        prompt: prompt,
+        executionBudget: const LongFormExecutionBudget(
+          maxStages: 6,
+          hardMaxStages: 8,
+          maxElapsedMs: 20 * 60 * 1000,
+          minimumLeaseRemainingMs: 60000,
+          minimumBatteryPercent: 20,
+          maximumThermalState: ThermalState.normal,
+          initialSignals: LongFormRuntimeSignals(leaseRemainingMs: 1000),
+        ),
+        generateStage: (stageIndex, stagePrompt) async {
+          calls += 1;
+          return const GemmaStagePiece(
+            text: 'fn fib() {',
+            stopReason: GemmaGenerationOutputLimit.outputLimit,
+            generatedChunks: 256,
+            generatedTokens: 8,
+          );
+        },
+      );
+      expect(calls, 1);
+      expect(result.text, 'fn fib() {');
+      expect(result.truncated, isTrue);
+      expect(result.complete, isFalse);
+      expect(result.stopReason, GemmaGenerationOutputLimit.leaseBudgetExhausted);
+      final task = DirectPromptHandler.resultFor(
+        request: _request(),
+        generation: DirectGenerationReceipt(
+          text: result.text,
+          stopReason: result.stopReason,
+          configuredOutputLimit: 256,
+          generatedChunks: result.generatedChunks,
+          generatedTokens: result.generatedTokens,
+        ),
+        metrics: WorkerTaskMetrics(),
+        truncated: result.truncated,
+      );
+      expect(task.status, WorkerResultStatus.succeededWithTruncation);
+      expect(task.output?['truncated'], isTrue);
+    });
+  });
+
+  group('staged long-form completion', () {
     test('an incomplete fourth stage is not final success and another stage runs', () async {
       const fragment = '* **مشاهده:** در هفته‌های اول، کلونی را';
       expect(LongFormCompletion.textIsIncomplete(fragment), isTrue);

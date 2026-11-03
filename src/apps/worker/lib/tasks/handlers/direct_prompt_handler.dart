@@ -91,7 +91,7 @@ class DirectPromptHandler implements TaskHandler {
       prompt: userText,
       maxStages: selection?.maxStages,
       hardMaxStages: selection?.hardMaxStages,
-      executionBudget: decision.staged ? selection?.longFormBudget : null,
+      executionBudget: selection?.longFormBudget,
       readSignals: DeviceInferencePlan.instance.readSignals,
       generateStage: (stageIndex, stagePrompt) {
         return qwenProcessor
@@ -121,11 +121,15 @@ class DirectPromptHandler implements TaskHandler {
       generatedTokens: staged.generatedTokens,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
+    final continued = decision.staged ||
+        staged.stagesUsed > 1 ||
+        staged.stopReason == GemmaGenerationOutputLimit.leaseBudgetExhausted ||
+        staged.stopReason == GemmaGenerationOutputLimit.longFormStageLimit;
     developer.log(
       decision.completionLog(
         generatedChunks: generation.generatedChunks,
         generatedTokens: generation.generatedTokens,
-        truncated: decision.staged ? staged.truncated : generation.hitOutputLimit,
+        truncated: continued ? staged.truncated : generation.hitOutputLimit,
       ),
       name: 'EdgeMintTaskEngine',
     );
@@ -134,7 +138,7 @@ class DirectPromptHandler implements TaskHandler {
       request: request,
       generation: generation,
       metrics: metrics,
-      truncated: decision.staged ? staged.truncated : null,
+      truncated: continued ? staged.truncated : null,
     );
   }
 

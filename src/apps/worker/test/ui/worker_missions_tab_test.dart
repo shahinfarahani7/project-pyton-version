@@ -1,5 +1,6 @@
 import 'package:edgemint_worker/config/worker_config.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
+import 'package:edgemint_worker/runtime/worker_mission_progress_store.dart';
 import 'package:edgemint_worker/ui/tabs/worker_missions_tab.dart';
 import 'package:edgemint_worker/ui/worker_theme.dart';
 import 'package:edgemint_worker/worker_app_controller.dart';
@@ -25,9 +26,8 @@ void main() {
         theme: buildWorkerTheme(),
         home: ListenableBuilder(
           listenable: controller,
-          builder: (context, _) => Scaffold(
-            body: WorkerMissionsTab(controller: controller),
-          ),
+          builder: (context, _) =>
+              Scaffold(body: WorkerMissionsTab(controller: controller)),
         ),
       ),
     );
@@ -45,6 +45,64 @@ void main() {
     final daily = tester.getTopLeft(find.text('Daily online').first);
     final telegram = tester.getTopLeft(find.text('Join Telegram').first);
     expect(daily.dy, lessThan(telegram.dy));
+    expect(
+      _missionCheckIcon(tester, 'daily_online').icon,
+      Icons.check_box_outline_blank_rounded,
+    );
+  });
+
+  test('a previous day does not keep the daily mission checked', () async {
+    final encrypted = InMemoryEncryptedStore();
+    await WorkerMissionProgressStore(encrypted).writeDailyMissionDay(
+      workerLocalCalendarDay(DateTime.now().subtract(const Duration(days: 1))),
+    );
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: encrypted,
+    );
+    addTearDown(controller.dispose);
+
+    await controller.loadMissionProgress();
+
+    expect(controller.isDailyMissionCompletedToday, isFalse);
+  });
+
+  testWidgets('today\'s daily mission shows a checked box', (tester) async {
+    tester.view.physicalSize = const Size(390, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final encrypted = InMemoryEncryptedStore();
+    await WorkerMissionProgressStore(
+      encrypted,
+    ).writeDailyMissionDay(workerLocalCalendarDay(DateTime.now()));
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: encrypted,
+    );
+    addTearDown(controller.dispose);
+    await controller.loadMissionProgress();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) =>
+              Scaffold(body: WorkerMissionsTab(controller: controller)),
+        ),
+      ),
+    );
+
+    expect(
+      _missionCheckIcon(tester, 'daily_online').icon,
+      Icons.check_box_rounded,
+    );
+    expect(
+      _missionCheckIcon(tester, 'social_telegram').icon,
+      Icons.check_box_outline_blank_rounded,
+    );
   });
 
   testWidgets('acknowledged social mission shows completed disabled button', (
@@ -67,14 +125,16 @@ void main() {
         theme: buildWorkerTheme(),
         home: ListenableBuilder(
           listenable: controller,
-          builder: (context, _) => Scaffold(
-            body: WorkerMissionsTab(controller: controller),
-          ),
+          builder: (context, _) =>
+              Scaffold(body: WorkerMissionsTab(controller: controller)),
         ),
       ),
     );
 
-    expect(find.byKey(const ValueKey('mission-check-social_telegram')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('mission-check-social_telegram')),
+      findsOneWidget,
+    );
     final check = tester.widget<Icon>(
       find.descendant(
         of: find.byKey(const ValueKey('mission-check-social_telegram')),
@@ -102,14 +162,15 @@ void main() {
         theme: buildWorkerTheme(),
         home: ListenableBuilder(
           listenable: controller,
-          builder: (context, _) => Scaffold(
-            body: WorkerMissionsTab(controller: controller),
-          ),
+          builder: (context, _) =>
+              Scaffold(body: WorkerMissionsTab(controller: controller)),
         ),
       ),
     );
 
-    await tester.tap(find.byKey(const ValueKey('mission-help-social_telegram')));
+    await tester.tap(
+      find.byKey(const ValueKey('mission-help-social_telegram')),
+    );
     await tester.pumpAndSettle();
     expect(find.text('How to complete'), findsOneWidget);
     expect(find.widgetWithText(TextButton, 'Open Telegram'), findsOneWidget);
@@ -131,13 +192,14 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildWorkerTheme(),
-        home: Scaffold(
-          body: WorkerMissionsTab(controller: controller),
-        ),
+        home: Scaffold(body: WorkerMissionsTab(controller: controller)),
       ),
     );
 
-    expect(find.widgetWithText(TextButton, 'Open payout wallet setup'), findsNothing);
+    expect(
+      find.widgetWithText(TextButton, 'Open payout wallet setup'),
+      findsNothing,
+    );
 
     final walletHelp = find.byKey(const ValueKey('mission-help-define_wallet'));
     await tester.scrollUntilVisible(walletHelp, 300);
@@ -146,6 +208,18 @@ void main() {
 
     expect(find.text('How to complete'), findsOneWidget);
     expect(find.textContaining('Earnings tab'), findsOneWidget);
-    expect(find.widgetWithText(TextButton, 'Open payout wallet setup'), findsNothing);
+    expect(
+      find.widgetWithText(TextButton, 'Open payout wallet setup'),
+      findsNothing,
+    );
   });
+}
+
+Icon _missionCheckIcon(WidgetTester tester, String missionId) {
+  return tester.widget<Icon>(
+    find.descendant(
+      of: find.byKey(ValueKey('mission-check-$missionId')),
+      matching: find.byType(Icon),
+    ),
+  );
 }

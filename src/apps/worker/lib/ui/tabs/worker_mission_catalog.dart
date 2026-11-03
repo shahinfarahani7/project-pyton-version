@@ -26,6 +26,7 @@ class WorkerMissionDefinition {
   final String title;
   final String description;
   final String howToComplete;
+
   /// Display-only until server mission rewards are connected.
   final String rewardPointsLabel;
   final IconData icon;
@@ -47,11 +48,11 @@ abstract final class WorkerMissionSocialLinks {
   static Uri? get twitter => _fromEnv('FIBONAI_TWITTER_URL');
 
   static Uri? forKind(WorkerMissionKind kind) => switch (kind) {
-        WorkerMissionKind.socialTelegram => telegram,
-        WorkerMissionKind.socialDiscord => discord,
-        WorkerMissionKind.socialTwitter => twitter,
-        _ => null,
-      };
+    WorkerMissionKind.socialTelegram => telegram,
+    WorkerMissionKind.socialDiscord => discord,
+    WorkerMissionKind.socialTwitter => twitter,
+    _ => null,
+  };
 
   /// Build-time override via `--dart-define=FIBONAI_*_URL`, else catalog default.
   static Uri openUriForKind(WorkerMissionKind kind) {
@@ -72,11 +73,11 @@ abstract final class WorkerMissionSocialLinks {
   static final Uri defaultTwitter = Uri.parse('https://x.com/FibonAI');
 
   static String openLabelForKind(WorkerMissionKind kind) => switch (kind) {
-        WorkerMissionKind.socialTelegram => 'Open Telegram',
-        WorkerMissionKind.socialDiscord => 'Open Discord',
-        WorkerMissionKind.socialTwitter => 'Open X',
-        _ => 'Open link',
-      };
+    WorkerMissionKind.socialTelegram => 'Open Telegram',
+    WorkerMissionKind.socialDiscord => 'Open Discord',
+    WorkerMissionKind.socialTwitter => 'Open X',
+    _ => 'Open link',
+  };
 }
 
 abstract final class WorkerMissionCatalog {
@@ -85,10 +86,11 @@ abstract final class WorkerMissionCatalog {
       id: 'daily_online',
       kind: WorkerMissionKind.dailyOnline,
       title: 'Daily online',
-      description: 'Verified uptime each day when the server tracks online time.',
+      description:
+          'Marked for today when you sign in. A new day starts unchecked.',
       howToComplete:
-          'Stay signed in with the worker running and heartbeats reaching the '
-          'server. Each verified online day counts once the server confirms uptime.',
+          'Sign in with your email. Today\'s box is marked on this device and '
+          'clears after local midnight. Point rewards still wait for the server.',
       rewardPointsLabel: '10 pts / verified day',
       icon: Icons.schedule_outlined,
     ),

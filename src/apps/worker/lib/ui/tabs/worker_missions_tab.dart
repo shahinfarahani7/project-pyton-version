@@ -5,6 +5,7 @@ import '../../worker_app_controller.dart';
 import '../worker_platform_icons.dart';
 import '../worker_theme.dart';
 import 'worker_mission_catalog.dart';
+
 /// Missions tab — optional bonus goals.
 class WorkerMissionsTab extends StatelessWidget {
   const WorkerMissionsTab({
@@ -36,7 +37,11 @@ class WorkerMissionsTab extends StatelessWidget {
           decoration: workerPanelDecoration(),
           child: Column(
             children: [
-              for (var i = 0; i < WorkerMissionCatalog.missions.length; i++) ...[
+              for (
+                var i = 0;
+                i < WorkerMissionCatalog.missions.length;
+                i++
+              ) ...[
                 if (i > 0)
                   const Divider(height: 1, color: WorkerColors.outlineVariant),
                 _MissionListTile(
@@ -63,10 +68,11 @@ bool _isMissionCompleted(
   return switch (mission.kind) {
     WorkerMissionKind.socialTelegram ||
     WorkerMissionKind.socialDiscord ||
-    WorkerMissionKind.socialTwitter =>
-      controller.isMissionAcknowledged(mission.id),
+    WorkerMissionKind.socialTwitter => controller.isMissionAcknowledged(
+      mission.id,
+    ),
     WorkerMissionKind.defineWallet => controller.payoutWallets.isNotEmpty,
-    WorkerMissionKind.dailyOnline => false,
+    WorkerMissionKind.dailyOnline => controller.isDailyMissionCompletedToday,
   };
 }
 
@@ -87,10 +93,7 @@ void _showHowToComplete(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              mission.howToComplete,
-              style: const TextStyle(height: 1.45),
-            ),
+            Text(mission.howToComplete, style: const TextStyle(height: 1.45)),
             if (isSocial && !socialDone) ...[
               const SizedBox(height: 16),
               Align(
@@ -131,9 +134,9 @@ Future<void> _openSocialMission(
     return;
   }
   if (!opened) {
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      const SnackBar(content: Text('Could not open the link.')),
-    );
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(const SnackBar(content: Text('Could not open the link.')));
     return;
   }
   await controller.acknowledgeMission(mission.id);
@@ -190,9 +193,7 @@ class _MissionListTile extends StatelessWidget {
                           Flexible(
                             child: Text(
                               mission.title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
+                              style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                           ),
@@ -270,11 +271,12 @@ class _MissionCheckIndicator extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 2),
       child: Icon(
-        completed ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
+        completed
+            ? Icons.check_box_rounded
+            : Icons.check_box_outline_blank_rounded,
         size: 26,
         color: completed ? WorkerColors.primary : WorkerColors.dim,
       ),
     );
   }
 }
-

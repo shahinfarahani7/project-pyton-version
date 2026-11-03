@@ -4,12 +4,16 @@ import 'worker_model_download_policy.dart';
 class WorkerConfig {
   WorkerConfig({
     required this.baseUrl,
+    this.apiBaseUrl,
     this.requestTimeout = const Duration(seconds: 10),
     WorkerModelDownloadSource? modelDownloadSource,
   }) : modelDownloadSource =
-            modelDownloadSource ?? WorkerModelDownloadPolicy.fromEnvironment();
+           modelDownloadSource ?? WorkerModelDownloadPolicy.fromEnvironment();
 
   Uri baseUrl;
+
+  /// Auth API origin. Local dev serves it on the same host as the worker gateway, port 8080.
+  final Uri? apiBaseUrl;
   final Duration requestTimeout;
 
   /// Where the worker resolves the on-device LLM download URL.
@@ -20,7 +24,23 @@ class WorkerConfig {
       'EDGEMINT_WORKER_BASE_URL',
       defaultValue: 'http://127.0.0.1:8081',
     );
-    return WorkerConfig(baseUrl: Uri.parse(raw));
+    const rawApi = String.fromEnvironment(
+      'EDGEMINT_API_BASE_URL',
+      defaultValue: '',
+    );
+    return WorkerConfig(
+      baseUrl: Uri.parse(raw),
+      apiBaseUrl: rawApi.isEmpty ? null : Uri.parse(rawApi),
+    );
+  }
+
+  /// Email sign-in lives on the API gateway, not the worker registry.
+  Uri get apiGatewayBaseUrl {
+    final configured = apiBaseUrl;
+    if (configured != null) {
+      return configured.replace(query: null, fragment: null);
+    }
+    return baseUrl.replace(port: 8080, path: '', query: null, fragment: null);
   }
 
   /// URLs tried in order when the compile-time default is unreachable.
@@ -49,9 +69,14 @@ class WorkerConfig {
 
   Uri resolve(String path) {
     final normalized = path.startsWith('/') ? path : '/$path';
-    final basePath =
-        baseUrl.path.endsWith('/') ? baseUrl.path.substring(0, baseUrl.path.length - 1) : baseUrl.path;
-    return baseUrl.replace(path: '$basePath$normalized', query: null, fragment: null);
+    final basePath = baseUrl.path.endsWith('/')
+        ? baseUrl.path.substring(0, baseUrl.path.length - 1)
+        : baseUrl.path;
+    return baseUrl.replace(
+      path: '$basePath$normalized',
+      query: null,
+      fragment: null,
+    );
   }
 
   /// Rewrites dev portal task input/output URLs to a host the worker device can reach.

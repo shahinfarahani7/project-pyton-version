@@ -4,6 +4,7 @@ import 'package:edgemint_worker/runtime/execution_status.dart';
 import 'package:edgemint_worker/runtime/worker_app_update.dart';
 import 'package:edgemint_worker/ui/tabs/worker_home_tab.dart';
 import 'package:edgemint_worker/ui/worker_theme.dart';
+import 'package:edgemint_worker/ui/worker_widgets.dart';
 import 'package:edgemint_worker/worker_app_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,6 +45,18 @@ void main() {
       await tester.pump();
       expect(find.text('2'), findsOneWidget);
       expect(find.text('80'), findsOneWidget);
+      expect(
+        tester.widget<WorkerLineChart>(find.byType(WorkerLineChart)).values,
+        const [0, 0, 0, 0, 0, 0, 0],
+      );
+      controller.fibonaiDailyPoints = const [0, 0, 0, 0, 40, 0, 40];
+      controller.notifyListeners();
+      await tester.pump();
+      expect(
+        tester.widget<WorkerLineChart>(find.byType(WorkerLineChart)).values,
+        const [0, 0, 0, 0, 40, 0, 40],
+      );
+      expect(find.textContaining('80 Fibonai over the last 7 days'), findsOneWidget);
       expect(find.text('AI model'), findsNothing);
       expect(find.text('Download model'), findsNothing);
       expect(find.textContaining('Qwen'), findsNothing);

@@ -111,10 +111,7 @@ class WorkerProfileCredentialsSection extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: WorkerColors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: WorkerColors.error),
     );
   }
 
@@ -123,8 +120,9 @@ class WorkerProfileCredentialsSection extends StatelessWidget {
     final profile = controller.accountProfile;
     final username = profile?.username.trim();
     final email = profile?.email.trim();
-    final usernameDisplay =
-        username != null && username.isNotEmpty ? username : 'Not set';
+    final usernameDisplay = username != null && username.isNotEmpty
+        ? username
+        : 'Not set';
     final emailDisplay = email != null && email.isNotEmpty
         ? profile!.maskedEmail
         : 'Not set';
@@ -137,22 +135,19 @@ class WorkerProfileCredentialsSection extends StatelessWidget {
         children: [
           Text(
             'Account',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 14),
           _InfoRow(label: 'Username', value: usernameDisplay),
           _InfoRow(label: 'Email', value: emailDisplay),
           const Divider(height: 28),
-          const Text(
-            'Password',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          const Text('Password', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           const Text(
-            'Managed by the worker account server when connected. '
-            'Passwords are never stored on this device.',
+            'Passwords are never stored on this device. '
+            'Changing the password from this screen is not connected yet.',
             style: TextStyle(
               color: WorkerColors.onSurfaceVariant,
               fontSize: 13,
@@ -163,6 +158,15 @@ class WorkerProfileCredentialsSection extends StatelessWidget {
             onPressed: () => _openChangePasswordDialog(context),
             child: const Text('Change password'),
           ),
+          if (controller.emailSignedIn) ...[
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () async {
+                await controller.signOutEmail();
+              },
+              child: const Text('Sign out'),
+            ),
+          ],
         ],
       ),
     );

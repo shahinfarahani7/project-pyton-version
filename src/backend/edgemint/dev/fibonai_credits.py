@@ -5,11 +5,15 @@ Points are an integer display credit, not a euro amount and not contribution XP.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+from datetime import UTC, datetime
+
 from sqlalchemy import text
 
 from edgemint.building_blocks.database import transaction
 
 POINTS_PER_COMPLETED_TASK = 40
+RECENT_CREDIT_WINDOW_DAYS = 8
 
 
 async def credit_completed_task(*, device_public_id: str, task_id: str) -> dict[str, object] | None:
@@ -71,10 +75,52 @@ async def _balance_for_device_id(connection, device_id: object, device_public_id
         {"device_id": device_id},
     )
     row = totals.one()
+    recent = await connection.execute(
+        text(
+            """
+            SELECT points, created_at_utc
+            FROM public.worker_fibonai_credits
+            WHERE worker_device_id = :device_id
+              AND created_at_utc >= CURRENT_TIMESTAMP - make_interval(days => :days)
+            ORDER BY created_at_utc ASC
+            """
+        ),
+        {"device_id": device_id, "days": RECENT_CREDIT_WINDOW_DAYS},
+    )
     return {
         "knownDevice": True,
         "deviceId": device_public_id,
         "points": int(row.points),
         "tasksCompleted": int(row.tasks_completed),
         "pointsPerTask": POINTS_PER_COMPLETED_TASK,
+        "recentCredits": recent_credit_records(recent),
     }
+
+
+def recent_credit_records(rows: Iterable[object]) -> list[dict[str, object]]:
+    """Serialize credit rows as `{points, creditedAtUtc}` for the worker chart."""
+    records: list[dict[str, object]] = []
+    for row in rows:
+        points = getattr(row, "points", None)
+        created_at = getattr(row, "created_at_utc", None)
+        if points is None or created_at is None:
+            if isinstance(row, tuple) and len(row) >= 2:
+                points, created_at = row[0], row[1]
+            else:
+                continue
+        if not isinstance(created_at, datetime):
+            continue
+        point_value = int(points)
+        if point_value <= 0:
+            continue
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=UTC)
+        else:
+            created_at = created_at.astimezone(UTC)
+        records.append(
+            {
+                "points": point_value,
+                "creditedAtUtc": created_at.isoformat().replace("+00:00", "Z"),
+            }
+        )
+    return records
