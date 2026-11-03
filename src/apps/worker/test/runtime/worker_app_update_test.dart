@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:edgemint_worker/config/worker_config.dart';
+import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:edgemint_worker/platform/worker_runtime_channel.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/worker_app_update.dart';
@@ -35,6 +36,78 @@ void main() {
       'mandatory': mandatory,
     });
   }
+
+  test('a model release updates the model and an app release updates the app', () {
+    final catalogSha = WorkerModelCatalog.knownGeneralArtifactSha256;
+    final currentModel = WorkerModelRelease(
+      modelVersionId: WorkerModelCatalog.modelVersionId,
+      artifactSha256: catalogSha,
+      fileName: WorkerModelCatalog.fileName,
+    );
+    final unknownModel = WorkerModelRelease(
+      modelVersionId: 'mdv_other',
+      artifactSha256: 'cd' * 32,
+      fileName: 'other.litertlm',
+    );
+    final newerApp = release();
+
+    final sameModel = decideWorkerUpdates(
+      catalog: WorkerUpdateCatalog(model: currentModel),
+      installedApp: installed,
+      installedModelSha256: null,
+      modelReady: true,
+    );
+    expect(sameModel.application, isNull);
+    expect(sameModel.model, isNull);
+
+    final missingModel = decideWorkerUpdates(
+      catalog: WorkerUpdateCatalog(model: currentModel),
+      installedApp: installed,
+      installedModelSha256: null,
+      modelReady: false,
+    );
+    expect(missingModel.model, currentModel);
+    expect(missingModel.application, isNull);
+
+    final replacedModel = decideWorkerUpdates(
+      catalog: WorkerUpdateCatalog(model: currentModel),
+      installedApp: installed,
+      installedModelSha256: '12' * 32,
+      modelReady: true,
+    );
+    expect(replacedModel.model, currentModel);
+
+    final needsApp = decideWorkerUpdates(
+      catalog: WorkerUpdateCatalog(model: unknownModel, application: newerApp),
+      installedApp: installed,
+      installedModelSha256: catalogSha,
+      modelReady: true,
+    );
+    expect(needsApp.application, newerApp);
+    expect(needsApp.model, unknownModel);
+    expect(unknownModel.canInstallOnThisApp, isFalse);
+    expect(currentModel.canInstallOnThisApp, isTrue);
+  });
+
+  test('an application release does not prompt a model update', () {
+    final decision = decideWorkerUpdates(
+      catalog: WorkerUpdateCatalog(application: release()),
+      installedApp: installed,
+      installedModelSha256: null,
+      modelReady: false,
+    );
+    expect(decision.application, isNotNull);
+    expect(decision.model, isNull);
+    expect(
+      shouldShowUnpublishedModelDownloadPrompt(
+        applicationUpdateOffered: decision.application != null,
+        modelUpdateOffered: decision.model != null,
+        modelReady: false,
+        modelTransferActive: false,
+      ),
+      isFalse,
+    );
+  });
 
   test('a higher build number is an update and the same build is not', () {
     expect(
@@ -212,6 +285,40 @@ void main() {
       await File(platform.installedApkPath!).readAsBytes(),
       bytes,
     );
+  });
+
+  test('controller refreshes the model and does not install an apk', () async {
+    final platform = NoopWorkerRuntimeChannel(installedAppVersion: installed);
+    final client = MockClient((request) async {
+      return http.Response(
+        jsonEncode({
+          'target': 'model',
+          'modelVersionId': WorkerModelCatalog.modelVersionId,
+          'artifactSha256': WorkerModelCatalog.knownGeneralArtifactSha256,
+          'fileName': WorkerModelCatalog.fileName,
+          'notes': 'Refresh Gemma',
+        }),
+        200,
+      );
+    });
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: client,
+      platform: platform,
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.refreshAppUpdate();
+    expect(controller.showsAppUpdateCard, isFalse);
+    expect(controller.showsModelUpdateCard, isTrue);
+    expect(controller.modelUpdateNeedsNewerApp, isFalse);
+
+    controller.usesDevMockInference = true;
+    await controller.installOfferedModelUpdate();
+    expect(platform.installedApkPath, isNull);
+    expect(controller.isGemmaReady, isTrue);
+    expect(controller.showsModelUpdateCard, isFalse);
   });
 
   test('controller hides the card when the server has no newer build', () async {

@@ -28,6 +28,10 @@ def _clear_release_env(monkeypatch: pytest.MonkeyPatch) -> None:
         "EDGEMINT_WORKER_APP_RELEASE_SHA256",
         "EDGEMINT_WORKER_APP_RELEASE_NOTES",
         "EDGEMINT_WORKER_APP_RELEASE_MANDATORY",
+        "EDGEMINT_WORKER_MODEL_RELEASE_VERSION_ID",
+        "EDGEMINT_WORKER_MODEL_RELEASE_SHA256",
+        "EDGEMINT_WORKER_MODEL_RELEASE_FILE_NAME",
+        "EDGEMINT_WORKER_MODEL_RELEASE_NOTES",
     ):
         monkeypatch.delenv(name, raising=False)
 
@@ -88,6 +92,7 @@ def test_published_release_is_checksummed_before_download(
         "sha256": digest,
         "sizeBytes": len(payload),
         "mandatory": True,
+        "target": "application",
         "notes": "Fixes startup",
     }
     download = client.get("/worker-app/release/apk")
@@ -100,6 +105,55 @@ def test_published_release_is_checksummed_before_download(
     mismatch = client.get("/worker-app/release/apk")
     assert mismatch.status_code == 503
     assert mismatch.json()["code"] == "WORKER_APP_RELEASE_HASH_MISMATCH"
+
+
+def test_model_release_is_not_an_application_package(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_release_env(monkeypatch)
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_VERSION_ID", "mdv_gemma_4_e4b_it")
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_SHA256", "ab" * 32)
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_FILE_NAME", "gemma-4-E4B-it.litertlm")
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_NOTES", "Refresh Gemma")
+    get_settings.cache_clear()
+
+    client = TestClient(app)
+    response = client.get("/worker-app/release")
+    assert response.status_code == 200
+    assert response.json() == {
+        "target": "model",
+        "modelVersionId": "mdv_gemma_4_e4b_it",
+        "artifactSha256": "ab" * 32,
+        "fileName": "gemma-4-E4B-it.litertlm",
+        "notes": "Refresh Gemma",
+    }
+    apk = client.get("/worker-app/release/apk")
+    assert apk.status_code == 404
+    assert apk.json()["code"] == "WORKER_APP_RELEASE_UNCONFIGURED"
+
+
+def test_app_and_model_updates_are_published_together(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    payload = b"worker-apk-bytes"
+    digest = hashlib.sha256(payload).hexdigest()
+    apk = tmp_path / "app-release.apk"
+    apk.write_bytes(payload)
+    _clear_release_env(monkeypatch)
+    monkeypatch.setenv("EDGEMINT_WORKER_APP_RELEASE_VERSION_NAME", "5.1.0")
+    monkeypatch.setenv("EDGEMINT_WORKER_APP_RELEASE_VERSION_CODE", "40200")
+    monkeypatch.setenv("EDGEMINT_WORKER_APP_RELEASE_APK_PATH", str(apk))
+    monkeypatch.setenv("EDGEMINT_WORKER_APP_RELEASE_SHA256", digest)
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_VERSION_ID", "mdv_gemma_4_e4b_it")
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_SHA256", "cd" * 32)
+    monkeypatch.setenv("EDGEMINT_WORKER_MODEL_RELEASE_FILE_NAME", "gemma-4-E4B-it.litertlm")
+    get_settings.cache_clear()
+
+    response = TestClient(app).get("/worker-app/release")
+    assert response.status_code == 200
+    body = response.json()
+    assert [item["target"] for item in body["updates"]] == ["application", "model"]
 
 
 def test_worker_gateway_streams_the_apk() -> None:

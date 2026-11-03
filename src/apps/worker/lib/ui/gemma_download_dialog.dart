@@ -13,7 +13,7 @@ Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
     barrierDismissible: false,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Model update'),
+        title: const Text('Download model'),
         content: Text(
           'Download the on-device model (${WorkerModelCatalog.approximateDownloadSize}) '
           'to run tasks on this device.',
@@ -27,7 +27,7 @@ Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
           FilledButton(
             onPressed: () =>
                 Navigator.of(context).pop(ModelUpdatePromptResult.update),
-            child: const Text('Update'),
+            child: const Text('Download'),
           ),
         ],
       );

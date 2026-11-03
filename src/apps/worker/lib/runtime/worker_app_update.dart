@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../api/worker_routes.dart';
 import '../config/worker_config.dart';
+import '../models/worker_model_catalog.dart';
 
 /// Version installed on this device. [versionCode] is the Android build number.
 class InstalledAppVersion {
@@ -17,7 +18,14 @@ class InstalledAppVersion {
   final int versionCode;
 }
 
+enum WorkerUpdateTarget { application, model }
+
 enum WorkerAppUpdatePhase { idle, available, downloading, installing, failed }
+
+const installedModelShaStoreKey = 'worker.installed-model-sha256';
+
+const modelUpdateNeedsNewerAppMessage =
+    'This model update needs a newer app. Update the app first.';
 
 enum WorkerAppInstallPrompt { installerLaunched, permissionRequired }
 
@@ -91,6 +99,178 @@ class WorkerAppRelease {
       mandatory: mandatory == true,
     );
   }
+}
+
+class WorkerModelRelease {
+  const WorkerModelRelease({
+    required this.modelVersionId,
+    required this.artifactSha256,
+    required this.fileName,
+    this.notes,
+  });
+
+  final String modelVersionId;
+  final String artifactSha256;
+  final String fileName;
+  final String? notes;
+
+  /// True when this app build already knows how to install the published model.
+  bool get canInstallOnThisApp {
+    if (modelVersionId == WorkerModelCatalog.modelVersionId &&
+        fileName == WorkerModelCatalog.fileName &&
+        artifactSha256 == WorkerModelCatalog.knownGeneralArtifactSha256) {
+      return true;
+    }
+    return modelVersionId == WorkerModelCatalog.gpuModelVersionId &&
+        fileName == WorkerModelCatalog.gpuFileName &&
+        artifactSha256 == WorkerModelCatalog.knownGpuArtifactSha256;
+  }
+
+  factory WorkerModelRelease.fromJson(Map<String, dynamic> json) {
+    final modelVersionId = json['modelVersionId'];
+    final artifactSha256 = json['artifactSha256'];
+    final fileName = json['fileName'];
+    if (modelVersionId is! String ||
+        modelVersionId.isEmpty ||
+        modelVersionId.contains('/') ||
+        modelVersionId.contains('\\')) {
+      throw const FormatException('modelVersionId');
+    }
+    if (artifactSha256 is! String ||
+        !RegExp(r'^[0-9a-f]{64}$').hasMatch(artifactSha256)) {
+      throw const FormatException('artifactSha256');
+    }
+    if (fileName is! String ||
+        fileName.isEmpty ||
+        fileName.contains('/') ||
+        fileName.contains('\\')) {
+      throw const FormatException('fileName');
+    }
+    final notes = json['notes'];
+    if (notes != null && notes is! String) {
+      throw const FormatException('notes');
+    }
+    return WorkerModelRelease(
+      modelVersionId: modelVersionId,
+      artifactSha256: artifactSha256,
+      fileName: fileName,
+      notes: notes is String && notes.isNotEmpty ? notes : null,
+    );
+  }
+}
+
+class WorkerUpdateCatalog {
+  const WorkerUpdateCatalog({this.application, this.model});
+
+  final WorkerAppRelease? application;
+  final WorkerModelRelease? model;
+
+  factory WorkerUpdateCatalog.fromJson(Map<String, dynamic> json) {
+    final updates = json['updates'];
+    if (updates is List) {
+      WorkerAppRelease? application;
+      WorkerModelRelease? model;
+      for (final item in updates) {
+        if (item is! Map) {
+          throw const FormatException('updates');
+        }
+        final parsed = WorkerUpdateCatalog.fromJson(
+          Map<String, dynamic>.from(item),
+        );
+        if (parsed.application != null) {
+          if (application != null) {
+            throw const FormatException('updates');
+          }
+          application = parsed.application;
+        }
+        if (parsed.model != null) {
+          if (model != null) {
+            throw const FormatException('updates');
+          }
+          model = parsed.model;
+        }
+      }
+      if (application == null && model == null) {
+        throw const FormatException('updates');
+      }
+      return WorkerUpdateCatalog(application: application, model: model);
+    }
+    final target = json['target'] ?? 'application';
+    if (target == 'application') {
+      return WorkerUpdateCatalog(application: WorkerAppRelease.fromJson(json));
+    }
+    if (target == 'model') {
+      return WorkerUpdateCatalog(model: WorkerModelRelease.fromJson(json));
+    }
+    throw const FormatException('target');
+  }
+}
+
+class WorkerUpdateDecision {
+  const WorkerUpdateDecision({this.application, this.model});
+
+  final WorkerAppRelease? application;
+  final WorkerModelRelease? model;
+}
+
+WorkerUpdateDecision decideWorkerUpdates({
+  required WorkerUpdateCatalog catalog,
+  required InstalledAppVersion? installedApp,
+  required String? installedModelSha256,
+  required bool modelReady,
+}) {
+  final publishedApp = catalog.application;
+  final application =
+      publishedApp != null &&
+          installedApp != null &&
+          workerAppReleaseIsNewer(installed: installedApp, release: publishedApp)
+      ? publishedApp
+      : null;
+  final publishedModel = catalog.model;
+  final model =
+      publishedModel != null &&
+          workerModelReleaseNeedsInstall(
+            release: publishedModel,
+            installedArtifactSha256: installedModelSha256,
+            modelReady: modelReady,
+          )
+      ? publishedModel
+      : null;
+  return WorkerUpdateDecision(application: application, model: model);
+}
+
+bool workerModelReleaseNeedsInstall({
+  required WorkerModelRelease release,
+  required String? installedArtifactSha256,
+  required bool modelReady,
+}) {
+  if (!release.canInstallOnThisApp) {
+    return true;
+  }
+  if (!modelReady) {
+    return true;
+  }
+  if (installedArtifactSha256 == null || installedArtifactSha256.isEmpty) {
+    return false;
+  }
+  return installedArtifactSha256 != release.artifactSha256;
+}
+
+/// The blocking model dialog is only for a missing model when nothing was published.
+/// An application release must not be presented as a model update.
+bool shouldShowUnpublishedModelDownloadPrompt({
+  required bool applicationUpdateOffered,
+  required bool modelUpdateOffered,
+  required bool modelReady,
+  required bool modelTransferActive,
+}) {
+  if (applicationUpdateOffered || modelUpdateOffered) {
+    return false;
+  }
+  if (modelReady || modelTransferActive) {
+    return false;
+  }
+  return true;
 }
 
 bool workerAppReleaseIsNewer({

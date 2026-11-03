@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'runtime/gemma_bootstrap.dart';
+import 'runtime/worker_app_update.dart';
 import 'ui/fibonai_splash.dart';
 import 'ui/gemma_download_dialog.dart';
 import 'ui/tabs/worker_home_tab.dart';
@@ -107,9 +108,13 @@ class _WorkerHomePageState extends State<WorkerHomePage>
         _modelUpdatePromptOpen) {
       return;
     }
-    if (controller.isGemmaReady ||
-        controller.isGemmaDownloading ||
-        controller.isGemmaDownloadPaused) {
+    if (!shouldShowUnpublishedModelDownloadPrompt(
+      applicationUpdateOffered: controller.showsAppUpdateCard,
+      modelUpdateOffered: controller.showsModelUpdateCard,
+      modelReady: controller.isGemmaReady,
+      modelTransferActive:
+          controller.isGemmaDownloading || controller.isGemmaDownloadPaused,
+    )) {
       return;
     }
 

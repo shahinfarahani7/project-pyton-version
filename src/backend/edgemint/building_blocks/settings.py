@@ -57,12 +57,20 @@ class Settings(BaseSettings):
     worker_app_release_sha256: str | None = None
     worker_app_release_notes: str | None = None
     worker_app_release_mandatory: bool = False
+    worker_model_release_version_id: str | None = None
+    worker_model_release_sha256: str | None = None
+    worker_model_release_file_name: str | None = None
+    worker_model_release_notes: str | None = None
 
     @field_validator(
         "worker_app_release_version_name",
         "worker_app_release_apk_path",
         "worker_app_release_sha256",
         "worker_app_release_notes",
+        "worker_model_release_version_id",
+        "worker_model_release_sha256",
+        "worker_model_release_file_name",
+        "worker_model_release_notes",
         mode="before",
     )
     @classmethod

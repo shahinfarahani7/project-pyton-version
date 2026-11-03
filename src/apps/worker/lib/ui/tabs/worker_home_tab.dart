@@ -46,6 +46,18 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
             );
           },
         ),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) {
+            if (!controller.showsModelUpdateCard) {
+              return const SizedBox.shrink();
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _ModelUpdateCard(controller: controller),
+            );
+          },
+        ),
         _WorkerCharacter(
           working: _hasActiveTask(controller.executionStatus.phase),
         ),
@@ -287,18 +299,18 @@ class _AppUpdateCard extends StatelessWidget {
       WorkerAppUpdatePhase.downloading =>
         'Downloading update ${(controller.appUpdateProgress * 100).toStringAsFixed(0)}%',
       WorkerAppUpdatePhase.installing => 'Opening installer…',
-      WorkerAppUpdatePhase.failed => 'Update failed',
+      WorkerAppUpdatePhase.failed => 'App update failed',
       WorkerAppUpdatePhase.available ||
       WorkerAppUpdatePhase.idle =>
-        controller.appUpdateMandatory ? 'Required update' : 'Update available',
+        controller.appUpdateMandatory ? 'Required app update' : 'App update',
     };
     final actionLabel = phase == WorkerAppUpdatePhase.failed
         ? 'Try again'
-        : 'Update';
+        : 'Update app';
 
     return Semantics(
       container: true,
-      label: 'App update',
+      label: 'Application update',
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: workerPanelDecoration(
@@ -372,6 +384,80 @@ class _AppUpdateCard extends StatelessWidget {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ModelUpdateCard extends StatelessWidget {
+  const _ModelUpdateCard({required this.controller});
+
+  final WorkerAppController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final failed = controller.modelUpdatePhase == WorkerAppUpdatePhase.failed;
+    final title = failed ? 'Model update failed' : 'Model update';
+    return Semantics(
+      container: true,
+      label: 'Model update',
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: workerPanelDecoration(
+          borderColor: WorkerColors.primary.withValues(alpha: 0.25),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.memory, color: WorkerColors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            if (controller.modelUpdateLabel != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.modelUpdateLabel!,
+                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ],
+            if (controller.modelUpdateNotes != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.modelUpdateNotes!,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ],
+            if (controller.modelUpdateError != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.modelUpdateError!,
+                style: const TextStyle(color: WorkerColors.error),
+              ),
+            ],
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: FilledButton(
+                  onPressed: () {
+                    unawaited(controller.installOfferedModelUpdate());
+                  },
+                  child: Text(failed ? 'Try again' : 'Update model'),
+                ),
+              ),
+            ),
           ],
         ),
       ),

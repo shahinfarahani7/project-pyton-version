@@ -292,6 +292,25 @@ class WorkerAppController extends ChangeNotifier {
       appUpdateVersionName != null &&
       appUpdatePhase != WorkerAppUpdatePhase.idle;
 
+  WorkerAppUpdatePhase modelUpdatePhase = WorkerAppUpdatePhase.idle;
+
+  String? modelUpdateLabel;
+
+  String? modelUpdateNotes;
+
+  String? modelUpdateError;
+
+  bool modelUpdateNeedsNewerApp = false;
+
+  WorkerModelRelease? _offeredModelRelease;
+
+  String? _installedModelSha256;
+
+  bool get showsModelUpdateCard =>
+      modelUpdateLabel != null &&
+      modelUpdatePhase != WorkerAppUpdatePhase.idle &&
+      !showsModelDownloadProgressCard;
+
   bool _modelDownloadPauseRequested = false;
 
   ExecutionStatus executionStatus = const ExecutionStatus(
@@ -982,28 +1001,50 @@ class WorkerAppController extends ChangeNotifier {
     }
     try {
       final installed = await _platform.readInstalledAppVersion();
-      if (_disposed || installed == null) {
+      if (_disposed) {
         return;
       }
       final payload = await _api.fetchWorkerAppRelease();
       if (_disposed) {
         return;
       }
-      final release = payload == null
-          ? null
-          : WorkerAppRelease.fromJson(payload);
-      if (release == null ||
-          !workerAppReleaseIsNewer(installed: installed, release: release)) {
+      if (payload == null) {
         _clearAppUpdateOffer();
+        _clearModelUpdateOffer();
         return;
       }
-      _offeredAppRelease = release;
-      appUpdateVersionName = release.versionName;
-      appUpdateNotes = release.notes;
-      appUpdateMandatory = release.mandatory;
-      appUpdatePhase = WorkerAppUpdatePhase.available;
-      appUpdateError = null;
-      appUpdateProgress = 0;
+      _installedModelSha256 ??= await _readInstalledModelSha();
+      final decision = decideWorkerUpdates(
+        catalog: WorkerUpdateCatalog.fromJson(payload),
+        installedApp: installed,
+        installedModelSha256: _installedModelSha256,
+        modelReady: isGemmaReady,
+      );
+      if (decision.application == null) {
+        _clearAppUpdateOffer();
+      } else {
+        final release = decision.application!;
+        _offeredAppRelease = release;
+        appUpdateVersionName = release.versionName;
+        appUpdateNotes = release.notes;
+        appUpdateMandatory = release.mandatory;
+        appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateError = null;
+        appUpdateProgress = 0;
+      }
+      if (decision.model == null) {
+        _clearModelUpdateOffer();
+      } else {
+        final release = decision.model!;
+        _offeredModelRelease = release;
+        modelUpdateLabel = release.fileName;
+        modelUpdateNotes = release.notes;
+        modelUpdateNeedsNewerApp = !release.canInstallOnThisApp;
+        modelUpdatePhase = WorkerAppUpdatePhase.available;
+        modelUpdateError = modelUpdateNeedsNewerApp
+            ? modelUpdateNeedsNewerAppMessage
+            : null;
+      }
       notifyListeners();
     } catch (error, stackTrace) {
       _logError('App update check failed', error, stackTrace);
@@ -1093,6 +1134,71 @@ class WorkerAppController extends ChangeNotifier {
       if (!_disposed) {
         notifyListeners();
       }
+    }
+  }
+
+  Future<void> installOfferedModelUpdate() async {
+    if (_disposed || _appUpdateInFlight || isGemmaDownloading) {
+      return;
+    }
+    final release = _offeredModelRelease;
+    if (release == null) {
+      if (modelUpdateLabel != null) {
+        modelUpdatePhase = WorkerAppUpdatePhase.failed;
+        modelUpdateError =
+            'Model update details are unavailable. Refresh and try again.';
+        notifyListeners();
+      }
+      return;
+    }
+    if (!release.canInstallOnThisApp) {
+      modelUpdateNeedsNewerApp = true;
+      modelUpdatePhase = WorkerAppUpdatePhase.failed;
+      modelUpdateError = modelUpdateNeedsNewerAppMessage;
+      notifyListeners();
+      return;
+    }
+
+    await downloadGemmaModel(replaceInstalled: true);
+    if (_disposed) {
+      return;
+    }
+    if (isGemmaReady) {
+      _installedModelSha256 = release.artifactSha256;
+      await _writeInstalledModelSha(release.artifactSha256);
+      _clearModelUpdateOffer();
+      return;
+    }
+    modelUpdatePhase = WorkerAppUpdatePhase.failed;
+    modelUpdateError = 'Could not update the model.';
+    notifyListeners();
+  }
+
+  Future<String?> _readInstalledModelSha() async {
+    final bytes = await _encryptedStore.read(installedModelShaStoreKey);
+    if (bytes == null || bytes.isEmpty) {
+      return null;
+    }
+    return utf8.decode(bytes);
+  }
+
+  Future<void> _writeInstalledModelSha(String sha256) {
+    return _encryptedStore.write(
+      installedModelShaStoreKey,
+      Uint8List.fromList(utf8.encode(sha256)),
+    );
+  }
+
+  void _clearModelUpdateOffer() {
+    final hadCard = showsModelUpdateCard;
+    _offeredModelRelease = null;
+    modelUpdateLabel = null;
+    modelUpdateNotes = null;
+    modelUpdateError = null;
+    modelUpdateNeedsNewerApp = false;
+    modelUpdatePhase = WorkerAppUpdatePhase.idle;
+    if (hadCard && !_disposed) {
+      notifyListeners();
     }
   }
 
@@ -1822,7 +1928,7 @@ class WorkerAppController extends ChangeNotifier {
   // Model download
   // ---------------------------------------------------------------------------
 
-  Future<void> downloadGemmaModel() async {
+  Future<void> downloadGemmaModel({bool replaceInstalled = false}) async {
     if (usesDevMockInference) {
       _logTask(
         'Dev mock inference is active - '
@@ -1840,7 +1946,7 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
 
-    if (await _verifyAndMarkModelReady()) {
+    if (!replaceInstalled && await _verifyAndMarkModelReady()) {
       _logTask(
         '${WorkerModelCatalog.displayName} '
         'already active - skipping download',

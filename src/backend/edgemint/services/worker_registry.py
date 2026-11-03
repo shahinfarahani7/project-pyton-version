@@ -11,7 +11,11 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
 from edgemint.security.problems import request_trace_id
-from edgemint.workers.app_release import WorkerAppReleaseError, resolve_worker_app_release
+from edgemint.workers.app_release import (
+    WorkerAppReleaseError,
+    resolve_worker_app_release,
+    resolve_worker_updates,
+)
 from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
 from edgemint.workers.errors import WorkerServiceError
@@ -201,10 +205,10 @@ async def get_worker_app_release() -> JSONResponse:
     from edgemint.building_blocks.settings import get_settings
 
     try:
-        release = await asyncio.to_thread(resolve_worker_app_release, get_settings())
+        catalog = await asyncio.to_thread(resolve_worker_updates, get_settings())
     except WorkerAppReleaseError as exc:
         return _worker_app_release_error(exc)
-    return JSONResponse(release.public_view(), status_code=200)
+    return JSONResponse(catalog.public_view(), status_code=200)
 
 
 @app.get("/worker-app/release/apk", tags=["app-release"])

@@ -42,10 +42,51 @@ class WorkerAppRelease:
             "sha256": self.sha256,
             "sizeBytes": self.size_bytes,
             "mandatory": self.mandatory,
+            "target": "application",
         }
         if self.notes:
             body["notes"] = self.notes
         return body
+
+
+@dataclass(frozen=True)
+class WorkerModelRelease:
+    model_version_id: str
+    artifact_sha256: str
+    file_name: str
+    notes: str | None
+
+    def public_view(self) -> dict[str, object]:
+        body: dict[str, object] = {
+            "target": "model",
+            "modelVersionId": self.model_version_id,
+            "artifactSha256": self.artifact_sha256,
+            "fileName": self.file_name,
+        }
+        if self.notes:
+            body["notes"] = self.notes
+        return body
+
+
+@dataclass(frozen=True)
+class WorkerUpdateCatalog:
+    application: WorkerAppRelease | None
+    model: WorkerModelRelease | None
+
+    def public_view(self) -> dict[str, object]:
+        application = None if self.application is None else self.application.public_view()
+        model = None if self.model is None else self.model.public_view()
+        if application is not None and model is not None:
+            return {"updates": [application, model]}
+        if application is not None:
+            return application
+        if model is not None:
+            return model
+        raise WorkerAppReleaseError(
+            "WORKER_APP_RELEASE_UNCONFIGURED",
+            404,
+            "No worker update is published.",
+        )
 
 
 _cache_key: tuple[object, ...] | None = None
@@ -135,6 +176,61 @@ def resolve_worker_app_release(settings: Settings) -> WorkerAppRelease:
     _cache_key = key
     _cache_release = release
     return release
+
+
+def resolve_worker_updates(settings: Settings) -> WorkerUpdateCatalog:
+    """Publish an application update, a model update, or both."""
+    application = _optional_app_release(settings)
+    model = _optional_model_release(settings)
+    if application is None and model is None:
+        raise WorkerAppReleaseError(
+            "WORKER_APP_RELEASE_UNCONFIGURED",
+            404,
+            "No worker update is published.",
+        )
+    return WorkerUpdateCatalog(application=application, model=model)
+
+
+def _optional_app_release(settings: Settings) -> WorkerAppRelease | None:
+    name = (settings.worker_app_release_version_name or "").strip()
+    code = settings.worker_app_release_version_code
+    raw_path = (settings.worker_app_release_apk_path or "").strip()
+    digest = (settings.worker_app_release_sha256 or "").strip()
+    if not name and code is None and not raw_path and not digest:
+        return None
+    return resolve_worker_app_release(settings)
+
+
+def _optional_model_release(settings: Settings) -> WorkerModelRelease | None:
+    version_id = (settings.worker_model_release_version_id or "").strip()
+    digest = (settings.worker_model_release_sha256 or "").strip().lower()
+    file_name = (settings.worker_model_release_file_name or "").strip()
+    notes_raw = (settings.worker_model_release_notes or "").strip()
+    if not version_id and not digest and not file_name:
+        return None
+    if (
+        not version_id
+        or len(version_id) > 64
+        or "/" in version_id
+        or "\\" in version_id
+        or not file_name
+        or len(file_name) > 128
+        or "/" in file_name
+        or "\\" in file_name
+        or _SHA256_RE.fullmatch(digest) is None
+    ):
+        raise WorkerAppReleaseError(
+            "WORKER_MODEL_RELEASE_INVALID",
+            503,
+            "Worker model release configuration is incomplete.",
+        )
+    notes = notes_raw[:_MAX_NOTES] if notes_raw else None
+    return WorkerModelRelease(
+        model_version_id=version_id,
+        artifact_sha256=digest,
+        file_name=file_name,
+        notes=notes,
+    )
 
 
 def _sha256_file(path: Path) -> str:

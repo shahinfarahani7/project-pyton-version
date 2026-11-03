@@ -51,8 +51,9 @@ void main() {
       expect(find.textContaining('not guaranteed'), findsWidgets);
       expect(find.text('Boost your worker'), findsNothing);
       expect(find.text('Turn availability on'), findsNothing);
-      expect(find.text('Update available'), findsNothing);
-      expect(find.text('Required update'), findsNothing);
+      expect(find.text('App update'), findsNothing);
+      expect(find.text('Model update'), findsNothing);
+      expect(find.text('Required app update'), findsNothing);
     },
   );
 
@@ -171,10 +172,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Required update'), findsOneWidget);
+    expect(find.text('Required app update'), findsOneWidget);
     expect(find.text('Version 9.9.9'), findsOneWidget);
     expect(find.text('Faster mission startup'), findsOneWidget);
-    expect(find.text('Update'), findsOneWidget);
+    expect(find.text('Update app'), findsOneWidget);
 
     controller.appUpdatePhase = WorkerAppUpdatePhase.downloading;
     controller.appUpdateProgress = 0.4;
@@ -182,21 +183,62 @@ void main() {
     await tester.pump();
 
     expect(find.text('Downloading update 40%'), findsOneWidget);
-    expect(find.text('Update'), findsNothing);
+    expect(find.text('Update app'), findsNothing);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
 
     controller.appUpdatePhase = WorkerAppUpdatePhase.available;
     controller.notifyListeners();
     await tester.pump();
 
-    await tester.tap(find.text('Update'));
+    await tester.tap(find.text('Update app'));
     await tester.pump();
 
-    expect(find.text('Update failed'), findsOneWidget);
+    expect(find.text('App update failed'), findsOneWidget);
     expect(
       find.text('Update details are unavailable. Refresh and try again.'),
       findsOneWidget,
     );
     expect(find.text('Try again'), findsOneWidget);
+  });
+
+  testWidgets('home updates the model when the published update is a model', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    controller.setAvailable(false);
+    controller.modelUpdatePhase = WorkerAppUpdatePhase.available;
+    controller.modelUpdateLabel = 'gemma-4-E4B-it.litertlm';
+    controller.modelUpdateNotes = 'Refresh the on-device model';
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: WorkerHomeTab(controller: controller),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Model update'), findsOneWidget);
+    expect(find.text('App update'), findsNothing);
+    expect(find.text('gemma-4-E4B-it.litertlm'), findsOneWidget);
+    expect(find.text('Update model'), findsOneWidget);
+    expect(find.text('Update app'), findsNothing);
+
+    await tester.tap(find.text('Update model'));
+    await tester.pump();
+
+    expect(find.text('Model update failed'), findsOneWidget);
+    expect(
+      find.text('Model update details are unavailable. Refresh and try again.'),
+      findsOneWidget,
+    );
   });
 }
