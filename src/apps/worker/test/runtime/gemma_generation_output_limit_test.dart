@@ -20,6 +20,17 @@ void main() {
       expect(GemmaGenerationOutputLimit.textDirect, isNot(512));
     });
 
+    test('pad tokens are not an answer', () {
+      expect(
+        GemmaGenerationOutputLimit.visibleAnswer('<pad><pad> <pad>'),
+        isEmpty,
+      );
+      expect(
+        GemmaGenerationOutputLimit.visibleAnswer('Hello<pad> there'),
+        'Hello there',
+      );
+    });
+
     test('medium detail is 384 and explicitly extended is 512', () {
       expect(
         GemmaGenerationOutputLimit.forTextDirect(

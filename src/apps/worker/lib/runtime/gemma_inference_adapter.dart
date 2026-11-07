@@ -173,7 +173,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         topP: topP ?? this.topP,
         maxOutputTokens: outputTokenCap,
         supportImage: multimodal,
-        modelType: multimodal ? ModelType.gemma4 : null,
+        modelType: ModelType.gemma4,
         systemInstruction: usePortalPassthroughChat
             ? null
             : 'You are EdgeMint worker AI. '
@@ -264,7 +264,15 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         );
         await onProgress?.call(1000);
 
-        final text = generation.text;
+        final text = GemmaGenerationOutputLimit.visibleAnswer(generation.text);
+        if (text.isEmpty) {
+          throw const WorkerError(
+            code: WorkerErrorCode.internalError,
+            message: 'The model returned no answer',
+            retryable: true,
+            stage: WorkerTaskStage.llm,
+          );
+        }
         _log(
           '[LLM OUTPUT] chars=${text.length} elapsedMs=${stopwatch.elapsedMilliseconds}',
         );

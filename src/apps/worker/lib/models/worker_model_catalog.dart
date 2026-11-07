@@ -233,7 +233,10 @@ abstract final class WorkerModelCatalog {
     return generalRuntimeDescriptor;
   }
 
+  /// The staged Gemma 4 file is the general `.litertlm`, not the GPU build.
+  /// The GPU delegate samples invalid tokens and LiteRT casts them to token 0,
+  /// which the app shows as `<pad>`, on a phone and on x86.
   static PreferredBackend preferredInferenceBackend({required bool isX86Android}) {
-    return isX86Android ? PreferredBackend.cpu : PreferredBackend.gpu;
+    return isX86Android ? PreferredBackend.cpu : PreferredBackend.cpu;
   }
 }

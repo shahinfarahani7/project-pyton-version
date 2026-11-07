@@ -33,6 +33,11 @@ abstract final class GemmaGenerationOutputLimit {
   static const cancelled = 'CANCELLED';
   static const error = 'ERROR';
 
+  static final _padToken = RegExp('<pad>');
+
+  /// Gemma 4's non-gemma4 decode path emits the padding token as text.
+  static String visibleAnswer(String raw) => raw.replaceAll(_padToken, '').trim();
+
   /// Retired catalog default injected into every dev manifest. It is not a
   /// caller override; text.direct must not fall back to it after resolution.
   static const legacyCatalogCap = 256;
