@@ -81,6 +81,12 @@ void main() {
       fibonaiPointsPerCompletedTask,
     );
 
-    expect(next, [10, 0, 0, 0, 0, 0, 80]);
+    expect(next, [10, 0, 0, 0, 0, 0, 40 + fibonaiPointsPerCompletedTask]);
+  });
+
+  test('atomic FIBON amounts format without binary fractions', () {
+    expect(formatFibonaiAtomic(0), '0 FIBON');
+    expect(formatFibonaiAtomic(fibonaiAtomicPerToken), '1 FIBON');
+    expect(formatFibonaiAtomic(fibonaiPointsPerCompletedTask), '0.75 FIBON');
   });
 }

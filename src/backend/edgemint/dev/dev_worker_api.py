@@ -144,11 +144,16 @@ async def worker_task_output(task_id: str, payload: DevWorkerOutputRequest) -> d
     fibonai = None
     raw_device_id = payload.metrics.get("deviceId")
     if newly_succeeded and isinstance(raw_device_id, str) and raw_device_id.strip():
-        from edgemint.dev.fibonai_credits import credit_completed_task
+        from edgemint.dev.fibonai_credits import credit_completed_task, points_per_accepted_task
 
+        task = fixtures.dev_task_by_id(task_id)
+        reward = task.get("fibonaiWorkerRewardAtomic") if task is not None else None
+        if type(reward) is not int or reward <= 0:
+            reward = points_per_accepted_task()
         fibonai = await credit_completed_task(
             device_public_id=raw_device_id,
             task_id=task_id,
+            points=reward,
         )
     body = {"taskId": task_id, "status": "accepted", "hasResultFile": bool(result_file_bytes)}
     if fibonai is not None:

@@ -1,5 +1,24 @@
-/// Fibonai points credited for one successfully completed task.
-const fibonaiPointsPerCompletedTask = 40;
+/// Atomic units in one FIBON token. Matches the economy policy scale.
+const fibonaiAtomicPerToken = 10000;
+
+/// Worker share of one accepted base task: 75 percent of one FIBON.
+const fibonaiPointsPerCompletedTask = 7500;
+
+/// Formats an atomic FIBON amount with integer arithmetic.
+String formatFibonaiAtomic(int atomic) {
+  final sign = atomic < 0 ? '-' : '';
+  final abs = atomic < 0 ? -atomic : atomic;
+  final whole = abs ~/ fibonaiAtomicPerToken;
+  final fraction = abs % fibonaiAtomicPerToken;
+  if (fraction == 0) {
+    return '$sign$whole FIBON';
+  }
+  var digits = fraction.toString().padLeft(4, '0');
+  while (digits.endsWith('0')) {
+    digits = digits.substring(0, digits.length - 1);
+  }
+  return '$sign$whole.$digits FIBON';
+}
 
 const fibonaiChartDays = 7;
 

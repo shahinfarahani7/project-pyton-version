@@ -348,6 +348,8 @@ class WorkerAppController extends ChangeNotifier {
   String thermalLabel = 'Normal';
 
   int tasksProcessed = 0;
+  int fibonaiBalanceAtomic = 0;
+  bool fibonaiBalanceFromServer = false;
 
   /// Fibonai points per local day for the home earnings chart.
   /// Oldest day first, today last.
@@ -703,6 +705,11 @@ class WorkerAppController extends ChangeNotifier {
     if (tasks is int && tasks >= 0) {
       tasksProcessed = tasks;
     }
+    final points = fibonai['points'];
+    if (points is int && points >= 0) {
+      fibonaiBalanceAtomic = points;
+      fibonaiBalanceFromServer = true;
+    }
     if (fromUpload && fibonaiBalanceOwnsLedger(fibonai)) {
       _lastUploadIncludedFibonai = true;
     }
@@ -743,6 +750,7 @@ class WorkerAppController extends ChangeNotifier {
     }
     _creditedAssignmentIds = {..._creditedAssignmentIds, assignmentId};
     tasksProcessed = _creditedAssignmentIds.length;
+    fibonaiBalanceAtomic += fibonaiPointsPerCompletedTask;
     fibonaiDailyPoints = addFibonaiPointsToday(
       fibonaiDailyPoints,
       fibonaiPointsPerCompletedTask,

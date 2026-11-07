@@ -11,6 +11,7 @@ const props = defineProps({
   showCancel: { type: Boolean, default: false },
   resetKey: { type: Number, default: 0 },
   composerOnly: { type: Boolean, default: false },
+  fibonaiNote: { type: String, default: '' },
 });
 
 const emit = defineEmits(['submit', 'cancel']);
@@ -207,6 +208,7 @@ function onComposerKeydown(event) {
           </button>
         </div>
       </div>
+      <p v-if="composerOnly && fibonaiNote" class="em-chat__composer-note">{{ fibonaiNote }}</p>
       <p v-if="composerOnly" class="em-chat__composer-note">{{ t('tasks.composerNote') }}</p>
     </div>
 

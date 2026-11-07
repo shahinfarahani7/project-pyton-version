@@ -12,15 +12,26 @@ from sqlalchemy import text
 
 from edgemint.building_blocks.database import transaction
 
-POINTS_PER_COMPLETED_TASK = 40
 RECENT_CREDIT_WINDOW_DAYS = 8
 
 
-async def credit_completed_task(*, device_public_id: str, task_id: str) -> dict[str, object] | None:
+def points_per_accepted_task() -> int:
+    """FibonAI atomic units paid to the worker who completes one accepted task."""
+    from edgemint.economy.fibonai_token import quote_accepted_task
+
+    return quote_accepted_task().worker_reward_atomic
+
+
+async def credit_completed_task(
+    *,
+    device_public_id: str,
+    task_id: str,
+    points: int,
+) -> dict[str, object] | None:
     """Insert one credit for this device and task. Missing devices are ignored."""
     device_public_id = device_public_id.strip()
     task_id = task_id.strip()
-    if not device_public_id or not task_id:
+    if not device_public_id or not task_id or type(points) is not int or points <= 0:
         return None
     async with transaction(isolation="READ COMMITTED") as connection:
         found = await connection.execute(
@@ -41,7 +52,7 @@ async def credit_completed_task(*, device_public_id: str, task_id: str) -> dict[
             {
                 "device_id": device_row[0],
                 "task_id": task_id,
-                "points": POINTS_PER_COMPLETED_TASK,
+                "points": points,
             },
         )
         return await _balance_for_device_id(connection, device_row[0], device_public_id)
@@ -92,7 +103,7 @@ async def _balance_for_device_id(connection, device_id: object, device_public_id
         "deviceId": device_public_id,
         "points": int(row.points),
         "tasksCompleted": int(row.tasks_completed),
-        "pointsPerTask": POINTS_PER_COMPLETED_TASK,
+        "pointsPerTask": points_per_accepted_task(),
         "recentCredits": recent_credit_records(recent),
     }
 

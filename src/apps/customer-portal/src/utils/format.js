@@ -31,6 +31,19 @@ export function formatMicroEur(micro) {
   return new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(micro / 1_000_000);
 }
 
+const FIBON_ATOMIC_PER_TOKEN = 10_000;
+
+export function formatFibon(atomic) {
+  if (!Number.isInteger(atomic)) return '—';
+  const sign = atomic < 0 ? '-' : '';
+  const abs = Math.abs(atomic);
+  const whole = Math.floor(abs / FIBON_ATOMIC_PER_TOKEN);
+  const fraction = abs % FIBON_ATOMIC_PER_TOKEN;
+  if (fraction === 0) return `${sign}${whole} FIBON`;
+  const digits = String(fraction).padStart(4, '0').replace(/0+$/, '');
+  return `${sign}${whole}.${digits} FIBON`;
+}
+
 export function formatNumber(value) {
   if (value == null) return '—';
   return new Intl.NumberFormat().format(value);

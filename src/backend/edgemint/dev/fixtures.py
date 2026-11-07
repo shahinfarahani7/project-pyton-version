@@ -24,6 +24,59 @@ _PREVIEW_RESULT_CHARS = 500
 _MAX_STORED_TEXT_CHARS = 32_000
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
+_fibonai_available: dict[UUID, int] = {}
+_DEV_FIBONAI_GRANT_TOKENS = 1_000
+
+
+def _fibonai_grant_atomic() -> int:
+    from edgemint.economy.fibonai_token import cached_economy
+
+    policy = cached_economy()
+    return _DEV_FIBONAI_GRANT_TOKENS * policy.atomic_units_per_token
+
+
+def fibonai_available(workspace_id: UUID) -> int:
+    if workspace_id not in _fibonai_available:
+        grant = _fibonai_grant_atomic() if workspace_id in DEV_WORKSPACE_IDS else 0
+        _fibonai_available[workspace_id] = grant
+    return _fibonai_available[workspace_id]
+
+
+def fibonai_reserved(workspace_id: UUID) -> int:
+    return sum(
+        int(task["fibonaiChargeAtomic"])
+        for task in _created_tasks.get(workspace_id, [])
+        if task.get("fibonaiSettlement") == "reserved" and type(task.get("fibonaiChargeAtomic")) is int
+    )
+
+
+def _reserve_task_fibonai(workspace_id: UUID, task: dict[str, Any]) -> None:
+    from edgemint.economy.fibonai_token import quote_accepted_task
+
+    quote = quote_accepted_task()
+    available = fibonai_available(workspace_id)
+    if available < quote.charge_atomic:
+        raise ValueError("INSUFFICIENT_FIBONAI")
+    _fibonai_available[workspace_id] = available - quote.charge_atomic
+    task["fibonaiDifficultyGrade"] = quote.difficulty_grade
+    task["fibonaiChargeAtomic"] = quote.charge_atomic
+    task["fibonaiWorkerRewardAtomic"] = quote.worker_reward_atomic
+    task["fibonaiTreasuryAtomic"] = quote.treasury_atomic
+    task["fibonaiSettlement"] = "reserved"
+
+
+def _settle_task_fibonai(workspace_id: UUID, task: dict[str, Any], status: str) -> None:
+    if task.get("fibonaiSettlement") != "reserved":
+        return
+    if status == "succeeded":
+        task["fibonaiSettlement"] = "spent"
+        return
+    if status not in {"failed", "cancelled", "expired"}:
+        return
+    charge = task.get("fibonaiChargeAtomic")
+    if type(charge) is int and charge >= 0:
+        _fibonai_available[workspace_id] = fibonai_available(workspace_id) + charge
+    task["fibonaiSettlement"] = "refunded"
 
 
 def _now_iso() -> str:
@@ -305,20 +358,26 @@ def create_dev_task(
             "file_mime": file_mime,
             "file_bytes": file_bytes,
         }
+    _reserve_task_fibonai(workspace_id, task)
     _created_tasks.setdefault(workspace_id, []).append(task)
     from edgemint.dev import worker_task_inputs
 
-    worker_task_inputs.register_task(
-        task_id=task["id"],
-        task_type=task_type,
-        input_text=input_text,
-        instructions=instructions,
-        file_name=file_name,
-        file_mime=file_mime,
-        file_bytes=file_bytes,
-        summarize_options=summarize_options,
-    )
-    enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
+    try:
+        worker_task_inputs.register_task(
+            task_id=task["id"],
+            task_type=task_type,
+            input_text=input_text,
+            instructions=instructions,
+            file_name=file_name,
+            file_mime=file_mime,
+            file_bytes=file_bytes,
+            summarize_options=summarize_options,
+        )
+        enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
+    except Exception:
+        _created_tasks[workspace_id].remove(task)
+        _settle_task_fibonai(workspace_id, task, "failed")
+        raise
     task["assignmentId"] = task["id"]
     task.pop("inputSource", None)
     _notify_task_event(workspace_id, task["id"], "task.created")
@@ -379,6 +438,7 @@ def cancel_dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
     task["executionStatus"] = "cancelled"
     task["updatedAt"] = _now_iso()
     task["version"] = int(task.get("version", 0)) + 1
+    _settle_task_fibonai(workspace_id, task, "cancelled")
     cancel_assignment_for_worker(assignment_id=task_id)
     _notify_task_event(workspace_id, task_id, "task.cancelled")
     return task
@@ -424,6 +484,7 @@ def update_dev_task_execution(
                     task["failureReasonCode"] = failure_reason_code
                 if failure_reason is not None:
                     task["failureReason"] = failure_reason[:500]
+                _settle_task_fibonai(ws_id, task, lifecycle_status)
                 updated = True
     for ws_id in (DEV_WORKSPACE_PRIMARY, DEV_WORKSPACE_STAGING):
         for task in _seeded_tasks(ws_id):
@@ -450,6 +511,7 @@ def update_dev_task_execution(
                     task["failureReasonCode"] = failure_reason_code
                 if failure_reason is not None:
                     task["failureReason"] = failure_reason[:500]
+                _settle_task_fibonai(ws_id, task, lifecycle_status)
                 updated = True
     if updated and workspace_id is not None:
         _notify_task_event(workspace_id, task_id, "task.updated")
@@ -547,11 +609,22 @@ def dev_usage(workspace_id: UUID) -> dict[str, Any]:
 
 
 def dev_credit_balance(workspace_id: UUID) -> dict[str, Any]:
+    from edgemint.economy.fibonai_token import cached_economy, quote_accepted_task
+
+    quote = quote_accepted_task()
+    policy = cached_economy()
+    fibonai = {
+        "availableFibonAtomic": fibonai_available(workspace_id),
+        "reservedFibonAtomic": fibonai_reserved(workspace_id),
+        "taskChargeAtomic": quote.charge_atomic,
+        "workerRewardAtomic": quote.worker_reward_atomic,
+        "fibonAtomicPerToken": policy.atomic_units_per_token,
+    }
     if workspace_id == DEV_WORKSPACE_PRIMARY:
-        return {"status": "ready", "availableMicroEur": 250000000, "reservedMicroEur": 12500000}
+        return {"status": "ready", "availableMicroEur": 250000000, "reservedMicroEur": 12500000, **fibonai}
     if workspace_id == DEV_WORKSPACE_STAGING:
-        return {"status": "ready", "availableMicroEur": 50000000, "reservedMicroEur": 0}
-    return {"status": "empty", "availableMicroEur": 0, "reservedMicroEur": 0}
+        return {"status": "ready", "availableMicroEur": 50000000, "reservedMicroEur": 0, **fibonai}
+    return {"status": "empty", "availableMicroEur": 0, "reservedMicroEur": 0, **fibonai}
 
 
 _added_wallets: dict[UUID, list[dict[str, Any]]] = {}

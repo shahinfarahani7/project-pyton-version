@@ -10,7 +10,7 @@ import TaskSubmitForm from '../components/TaskSubmitForm.vue';
 import { useTaskEventStream } from '../composables/useTaskEventStream';
 import { mapTaskInputError } from '../config/taskTypeCatalog';
 import { t } from '../i18n';
-import { taskListTitle, taskStatusGroup } from '../utils/format';
+import { formatFibon, taskListTitle, taskStatusGroup } from '../utils/format';
 import { taskAwaitingResult, taskResultDownloadName, taskResultState } from '../utils/taskResult';
 import { trackEvent } from '../telemetry';
 
@@ -22,6 +22,7 @@ const loading = ref(true);
 const listError = ref('');
 const cancellingTaskId = ref('');
 const formKey = ref(0);
+const fibonaiBalance = ref(null);
 const copied = ref(false);
 const historyQuery = ref('');
 const threadEl = ref(null);
@@ -320,6 +321,24 @@ watch(selectedId, () => {
   void scrollAnswerToStart();
 });
 
+const fibonaiNote = computed(() => {
+  const charge = fibonaiBalance.value?.taskChargeAtomic;
+  if (!Number.isInteger(charge)) return '';
+  const cost = t('tasks.fibonaiCost', { amount: formatFibon(charge) });
+  const available = fibonaiBalance.value?.availableFibonAtomic;
+  if (!Number.isInteger(available)) return cost;
+  return `${cost} · ${t('tasks.fibonaiAvailable', { amount: formatFibon(available) })}`;
+});
+
+async function loadFibonaiBalance() {
+  if (!session.workspaceId) return;
+  try {
+    fibonaiBalance.value = await portalApi.balance(session.workspaceId);
+  } catch {
+    fibonaiBalance.value = null;
+  }
+}
+
 async function submit(payload) {
   if (!session.workspaceId || !session.hasPermission('customer.tasks:write') || creating.value) {
     return;
@@ -355,6 +374,7 @@ async function submit(payload) {
       error: '',
     });
     formKey.value += 1;
+    void loadFibonaiBalance();
     if (hasPending.value) {
       void refreshPending();
       ensurePoll();
@@ -391,11 +411,13 @@ async function cancelTurn(turn) {
     });
   } finally {
     cancellingTaskId.value = '';
+    void loadFibonaiBalance();
   }
 }
 
 onMounted(() => {
   void loadHistory();
+  void loadFibonaiBalance();
 });
 
 onUnmounted(stopPoll);
@@ -565,6 +587,7 @@ onUnmounted(stopPoll);
         composer-only
         :submitting="creating"
         :reset-key="formKey"
+        :fibonai-note="fibonaiNote"
         @submit="submit"
       />
     </div>

@@ -391,6 +391,8 @@ async def _create_task_body(request: Request, workspace_id: UUID) -> dict:
     except ValueError as exc:
         if str(exc) == "INPUT_FILE_TOO_LARGE":
             raise HTTPException(413, "INPUT_FILE_TOO_LARGE") from exc
+        if str(exc) == "INSUFFICIENT_FIBONAI":
+            raise HTTPException(409, "INSUFFICIENT_FIBONAI") from exc
         if str(exc) in {
             "UNSUPPORTED_TASK_TYPE",
             "INPUT_TEXT_REQUIRED",

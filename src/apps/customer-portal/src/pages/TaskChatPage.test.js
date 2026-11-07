@@ -1,11 +1,19 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { portalApi } from '../api/client';
 import { session } from '../auth/session';
 import TaskChatPage from './TaskChatPage.vue';
 
 describe('TaskChatPage', () => {
+  beforeEach(() => {
+    vi.spyOn(portalApi, 'balance').mockResolvedValue({
+      availableFibonAtomic: 10_000_000,
+      reservedFibonAtomic: 0,
+      taskChargeAtomic: 10_000,
+    });
+  });
+
   afterEach(() => {
     session.workspaceId = null;
     session.permissions = [];
@@ -41,6 +49,8 @@ describe('TaskChatPage', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('What would you like to work on?');
+    expect(wrapper.text()).toContain('This task costs 1 FIBON');
+    expect(wrapper.text()).toContain('1000 FIBON available');
     await wrapper.get('textarea').setValue('سلام');
     await wrapper.get('form').trigger('submit');
     await flushPromises();

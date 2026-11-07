@@ -181,6 +181,9 @@ export function mapTaskInputError(error) {
   if (haystack.includes('INPUT_FILE_TOO_LARGE')) {
     return 'tasks.inputFileTooLarge';
   }
+  if (haystack.includes('INSUFFICIENT_FIBONAI')) {
+    return 'tasks.insufficientFibonai';
+  }
   if (
     /AUTH_INVALID_CREDENTIAL|AUTH_SESSION_REVOKED|Invalid credentials|Session revoked/i.test(haystack)
   ) {

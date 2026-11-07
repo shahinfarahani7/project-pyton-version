@@ -78,7 +78,12 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
         ListenableBuilder(
           listenable: controller,
           builder: (context, _) =>
-              _HomeStatRow(tasksCompleted: controller.tasksProcessed),
+              _HomeStatRow(
+                tasksCompleted: controller.tasksProcessed,
+                fibonaiAtomic: controller.fibonaiBalanceFromServer
+                    ? controller.fibonaiBalanceAtomic
+                    : controller.tasksProcessed * fibonaiPointsPerCompletedTask,
+              ),
         ),
         const SizedBox(height: 16),
         ListenableBuilder(
@@ -193,13 +198,14 @@ class _CharacterLoopState extends State<_CharacterLoop>
 }
 
 class _HomeStatRow extends StatelessWidget {
-  const _HomeStatRow({required this.tasksCompleted});
+  const _HomeStatRow({required this.tasksCompleted, required this.fibonaiAtomic});
 
   final int tasksCompleted;
+  final int fibonaiAtomic;
 
   @override
   Widget build(BuildContext context) {
-    final fibonaiTotal = tasksCompleted * fibonaiPointsPerCompletedTask;
+    final fibonaiTotal = fibonaiAtomic;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -208,7 +214,7 @@ class _HomeStatRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _StatCard(label: 'Fibonai', value: '$fibonaiTotal'),
+          child: _StatCard(label: 'Fibonai', value: formatFibonaiAtomic(fibonaiTotal)),
         ),
       ],
     );

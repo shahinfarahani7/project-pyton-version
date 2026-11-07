@@ -1,0 +1,39 @@
+apiVersion: edgemint.io/v1
+kind: TokenEconomyPolicy
+metadata:
+  name: fibonai-ifpem-v1
+  version: 1.0.0
+  status: active
+  owners:
+  - finance
+spec:
+  token:
+    symbol: FIBON
+    maxSupply: 21000000000
+    atomicUnitsPerToken: 10000
+    minting: disabled
+  allocations:
+    participants: 16000000000
+    parentCompanyAndTokenHolders: 5000000000
+  emission:
+    model: IFPEM
+    exponentNumerator: 1
+    exponentDenominator: 4
+    series:
+      firstTerm: 1
+      secondTerm: 2
+  distributionBps:
+    fullConsensusParticipantPool: 7500
+    fullConsensusTreasury: 2500
+    partialPairEachParticipant: 2500
+    partialPairTreasury: 5000
+    governanceRecycleParticipant: 7500
+    governanceRecycleTreasury: 2500
+  participation:
+    minimumRamBytes: 4294967296
+    minimumFreeStorageBytes: 4294967296
+  requester:
+    monthlyFreeRequestCap: null
+  task:
+    baseTaskAtomic: 10000
+    defaultDifficultyGrade: 1
