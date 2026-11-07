@@ -27,7 +27,7 @@ Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
           FilledButton(
             onPressed: () =>
                 Navigator.of(context).pop(ModelUpdatePromptResult.update),
-            child: const Text('Download'),
+            child: const Text('Update'),
           ),
         ],
       );

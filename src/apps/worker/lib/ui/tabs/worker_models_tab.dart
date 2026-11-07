@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../models/worker_model_catalog.dart';
 import '../../worker_app_controller.dart';
 import '../worker_theme.dart';
 
@@ -88,11 +87,6 @@ class WorkerModelDownloadProgressCard extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            WorkerModelCatalog.displayName,
-            style: const TextStyle(color: WorkerColors.onSurfaceVariant),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 12),

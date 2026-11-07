@@ -440,13 +440,6 @@ class _ModelUpdateCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (controller.modelUpdateLabel != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                controller.modelUpdateLabel!,
-                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
-              ),
-            ],
             if (controller.modelUpdateNotes != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -471,7 +464,7 @@ class _ModelUpdateCard extends StatelessWidget {
                   onPressed: () {
                     unawaited(controller.installOfferedModelUpdate());
                   },
-                  child: Text(failed ? 'Try again' : 'Update model'),
+                  child: Text(failed ? 'Try again' : 'Update'),
                 ),
               ),
             ),

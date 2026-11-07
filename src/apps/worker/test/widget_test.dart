@@ -242,11 +242,11 @@ void main() {
 
     expect(find.text('Model update'), findsOneWidget);
     expect(find.text('App update'), findsNothing);
-    expect(find.text('gemma-4-E4B-it.litertlm'), findsOneWidget);
-    expect(find.text('Update model'), findsOneWidget);
+    expect(find.text('gemma-4-E4B-it.litertlm'), findsNothing);
+    expect(find.text('Update'), findsOneWidget);
     expect(find.text('Update app'), findsNothing);
 
-    await tester.tap(find.text('Update model'));
+    await tester.tap(find.text('Update'));
     await tester.pump();
 
     expect(find.text('Model update failed'), findsOneWidget);

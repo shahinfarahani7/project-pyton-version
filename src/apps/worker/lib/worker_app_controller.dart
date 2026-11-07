@@ -2439,7 +2439,7 @@ class WorkerAppController extends ChangeNotifier {
   String get modelDownloadButtonLabel => switch (modelPhase) {
     ModelInstallPhase.downloading => 'Downloading…',
     ModelInstallPhase.paused => 'Resume download',
-    _ => 'Download model',
+    _ => 'Update',
   };
 
   // ---------------------------------------------------------------------------

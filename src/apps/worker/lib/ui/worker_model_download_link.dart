@@ -61,7 +61,7 @@ class WorkerModelDownloadLink extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${WorkerModelCatalog.displayName} · ${WorkerModelCatalog.approximateDownloadSize}',
+            WorkerModelCatalog.approximateDownloadSize,
             style: const TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 12),
           ),
           const SizedBox(height: 8),

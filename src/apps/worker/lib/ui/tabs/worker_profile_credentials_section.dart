@@ -123,9 +123,7 @@ class WorkerProfileCredentialsSection extends StatelessWidget {
     final usernameDisplay = username != null && username.isNotEmpty
         ? username
         : 'Not set';
-    final emailDisplay = email != null && email.isNotEmpty
-        ? profile!.maskedEmail
-        : 'Not set';
+    final emailDisplay = email != null && email.isNotEmpty ? email : 'Not set';
 
     return Container(
       padding: const EdgeInsets.all(18),
