@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     s3_kms_key_id: str | None = None
     task_admission_max_drafts: int = 256
     worker_challenge_ttl_seconds: int = 300
-    worker_session_ttl_seconds: int = 43_200
+    worker_session_ttl_seconds: int = 2_592_000
     worker_heartbeat_interval_seconds: int = 20
     worker_attestation_ttl_hours: int = 24
     worker_consent_policy_version: str = "2026-q3-v1"

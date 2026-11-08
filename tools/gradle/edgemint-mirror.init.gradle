@@ -14,15 +14,15 @@ gradle.beforeProject { project ->
 allprojects {
     buildscript {
         repositories {
+            maven { url 'https://storage.googleapis.com/download.flutter.io' }
             maven { url 'https://maven.aliyun.com/repository/google' }
-            maven { url 'https://maven.myket.ir' }
             google()
             mavenCentral()
         }
     }
     repositories {
+        maven { url 'https://storage.googleapis.com/download.flutter.io' }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.myket.ir' }
         google()
         mavenCentral()
     }

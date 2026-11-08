@@ -285,6 +285,8 @@ class WorkerAppController extends ChangeNotifier {
 
   bool appUpdateMandatory = false;
 
+  String? installedAppVersionName;
+
   double appUpdateProgress = 0;
 
   String? appUpdateError;
@@ -296,6 +298,9 @@ class WorkerAppController extends ChangeNotifier {
   bool get showsAppUpdateCard =>
       appUpdateVersionName != null &&
       appUpdatePhase != WorkerAppUpdatePhase.idle;
+
+  /// A newer application build blocks the rest of the worker until it is installed.
+  bool get blocksAppUntilUpdate => showsAppUpdateCard && appUpdateMandatory;
 
   WorkerAppUpdatePhase modelUpdatePhase = WorkerAppUpdatePhase.idle;
 
@@ -1166,6 +1171,7 @@ class WorkerAppController extends ChangeNotifier {
     await _resolveBackendUrl();
 
     await _refreshBackendHealth();
+    _rememberInstalledAppVersion(await _platform.readInstalledAppVersion());
 
     await loadAccountProfile();
     await loadEmailSession();
@@ -1173,6 +1179,7 @@ class WorkerAppController extends ChangeNotifier {
     if (backendOnline) {
       if (!needsEmailSignIn) {
         await _ensureWorkerSession();
+        await _renewLoginOnEntry();
       }
       await refreshAppUpdate();
     }
@@ -1245,6 +1252,7 @@ class WorkerAppController extends ChangeNotifier {
       if (_disposed) {
         return;
       }
+      _rememberInstalledAppVersion(installed);
       final payload = await _api.fetchWorkerAppRelease();
       if (_disposed) {
         return;
@@ -1252,6 +1260,7 @@ class WorkerAppController extends ChangeNotifier {
       if (payload == null) {
         _clearAppUpdateOffer();
         _clearModelUpdateOffer();
+        await _deleteDownloadedAppUpdate();
         return;
       }
       _installedModelSha256 ??= await _readInstalledModelSha();
@@ -1263,12 +1272,13 @@ class WorkerAppController extends ChangeNotifier {
       );
       if (decision.application == null) {
         _clearAppUpdateOffer();
+        await _deleteDownloadedAppUpdate();
       } else {
         final release = decision.application!;
         _offeredAppRelease = release;
         appUpdateVersionName = release.versionName;
         appUpdateNotes = release.notes;
-        appUpdateMandatory = release.mandatory;
+        appUpdateMandatory = true;
         appUpdatePhase = WorkerAppUpdatePhase.available;
         appUpdateError = null;
         appUpdateProgress = 0;
@@ -1322,24 +1332,35 @@ class WorkerAppController extends ChangeNotifier {
         throw const WorkerAppUpdateException('UPDATE_DIRECTORY_UNAVAILABLE');
       }
       final directory = Directory('$root${Platform.pathSeparator}app-updates');
-      final file = await downloadWorkerAppRelease(
-        config: _config,
+      final cached = await verifiedWorkerAppUpdateFile(
+        directory: directory,
         release: release,
-        destinationDirectory: directory,
-        client: _http,
-        onProgress: (progress) {
-          if (_disposed) {
-            return;
-          }
-          final percent = (progress * 100).floor();
-          if (percent == lastPercent) {
-            return;
-          }
-          lastPercent = percent;
-          appUpdateProgress = progress;
-          notifyListeners();
-        },
       );
+      final File file;
+      if (cached != null) {
+        file = cached;
+        appUpdateProgress = 1;
+        notifyListeners();
+      } else {
+        file = await downloadWorkerAppRelease(
+          config: _config,
+          release: release,
+          destinationDirectory: directory,
+          client: _http,
+          onProgress: (progress) {
+            if (_disposed) {
+              return;
+            }
+            final percent = (progress * 100).floor();
+            if (percent == lastPercent) {
+              return;
+            }
+            lastPercent = percent;
+            appUpdateProgress = progress;
+            notifyListeners();
+          },
+        );
+      }
       if (_disposed) {
         return;
       }
@@ -1387,7 +1408,7 @@ class WorkerAppController extends ChangeNotifier {
       if (modelUpdateLabel != null) {
         modelUpdatePhase = WorkerAppUpdatePhase.failed;
         modelUpdateError =
-            'Model update details are unavailable. Refresh and try again.';
+            'Update details are unavailable. Refresh and try again.';
         notifyListeners();
       }
       return;
@@ -1411,7 +1432,7 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
     modelUpdatePhase = WorkerAppUpdatePhase.failed;
-    modelUpdateError = 'Could not update the model.';
+    modelUpdateError = 'Could not install the update.';
     notifyListeners();
   }
 
@@ -1441,6 +1462,24 @@ class WorkerAppController extends ChangeNotifier {
     if (hadCard && !_disposed) {
       notifyListeners();
     }
+  }
+
+  void _rememberInstalledAppVersion(InstalledAppVersion? installed) {
+    final name = installed?.versionName.trim();
+    if (name == null || name.isEmpty || name == installedAppVersionName) {
+      return;
+    }
+    installedAppVersionName = name;
+  }
+
+  Future<void> _deleteDownloadedAppUpdate() async {
+    final root = await _platform.localStorePath();
+    if (root == null || root.isEmpty) {
+      return;
+    }
+    await deleteDownloadedWorkerAppUpdate(
+      Directory('$root${Platform.pathSeparator}app-updates'),
+    );
   }
 
   void _clearAppUpdateOffer() {
@@ -3371,6 +3410,68 @@ class WorkerAppController extends ChangeNotifier {
 
   void handleAppLifecycleState(AppLifecycleState state) {
     _processLifecycle.handleAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed && !_disposed) {
+      unawaited(_renewLoginOnEntry());
+    }
+  }
+
+  Future<void> _renewLoginOnEntry() async {
+    if (_disposed || needsEmailSignIn) {
+      return;
+    }
+    await _renewEmailSession();
+    await _slideWorkerAccessToken();
+  }
+
+  Future<void> _renewEmailSession() async {
+    final session = emailSession;
+    if (session == null || !session.isActiveAt(DateTime.now())) {
+      return;
+    }
+    final cookie = session.sessionCookie;
+    if (cookie == null || cookie.isEmpty) {
+      return;
+    }
+    try {
+      final result = await _emailAuthClient().renewSession(
+        sessionCookie: cookie,
+        csrfToken: session.csrfToken,
+      );
+      final updated = WorkerEmailSession(
+        email: session.email,
+        sessionPublicId: result.sessionPublicId,
+        expiresAtUtc: result.expiresAtUtc,
+        sessionCookie: result.sessionCookie ?? cookie,
+        csrfToken: result.csrfToken ?? session.csrfToken,
+      );
+      await _emailSessionStore.write(updated);
+      if (_disposed) {
+        return;
+      }
+      emailSession = updated;
+      notifyListeners();
+    } catch (error) {
+      _logTask('Email session renewal failed: $error');
+    }
+  }
+
+  Future<void> _slideWorkerAccessToken() async {
+    if (hasManualCredentials || !workerEnrolled || _disposed) {
+      return;
+    }
+    try {
+      final session = await _sessionLifecycle.slideAccessToken();
+      if (_disposed) {
+        return;
+      }
+      if (session == null) {
+        await _ensureWorkerSession();
+        return;
+      }
+      _applyWorkerSession(session);
+    } catch (error, stackTrace) {
+      _logError('Worker access token renewal failed', error, stackTrace);
+    }
   }
 
   Map<String, Object?> get processLifecycleTelemetry =>

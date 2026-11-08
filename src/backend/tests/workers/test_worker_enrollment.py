@@ -12,6 +12,10 @@ from edgemint.workers.readiness import (
 )
 
 
+def test_worker_access_token_lasts_thirty_days() -> None:
+    assert Settings.model_fields["worker_session_ttl_seconds"].default == 30 * 24 * 60 * 60
+
+
 def test_worker_lifecycle_matches_dsl() -> None:
     lifecycle = WorkerLifecycle.load()
     assert lifecycle.can_transition("registered", "attesting")

@@ -231,6 +231,34 @@ class BrowserSessionStore:
             idle_expires_at=row.idle_expires_at_utc,
         )
 
+    async def slide_expiry(
+        self,
+        connection: AsyncConnection,
+        *,
+        session_id: UUID,
+        absolute_ttl: timedelta,
+        idle_ttl: timedelta,
+    ) -> tuple[datetime, datetime]:
+        now = datetime.now(UTC)
+        absolute_expires_at = now + absolute_ttl
+        idle_expires_at = now + idle_ttl
+        await connection.execute(
+            text(
+                """
+                UPDATE public.browser_sessions
+                SET absolute_expires_at_utc = :absolute_expires_at,
+                    idle_expires_at_utc = :idle_expires_at
+                WHERE id = :session_id AND revoked_at_utc IS NULL
+                """
+            ),
+            {
+                "session_id": session_id,
+                "absolute_expires_at": absolute_expires_at,
+                "idle_expires_at": idle_expires_at,
+            },
+        )
+        return absolute_expires_at, idle_expires_at
+
     async def revoke(
         self,
         connection: AsyncConnection,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../models/worker_model_catalog.dart';
 import 'worker_theme.dart';
 
 /// Shows a tappable model download URL for mobile sideload / browser download.
@@ -58,11 +57,6 @@ class WorkerModelDownloadLink extends StatelessWidget {
                   color: WorkerColors.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            WorkerModelCatalog.approximateDownloadSize,
-            style: const TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 12),
           ),
           const SizedBox(height: 8),
           SelectableText(

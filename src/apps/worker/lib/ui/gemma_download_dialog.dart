@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../models/worker_model_catalog.dart';
-
 enum ModelUpdatePromptResult { update, later }
 
-/// Shown on Home when the on-device model is not installed yet.
+/// Shown on Home when work cannot start until the required download finishes.
 Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
   BuildContext context,
 ) {
@@ -13,10 +11,9 @@ Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
     barrierDismissible: false,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Download model'),
-        content: Text(
-          'Download the on-device model (${WorkerModelCatalog.approximateDownloadSize}) '
-          'to run tasks on this device.',
+        title: const Text('Update required'),
+        content: const Text(
+          'An update is required before this device can run tasks.',
         ),
         actions: [
           TextButton(

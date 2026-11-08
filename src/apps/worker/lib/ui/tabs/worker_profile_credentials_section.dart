@@ -140,6 +140,10 @@ class WorkerProfileCredentialsSection extends StatelessWidget {
           const SizedBox(height: 14),
           _InfoRow(label: 'Username', value: usernameDisplay),
           _InfoRow(label: 'Email', value: emailDisplay),
+          _InfoRow(
+            label: 'App version',
+            value: controller.installedAppVersionName ?? '—',
+          ),
           const Divider(height: 28),
           const Text('Password', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),

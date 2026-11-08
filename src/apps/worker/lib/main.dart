@@ -171,15 +171,17 @@ class _WorkerHomePageState extends State<WorkerHomePage>
       return WorkerLoginScreen(controller: controller);
     }
 
+    final updateRequired = controller.blocksAppUntilUpdate;
     return WorkerShell(
-      selectedIndex: _selectedNavIndex,
-      onNavChanged: _navigateTo,
+      selectedIndex: updateRequired ? 0 : _selectedNavIndex,
+      onNavChanged: updateRequired ? (_) {} : _navigateTo,
       onRefresh: controller.bootstrap,
       available: controller.available,
+      lockNavigation: updateRequired,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
-          child: switch (_selectedNavIndex) {
+          child: switch (updateRequired ? 0 : _selectedNavIndex) {
             0 => WorkerHomeTab(
               key: const ValueKey('home'),
               controller: controller,

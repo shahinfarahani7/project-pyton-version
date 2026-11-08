@@ -210,11 +210,30 @@ class WorkerSessionLifecycle {
     );
   }
 
-  Future<WorkerSessionRecord> _refreshSession(WorkerSessionRecord session) async {
+  /// Issues a new access token with a fresh lifetime while the current one is still accepted.
+  Future<WorkerSessionRecord?> slideAccessToken() async {
+    final session = await _store.readSession();
+    if (session == null || session.isExpired) {
+      return null;
+    }
+    final stamp = DateTime.now().toUtc().microsecondsSinceEpoch;
+    final refreshed = await _refreshSession(
+      session,
+      idempotencyKey: 'refresh-${session.workerId}-$stamp',
+    );
+    await _store.writeSession(refreshed);
+    return refreshed;
+  }
+
+  Future<WorkerSessionRecord> _refreshSession(
+    WorkerSessionRecord session, {
+    String? idempotencyKey,
+  }) async {
+    final key = idempotencyKey ?? 'refresh-${session.workerId}';
     final refreshed = await _api.refreshWorkerSession(
       refreshToken: session.accessToken,
-      idempotencyKey: 'refresh-${session.workerId}',
-      requestId: 'refresh-${session.workerId}',
+      idempotencyKey: key,
+      requestId: key,
     );
     return session.copyWith(
       accessToken: refreshed.accessToken,

@@ -8,6 +8,7 @@ import 'package:edgemint_worker/platform/worker_runtime_channel.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/worker_app_update.dart';
 import 'package:edgemint_worker/worker_app_controller.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -276,6 +277,8 @@ void main() {
     expect(controller.appUpdateVersionName, '5.1.0');
     expect(controller.appUpdateNotes, 'Fixes startup');
     expect(controller.appUpdatePhase, WorkerAppUpdatePhase.available);
+    expect(controller.appUpdateMandatory, isTrue);
+    expect(controller.blocksAppUntilUpdate, isTrue);
 
     await controller.installOfferedAppUpdate();
     expect(platform.installedApkPath, endsWith('worker-update.apk'));
@@ -285,6 +288,77 @@ void main() {
       await File(platform.installedApkPath!).readAsBytes(),
       bytes,
     );
+  });
+
+  test('a failed install keeps the apk and the installed version removes it', () async {
+    final bytes = utf8.encode('worker-apk');
+    final digest = sha256.convert(bytes).toString();
+    final dir = await Directory.systemTemp.createTemp('worker-app-update-keep');
+    addTearDown(() async {
+      if (!dir.existsSync()) {
+        return;
+      }
+      try {
+        await dir.delete(recursive: true);
+      } on FileSystemException {
+        // The temp directory can disappear while Windows is still releasing it.
+      }
+    });
+    var downloads = 0;
+    final client = MockClient((request) async {
+      if (request.url.path == '/worker-app/release') {
+        return http.Response(
+          jsonEncode({
+            'versionName': '5.1.0',
+            'versionCode': 40200,
+            'downloadPath': '/worker-app/release/apk',
+            'sha256': digest,
+            'sizeBytes': bytes.length,
+            'notes': 'Fixes startup',
+            'mandatory': true,
+          }),
+          200,
+        );
+      }
+      if (request.url.path == '/worker-app/release/apk') {
+        downloads += 1;
+        return http.Response.bytes(bytes, 200);
+      }
+      return http.Response('missing', 404);
+    });
+    final platform = _InstallGateChannel(storePath: dir.path);
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: client,
+      platform: platform,
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.refreshAppUpdate();
+    platform.failInstall = true;
+    await controller.installOfferedAppUpdate();
+    final apk = File(
+      '${dir.path}${Platform.pathSeparator}app-updates${Platform.pathSeparator}worker-update.apk',
+    );
+    expect(controller.appUpdatePhase, WorkerAppUpdatePhase.failed);
+    expect(apk.existsSync(), isTrue);
+    expect(downloads, 1);
+
+    platform.failInstall = false;
+    await controller.installOfferedAppUpdate();
+    expect(downloads, 1);
+    expect(apk.existsSync(), isTrue);
+    expect(controller.appUpdatePhase, WorkerAppUpdatePhase.available);
+
+    platform.installed = const InstalledAppVersion(
+      versionName: '5.1.0',
+      versionCode: 40200,
+    );
+    await controller.refreshAppUpdate();
+    expect(controller.showsAppUpdateCard, isFalse);
+    expect(apk.existsSync(), isFalse);
+    expect(controller.installedAppVersionName, '5.1.0');
   });
 
   test('controller refreshes the model and does not install an apk', () async {
@@ -365,4 +439,35 @@ void main() {
     await missing.refreshAppUpdate();
     expect(missing.showsAppUpdateCard, isFalse);
   });
+}
+
+class _InstallGateChannel extends NoopWorkerRuntimeChannel {
+  _InstallGateChannel({required super.storePath})
+    : super(
+        installedAppVersion: const InstalledAppVersion(
+          versionName: '5.0.0',
+          versionCode: 40100,
+        ),
+      );
+
+  InstalledAppVersion installed = const InstalledAppVersion(
+    versionName: '5.0.0',
+    versionCode: 40100,
+  );
+  var failInstall = false;
+
+  @override
+  Future<InstalledAppVersion?> readInstalledAppVersion() async => installed;
+
+  @override
+  Future<WorkerAppInstallPrompt> installDownloadedApk(String path) async {
+    installedApkPath = path;
+    if (failInstall) {
+      throw PlatformException(
+        code: 'INSTALL_UNAVAILABLE',
+        message: 'No package installer is available',
+      );
+    }
+    return WorkerAppInstallPrompt.installerLaunched;
+  }
 }

@@ -168,6 +168,12 @@ void main() {
     final reused = await lifecycle.ensureSession(snapshotOverride: snapshot);
     expect(reused.accessToken, 'token-auto');
     expect(mock.registerCalls, 1);
+    expect(mock.refreshCalls, 0);
+
+    final slid = await lifecycle.slideAccessToken();
+    expect(slid?.accessToken, 'token-refreshed');
+    expect(mock.refreshCalls, 1);
+    expect((await store.readSession())?.accessToken, 'token-refreshed');
 
     api.close();
     mock.close();

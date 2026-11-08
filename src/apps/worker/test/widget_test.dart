@@ -130,7 +130,7 @@ void main() {
     controller.notifyListeners();
     await tester.pump();
 
-    expect(find.text('Installing model…'), findsOneWidget);
+    expect(find.text('Installing…'), findsOneWidget);
     expect(find.text('Pause'), findsNothing);
 
     controller.modelProgress = 0.42;
@@ -157,7 +157,7 @@ void main() {
     await tester.pump();
 
     expect(find.textContaining('Downloading'), findsNothing);
-    expect(find.text('Installing model…'), findsNothing);
+    expect(find.text('Installing…'), findsNothing);
   });
 
   testWidgets('home shows a published app update and reports a failed install', (
@@ -187,6 +187,8 @@ void main() {
     await tester.pump();
 
     expect(find.text('Required app update'), findsOneWidget);
+    expect(find.text('Install this update to continue.'), findsOneWidget);
+    expect(find.text('Tasks completed'), findsNothing);
     expect(find.text('Version 9.9.9'), findsOneWidget);
     expect(find.text('Faster mission startup'), findsOneWidget);
     expect(find.text('Update app'), findsOneWidget);
@@ -240,18 +242,19 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Model update'), findsOneWidget);
+    expect(find.text('Update required'), findsOneWidget);
     expect(find.text('App update'), findsNothing);
     expect(find.text('gemma-4-E4B-it.litertlm'), findsNothing);
+    expect(find.text('Refresh the on-device model'), findsNothing);
     expect(find.text('Update'), findsOneWidget);
     expect(find.text('Update app'), findsNothing);
 
     await tester.tap(find.text('Update'));
     await tester.pump();
 
-    expect(find.text('Model update failed'), findsOneWidget);
+    expect(find.text('Update failed'), findsOneWidget);
     expect(
-      find.text('Model update details are unavailable. Refresh and try again.'),
+      find.text('Update details are unavailable. Refresh and try again.'),
       findsOneWidget,
     );
   });

@@ -128,6 +128,21 @@ def test_password_locks_after_repeated_failures() -> None:
         email_otp.verify_email_password(email_otp.DEV_LOGIN_EMAIL, email_otp.DEV_LOGIN_PASSWORD)
 
 
+def test_worker_sign_in_lasts_thirty_days_and_portal_does_not() -> None:
+    worker_absolute, worker_idle = api_gateway.browser_session_ttl(
+        "worker",
+        settings_ttl_seconds=2_592_000,
+    )
+    portal_absolute, portal_idle = api_gateway.browser_session_ttl(
+        None,
+        settings_ttl_seconds=2_592_000,
+    )
+    assert worker_absolute == timedelta(days=30)
+    assert worker_idle == timedelta(days=30)
+    assert portal_absolute == timedelta(hours=12)
+    assert portal_idle == timedelta(minutes=30)
+
+
 def test_http_wrong_password_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         api_gateway,
@@ -230,7 +245,7 @@ def test_http_signup_opens_a_session_without_touching_the_database(
         assert email == "new-user@example.com"
         assert identity.workspace_id == DEV_WORKSPACE_PRIMARY
 
-    async def issue(response, **kwargs):  # noqa: ARG001
+    async def issue(response, request, **kwargs):
         return api_gateway.SessionResponse(
             sessionPublicId="ses_signup",
             workspaceId=kwargs["workspace_id"],

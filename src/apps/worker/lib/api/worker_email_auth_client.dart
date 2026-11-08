@@ -14,6 +14,8 @@ class WorkerEmailAuthClient {
   final http.Client _http;
 
   static const minPasswordLength = 8;
+  static const clientHeaderName = 'X-Edgemint-Client';
+  static const clientHeaderValue = 'worker';
 
   Future<WorkerEmailAuthResult> signUp({
     required String email,
@@ -86,6 +88,7 @@ class WorkerEmailAuthClient {
             'Accept': 'application/json',
             'Cookie': sessionCookie,
             'X-CSRF-Token': csrfToken,
+            clientHeaderName: clientHeaderValue,
           },
         )
         .timeout(const Duration(seconds: 8));
@@ -94,6 +97,47 @@ class WorkerEmailAuthClient {
         workerAuthErrorMessage(response.body, fallback: 'Could not sign out.'),
       );
     }
+  }
+
+  Future<WorkerEmailAuthResult> renewSession({
+    required String sessionCookie,
+    required String? csrfToken,
+  }) async {
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      'Cookie': sessionCookie,
+      clientHeaderName: clientHeaderValue,
+    };
+    if (csrfToken != null && csrfToken.isNotEmpty) {
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+    final http.Response response;
+    try {
+      response = await _http
+          .post(_uri('/auth/sessions/renew'), headers: headers)
+          .timeout(const Duration(seconds: 15));
+    } on WorkerEmailAuthException {
+      rethrow;
+    } catch (_) {
+      throw WorkerEmailAuthException(
+        'Could not reach the sign-in service. Check that the API gateway is running.',
+      );
+    }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw WorkerEmailAuthException(
+        workerAuthErrorMessage(
+          response.body,
+          fallback: 'Could not extend the sign-in.',
+        ),
+      );
+    }
+    return parseWorkerEmailAuthResult(
+      response.body,
+      sessionCookie:
+          readSessionCookieHeader(response.headers['set-cookie']) ??
+          sessionCookie,
+      csrfToken: response.headers['x-csrf-token'] ?? csrfToken,
+    );
   }
 
   Future<WorkerEmailAuthResult> _postSession(
@@ -122,6 +166,8 @@ class WorkerEmailAuthClient {
             headers: const {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
+              WorkerEmailAuthClient.clientHeaderName:
+                  WorkerEmailAuthClient.clientHeaderValue,
             },
             body: jsonEncode(body),
           )

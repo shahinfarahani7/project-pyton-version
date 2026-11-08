@@ -32,66 +32,45 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final wide = MediaQuery.sizeOf(context).width >= 900;
-    return ListView(
-      padding: EdgeInsets.fromLTRB(wide ? 24 : 16, 16, wide ? 24 : 16, 24),
-      children: [
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) {
-            if (!controller.showsAppUpdateCard) {
-              return const SizedBox.shrink();
-            }
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _AppUpdateCard(controller: controller),
-            );
-          },
-        ),
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) {
-            if (!controller.showsModelUpdateCard) {
-              return const SizedBox.shrink();
-            }
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _ModelUpdateCard(controller: controller),
-            );
-          },
-        ),
-        _WorkerCharacter(
-          working: _hasActiveTask(controller.executionStatus.phase),
-        ),
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) {
-            if (!controller.showsModelDownloadProgressCard) {
-              return const SizedBox.shrink();
-            }
-            return Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: WorkerModelDownloadProgressCard(controller: controller),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) =>
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) {
+        final locked = controller.blocksAppUntilUpdate;
+        return ListView(
+          padding: EdgeInsets.fromLTRB(wide ? 24 : 16, 16, wide ? 24 : 16, 24),
+          children: [
+            if (controller.showsAppUpdateCard)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _AppUpdateCard(controller: controller),
+              ),
+            if (!locked && controller.showsModelUpdateCard)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _ModelUpdateCard(controller: controller),
+              ),
+            if (!locked) ...[
+              _WorkerCharacter(
+                working: _hasActiveTask(controller.executionStatus.phase),
+              ),
+              if (controller.showsModelDownloadProgressCard) ...[
+                const SizedBox(height: 16),
+                WorkerModelDownloadProgressCard(controller: controller),
+              ],
+              const SizedBox(height: 16),
               _HomeStatRow(
                 tasksCompleted: controller.tasksProcessed,
                 fibonaiAtomic: controller.fibonaiBalanceFromServer
                     ? controller.fibonaiBalanceAtomic
-                    : controller.tasksProcessed * fibonaiPointsPerCompletedTask,
+                    : controller.tasksProcessed *
+                          fibonaiPointsPerCompletedTask,
               ),
-        ),
-        const SizedBox(height: 16),
-        ListenableBuilder(
-          listenable: controller,
-          builder: (context, _) =>
+              const SizedBox(height: 16),
               _EarningsChart(values: controller.fibonaiDailyPoints),
-        ),
-      ],
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -116,17 +95,18 @@ class _WorkerCharacter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 220,
-      child: Center(
-        child: _CharacterLoop(
-          key: ValueKey(working),
-          folder: working ? 'working' : 'idle',
-          semanticLabel: working
-              ? 'Worker character running a task'
-              : 'Worker character waiting for a task',
-        ),
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      decoration: workerPanelDecoration(),
+      child: _CharacterLoop(
+        key: ValueKey(working),
+        folder: working ? 'working' : 'idle',
+        semanticLabel: working
+            ? 'Worker character running a task'
+            : 'Worker character waiting for a task',
       ),
     );
   }
@@ -187,7 +167,7 @@ class _CharacterLoopState extends State<_CharacterLoop>
             _CharacterLoop.frameCount;
         return Image.asset(
           _frame(index),
-          height: 220,
+          height: 196,
           fit: BoxFit.contain,
           gaplessPlayback: true,
           semanticLabel: widget.semanticLabel,
@@ -206,17 +186,25 @@ class _HomeStatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fibonaiTotal = fibonaiAtomic;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _StatCard(label: 'Tasks completed', value: '$tasksCompleted'),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(label: 'Fibonai', value: formatFibonaiAtomic(fibonaiTotal)),
-        ),
-      ],
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _StatCard(
+              label: 'Tasks completed',
+              value: '$tasksCompleted',
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _StatCard(
+              label: 'Fibonai',
+              value: formatFibonaiAtomic(fibonaiTotal),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -230,24 +218,32 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(22),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: workerPanelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: WorkerColors.onSurfaceVariant,
               fontSize: 13,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: WorkerColors.primary,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: WorkerColors.primary,
+              ),
             ),
           ),
         ],
@@ -271,7 +267,8 @@ class _EarningsChart extends StatelessWidget {
         : 'No Fibonai earned in the last 7 days. '
             'Rewards are variable and are not guaranteed.';
     return Container(
-      padding: const EdgeInsets.all(22),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: workerPanelDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,6 +352,15 @@ class _AppUpdateCard extends StatelessWidget {
                 style: const TextStyle(color: WorkerColors.onSurfaceVariant),
               ),
             ],
+            if (controller.appUpdateMandatory &&
+                phase != WorkerAppUpdatePhase.downloading &&
+                phase != WorkerAppUpdatePhase.installing) ...[
+              const SizedBox(height: 8),
+              const Text(
+                'Install this update to continue.',
+                style: TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ],
             if (controller.appUpdateNotes != null &&
                 phase != WorkerAppUpdatePhase.downloading &&
                 phase != WorkerAppUpdatePhase.installing) ...[
@@ -416,10 +422,10 @@ class _ModelUpdateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final failed = controller.modelUpdatePhase == WorkerAppUpdatePhase.failed;
-    final title = failed ? 'Model update failed' : 'Model update';
+    final title = failed ? 'Update failed' : 'Update required';
     return Semantics(
       container: true,
-      label: 'Model update',
+      label: 'Required update',
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: workerPanelDecoration(
@@ -430,7 +436,7 @@ class _ModelUpdateCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.memory, color: WorkerColors.primary),
+                const Icon(Icons.download_rounded, color: WorkerColors.primary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -440,15 +446,6 @@ class _ModelUpdateCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (controller.modelUpdateNotes != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                controller.modelUpdateNotes!,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
-              ),
-            ],
             if (controller.modelUpdateError != null) ...[
               const SizedBox(height: 8),
               Text(

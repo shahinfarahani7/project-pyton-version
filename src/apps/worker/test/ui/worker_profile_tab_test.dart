@@ -24,6 +24,7 @@ void main() {
       ),
     );
     await controller.loadAccountProfile();
+    controller.installedAppVersionName = '5.0.3';
 
     tester.view.physicalSize = const Size(390, 800);
     tester.view.devicePixelRatio = 1;
@@ -44,7 +45,9 @@ void main() {
 
     expect(find.text('Account'), findsWidgets);
     expect(find.text('fibon_worker'), findsOneWidget);
-    expect(find.textContaining('w•••@example.com'), findsOneWidget);
+    expect(find.text('worker@example.com'), findsOneWidget);
+    expect(find.text('App version'), findsOneWidget);
+    expect(find.text('5.0.3'), findsOneWidget);
     expect(find.text('Change password'), findsOneWidget);
     expect(find.byType(TextField), findsNothing);
     expect(find.text('Connection'), findsNothing);
@@ -68,6 +71,8 @@ void main() {
     );
 
     expect(find.text('Not set'), findsNWidgets(2));
+    expect(find.text('App version'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
   });
 
   test('requestPasswordChange does not pretend server success', () async {

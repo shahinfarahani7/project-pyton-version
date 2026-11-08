@@ -33,6 +33,7 @@ class WorkerShell extends StatelessWidget {
     required this.onRefresh,
     required this.body,
     this.available = true,
+    this.lockNavigation = false,
   });
 
   final int selectedIndex;
@@ -40,6 +41,7 @@ class WorkerShell extends StatelessWidget {
   final VoidCallback onRefresh;
   final Widget body;
   final bool available;
+  final bool lockNavigation;
 
   String get _title => switch (selectedIndex) {
     0 => 'FibonAI | Worker Panel',
@@ -51,6 +53,19 @@ class WorkerShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.sizeOf(context).width >= _sidebarBreakpoint;
+
+    if (lockNavigation) {
+      return Scaffold(
+        backgroundColor: WorkerColors.surface,
+        appBar: _WorkerTopBar(
+          title: 'FibonAI | Worker Panel',
+          onRefresh: onRefresh,
+          available: available,
+          compact: !wide,
+        ),
+        body: body,
+      );
+    }
 
     if (wide) {
       return Scaffold(

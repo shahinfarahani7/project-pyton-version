@@ -65,7 +65,7 @@ class WorkerModelDownloadProgressCard extends StatelessWidget {
         : pausing
         ? 'Pausing…'
         : installing
-        ? 'Installing model…'
+        ? 'Installing…'
         : 'Downloading ${(progress * 100).toStringAsFixed(0)}%';
 
     return Container(

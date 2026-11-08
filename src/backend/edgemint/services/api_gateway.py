@@ -35,6 +35,23 @@ class SessionCreateRequest(BaseModel):
     permissions: list[str] = Field(min_length=1)
 
 
+WORKER_CLIENT_HEADER = "X-Edgemint-Client"
+_PORTAL_SESSION_ABSOLUTE_TTL = timedelta(hours=12)
+_PORTAL_SESSION_IDLE_TTL = timedelta(minutes=30)
+
+
+def browser_session_ttl(
+    client_header: str | None,
+    *,
+    settings_ttl_seconds: int,
+) -> tuple[timedelta, timedelta]:
+    """Worker sign-in lasts one month and slides. The customer portal keeps its own window."""
+    if (client_header or "").strip().lower() == "worker":
+        worker_ttl = timedelta(seconds=settings_ttl_seconds)
+        return worker_ttl, worker_ttl
+    return _PORTAL_SESSION_ABSOLUTE_TTL, _PORTAL_SESSION_IDLE_TTL
+
+
 class SessionResponse(BaseModel):
     sessionPublicId: str
     workspaceId: UUID
@@ -99,12 +116,17 @@ def _try_send_otp(recipient: str, code: str) -> bool:
 
 async def _issue_browser_session(
     response: Response,
+    request: Request,
     *,
     principal_id: UUID,
     workspace_id: UUID,
     details: dict[str, object],
     role: str = "customer",
 ) -> SessionResponse:
+    absolute_ttl, idle_ttl = browser_session_ttl(
+        request.headers.get(WORKER_CLIENT_HEADER),
+        settings_ttl_seconds=settings.worker_session_ttl_seconds,
+    )
     session_token = secrets.token_urlsafe(32)
     csrf_secret = secrets.token_urlsafe(32)
     session_public_id = public_id("ses")
@@ -116,6 +138,8 @@ async def _issue_browser_session(
             workspace_id=workspace_id,
             session_token=session_token,
             csrf_secret=csrf_secret,
+            absolute_ttl=absolute_ttl,
+            idle_ttl=idle_ttl,
         )
         await write_audit_event(
             connection,
@@ -133,7 +157,7 @@ async def _issue_browser_session(
         secure=BrowserSessionStore.cookie_secure(environment=settings.environment),
         samesite="strict",
         path="/",
-        max_age=int(timedelta(hours=12).total_seconds()),
+        max_age=int(absolute_ttl.total_seconds()),
     )
     response.headers[BrowserSessionStore.CSRF_HEADER] = csrf_secret
     return SessionResponse(
@@ -146,10 +170,15 @@ async def _issue_browser_session(
 
 
 @app.post("/auth/sessions", response_model=SessionResponse, tags=["auth"])
-async def create_browser_session(payload: SessionCreateRequest, response: Response) -> SessionResponse:
+async def create_browser_session(
+    payload: SessionCreateRequest,
+    request: Request,
+    response: Response,
+) -> SessionResponse:
     _require_local_bff()
     return await _issue_browser_session(
         response,
+        request,
         principal_id=payload.principalId,
         workspace_id=payload.workspaceId,
         details={},
@@ -181,7 +210,11 @@ async def request_email_otp_challenge(payload: EmailOtpChallengeRequest) -> Emai
 
 
 @app.post("/auth/email-otp/verify", response_model=SessionResponse, tags=["auth"])
-async def verify_email_otp_challenge(payload: EmailOtpVerifyRequest, response: Response) -> SessionResponse:
+async def verify_email_otp_challenge(
+    payload: EmailOtpVerifyRequest,
+    request: Request,
+    response: Response,
+) -> SessionResponse:
     _require_local_bff()
     from edgemint.dev.email_otp import EmailOtpError, hydrate_local_accounts, verify_email_otp
 
@@ -192,6 +225,7 @@ async def verify_email_otp_challenge(payload: EmailOtpVerifyRequest, response: R
         raise_auth_error(exc.code, status=exc.status, detail=exc.detail)
     return await _issue_browser_session(
         response,
+        request,
         principal_id=identity.principal_id,
         workspace_id=identity.workspace_id,
         details={"method": "email_otp"},
@@ -200,7 +234,11 @@ async def verify_email_otp_challenge(payload: EmailOtpVerifyRequest, response: R
 
 
 @app.post("/auth/email-password", response_model=SessionResponse, tags=["auth"])
-async def login_with_email_password(payload: EmailPasswordRequest, response: Response) -> SessionResponse:
+async def login_with_email_password(
+    payload: EmailPasswordRequest,
+    request: Request,
+    response: Response,
+) -> SessionResponse:
     _require_local_bff()
     from edgemint.dev.email_otp import EmailOtpError, hydrate_local_accounts, verify_email_password
 
@@ -211,6 +249,7 @@ async def login_with_email_password(payload: EmailPasswordRequest, response: Res
         raise_auth_error(exc.code, status=exc.status, detail=exc.detail)
     return await _issue_browser_session(
         response,
+        request,
         principal_id=identity.principal_id,
         workspace_id=identity.workspace_id,
         details={"method": "email_password"},
@@ -219,7 +258,11 @@ async def login_with_email_password(payload: EmailPasswordRequest, response: Res
 
 
 @app.post("/auth/email-signup", response_model=SessionResponse, status_code=201, tags=["auth"])
-async def signup_with_email_password(payload: EmailSignupRequest, response: Response) -> SessionResponse:
+async def signup_with_email_password(
+    payload: EmailSignupRequest,
+    request: Request,
+    response: Response,
+) -> SessionResponse:
     _require_local_bff()
     from edgemint.dev.email_otp import (
         EmailOtpError,
@@ -243,10 +286,62 @@ async def signup_with_email_password(payload: EmailSignupRequest, response: Resp
         raise HTTPException(503, "LOCAL_SIGNUP_UNAVAILABLE") from None
     return await _issue_browser_session(
         response,
+        request,
         principal_id=identity.principal_id,
         workspace_id=identity.workspace_id,
         details={"method": "email_signup"},
         role=identity.role,
+    )
+
+
+@app.post("/auth/sessions/renew", response_model=SessionResponse, tags=["auth"])
+async def renew_browser_session(request: Request, response: Response) -> SessionResponse:
+    """Slide a worker sign-in to a fresh month. The customer portal does not call this."""
+    if request.headers.get(WORKER_CLIENT_HEADER, "").strip().lower() != "worker":
+        raise_auth_error("AUTH_INVALID_CREDENTIAL")
+    session_token = BrowserSessionStore.read_session_cookie(
+        request.cookies, environment=settings.environment
+    )
+    if not session_token:
+        raise_auth_error("AUTH_INVALID_CREDENTIAL")
+    absolute_ttl, idle_ttl = browser_session_ttl(
+        "worker",
+        settings_ttl_seconds=settings.worker_session_ttl_seconds,
+    )
+    async with transaction() as connection:
+        record = await session_store.load_by_token(connection, session_token=session_token)
+        if record is None or not record.is_active():
+            raise_auth_error("AUTH_SESSION_REVOKED")
+        absolute_expires_at, _idle_expires_at = await session_store.slide_expiry(
+            connection,
+            session_id=record.session_id,
+            absolute_ttl=absolute_ttl,
+            idle_ttl=idle_ttl,
+        )
+        await write_audit_event(
+            connection,
+            workspace_id=record.workspace_id,
+            actor_id=str(record.principal_id),
+            action="auth.session.renewed",
+            resource_type="browser_session",
+            resource_id=record.public_id,
+            details={"client": "worker"},
+        )
+    response.set_cookie(
+        key=BrowserSessionStore.cookie_name(environment=settings.environment),
+        value=session_token,
+        httponly=True,
+        secure=BrowserSessionStore.cookie_secure(environment=settings.environment),
+        samesite="strict",
+        path="/",
+        max_age=int(absolute_ttl.total_seconds()),
+    )
+    return SessionResponse(
+        sessionPublicId=record.public_id,
+        workspaceId=record.workspace_id,
+        authorizationGeneration=record.authorization_generation,
+        expiresAt=absolute_expires_at,
+        role="customer",
     )
 
 

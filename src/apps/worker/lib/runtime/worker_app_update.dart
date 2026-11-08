@@ -25,7 +25,7 @@ enum WorkerAppUpdatePhase { idle, available, downloading, installing, failed }
 const installedModelShaStoreKey = 'worker.installed-model-sha256';
 
 const modelUpdateNeedsNewerAppMessage =
-    'This model update needs a newer app. Update the app first.';
+    'Install the app update first.';
 
 enum WorkerAppInstallPrompt { installerLaunched, permissionRequired }
 
@@ -408,6 +408,45 @@ Future<void> _discardUpdateDownload({
     await sink?.close();
   } catch (_) {}
   if (partial != null && partial.existsSync()) {
+    await partial.delete();
+  }
+}
+
+File workerAppUpdateApkFile(Directory directory) {
+  return File.fromUri(directory.uri.resolve('worker-update.apk'));
+}
+
+/// A finished download that still matches the published release.
+///
+/// A failed install leaves this file in place so the next attempt can open
+/// the installer again without downloading it.
+Future<File?> verifiedWorkerAppUpdateFile({
+  required Directory directory,
+  required WorkerAppRelease release,
+}) async {
+  final file = workerAppUpdateApkFile(directory);
+  if (!file.existsSync()) {
+    return null;
+  }
+  if (await file.length() != release.sizeBytes) {
+    return null;
+  }
+  final digest = sha256.convert(await file.readAsBytes()).toString();
+  if (digest != release.sha256) {
+    return null;
+  }
+  return file;
+}
+
+Future<void> deleteDownloadedWorkerAppUpdate(Directory directory) async {
+  final file = workerAppUpdateApkFile(directory);
+  if (file.existsSync()) {
+    await file.delete();
+  }
+  final partial = File.fromUri(
+    directory.uri.resolve('worker-update.apk.partial'),
+  );
+  if (partial.existsSync()) {
     await partial.delete();
   }
 }
