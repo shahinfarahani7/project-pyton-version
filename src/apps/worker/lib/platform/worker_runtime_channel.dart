@@ -112,18 +112,57 @@ class WorkerRuntimeChannel {
     return parseWorkerAppInstallPrompt(raw);
   }
 
+  Future<PlayAppUpdateOffer?> checkPlayAppUpdate() async {
+    try {
+      final raw = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'checkPlayAppUpdate',
+      );
+      if (raw == null) {
+        return null;
+      }
+      return PlayAppUpdateOffer.fromMap(raw);
+    } on MissingPluginException {
+      return null;
+    } on PlatformException {
+      return null;
+    }
+  }
+
+  Future<void> startPlayAppUpdate() async {
+    await _channel.invokeMethod<String>('startPlayAppUpdate');
+  }
+
+  void Function(String? message)? _onInstallFailed;
+  void Function(String status)? _onPlayUpdateResult;
+
   /// Native package installer reports a failure after the install screen closes.
   void bindAppInstallResults(void Function(String? message) onFailed) {
+    _onInstallFailed = onFailed;
+    _bindPlatformCalls();
+  }
+
+  void bindPlayAppUpdateResults(void Function(String status) onResult) {
+    _onPlayUpdateResult = onResult;
+    _bindPlatformCalls();
+  }
+
+  void _bindPlatformCalls() {
     _channel.setMethodCallHandler((call) async {
-      if (call.method != 'apkInstallResult') {
-        return;
-      }
       final arguments = call.arguments;
-      if (arguments is! Map || arguments['status'] != 'failed') {
+      if (call.method == 'apkInstallResult') {
+        if (arguments is! Map || arguments['status'] != 'failed') {
+          return;
+        }
+        final message = arguments['message'];
+        _onInstallFailed?.call(message is String ? message : null);
         return;
       }
-      final message = arguments['message'];
-      onFailed(message is String ? message : null);
+      if (call.method == 'playAppUpdateResult') {
+        final status = arguments is Map ? arguments['status'] : null;
+        if (status is String) {
+          _onPlayUpdateResult?.call(status);
+        }
+      }
     });
   }
 
@@ -294,6 +333,7 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
     this.installedAppVersion,
     this.storePath,
     this.installPrompt = WorkerAppInstallPrompt.installerLaunched,
+    this.playUpdate,
   });
 
   final DeviceSnapshot snapshot;
@@ -301,7 +341,9 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
   final InstalledAppVersion? installedAppVersion;
   final String? storePath;
   final WorkerAppInstallPrompt installPrompt;
+  final PlayAppUpdateOffer? playUpdate;
   String? installedApkPath;
+  var playUpdateStarts = 0;
 
   @override
   Future<DeviceSnapshot> readDeviceSnapshot() async => snapshot;
@@ -326,6 +368,17 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
 
   @override
   void bindAppInstallResults(void Function(String? message) onFailed) {}
+
+  @override
+  Future<PlayAppUpdateOffer?> checkPlayAppUpdate() async => playUpdate;
+
+  @override
+  Future<void> startPlayAppUpdate() async {
+    playUpdateStarts += 1;
+  }
+
+  @override
+  void bindPlayAppUpdateResults(void Function(String status) onResult) {}
 
   @override
   Future<void> startForegroundService({required String assignmentId, required String taskType}) async {}

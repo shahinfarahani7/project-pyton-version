@@ -516,6 +516,66 @@ void main() {
     await missing.refreshAppUpdate();
     expect(missing.showsAppUpdateCard, isFalse);
   });
+
+  test('a Google Play update opens Play and does not download an apk', () async {
+    var downloads = 0;
+    final client = MockClient((request) async {
+      if (request.url.path == '/worker-app/release/apk') {
+        downloads += 1;
+      }
+      return http.Response(
+        jsonEncode({
+          'versionName': '5.1.0',
+          'versionCode': 40200,
+          'downloadPath': '/worker-app/release/apk',
+          'sha256': 'ab' * 32,
+          'sizeBytes': 4,
+          'mandatory': true,
+        }),
+        200,
+      );
+    });
+    final platform = NoopWorkerRuntimeChannel(
+      installedAppVersion: installed,
+      playUpdate: const PlayAppUpdateOffer(
+        available: true,
+        versionCode: 40105,
+        immediateAllowed: true,
+      ),
+    );
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+      httpClient: client,
+      platform: platform,
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    addTearDown(controller.dispose);
+
+    await controller.refreshAppUpdate();
+    expect(controller.appUpdateFromPlay, isTrue);
+    expect(controller.blocksAppUntilUpdate, isTrue);
+    expect(controller.appUpdateNotes, 'Google Play will install build 40105.');
+
+    await controller.installOfferedAppUpdate();
+    expect(platform.playUpdateStarts, 1);
+    expect(platform.installedApkPath, isNull);
+    expect(downloads, 0);
+    expect(
+      controller.appUpdateNotice,
+      'Confirm the Google Play screen to finish the update.',
+    );
+  });
+
+  test('an unknown Play check does not invent an update', () {
+    expect(
+      PlayAppUpdateOffer.fromMap(const {'known': false, 'available': true}),
+      isNull,
+    );
+    expect(
+      PlayAppUpdateOffer.fromMap(const {'available': false})?.available,
+      isFalse,
+    );
+  });
 }
 
 class _InstallGateChannel extends NoopWorkerRuntimeChannel {

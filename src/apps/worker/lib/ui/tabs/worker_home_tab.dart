@@ -312,7 +312,9 @@ class _AppUpdateCard extends StatelessWidget {
     final title = switch (phase) {
       WorkerAppUpdatePhase.downloading =>
         'Downloading update ${(controller.appUpdateProgress * 100).toStringAsFixed(0)}%',
-      WorkerAppUpdatePhase.installing => 'Opening installer…',
+      WorkerAppUpdatePhase.installing => controller.appUpdateFromPlay
+          ? 'Opening Google Play…'
+          : 'Opening installer…',
       WorkerAppUpdatePhase.failed => 'App update failed',
       WorkerAppUpdatePhase.available ||
       WorkerAppUpdatePhase.idle =>
@@ -320,6 +322,8 @@ class _AppUpdateCard extends StatelessWidget {
     };
     final actionLabel = phase == WorkerAppUpdatePhase.failed
         ? 'Try again'
+        : controller.appUpdateFromPlay
+        ? 'Update with Google Play'
         : 'Update app';
 
     return Semantics(
@@ -345,7 +349,13 @@ class _AppUpdateCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (controller.appUpdateVersionName != null) ...[
+            if (controller.appUpdateFromPlay) ...[
+              const SizedBox(height: 8),
+              const Text(
+                'Google Play',
+                style: TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ] else if (controller.appUpdateVersionName != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Version ${controller.appUpdateVersionName}',

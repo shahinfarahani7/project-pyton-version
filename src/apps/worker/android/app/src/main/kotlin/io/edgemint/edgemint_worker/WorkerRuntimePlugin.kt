@@ -1,5 +1,6 @@
 package io.edgemint.edgemint_worker
 
+import android.app.Activity
 import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
@@ -28,6 +29,18 @@ class WorkerRuntimePlugin(
 ) : MethodChannel.MethodCallHandler {
 
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var playUpdater: PlayAppUpdater? = null
+
+    private fun playUpdater(): PlayAppUpdater? {
+        val activity = context as? Activity ?: return null
+        val existing = playUpdater
+        if (existing != null) {
+            return existing
+        }
+        val created = PlayAppUpdater(activity)
+        playUpdater = created
+        return created
+    }
 
     override fun onMethodCall(
         call: MethodCall,
@@ -130,6 +143,33 @@ class WorkerRuntimePlugin(
                     return
                 }
                 installDownloadedApk(path, result)
+            }
+
+            "checkPlayAppUpdate" -> {
+                val updater = playUpdater()
+                if (updater == null) {
+                    result.success(
+                        mapOf(
+                            "known" to true,
+                            "available" to false,
+                        ),
+                    )
+                } else {
+                    updater.check(result)
+                }
+            }
+
+            "startPlayAppUpdate" -> {
+                val updater = playUpdater()
+                if (updater == null) {
+                    result.error(
+                        "PLAY_UPDATE_FAILED",
+                        "Could not open Google Play.",
+                        null,
+                    )
+                } else {
+                    updater.start(result)
+                }
             }
 
             else -> result.notImplemented()
@@ -912,6 +952,16 @@ class WorkerRuntimePlugin(
             )
 
         private var methodChannel: MethodChannel? = null
+
+        fun notifyPlayUpdateResult(status: String) {
+            val channel = methodChannel ?: return
+            Handler(Looper.getMainLooper()).post {
+                channel.invokeMethod(
+                    "playAppUpdateResult",
+                    mapOf("status" to status),
+                )
+            }
+        }
 
         fun notifyInstallResult(
             status: String,

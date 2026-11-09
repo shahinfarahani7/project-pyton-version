@@ -217,6 +217,35 @@ void main() {
     expect(find.text('Try again'), findsOneWidget);
   });
 
+  testWidgets('home offers a Google Play update', (tester) async {
+    tester.view.physicalSize = const Size(390, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    controller.setAvailable(false);
+    controller.appUpdateFromPlay = true;
+    controller.appUpdatePhase = WorkerAppUpdatePhase.available;
+    controller.appUpdateMandatory = true;
+    controller.appUpdateNotes = 'Google Play will install build 40105.';
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: WorkerHomeTab(controller: controller),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Google Play'), findsOneWidget);
+    expect(find.text('Update with Google Play'), findsOneWidget);
+    expect(find.text('Google Play will install build 40105.'), findsOneWidget);
+  });
+
   testWidgets('home updates the model when the published update is a model', (
     tester,
   ) async {

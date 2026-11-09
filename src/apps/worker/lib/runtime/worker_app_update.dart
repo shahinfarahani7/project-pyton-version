@@ -29,6 +29,45 @@ const modelUpdateNeedsNewerAppMessage =
 
 enum WorkerAppInstallPrompt { installerLaunched, permissionRequired }
 
+/// An update published on Google Play for this install.
+class PlayAppUpdateOffer {
+  const PlayAppUpdateOffer({
+    required this.available,
+    this.versionCode = 0,
+    this.immediateAllowed = false,
+    this.flexibleAllowed = false,
+    this.downloaded = false,
+    this.inProgress = false,
+  });
+
+  final bool available;
+  final int versionCode;
+  final bool immediateAllowed;
+  final bool flexibleAllowed;
+  final bool downloaded;
+  final bool inProgress;
+
+  /// `null` when Play could not be asked, so a previous offer stays in place.
+  static PlayAppUpdateOffer? fromMap(Map<Object?, Object?> raw) {
+    if (raw['known'] == false) {
+      return null;
+    }
+    final versionCode = raw['versionCode'];
+    return PlayAppUpdateOffer(
+      available: raw['available'] == true,
+      versionCode: versionCode is int
+          ? versionCode
+          : versionCode is num
+          ? versionCode.toInt()
+          : 0,
+      immediateAllowed: raw['immediateAllowed'] == true,
+      flexibleAllowed: raw['flexibleAllowed'] == true,
+      downloaded: raw['downloaded'] == true,
+      inProgress: raw['inProgress'] == true,
+    );
+  }
+}
+
 class WorkerAppUpdateException implements Exception {
   const WorkerAppUpdateException(this.code, [this.detail]);
 

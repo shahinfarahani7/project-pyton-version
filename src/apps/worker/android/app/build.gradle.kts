@@ -60,4 +60,5 @@ dependencies {
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.19.2")
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("com.google.mediapipe:tasks-vision-image-generator:0.10.26.1")
+    implementation("com.google.android.play:app-update:2.1.0")
 }

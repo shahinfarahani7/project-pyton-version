@@ -96,6 +96,7 @@ class WorkerAppController extends ChangeNotifier {
        _storagePressure = storagePressure ?? StoragePressureManager(),
        _encryptedStore = encryptedStore ?? InMemoryEncryptedStore() {
     _platform.bindAppInstallResults(_onAppInstallFailed);
+    _platform.bindPlayAppUpdateResults(_onPlayAppUpdateResult);
     _exclusiveGroups = RuntimeExclusiveGroupEnforcer();
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
@@ -286,6 +287,8 @@ class WorkerAppController extends ChangeNotifier {
 
   bool appUpdateMandatory = false;
 
+  bool appUpdateFromPlay = false;
+
   String? installedAppVersionName;
 
   double appUpdateProgress = 0;
@@ -301,8 +304,8 @@ class WorkerAppController extends ChangeNotifier {
   bool _awaitingInstallPermission = false;
 
   bool get showsAppUpdateCard =>
-      appUpdateVersionName != null &&
-      appUpdatePhase != WorkerAppUpdatePhase.idle;
+      appUpdatePhase != WorkerAppUpdatePhase.idle &&
+      (appUpdateFromPlay || appUpdateVersionName != null);
 
   /// A newer application build blocks the rest of the worker until it is installed.
   bool get blocksAppUntilUpdate => showsAppUpdateCard && appUpdateMandatory;
@@ -1258,8 +1261,32 @@ class WorkerAppController extends ChangeNotifier {
         return;
       }
       _rememberInstalledAppVersion(installed);
-      final payload = await _api.fetchWorkerAppRelease();
+      final playFuture = _platform.checkPlayAppUpdate();
+      Object? catalogError;
+      Map<String, dynamic>? payload;
+      try {
+        payload = await _api.fetchWorkerAppRelease();
+      } catch (error, stackTrace) {
+        catalogError = error;
+        _logError('App update check failed', error, stackTrace);
+      }
+      final play = await playFuture;
       if (_disposed) {
+        return;
+      }
+      if (play != null && play.available) {
+        _offerPlayAppUpdate(play);
+        if (payload == null) {
+          _clearModelUpdateOffer();
+        } else {
+          await _applyPublishedModelUpdate(payload, installed);
+        }
+        if (!_disposed) {
+          notifyListeners();
+        }
+        return;
+      }
+      if (catalogError != null) {
         return;
       }
       if (payload == null) {
@@ -1268,6 +1295,7 @@ class WorkerAppController extends ChangeNotifier {
         await _deleteDownloadedAppUpdate();
         return;
       }
+      appUpdateFromPlay = false;
       _installedModelSha256 ??= await _readInstalledModelSha();
       final decision = decideWorkerUpdates(
         catalog: WorkerUpdateCatalog.fromJson(payload),
@@ -1291,15 +1319,7 @@ class WorkerAppController extends ChangeNotifier {
       if (decision.model == null) {
         _clearModelUpdateOffer();
       } else {
-        final release = decision.model!;
-        _offeredModelRelease = release;
-        modelUpdateLabel = release.fileName;
-        modelUpdateNotes = release.notes;
-        modelUpdateNeedsNewerApp = !release.canInstallOnThisApp;
-        modelUpdatePhase = WorkerAppUpdatePhase.available;
-        modelUpdateError = modelUpdateNeedsNewerApp
-            ? modelUpdateNeedsNewerAppMessage
-            : null;
+        _rememberModelUpdate(decision.model!);
       }
       notifyListeners();
     } catch (error, stackTrace) {
@@ -1309,6 +1329,10 @@ class WorkerAppController extends ChangeNotifier {
 
   Future<void> installOfferedAppUpdate() async {
     if (_disposed || _appUpdateInFlight) {
+      return;
+    }
+    if (appUpdateFromPlay) {
+      await _installPlayAppUpdate();
       return;
     }
     final release = _offeredAppRelease;
@@ -1504,6 +1528,7 @@ class WorkerAppController extends ChangeNotifier {
     appUpdateVersionName = null;
     appUpdateNotes = null;
     appUpdateMandatory = false;
+    appUpdateFromPlay = false;
     appUpdateProgress = 0;
     appUpdateError = null;
     appUpdateNotice = null;
@@ -3432,9 +3457,124 @@ class WorkerAppController extends ChangeNotifier {
       if (_awaitingInstallPermission && !_appUpdateInFlight) {
         _awaitingInstallPermission = false;
         unawaited(installOfferedAppUpdate());
+      } else if (appUpdateFromPlay && !_appUpdateInFlight) {
+        unawaited(_resumePlayAppUpdate());
       }
       unawaited(_renewLoginOnEntry());
     }
+  }
+
+  void _offerPlayAppUpdate(PlayAppUpdateOffer play) {
+    _offeredAppRelease = null;
+    appUpdateFromPlay = true;
+    appUpdateVersionName = null;
+    appUpdateNotes = play.versionCode > 0
+        ? 'Google Play will install build ${play.versionCode}.'
+        : 'Google Play will install this update.';
+    appUpdateMandatory = true;
+    appUpdatePhase = WorkerAppUpdatePhase.available;
+    appUpdateError = null;
+    appUpdateProgress = 0;
+    appUpdateNotice = null;
+  }
+
+  Future<void> _applyPublishedModelUpdate(
+    Map<String, dynamic> payload,
+    InstalledAppVersion? installed,
+  ) async {
+    _installedModelSha256 ??= await _readInstalledModelSha();
+    if (_disposed) {
+      return;
+    }
+    final decision = decideWorkerUpdates(
+      catalog: WorkerUpdateCatalog.fromJson(payload),
+      installedApp: installed,
+      installedModelSha256: _installedModelSha256,
+      modelReady: isGemmaReady,
+    );
+    if (decision.model == null) {
+      _clearModelUpdateOffer();
+    } else {
+      _rememberModelUpdate(decision.model!);
+    }
+  }
+
+  void _rememberModelUpdate(WorkerModelRelease release) {
+    _offeredModelRelease = release;
+    modelUpdateLabel = release.fileName;
+    modelUpdateNotes = release.notes;
+    modelUpdateNeedsNewerApp = !release.canInstallOnThisApp;
+    modelUpdatePhase = WorkerAppUpdatePhase.available;
+    modelUpdateError = modelUpdateNeedsNewerApp
+        ? modelUpdateNeedsNewerAppMessage
+        : null;
+  }
+
+  Future<void> _installPlayAppUpdate() async {
+    _appUpdateInFlight = true;
+    appUpdatePhase = WorkerAppUpdatePhase.installing;
+    appUpdateError = null;
+    appUpdateNotice = null;
+    notifyListeners();
+    try {
+      await _platform.startPlayAppUpdate();
+      if (_disposed) {
+        return;
+      }
+      appUpdatePhase = WorkerAppUpdatePhase.available;
+      appUpdateNotice = 'Confirm the Google Play screen to finish the update.';
+    } on PlatformException catch (error) {
+      appUpdatePhase = WorkerAppUpdatePhase.failed;
+      appUpdateError = error.message ?? 'Could not open Google Play.';
+    } catch (error, stackTrace) {
+      _logError('Google Play update failed', error, stackTrace);
+      appUpdatePhase = WorkerAppUpdatePhase.failed;
+      appUpdateError = 'Could not open Google Play.';
+    } finally {
+      _appUpdateInFlight = false;
+      if (!_disposed) {
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> _resumePlayAppUpdate() async {
+    final play = await _platform.checkPlayAppUpdate();
+    if (_disposed || !appUpdateFromPlay || _appUpdateInFlight) {
+      return;
+    }
+    if (play == null) {
+      return;
+    }
+    if (!play.available) {
+      _clearAppUpdateOffer();
+      return;
+    }
+    if (play.inProgress || play.downloaded) {
+      await _installPlayAppUpdate();
+    }
+  }
+
+  void _onPlayAppUpdateResult(String status) {
+    if (_disposed || !appUpdateFromPlay) {
+      return;
+    }
+    switch (status) {
+      case 'canceled':
+        appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateNotice = null;
+        appUpdateError =
+            'The Google Play update was not finished. Tap Update again.';
+      case 'accepted':
+        appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateError = null;
+        appUpdateNotice = 'Google Play is installing the update.';
+      default:
+        appUpdatePhase = WorkerAppUpdatePhase.failed;
+        appUpdateNotice = null;
+        appUpdateError = 'Google Play could not install the update.';
+    }
+    notifyListeners();
   }
 
   void _onAppInstallFailed(String? message) {
