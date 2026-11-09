@@ -285,7 +285,10 @@ String workerAppUpdateUserMessage(WorkerAppUpdateException error) {
     'RELEASE_HASH_MISMATCH' =>
       'The downloaded update did not match the published checksum.',
     'RELEASE_SIZE_MISMATCH' => 'The downloaded update was incomplete.',
-    'RELEASE_DOWNLOAD_FAILED' => 'The update download failed.',
+    'RELEASE_DOWNLOAD_FAILED' =>
+      'The update download stopped. Saved progress was kept. Tap Update again to continue.',
+    'RELEASE_RESUME_REJECTED' =>
+      'The update server could not continue the saved download.',
     'RELEASE_HOST_MISMATCH' =>
       'The update address is not on this worker server.',
     'UPDATE_DIRECTORY_UNAVAILABLE' => 'This device cannot store the update.',
@@ -318,7 +321,19 @@ WorkerAppInstallPrompt parseWorkerAppInstallPrompt(String? raw) {
   };
 }
 
-/// Downloads the published APK from the configured worker server and checks its checksum.
+/// Bytes already stored for an interrupted update download.
+Future<int> savedWorkerAppUpdateBytes(Directory directory) async {
+  final partial = _workerAppUpdatePartialFile(directory);
+  if (!partial.existsSync()) {
+    return 0;
+  }
+  return partial.length();
+}
+
+/// Downloads the published APK and checks its checksum.
+///
+/// A dropped connection leaves `worker-update.apk.partial` in place. The next
+/// call asks the server for the remaining bytes and appends them.
 Future<File> downloadWorkerAppRelease({
   required WorkerConfig config,
   required WorkerAppRelease release,
@@ -327,52 +342,94 @@ Future<File> downloadWorkerAppRelease({
   void Function(double progress)? onProgress,
 }) async {
   final uri = workerAppReleaseDownloadUri(config: config, release: release);
-  http.StreamedResponse? response;
-  IOSink? sink;
-  File? partial;
-  try {
-    response = await client.send(http.Request('GET', uri));
-    if (response.statusCode != 200) {
-      throw WorkerAppUpdateException(
-        'RELEASE_DOWNLOAD_FAILED',
-        '${response.statusCode}',
-      );
+  await destinationDirectory.create(recursive: true);
+  final partial = _workerAppUpdatePartialFile(destinationDirectory);
+  final target = workerAppUpdateApkFile(destinationDirectory);
+  var offset = partial.existsSync() ? await partial.length() : 0;
+  if (offset > release.sizeBytes) {
+    await partial.delete();
+    offset = 0;
+  }
+  if (offset == release.sizeBytes) {
+    if (await _sha256File(partial) == release.sha256) {
+      if (target.existsSync()) {
+        await target.delete();
+      }
+      return partial.rename(target.path);
     }
-    final advertised = response.contentLength;
-    if (advertised != null && advertised != release.sizeBytes) {
+    await partial.delete();
+    offset = 0;
+  }
+
+  http.StreamedResponse? response;
+  RandomAccessFile? output;
+  var discardPartial = false;
+  try {
+    final request = http.Request('GET', uri);
+    request.headers['accept-encoding'] = 'identity';
+    if (offset > 0) {
+      request.headers['range'] = 'bytes=$offset-';
+    }
+    response = await client.send(request);
+    final status = response.statusCode;
+    if (status == 416) {
+      discardPartial = true;
       throw const WorkerAppUpdateException('RELEASE_SIZE_MISMATCH');
     }
-    await destinationDirectory.create(recursive: true);
-    partial = File.fromUri(
-      destinationDirectory.uri.resolve('worker-update.apk.partial'),
-    );
-    final target = File.fromUri(
-      destinationDirectory.uri.resolve('worker-update.apk'),
-    );
-    if (partial.existsSync()) {
-      await partial.delete();
+    if (offset > 0 && status == 200) {
+      throw const WorkerAppUpdateException('RELEASE_RESUME_REJECTED');
     }
-    sink = partial.openWrite();
-    final digestSink = _DigestSink();
-    final converter = sha256.startChunkedConversion(digestSink);
-    var written = 0;
-    await for (final chunk in response.stream) {
-      written += chunk.length;
-      if (written > release.sizeBytes) {
+    if ((offset == 0 && status != 200) || (offset > 0 && status != 206)) {
+      throw WorkerAppUpdateException('RELEASE_DOWNLOAD_FAILED', '$status');
+    }
+    var end = release.sizeBytes - 1;
+    if (status == 206) {
+      final header = response.headers['content-range'];
+      final match = RegExp(
+        r'^bytes (\d+)-(\d+)/(\d+)$',
+      ).firstMatch(header ?? '');
+      if (match == null ||
+          int.parse(match.group(1)!) != offset ||
+          int.parse(match.group(3)!) != release.sizeBytes) {
+        throw const WorkerAppUpdateException('RELEASE_RESUME_REJECTED');
+      }
+      end = int.parse(match.group(2)!);
+      if (end < offset || end >= release.sizeBytes) {
+        throw const WorkerAppUpdateException('RELEASE_RESUME_REJECTED');
+      }
+    } else {
+      final advertised = response.contentLength;
+      if (advertised != null && advertised != release.sizeBytes) {
         throw const WorkerAppUpdateException('RELEASE_SIZE_MISMATCH');
       }
-      converter.add(chunk);
-      sink.add(chunk);
-      onProgress?.call(written / release.sizeBytes);
     }
-    await sink.flush();
-    await sink.close();
-    sink = null;
-    converter.close();
-    if (written != release.sizeBytes) {
+    final expectedBody = end - offset + 1;
+    final advertisedBody = response.contentLength;
+    if (advertisedBody != null && advertisedBody != expectedBody) {
       throw const WorkerAppUpdateException('RELEASE_SIZE_MISMATCH');
     }
-    if (digestSink.value?.toString() != release.sha256) {
+    output = await partial.open(mode: FileMode.append);
+    var written = offset;
+    await for (final chunk in response.stream) {
+      if (written + chunk.length > end + 1) {
+        discardPartial = true;
+        throw const WorkerAppUpdateException('RELEASE_SIZE_MISMATCH');
+      }
+      await output.writeFrom(chunk);
+      written += chunk.length;
+      onProgress?.call(written / release.sizeBytes);
+    }
+    await output.flush();
+    await output.close();
+    output = null;
+    if (written != release.sizeBytes) {
+      throw const WorkerAppUpdateException(
+        'RELEASE_DOWNLOAD_FAILED',
+        'incomplete',
+      );
+    }
+    if (await _sha256File(partial) != release.sha256) {
+      discardPartial = true;
       throw const WorkerAppUpdateException('RELEASE_HASH_MISMATCH');
     }
     if (target.existsSync()) {
@@ -380,36 +437,51 @@ Future<File> downloadWorkerAppRelease({
     }
     return partial.rename(target.path);
   } on WorkerAppUpdateException {
-    await _discardUpdateDownload(
-      response: response,
-      sink: sink,
-      partial: partial,
-    );
+    await _closeUpdateDownload(response: response, output: output);
+    if (discardPartial && partial.existsSync()) {
+      await partial.delete();
+    }
     rethrow;
   } catch (error) {
-    await _discardUpdateDownload(
-      response: response,
-      sink: sink,
-      partial: partial,
-    );
+    await _closeUpdateDownload(response: response, output: output);
     throw WorkerAppUpdateException('RELEASE_DOWNLOAD_FAILED', '$error');
   }
 }
 
-Future<void> _discardUpdateDownload({
+Future<void> _closeUpdateDownload({
   required http.StreamedResponse? response,
-  required IOSink? sink,
-  required File? partial,
+  required RandomAccessFile? output,
 }) async {
   try {
     await response?.stream.drain<void>();
   } catch (_) {}
-  try {
-    await sink?.close();
-  } catch (_) {}
-  if (partial != null && partial.existsSync()) {
-    await partial.delete();
+  if (output == null) {
+    return;
   }
+  try {
+    await output.flush();
+  } catch (_) {}
+  try {
+    await output.close();
+  } catch (_) {}
+}
+
+File _workerAppUpdatePartialFile(Directory directory) {
+  return File.fromUri(directory.uri.resolve('worker-update.apk.partial'));
+}
+
+Future<String> _sha256File(File file) async {
+  final digestSink = _DigestSink();
+  final converter = sha256.startChunkedConversion(digestSink);
+  await for (final chunk in file.openRead()) {
+    converter.add(chunk);
+  }
+  converter.close();
+  final value = digestSink.value;
+  if (value == null) {
+    throw const WorkerAppUpdateException('RELEASE_HASH_MISMATCH');
+  }
+  return value.toString();
 }
 
 File workerAppUpdateApkFile(Directory directory) {
@@ -443,9 +515,7 @@ Future<void> deleteDownloadedWorkerAppUpdate(Directory directory) async {
   if (file.existsSync()) {
     await file.delete();
   }
-  final partial = File.fromUri(
-    directory.uri.resolve('worker-update.apk.partial'),
-  );
+  final partial = _workerAppUpdatePartialFile(directory);
   if (partial.existsSync()) {
     await partial.delete();
   }

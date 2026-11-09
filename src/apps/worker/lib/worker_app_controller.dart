@@ -95,6 +95,7 @@ class WorkerAppController extends ChangeNotifier {
        _platform = platform ?? WorkerRuntimeChannel(),
        _storagePressure = storagePressure ?? StoragePressureManager(),
        _encryptedStore = encryptedStore ?? InMemoryEncryptedStore() {
+    _platform.bindAppInstallResults(_onAppInstallFailed);
     _exclusiveGroups = RuntimeExclusiveGroupEnforcer();
     _runtimeManager = GemmaModelRuntimeManager(
       exclusiveGroupEnforcer: _exclusiveGroups,
@@ -291,9 +292,13 @@ class WorkerAppController extends ChangeNotifier {
 
   String? appUpdateError;
 
+  String? appUpdateNotice;
+
   WorkerAppRelease? _offeredAppRelease;
 
   bool _appUpdateInFlight = false;
+
+  bool _awaitingInstallPermission = false;
 
   bool get showsAppUpdateCard =>
       appUpdateVersionName != null &&
@@ -1321,6 +1326,7 @@ class WorkerAppController extends ChangeNotifier {
     appUpdatePhase = WorkerAppUpdatePhase.downloading;
     appUpdateProgress = 0;
     appUpdateError = null;
+    appUpdateNotice = null;
     notifyListeners();
     var lastPercent = -1;
     try {
@@ -1332,6 +1338,11 @@ class WorkerAppController extends ChangeNotifier {
         throw const WorkerAppUpdateException('UPDATE_DIRECTORY_UNAVAILABLE');
       }
       final directory = Directory('$root${Platform.pathSeparator}app-updates');
+      final savedBytes = await savedWorkerAppUpdateBytes(directory);
+      if (savedBytes > 0 && savedBytes < release.sizeBytes && !_disposed) {
+        appUpdateProgress = savedBytes / release.sizeBytes;
+        notifyListeners();
+      }
       final cached = await verifiedWorkerAppUpdateFile(
         directory: directory,
         release: release,
@@ -1372,14 +1383,19 @@ class WorkerAppController extends ChangeNotifier {
         return;
       }
       if (prompt == WorkerAppInstallPrompt.permissionRequired) {
+        _awaitingInstallPermission = true;
         appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateProgress = 1;
         appUpdateError = workerAppUpdateUserMessage(
           const WorkerAppUpdateException('INSTALL_PERMISSION_REQUIRED'),
         );
       } else {
+        _awaitingInstallPermission = false;
         appUpdatePhase = WorkerAppUpdatePhase.available;
-        appUpdateProgress = 0;
+        appUpdateProgress = 1;
         appUpdateError = null;
+        appUpdateNotice =
+            'Confirm the install screen to finish the update.';
       }
     } on WorkerAppUpdateException catch (error) {
       appUpdatePhase = WorkerAppUpdatePhase.failed;
@@ -1490,6 +1506,8 @@ class WorkerAppController extends ChangeNotifier {
     appUpdateMandatory = false;
     appUpdateProgress = 0;
     appUpdateError = null;
+    appUpdateNotice = null;
+    _awaitingInstallPermission = false;
     appUpdatePhase = WorkerAppUpdatePhase.idle;
     if (hadCard && !_disposed) {
       notifyListeners();
@@ -3411,8 +3429,26 @@ class WorkerAppController extends ChangeNotifier {
   void handleAppLifecycleState(AppLifecycleState state) {
     _processLifecycle.handleAppLifecycleState(state);
     if (state == AppLifecycleState.resumed && !_disposed) {
+      if (_awaitingInstallPermission && !_appUpdateInFlight) {
+        _awaitingInstallPermission = false;
+        unawaited(installOfferedAppUpdate());
+      }
       unawaited(_renewLoginOnEntry());
     }
+  }
+
+  void _onAppInstallFailed(String? message) {
+    if (_disposed || !showsAppUpdateCard) {
+      return;
+    }
+    _awaitingInstallPermission = false;
+    appUpdatePhase = WorkerAppUpdatePhase.failed;
+    appUpdateNotice = null;
+    final detail = message?.trim();
+    appUpdateError = detail == null || detail.isEmpty
+        ? 'Could not install the update.'
+        : detail;
+    notifyListeners();
   }
 
   Future<void> _renewLoginOnEntry() async {

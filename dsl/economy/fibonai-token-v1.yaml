@@ -35,5 +35,5 @@ spec:
   requester:
     monthlyFreeRequestCap: null
   task:
-    baseTaskAtomic: 10000
+    baseTaskAtomic: 400000
     defaultDifficultyGrade: 1

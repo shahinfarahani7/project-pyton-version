@@ -1,10 +1,11 @@
 package io.edgemint.edgemint_worker
 
 import android.app.ActivityManager
-import android.content.ActivityNotFoundException
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -13,9 +14,10 @@ import android.os.BatteryManager
 import android.os.Build
 import android.os.Debug
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
-import androidx.core.content.FileProvider
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -24,6 +26,8 @@ import java.io.File
 class WorkerRuntimePlugin(
     private val context: Context,
 ) : MethodChannel.MethodCallHandler {
+
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onMethodCall(
         call: MethodCall,
@@ -162,11 +166,8 @@ class WorkerRuntimePlugin(
     ) {
         val updatesDir = File(context.filesDir, "app-updates").canonicalFile
         val apk = File(path).canonicalFile
-        val storedInUpdateDirectory =
-            apk.parentFile?.canonicalFile == updatesDir &&
-                apk.name == "worker-update.apk" &&
-                apk.isFile
-        if (!storedInUpdateDirectory) {
+        val expected = File(updatesDir, "worker-update.apk").canonicalFile
+        if (apk.canonicalPath != expected.canonicalPath || !apk.isFile) {
             result.error(
                 "INVALID_APK",
                 "Update file is not in the app update directory",
@@ -187,29 +188,73 @@ class WorkerRuntimePlugin(
             result.success("permissionRequired")
             return
         }
-        val uri =
-            FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                apk,
-            )
-        val installIntent =
-            Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val appContext = context.applicationContext
+        Thread {
+            var session: PackageInstaller.Session? = null
+            try {
+                val installer = appContext.packageManager.packageInstaller
+                val params =
+                    PackageInstaller.SessionParams(
+                        PackageInstaller.SessionParams.MODE_FULL_INSTALL,
+                    )
+                params.setSize(apk.length())
+                params.setAppPackageName(appContext.packageName)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    params.setRequireUserAction(
+                        PackageInstaller.SessionParams.USER_ACTION_REQUIRED,
+                    )
+                }
+                val sessionId = installer.createSession(params)
+                val opened = installer.openSession(sessionId)
+                session = opened
+                apk.inputStream().use { input ->
+                    opened.openWrite("worker-update.apk", 0, apk.length()).use { output ->
+                        val buffer = ByteArray(1024 * 1024)
+                        while (true) {
+                            val count = input.read(buffer)
+                            if (count < 0) {
+                                break
+                            }
+                            output.write(buffer, 0, count)
+                        }
+                        opened.fsync(output)
+                    }
+                }
+                val callback = Intent(appContext, ApkInstallReceiver::class.java)
+                val flags =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                    } else {
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                    }
+                val pending =
+                    PendingIntent.getBroadcast(
+                        appContext,
+                        sessionId,
+                        callback,
+                        flags,
+                    )
+                opened.commit(pending.intentSender)
+                mainHandler.post { result.success("installerLaunched") }
+            } catch (error: Exception) {
+                try {
+                    session?.abandon()
+                } catch (_: Exception) {
+                }
+                mainHandler.post {
+                    result.error(
+                        "INSTALL_UNAVAILABLE",
+                        error.message ?: "Could not open the installer.",
+                        null,
+                    )
+                }
+            } finally {
+                try {
+                    session?.close()
+                } catch (_: Exception) {
+                }
             }
-        try {
-            context.startActivity(installIntent)
-        } catch (_: ActivityNotFoundException) {
-            result.error(
-                "INSTALL_UNAVAILABLE",
-                "No package installer is available",
-                null,
-            )
-            return
-        }
-        result.success("installerLaunched")
+        }.start()
     }
 
     private fun importSideloadedModel(
@@ -866,14 +911,35 @@ class WorkerRuntimePlugin(
                 Context.MODE_PRIVATE,
             )
 
+        private var methodChannel: MethodChannel? = null
+
+        fun notifyInstallResult(
+            status: String,
+            message: String?,
+        ) {
+            val channel = methodChannel ?: return
+            Handler(Looper.getMainLooper()).post {
+                channel.invokeMethod(
+                    "apkInstallResult",
+                    mapOf(
+                        "status" to status,
+                        "message" to message,
+                    ),
+                )
+            }
+        }
+
         fun registerWith(
             engine: FlutterEngine,
             context: Context,
         ) {
-            MethodChannel(
-                engine.dartExecutor.binaryMessenger,
-                CHANNEL,
-            ).setMethodCallHandler(
+            val channel =
+                MethodChannel(
+                    engine.dartExecutor.binaryMessenger,
+                    CHANNEL,
+                )
+            methodChannel = channel
+            channel.setMethodCallHandler(
                 WorkerRuntimePlugin(context),
             )
         }

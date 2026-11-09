@@ -39,9 +39,9 @@ def _client_or_create() -> httpx.AsyncClient:
 
 
 def _timeout_for(path: str) -> httpx.Timeout:
-    if path.startswith("/models/") and (
-        path.endswith("/artifact") or "/files/" in path
-    ):
+    # APK and model bodies are large. A fixed read timeout cuts them off and
+    # forces the worker to start again unless the client kept the partial file.
+    if response_should_stream(path):
         return httpx.Timeout(connect=30.0, read=None, write=30.0, pool=30.0)
     return httpx.Timeout(120.0)
 

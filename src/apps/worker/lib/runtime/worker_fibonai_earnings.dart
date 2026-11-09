@@ -1,8 +1,8 @@
 /// Atomic units in one FIBON token. Matches the economy policy scale.
 const fibonaiAtomicPerToken = 10000;
 
-/// Worker share of one accepted base task: 75 percent of one FIBON.
-const fibonaiPointsPerCompletedTask = 7500;
+/// Worker share of one accepted base task: 75 percent of 40 FIBON.
+const fibonaiPointsPerCompletedTask = 300000;
 
 /// Formats an atomic FIBON amount with integer arithmetic.
 String formatFibonaiAtomic(int atomic) {

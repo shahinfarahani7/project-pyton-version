@@ -379,6 +379,14 @@ class _AppUpdateCard extends StatelessWidget {
                 style: const TextStyle(color: WorkerColors.error),
               ),
             ],
+            if (controller.appUpdateNotice != null &&
+                controller.appUpdateError == null) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.appUpdateNotice!,
+                style: const TextStyle(color: WorkerColors.onSurfaceVariant),
+              ),
+            ],
             if (busy)
               Padding(
                 padding: const EdgeInsets.only(top: 12),

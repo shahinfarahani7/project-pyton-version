@@ -10,7 +10,7 @@ describe('TaskChatPage', () => {
     vi.spyOn(portalApi, 'balance').mockResolvedValue({
       availableFibonAtomic: 10_000_000,
       reservedFibonAtomic: 0,
-      taskChargeAtomic: 10_000,
+      taskChargeAtomic: 400_000,
     });
   });
 
@@ -49,7 +49,7 @@ describe('TaskChatPage', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('What would you like to work on?');
-    expect(wrapper.text()).toContain('This task costs 1 FIBON');
+    expect(wrapper.text()).toContain('This task costs 40 FIBON');
     expect(wrapper.text()).toContain('1000 FIBON available');
     await wrapper.get('textarea').setValue('سلام');
     await wrapper.get('form').trigger('submit');

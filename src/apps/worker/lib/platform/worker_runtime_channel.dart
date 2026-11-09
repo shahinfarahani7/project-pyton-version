@@ -112,6 +112,21 @@ class WorkerRuntimeChannel {
     return parseWorkerAppInstallPrompt(raw);
   }
 
+  /// Native package installer reports a failure after the install screen closes.
+  void bindAppInstallResults(void Function(String? message) onFailed) {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method != 'apkInstallResult') {
+        return;
+      }
+      final arguments = call.arguments;
+      if (arguments is! Map || arguments['status'] != 'failed') {
+        return;
+      }
+      final message = arguments['message'];
+      onFailed(message is String ? message : null);
+    });
+  }
+
   DeviceSnapshot _normalizeSnapshot({
     required bool available,
     required int batteryPercent,
@@ -308,6 +323,9 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
     installedApkPath = path;
     return installPrompt;
   }
+
+  @override
+  void bindAppInstallResults(void Function(String? message) onFailed) {}
 
   @override
   Future<void> startForegroundService({required String assignmentId, required String taskType}) async {}

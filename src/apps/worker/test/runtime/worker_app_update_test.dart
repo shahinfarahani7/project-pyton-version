@@ -202,22 +202,44 @@ void main() {
     );
   });
 
-  test('download rejects a short body', () async {
-    final bytes = utf8.encode('short');
-    final client = MockClient.streaming((request, _) async {
-      return http.StreamedResponse(Stream<List<int>>.value(bytes), 200);
-    });
-    final dir = await Directory.systemTemp.createTemp('worker-app-update-short');
+  test('a dropped download keeps its bytes and the next attempt continues', () async {
+    final bytes = utf8.encode('worker-update-bytes');
+    final digest = sha256.convert(bytes).toString();
+    final dir = await Directory.systemTemp.createTemp('worker-app-update-resume');
     addTearDown(() async {
-      client.close();
       if (dir.existsSync()) {
         await dir.delete(recursive: true);
       }
     });
+    final config = WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081'));
+    final published = release(sha256Hex: digest, sizeBytes: bytes.length);
+    var calls = 0;
+    final client = MockClient.streaming((request, _) async {
+      calls += 1;
+      if (calls == 1) {
+        return http.StreamedResponse(
+          Stream<List<int>>.value(bytes.sublist(0, 6)),
+          200,
+          contentLength: bytes.length,
+        );
+      }
+      expect(request.headers['range'], 'bytes=6-');
+      final rest = bytes.sublist(6);
+      return http.StreamedResponse(
+        Stream<List<int>>.value(rest),
+        206,
+        contentLength: rest.length,
+        headers: {
+          'content-range': 'bytes 6-${bytes.length - 1}/${bytes.length}',
+        },
+      );
+    });
+    addTearDown(client.close);
+
     await expectLater(
       downloadWorkerAppRelease(
-        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
-        release: release(sha256Hex: 'ab' * 32, sizeBytes: 99),
+        config: config,
+        release: published,
         destinationDirectory: dir,
         client: client,
       ),
@@ -225,10 +247,61 @@ void main() {
         isA<WorkerAppUpdateException>().having(
           (error) => error.code,
           'code',
-          'RELEASE_SIZE_MISMATCH',
+          'RELEASE_DOWNLOAD_FAILED',
         ),
       ),
     );
+    final partial = File.fromUri(dir.uri.resolve('worker-update.apk.partial'));
+    expect(partial.existsSync(), isTrue);
+    expect(await partial.readAsBytes(), bytes.sublist(0, 6));
+
+    final file = await downloadWorkerAppRelease(
+      config: config,
+      release: published,
+      destinationDirectory: dir,
+      client: client,
+    );
+    expect(calls, 2);
+    expect(await file.readAsBytes(), bytes);
+    expect(partial.existsSync(), isFalse);
+  });
+
+  test('a server that ignores Range keeps the saved bytes', () async {
+    final bytes = utf8.encode('worker-update-bytes');
+    final dir = await Directory.systemTemp.createTemp('worker-app-update-no-range');
+    addTearDown(() async {
+      if (dir.existsSync()) {
+        await dir.delete(recursive: true);
+      }
+    });
+    final partial = File.fromUri(dir.uri.resolve('worker-update.apk.partial'));
+    await partial.writeAsBytes(bytes.sublist(0, 6));
+    final client = MockClient.streaming((request, _) async {
+      expect(request.headers['range'], 'bytes=6-');
+      return http.StreamedResponse(
+        Stream<List<int>>.value(bytes),
+        200,
+        contentLength: bytes.length,
+      );
+    });
+    addTearDown(client.close);
+
+    await expectLater(
+      downloadWorkerAppRelease(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8081')),
+        release: release(sha256Hex: 'ab' * 32, sizeBytes: bytes.length),
+        destinationDirectory: dir,
+        client: client,
+      ),
+      throwsA(
+        isA<WorkerAppUpdateException>().having(
+          (error) => error.code,
+          'code',
+          'RELEASE_RESUME_REJECTED',
+        ),
+      ),
+    );
+    expect(await partial.readAsBytes(), bytes.sublist(0, 6));
   });
 
   test('controller shows a newer release and installs the verified apk', () async {
@@ -284,6 +357,10 @@ void main() {
     expect(platform.installedApkPath, endsWith('worker-update.apk'));
     expect(controller.appUpdatePhase, WorkerAppUpdatePhase.available);
     expect(controller.appUpdateError, isNull);
+    expect(
+      controller.appUpdateNotice,
+      'Confirm the install screen to finish the update.',
+    );
     expect(
       await File(platform.installedApkPath!).readAsBytes(),
       bytes,

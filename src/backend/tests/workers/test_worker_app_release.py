@@ -98,6 +98,10 @@ def test_published_release_is_checksummed_before_download(
     download = client.get("/worker-app/release/apk")
     assert download.status_code == 200
     assert download.content == payload
+    resumed = client.get("/worker-app/release/apk", headers={"Range": "bytes=6-"})
+    assert resumed.status_code == 206
+    assert resumed.content == payload[6:]
+    assert resumed.headers["content-range"] == f"bytes 6-{len(payload) - 1}/{len(payload)}"
 
     monkeypatch.setenv("EDGEMINT_WORKER_APP_RELEASE_SHA256", "0" * 64)
     get_settings.cache_clear()
@@ -160,3 +164,9 @@ def test_worker_gateway_streams_the_apk() -> None:
     assert worker_gateway.response_should_stream("/worker-app/release/apk") is True
     assert worker_gateway.response_should_stream("/worker-app/release") is False
     assert worker_gateway.response_should_stream("/models/mdv/artifact") is True
+
+
+def test_worker_gateway_does_not_time_out_an_apk_download() -> None:
+    timeout = worker_gateway._timeout_for("/worker-app/release/apk")
+    assert timeout.read is None
+    assert worker_gateway._timeout_for("/worker-app/release").read == 120.0

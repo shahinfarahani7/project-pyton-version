@@ -34,7 +34,7 @@ def test_policy_matches_whitepaper_supply() -> None:
     assert policy.monthly_free_request_cap is None
     assert policy.minimum_ram_bytes == 4 * _GIB
     assert policy.minimum_free_storage_bytes == 4 * _GIB
-    assert policy.base_task_atomic == 10_000
+    assert policy.base_task_atomic == 400_000
     assert policy.default_difficulty_grade == 1
     assert cached_economy() == policy
 
@@ -102,16 +102,16 @@ def test_split_remainder_stays_in_treasury_without_minting() -> None:
     assert payout.treasury_atomic == 4
 
 
-def test_accepted_task_charges_one_base_token_and_pays_the_worker_pool() -> None:
+def test_accepted_task_charges_forty_fibon_and_pays_the_worker_pool() -> None:
     quote = quote_accepted_task()
     assert quote.difficulty_grade == 1
-    assert quote.charge_atomic == 10_000
-    assert quote.worker_reward_atomic == 7_500
-    assert quote.treasury_atomic == 2_500
+    assert quote.charge_atomic == 400_000
+    assert quote.worker_reward_atomic == 300_000
+    assert quote.treasury_atomic == 100_000
     graded = quote_accepted_task(3)
-    assert graded.charge_atomic == 30_000
-    assert graded.worker_reward_atomic == 22_500
-    assert graded.treasury_atomic == 7_500
+    assert graded.charge_atomic == 1_200_000
+    assert graded.worker_reward_atomic == 900_000
+    assert graded.treasury_atomic == 300_000
 
 
 def test_difficulty_grade_scales_charge_and_release() -> None:

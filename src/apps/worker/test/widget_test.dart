@@ -45,7 +45,7 @@ void main() {
       controller.notifyListeners();
       await tester.pump();
       expect(find.text('2'), findsOneWidget);
-      expect(find.text('1.5 FIBON'), findsOneWidget);
+      expect(find.text('60 FIBON'), findsOneWidget);
       expect(
         tester.widget<WorkerLineChart>(find.byType(WorkerLineChart)).values,
         const [0, 0, 0, 0, 0, 0, 0],
