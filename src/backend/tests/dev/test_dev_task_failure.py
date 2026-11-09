@@ -16,6 +16,12 @@ def _reset_assignments(monkeypatch: pytest.MonkeyPatch) -> None:
     worker_assignments._failed_devices.clear()
     worker_assignments._cancelled_ids.clear()
     worker_assignments._exclusive_device_public_id = None
+    worker_assignments.clear_online_devices()
+    monkeypatch.setattr(
+        worker_assignments,
+        "choose_online_device",
+        lambda device_ids, requesting: requesting,
+    )
 
 
 def test_single_worker_failure_is_terminal(monkeypatch: pytest.MonkeyPatch) -> None:

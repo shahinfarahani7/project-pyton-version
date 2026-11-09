@@ -8,6 +8,7 @@ def test_claimed_task_counts_as_open_for_resync() -> None:
     worker_assignments._in_flight_devices.clear()
     worker_assignments._failed_devices.clear()
     worker_assignments._cancelled_ids.clear()
+    worker_assignments.clear_online_devices()
 
     worker_assignments.enqueue_dev_assignment(
         task_id="tsk_dev_once",

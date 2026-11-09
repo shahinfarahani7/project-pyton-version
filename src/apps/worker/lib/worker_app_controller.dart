@@ -828,7 +828,7 @@ class WorkerAppController extends ChangeNotifier {
     defaultValue: false,
   );
 
-  /// Pins dev assignments to this worker device on first poll (local dev default).
+  /// Dev workers join the pool that receives tasks at random.
   static const _devClaimAssignments = bool.fromEnvironment(
     'EDGEMINT_DEV_CLAIM_ASSIGNMENTS',
     defaultValue: true,

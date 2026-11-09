@@ -18,6 +18,7 @@ def _clean_assignment_state() -> Iterator[None]:
         worker_assignments._failed_devices.clear()
         worker_assignments._delivered_at.clear()
         worker_assignments._cancelled_ids.clear()
+        worker_assignments.clear_online_devices()
 
     reset()
     yield

@@ -21,6 +21,10 @@ _cancelled_ids: set[str] = set()
 _exclusive_device_public_id: str | None = (
     os.environ.get("EDGEMINT_DEV_PIN_DEVICE_ID") or None
 )
+# Phones that asked for work recently. A task is offered to one of them at random.
+_seen_devices: dict[str, datetime] = {}
+_reserved_device: dict[str, str] = {}
+_ONLINE_FOR = timedelta(seconds=90)
 
 
 def _now() -> datetime:
@@ -80,19 +84,68 @@ def _assignment_allowed_for_device(device_public_id: str | None) -> bool:
     return device_public_id == pin
 
 
+def clear_online_devices() -> None:
+    _seen_devices.clear()
+    _reserved_device.clear()
+
+
+def note_online_device(device_public_id: str | None) -> None:
+    device_id = (device_public_id or "").strip()
+    if device_id:
+        _seen_devices[device_id] = _now()
+
+
+def online_device_ids() -> list[str]:
+    cutoff = _now() - _ONLINE_FOR
+    expired = [device_id for device_id, seen in _seen_devices.items() if seen < cutoff]
+    for device_id in expired:
+        del _seen_devices[device_id]
+    return sorted(_seen_devices)
+
+
+def choose_online_device(device_ids: list[str], requesting: str) -> str:
+    """Pick one online phone. Tests replace this to keep the choice fixed."""
+    del requesting
+    return secrets.choice(device_ids)
+
+
+def _peek_pending() -> dict[str, Any] | None:
+    for assignment in _pending:
+        if assignment["assignmentId"] not in _completed:
+            return assignment
+    return None
+
+
 def claim_next_assignment(
     *,
     device_public_id: str | None = None,
     claim_exclusive: bool = False,
 ) -> dict[str, Any] | None:
-    if claim_exclusive and device_public_id:
-        register_exclusive_device(device_public_id)
+    """Give the next task to one online phone, chosen at random.
+
+    ``claim_exclusive`` no longer pins every later task to the first phone.
+    An explicit ``EDGEMINT_DEV_PIN_DEVICE_ID`` still limits delivery to that phone.
+    """
+    del claim_exclusive
     if not _assignment_allowed_for_device(device_public_id):
         return None
+    note_online_device(device_public_id)
+    pending = _peek_pending()
+    if pending is None:
+        return None
+    task_id = str(pending.get("taskId") or pending["assignmentId"])
+    if device_public_id:
+        online = online_device_ids()
+        reserved = _reserved_device.get(task_id)
+        if reserved not in online:
+            reserved = choose_online_device(online, device_public_id)
+            _reserved_device[task_id] = reserved
+        if device_public_id != reserved:
+            return None
     assignment = pop_next_assignment()
     if assignment is None:
         return None
-    task_id = str(assignment.get("taskId") or assignment["assignmentId"])
+    _reserved_device.pop(task_id, None)
     note_task_delivery(task_id, device_public_id)
     return assignment
 
@@ -159,6 +212,7 @@ def command_receipt(operation_id: str) -> dict[str, Any]:
 
 
 def mark_completed(assignment_id: str) -> None:
+    _reserved_device.pop(assignment_id, None)
     if assignment_id not in _completed:
         _completed.append(assignment_id)
     _pending[:] = [
