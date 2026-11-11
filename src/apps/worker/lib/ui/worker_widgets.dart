@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'worker_mascot.dart';
 import 'worker_theme.dart';
 
 class WorkerKpiCard extends StatelessWidget {
@@ -328,10 +329,12 @@ class WorkerMascotHero extends StatelessWidget {
     super.key,
     required this.listening,
     required this.subtitle,
+    this.working = false,
   });
 
   final bool listening;
   final String subtitle;
+  final bool working;
 
   @override
   Widget build(BuildContext context) {
@@ -345,31 +348,13 @@ class WorkerMascotHero extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  WorkerColors.primary.withValues(alpha: 0.5),
-                  WorkerColors.primaryContainer.withValues(alpha: 0.2),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: WorkerColors.primary.withValues(alpha: 0.45),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: const Icon(Icons.smart_toy_rounded, size: 52, color: Colors.white),
-          ),
+          WorkerMascotAnimation(working: working),
           const SizedBox(height: 16),
           WorkerStatusChip(
-            label: listening ? 'Listening for tasks' : 'Unavailable',
-            active: listening,
+            label: working
+                ? 'Running a task'
+                : (listening ? 'Listening for tasks' : 'Unavailable'),
+            active: working || listening,
           ),
           const SizedBox(height: 8),
           Text(subtitle, style: _muted(context), textAlign: TextAlign.center),

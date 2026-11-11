@@ -8,6 +8,7 @@ import '../../inference/llm/diagnostic/summarize_map_prompt_variant.dart';
 import '../../inference/llm/diagnostic/facts_only_experiment.dart';
 import '../../inference/llm/summarize_diagnostic_map.dart';
 import '../../worker_app_controller.dart';
+import '../worker_mascot.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
 
@@ -67,6 +68,7 @@ class WorkerHomeTab extends StatelessWidget {
         else
           WorkerMascotHero(
             listening: controller.isAutoAssigning,
+            working: mascotIsWorking(controller.executionStatus.phase),
             subtitle: heroSubtitle,
           ),
         if (!wide) ...[
@@ -214,6 +216,7 @@ class _DesktopHeroRow extends StatelessWidget {
           flex: 3,
           child: WorkerMascotHero(
             listening: controller.isAutoAssigning,
+            working: mascotIsWorking(controller.executionStatus.phase),
             subtitle: heroSubtitle,
           ),
         ),
