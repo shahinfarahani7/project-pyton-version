@@ -617,6 +617,19 @@ dd {
   margin: 0;
 }
 
+.updated-workers {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.updated-workers li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
 .page-header h1 {
   margin-right: auto;
 }

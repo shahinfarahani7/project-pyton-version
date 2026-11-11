@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 
 import { opsApi } from '../api/client';
 import { usePolling } from '../composables/polling';
+import { formatFibon } from '../formatFibon';
 
 const { data, error, updatedAt, refresh } = usePolling(() => opsApi.taskMonitor());
 
@@ -12,6 +13,11 @@ const cancellingId = ref(null);
 const actionError = ref(null);
 
 const TERMINAL = new Set(['succeeded', 'failed', 'cancelled', 'expired']);
+const DONE = new Set(['succeeded', 'completed', 'done']);
+
+function lifecycle(task) {
+  return String(task.lifecycleStatus ?? '').toLowerCase();
+}
 
 function canCancel(task) {
   return !TERMINAL.has(task.lifecycleStatus);
@@ -33,12 +39,20 @@ async function cancel(task) {
 
 const items = computed(() => data.value?.items ?? []);
 const summary = computed(() => data.value?.summary ?? null);
+const doneCount = computed(() => items.value.filter((task) => DONE.has(lifecycle(task))).length);
+const failedCount = computed(() => items.value.filter((task) => lifecycle(task) === 'failed').length);
+const uptimeLabel = computed(() => {
+  const finished = doneCount.value + failedCount.value;
+  if (finished === 0) return '—';
+  const percent = Math.round((doneCount.value / finished) * 1000) / 10;
+  return Number.isInteger(percent) ? `${percent}%` : `${percent.toFixed(1)}%`;
+});
 const statuses = computed(() => Object.keys(summary.value?.byStatus ?? {}).sort());
 
 const filtered = computed(() => {
   const needle = search.value.trim().toLowerCase();
   return items.value.filter((task) => {
-    if (statusFilter.value !== 'all' && task.lifecycleStatus !== statusFilter.value) return false;
+    if (statusFilter.value !== 'all' && lifecycle(task) !== statusFilter.value.toLowerCase()) return false;
     if (!needle) return true;
     const haystack = [task.id, task.taskType, ...task.devices.map((d) => `${d.deviceName ?? ''} ${d.deviceId} ${d.workerId ?? ''}`)]
       .join(' ')
@@ -84,6 +98,9 @@ const pinnedDevice = computed(() => {
 
     <div v-if="summary" class="stat-grid">
       <div class="stat"><span>Total</span><strong>{{ summary.total }}</strong></div>
+      <div class="stat" data-stat="done"><span>Done</span><strong>{{ doneCount }}</strong></div>
+      <div class="stat" data-stat="failed"><span>Failed</span><strong>{{ failedCount }}</strong></div>
+      <div class="stat" data-stat="uptime"><span>Uptime</span><strong>{{ uptimeLabel }}</strong></div>
       <div class="stat"><span>Running on device</span><strong>{{ summary.running }}</strong></div>
       <div class="stat"><span>Waiting in worker queue</span><strong>{{ summary.queueDepth }}</strong></div>
       <div class="stat"><span>Failed deliveries</span><strong>{{ summary.failedDeliveries }}</strong></div>
@@ -113,6 +130,7 @@ const pinnedDevice = computed(() => {
       <thead>
         <tr>
           <th scope="col">Task</th>
+          <th scope="col">Tokens paid</th>
           <th scope="col">Type</th>
           <th scope="col">Workspace</th>
           <th scope="col">Status</th>
@@ -126,6 +144,7 @@ const pinnedDevice = computed(() => {
       <tbody>
         <tr v-for="task in filtered" :key="task.id">
           <td class="mono">{{ task.id }}</td>
+          <td data-field="tokens-paid">{{ formatFibon(task.tokensGivenAtomic) }}</td>
           <td>{{ task.taskType }}</td>
           <td class="mono" :title="task.workspaceId">{{ short(task.workspaceId) }}</td>
           <td>
@@ -161,7 +180,7 @@ const pinnedDevice = computed(() => {
           </td>
         </tr>
         <tr v-if="!filtered.length && !error">
-          <td colspan="9" class="muted">No tasks match.</td>
+          <td colspan="10" class="muted">No tasks match.</td>
         </tr>
       </tbody>
     </table>

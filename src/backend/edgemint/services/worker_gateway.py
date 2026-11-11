@@ -46,8 +46,17 @@ def _timeout_for(path: str) -> httpx.Timeout:
     return httpx.Timeout(120.0)
 
 
-def _filter_headers(headers: httpx.Headers) -> dict[str, str]:
-    return {key: value for key, value in headers.items() if key.lower() not in HOP_BY_HOP}
+def _filter_headers(
+    headers: httpx.Headers,
+    *,
+    preserve_content_length: bool = False,
+) -> dict[str, str]:
+    # A browser download stays unfinished when the body is chunked and the
+    # length is missing: the bar reaches the end, then waits forever.
+    skipped = HOP_BY_HOP
+    if preserve_content_length:
+        skipped = HOP_BY_HOP - {"content-length"}
+    return {key: value for key, value in headers.items() if key.lower() not in skipped}
 
 
 def _upstream_for(path: str) -> str:
@@ -96,7 +105,10 @@ async def _forward_artifact_stream(
     return StreamingResponse(
         body_iter(),
         status_code=upstream_response.status_code,
-        headers=_filter_headers(upstream_response.headers),
+        headers=_filter_headers(
+            upstream_response.headers,
+            preserve_content_length=True,
+        ),
     )
 
 

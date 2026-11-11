@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -110,7 +110,12 @@ async def _hydrate_api_keys(workspace_id: UUID) -> None:
 
 
 async def _authorize_task_workspace(
-    request: Request, workspace_id: UUID, *, write: bool, record_success: bool = True
+    request: Request,
+    response: Response,
+    workspace_id: UUID,
+    *,
+    write: bool,
+    record_success: bool = True,
 ) -> str | None:
     """Accept a browser session or a workspace task API key; return the key id when a key was used."""
     raw_key = request.headers.get(_API_KEY_HEADER)
@@ -141,7 +146,7 @@ async def _authorize_task_workspace(
         if record_success:
             api_key_usage.record(decision.key_id, workspace_id, kind="request", ok=True, client_ip=client_ip)
         return decision.key_id
-    session = await require_dev_portal_session(request)
+    session = await require_dev_portal_session(request, response)
     _ensure_workspace_access(session, workspace_id)
     return None
 
@@ -230,7 +235,7 @@ async def _create_task_from_form(
     return task_type_catalog.enrich_task_row(task)
 
 
-async def require_dev_portal_session(request: Request) -> BrowserSessionRecord:
+async def require_dev_portal_session(request: Request, response: Response) -> BrowserSessionRecord:
     settings = get_settings()
     if settings.environment not in {"development", "test"}:
         raise HTTPException(503, "DEV_PORTAL_API_DISABLED")
@@ -243,11 +248,34 @@ async def require_dev_portal_session(request: Request) -> BrowserSessionRecord:
     if not session_token:
         raise_auth_error("AUTH_INVALID_CREDENTIAL")
 
-    async with transaction() as connection:
+    from edgemint.services.api_gateway import browser_session_ttl
+
+    absolute_ttl, idle_ttl = browser_session_ttl(
+        None,
+        settings_ttl_seconds=settings.worker_session_ttl_seconds,
+    )
+    # Task polling updates this same session row from several requests at once.
+    # READ COMMITTED lets those slides commit instead of aborting the portal request.
+    async with transaction(isolation="READ COMMITTED") as connection:
         record = await session_store.load_by_token(connection, session_token=session_token)
         if record is None or not record.is_active():
             raise_auth_error("AUTH_SESSION_REVOKED")
-        return record
+        await session_store.slide_expiry(
+            connection,
+            session_id=record.session_id,
+            absolute_ttl=absolute_ttl,
+            idle_ttl=idle_ttl,
+        )
+    response.set_cookie(
+        key=BrowserSessionStore.cookie_name(environment=settings.environment),
+        value=session_token,
+        httponly=True,
+        secure=BrowserSessionStore.cookie_secure(environment=settings.environment),
+        samesite="strict",
+        path="/",
+        max_age=int(absolute_ttl.total_seconds()),
+    )
+    return record
 
 
 def _known_portal_principal(principal_id: UUID) -> bool:
@@ -297,8 +325,8 @@ async def list_task_types(
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks")
-async def list_tasks(workspace_id: UUID, request: Request) -> dict:
-    await _authorize_task_workspace(request, workspace_id, write=False)
+async def list_tasks(workspace_id: UUID, request: Request, response: Response) -> dict:
+    await _authorize_task_workspace(request, response, workspace_id, write=False)
     return task_type_catalog.enrich_task_list(fixtures.dev_tasks(workspace_id))
 
 
@@ -336,8 +364,10 @@ async def stream_task_events(
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks", status_code=201)
-async def create_task(request: Request, workspace_id: UUID) -> dict:
-    key_id = await _authorize_task_workspace(request, workspace_id, write=True, record_success=False)
+async def create_task(request: Request, response: Response, workspace_id: UUID) -> dict:
+    key_id = await _authorize_task_workspace(
+        request, response, workspace_id, write=True, record_success=False
+    )
     if key_id is None:
         return await _create_task_body(request, workspace_id)
     try:
@@ -408,8 +438,8 @@ async def _create_task_body(request: Request, workspace_id: UUID) -> dict:
 
 
 @router.get("/v1/workspaces/{workspace_id}/tasks/{task_id}")
-async def get_task(workspace_id: UUID, task_id: str, request: Request) -> dict:
-    await _authorize_task_workspace(request, workspace_id, write=False)
+async def get_task(workspace_id: UUID, task_id: str, request: Request, response: Response) -> dict:
+    await _authorize_task_workspace(request, response, workspace_id, write=False)
     task = fixtures.dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
@@ -417,8 +447,10 @@ async def get_task(workspace_id: UUID, task_id: str, request: Request) -> dict:
 
 
 @router.post("/v1/workspaces/{workspace_id}/tasks/{task_id}:cancel")
-async def cancel_task(workspace_id: UUID, task_id: str, request: Request) -> dict:
-    await _authorize_task_workspace(request, workspace_id, write=True)
+async def cancel_task(
+    workspace_id: UUID, task_id: str, request: Request, response: Response
+) -> dict:
+    await _authorize_task_workspace(request, response, workspace_id, write=True)
     task = fixtures.cancel_dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")
@@ -430,10 +462,11 @@ async def get_task_result_file(
     workspace_id: UUID,
     task_id: str,
     request: Request,
+    response: Response,
 ):
     from edgemint.dev import worker_task_inputs
 
-    await _authorize_task_workspace(request, workspace_id, write=False)
+    await _authorize_task_workspace(request, response, workspace_id, write=False)
     task = fixtures.dev_task(workspace_id, task_id)
     if task is None:
         raise HTTPException(404, "TASK_NOT_FOUND")

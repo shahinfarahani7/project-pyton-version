@@ -11,8 +11,8 @@ afterEach(() => {
 
 const monitor = {
   summary: {
-    total: 2,
-    byStatus: { running: 1, failed: 1 },
+    total: 3,
+    byStatus: { running: 1, failed: 1, succeeded: 1 },
     queueDepth: 0,
     running: 1,
     failedDeliveries: 1,
@@ -25,6 +25,7 @@ const monitor = {
       workspaceId: 'ws-1',
       lifecycleStatus: 'running',
       executionStatus: 'running',
+      tokensGivenAtomic: 0,
       inWorkerQueue: false,
       devices: [
         { deviceId: 'dev_PHONE1', state: 'running', workerId: 'wrk_1', platform: 'android', deviceTier: 'B', deviceName: 'Samsung Galaxy S24', errorCode: null, deliveredAt: '2026-10-28T10:00:00Z' },
@@ -36,10 +37,20 @@ const monitor = {
       workspaceId: 'ws-1',
       lifecycleStatus: 'failed',
       failureReasonCode: 'OOM',
+      tokensGivenAtomic: 0,
       inWorkerQueue: false,
       devices: [
         { deviceId: 'dev_PHONE2', state: 'failed', workerId: null, platform: null, deviceTier: null, errorCode: 'OOM', deliveredAt: null },
       ],
+    },
+    {
+      id: 'tsk_c',
+      taskType: 'text.direct',
+      workspaceId: 'ws-1',
+      lifecycleStatus: 'succeeded',
+      tokensGivenAtomic: 300000,
+      inWorkerQueue: false,
+      devices: [],
     },
   ],
 };
@@ -50,14 +61,20 @@ describe('TasksPage', () => {
     const wrapper = mount(TasksPage);
     await flushPromises();
 
+    expect(wrapper.get('[data-stat="done"] strong').text()).toBe('1');
+    expect(wrapper.get('[data-stat="failed"] strong').text()).toBe('1');
+    expect(wrapper.get('[data-stat="uptime"] strong').text()).toBe('50%');
+
     const rows = wrapper.findAll('tbody tr');
-    expect(rows).toHaveLength(2);
+    expect(rows).toHaveLength(3);
     const phone = rows[0].find('.device-list');
     expect(phone.text()).toContain('Samsung Galaxy S24');
     expect(phone.text()).not.toContain('running');
     expect(phone.find('.pill').exists()).toBe(false);
     expect(rows[1].find('.device-list').text()).toContain('dev_PHONE2');
     expect(rows[1].text()).toContain('OOM');
+    expect(rows[0].get('[data-field="tokens-paid"]').text()).toBe('0 FIBON');
+    expect(rows[2].get('[data-field="tokens-paid"]').text()).toBe('30 FIBON');
 
     await wrapper.find('select').setValue('failed');
     expect(wrapper.findAll('tbody tr')).toHaveLength(1);
@@ -67,6 +84,35 @@ describe('TasksPage', () => {
     await wrapper.find('.filters input').setValue('PHONE1');
     expect(wrapper.findAll('tbody tr')).toHaveLength(1);
     expect(wrapper.find('tbody').text()).toContain('tsk_a');
+    wrapper.unmount();
+  });
+
+  it('shows an em dash uptime when no task has finished', async () => {
+    vi.spyOn(opsApi, 'taskMonitor').mockResolvedValue({
+      summary: {
+        total: 1,
+        byStatus: { running: 1 },
+        queueDepth: 0,
+        running: 1,
+        failedDeliveries: 0,
+        pinnedDeviceId: null,
+      },
+      items: [
+        {
+          id: 'tsk_run',
+          taskType: 'text.direct',
+          workspaceId: 'ws-1',
+          lifecycleStatus: 'running',
+          inWorkerQueue: false,
+          devices: [],
+        },
+      ],
+    });
+    const wrapper = mount(TasksPage);
+    await flushPromises();
+    expect(wrapper.get('[data-stat="done"] strong').text()).toBe('0');
+    expect(wrapper.get('[data-stat="failed"] strong').text()).toBe('0');
+    expect(wrapper.get('[data-stat="uptime"] strong').text()).toBe('—');
     wrapper.unmount();
   });
 
@@ -110,6 +156,22 @@ describe('DashboardPage', () => {
     const alerts = wrapper.find('[aria-label="Alerts"]').text();
     expect(alerts).toContain('1 failed task deliveries');
     expect(alerts).toContain('no worker is online');
+    wrapper.unmount();
+  });
+
+  it('shows tokens sold to customers and tokens paid for completed tasks', async () => {
+    vi.spyOn(opsApi, 'overview').mockResolvedValue({
+      workers: { total: 0, byPresence: {}, byActivity: {}, lowBattery: 0, hotDevices: 0 },
+      tasks: null,
+      tasksError: null,
+      tokens: { soldAtomic: 400000, issuedAtomic: 300000 },
+    });
+    const wrapper = mount(DashboardPage, { global: { stubs: { RouterLink: { template: '<a><slot /></a>' } } } });
+    await flushPromises();
+    expect(wrapper.get('[data-stat="tokens-sold"]').text()).toContain('Sold');
+    expect(wrapper.get('[data-stat="tokens-sold"]').text()).toContain('40 FIBON');
+    expect(wrapper.get('[data-stat="tokens-given"]').text()).toContain('Paid for tasks');
+    expect(wrapper.get('[data-stat="tokens-given"]').text()).toContain('30 FIBON');
     wrapper.unmount();
   });
 });

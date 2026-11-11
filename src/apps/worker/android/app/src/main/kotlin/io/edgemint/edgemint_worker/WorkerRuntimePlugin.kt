@@ -2,11 +2,13 @@ package io.edgemint.edgemint_worker
 
 import android.app.Activity
 import android.app.ActivityManager
-import android.app.PendingIntent
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageInstaller
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -18,17 +20,19 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.provider.MediaStore
 import android.provider.Settings
+import androidx.core.content.FileProvider
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
+import java.security.MessageDigest
 
 class WorkerRuntimePlugin(
     private val context: Context,
 ) : MethodChannel.MethodCallHandler {
 
-    private val mainHandler = Handler(Looper.getMainLooper())
     private var playUpdater: PlayAppUpdater? = null
 
     private fun playUpdater(): PlayAppUpdater? {
@@ -62,6 +66,11 @@ class WorkerRuntimePlugin(
                 result.success(null)
             }
 
+            "allowExecutionWhileLocked" -> {
+                ExecutionForegroundService.allowWhileLocked(context)
+                result.success(null)
+            }
+
             "updateForegroundStatus" -> {
                 val progress =
                     call.argument<Int>("progressMilli") ?: 0
@@ -78,6 +87,16 @@ class WorkerRuntimePlugin(
             }
 
             "stopForegroundService" -> {
+                ExecutionForegroundService.finishTask(context)
+                result.success(null)
+            }
+
+            "startAssignmentWatch" -> {
+                ExecutionForegroundService.watch(context)
+                result.success(null)
+            }
+
+            "stopAssignmentWatch" -> {
                 ExecutionForegroundService.stop(context)
                 result.success(null)
             }
@@ -228,73 +247,227 @@ class WorkerRuntimePlugin(
             result.success("permissionRequired")
             return
         }
-        val appContext = context.applicationContext
+        if (signaturesAreIncompatible(apk)) {
+            replaceIncompatibleInstall(apk, result)
+            return
+        }
+        try {
+            openSystemPackageInstaller(apk)
+            result.success("installerLaunched")
+        } catch (_: ActivityNotFoundException) {
+            result.error(
+                "INSTALL_UNAVAILABLE",
+                "Could not open the installer.",
+                null,
+            )
+        } catch (error: Exception) {
+            result.error(
+                "INSTALL_UNAVAILABLE",
+                error.message ?: "Could not open the installer.",
+                null,
+            )
+        }
+    }
+
+    private fun signaturesAreIncompatible(apk: File): Boolean {
+        return try {
+            val installed = signatureDigests(installedPackageInfo())
+            val incoming = signatureDigests(archivePackageInfo(apk))
+            installed.isNotEmpty() && incoming.isNotEmpty() && installed != incoming
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun installedPackageInfo(): PackageInfo {
+        val flags = signingFlags()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.PackageInfoFlags.of(flags),
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            context.packageManager.getPackageInfo(context.packageName, flags.toInt())
+        }
+    }
+
+    private fun archivePackageInfo(apk: File): PackageInfo {
+        val flags = signingFlags()
+        val info =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.getPackageArchiveInfo(
+                    apk.path,
+                    PackageManager.PackageInfoFlags.of(flags),
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getPackageArchiveInfo(apk.path, flags.toInt())
+            } ?: throw IllegalStateException("Could not read the update signature.")
+        info.applicationInfo?.sourceDir = apk.path
+        info.applicationInfo?.publicSourceDir = apk.path
+        return info
+    }
+
+    private fun signingFlags(): Long {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            PackageManager.GET_SIGNING_CERTIFICATES.toLong()
+        } else {
+            @Suppress("DEPRECATION")
+            PackageManager.GET_SIGNATURES.toLong()
+        }
+    }
+
+    private fun signatureDigests(packageInfo: PackageInfo): Set<String> {
+        val signatures =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val signing = packageInfo.signingInfo ?: return emptySet()
+                if (signing.hasMultipleSigners()) {
+                    signing.apkContentsSigners
+                } else {
+                    signing.signingCertificateHistory
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.signatures
+            }
+        return signatures
+            ?.map { sha256Hex(it.toByteArray()) }
+            ?.toSet()
+            .orEmpty()
+    }
+
+    private fun sha256Hex(bytes: ByteArray): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun replaceIncompatibleInstall(
+        apk: File,
+        result: MethodChannel.Result,
+    ) {
+        val mainHandler = Handler(Looper.getMainLooper())
         Thread {
-            var session: PackageInstaller.Session? = null
             try {
-                val installer = appContext.packageManager.packageInstaller
-                val params =
-                    PackageInstaller.SessionParams(
-                        PackageInstaller.SessionParams.MODE_FULL_INSTALL,
-                    )
-                params.setSize(apk.length())
-                params.setAppPackageName(appContext.packageName)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    params.setRequireUserAction(
-                        PackageInstaller.SessionParams.USER_ACTION_REQUIRED,
-                    )
-                }
-                val sessionId = installer.createSession(params)
-                val opened = installer.openSession(sessionId)
-                session = opened
-                apk.inputStream().use { input ->
-                    opened.openWrite("worker-update.apk", 0, apk.length()).use { output ->
-                        val buffer = ByteArray(1024 * 1024)
-                        while (true) {
-                            val count = input.read(buffer)
-                            if (count < 0) {
-                                break
-                            }
-                            output.write(buffer, 0, count)
+                val uri = copyApkToDownloads(apk)
+                mainHandler.post {
+                    val activity = context as? Activity
+                    if (activity == null || activity.isFinishing) {
+                        result.error(
+                            "INSTALL_UNAVAILABLE",
+                            "Could not open the uninstall screen.",
+                            null,
+                        )
+                        return@post
+                    }
+                    pendingReplaceUri = uri
+                    appContext = activity.applicationContext
+                    val uninstall =
+                        Intent(Intent.ACTION_DELETE).apply {
+                            data = Uri.parse("package:${activity.packageName}")
+                            putExtra(Intent.EXTRA_RETURN_RESULT, true)
                         }
-                        opened.fsync(output)
-                    }
+                    activity.startActivityForResult(uninstall, REQUEST_REPLACE_UNINSTALL)
+                    result.success("replaceRequired")
                 }
-                val callback = Intent(appContext, ApkInstallReceiver::class.java)
-                val flags =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-                    } else {
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                    }
-                val pending =
-                    PendingIntent.getBroadcast(
-                        appContext,
-                        sessionId,
-                        callback,
-                        flags,
-                    )
-                opened.commit(pending.intentSender)
-                mainHandler.post { result.success("installerLaunched") }
             } catch (error: Exception) {
-                try {
-                    session?.abandon()
-                } catch (_: Exception) {
-                }
                 mainHandler.post {
                     result.error(
                         "INSTALL_UNAVAILABLE",
-                        error.message ?: "Could not open the installer.",
+                        error.message ?: "Could not prepare the replacement.",
                         null,
                     )
                 }
-            } finally {
-                try {
-                    session?.close()
-                } catch (_: Exception) {
-                }
             }
         }.start()
+    }
+
+    private fun copyApkToDownloads(apk: File): Uri {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            throw IllegalStateException("This phone cannot keep the update after uninstall.")
+        }
+        val resolver = context.contentResolver
+        val collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI
+        val name = "FibonAi.apk"
+        resolver.delete(
+            collection,
+            "${MediaStore.Downloads.DISPLAY_NAME}=?",
+            arrayOf(name),
+        )
+        val values =
+            ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, name)
+                put(MediaStore.Downloads.MIME_TYPE, "application/vnd.android.package-archive")
+                put(MediaStore.Downloads.IS_PENDING, 1)
+            }
+        val uri =
+            resolver.insert(collection, values)
+                ?: throw IllegalStateException("Could not save the update.")
+        resolver.openOutputStream(uri).use { output ->
+            if (output == null) {
+                throw IllegalStateException("Could not save the update.")
+            }
+            apk.inputStream().use { input ->
+                val buffer = ByteArray(1024 * 1024)
+                while (true) {
+                    val count = input.read(buffer)
+                    if (count < 0) {
+                        break
+                    }
+                    output.write(buffer, 0, count)
+                }
+            }
+        }
+        values.clear()
+        values.put(MediaStore.Downloads.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
+        return uri
+    }
+
+    // Opens Android's package installer while this app is still in front.
+    // Closing a PackageInstaller session immediately after commit never shows
+    // the confirmation screen, so the downloaded file stays uninstalled.
+    private fun openSystemPackageInstaller(apk: File) {
+        val uri =
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                apk,
+            )
+        openSystemPackageInstaller(uri)
+    }
+
+    private fun openSystemPackageInstaller(uri: Uri) {
+        val intent =
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                clipData = ClipData.newRawUri("worker-update", uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        val installerPackages =
+            listOf(
+                "com.google.android.packageinstaller",
+                "com.android.packageinstaller",
+                "com.miui.packageinstaller",
+                "com.samsung.android.packageinstaller",
+            )
+        for (packageName in installerPackages) {
+            try {
+                context.grantUriPermission(
+                    packageName,
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            } catch (_: Exception) {
+            }
+        }
+        val activity = context as? Activity
+        if (activity != null && !activity.isFinishing) {
+            activity.startActivity(intent)
+        } else {
+            context.startActivity(intent)
+        }
     }
 
     private fun importSideloadedModel(
@@ -979,10 +1152,45 @@ class WorkerRuntimePlugin(
             }
         }
 
+        private const val REQUEST_REPLACE_UNINSTALL = 4107
+
+        private var appContext: Context? = null
+
+        private var pendingReplaceUri: Uri? = null
+
+        fun handleActivityResult(
+            requestCode: Int,
+            resultCode: Int,
+        ): Boolean {
+            if (requestCode != REQUEST_REPLACE_UNINSTALL) {
+                return false
+            }
+            val storedContext = appContext
+            val uri = pendingReplaceUri
+            pendingReplaceUri = null
+            if (resultCode != Activity.RESULT_OK || storedContext == null || uri == null) {
+                notifyInstallResult(
+                    "failed",
+                    "Uninstall was cancelled. The update was not installed.",
+                )
+                return true
+            }
+            try {
+                WorkerRuntimePlugin(storedContext).openSystemPackageInstaller(uri)
+            } catch (error: Exception) {
+                notifyInstallResult(
+                    "failed",
+                    error.message ?: "Could not open the installer.",
+                )
+            }
+            return true
+        }
+
         fun registerWith(
             engine: FlutterEngine,
             context: Context,
         ) {
+            appContext = context.applicationContext
             val channel =
                 MethodChannel(
                     engine.dartExecutor.binaryMessenger,

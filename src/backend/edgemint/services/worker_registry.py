@@ -222,7 +222,7 @@ async def download_worker_app_release() -> Response:
     return FileResponse(
         path=release.apk_path,
         media_type="application/vnd.android.package-archive",
-        filename="edgemint-worker.apk",
+        filename="FibonAi.apk",
     )
 
 

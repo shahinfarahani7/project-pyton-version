@@ -1,7 +1,9 @@
 import 'package:edgemint_worker/config/worker_config.dart';
+import 'package:edgemint_worker/models/worker_model_catalog.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/execution_status.dart';
 import 'package:edgemint_worker/runtime/worker_app_update.dart';
+import 'package:edgemint_worker/ui/gemma_download_dialog.dart';
 import 'package:edgemint_worker/ui/tabs/worker_home_tab.dart';
 import 'package:edgemint_worker/ui/worker_theme.dart';
 import 'package:edgemint_worker/ui/worker_widgets.dart';
@@ -215,6 +217,60 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Try again'), findsOneWidget);
+  });
+
+  testWidgets('model download progress stays visible during a required app update', (
+    tester,
+  ) async {
+    final controller = WorkerAppController(
+      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
+      encryptedStore: InMemoryEncryptedStore(),
+    );
+    controller.setAvailable(false);
+    controller.appUpdatePhase = WorkerAppUpdatePhase.available;
+    controller.appUpdateVersionName = '9.9.9';
+    controller.appUpdateMandatory = true;
+    controller.modelPhase = ModelInstallPhase.downloading;
+    controller.modelProgress = 0.2;
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: WorkerHomeTab(controller: controller),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Required app update'), findsOneWidget);
+    expect(find.text('Downloading 20%'), findsOneWidget);
+  });
+
+  testWidgets('missing model dialog asks to download Gemma', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWorkerTheme(),
+        home: Builder(
+          builder: (context) {
+            return FilledButton(
+              onPressed: () {
+                showModelUpdatePromptDialog(context);
+              },
+              child: const Text('open'),
+            );
+          },
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Download ${WorkerModelCatalog.displayName}'),
+      findsOneWidget,
+    );
+    expect(find.text('Download'), findsOneWidget);
+    expect(find.text('Later'), findsOneWidget);
   });
 
   testWidgets('home offers a Google Play update', (tester) async {

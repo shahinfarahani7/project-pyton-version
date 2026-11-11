@@ -52,6 +52,13 @@ def service_block(name: str) -> str:
         "      <<: *backend-environment",
         f"      EDGEMINT_SERVICE_NAME: {name}",
     ]
+    if name == "worker-gateway":
+        lines.extend(
+            [
+                '      NO_PROXY: "*"',
+                '      no_proxy: "*"',
+            ]
+        )
     if name == "worker-registry":
         lines.extend(
             [

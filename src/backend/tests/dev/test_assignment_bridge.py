@@ -39,44 +39,48 @@ def test_enqueue_assignment_falls_back_to_local_queue_on_http_error() -> None:
             enqueue.assert_called_once_with(task_id="tsk_dev_abc", task_type="text.generate")
 
 
-def test_one_task_goes_to_a_random_online_phone_and_does_not_pin(monkeypatch) -> None:
+def test_four_online_phones_run_four_queued_tasks_together() -> None:
     worker_assignments._pending.clear()
     worker_assignments._completed.clear()
+    worker_assignments._delivered_devices.clear()
+    worker_assignments._in_flight_devices.clear()
+    worker_assignments._failed_devices.clear()
     worker_assignments._exclusive_device_public_id = None
     worker_assignments.clear_online_devices()
     phones = ["phone_a", "phone_b", "phone_c", "phone_d"]
-    choices = iter(["phone_c", "phone_a"])
-    monkeypatch.setattr(
-        worker_assignments,
-        "choose_online_device",
-        lambda device_ids, requesting: next(choices),
-    )
-
     for phone in phones:
         assert worker_assignments.claim_next_assignment(device_public_id=phone) is None
-
-    worker_assignments.enqueue_dev_assignment(
-        task_id="tsk_dev_random",
-        task_type="text.summarize",
-    )
-    assert (
-        worker_assignments.claim_next_assignment(
-            device_public_id="phone_a",
-            claim_exclusive=True,
+    for index in range(4):
+        worker_assignments.enqueue_dev_assignment(
+            task_id=f"tsk_dev_parallel_{index}",
+            task_type="text.direct",
         )
-        is None
-    )
-    chosen = worker_assignments.claim_next_assignment(device_public_id="phone_c")
-    assert chosen is not None
-    assert chosen["taskId"] == "tsk_dev_random"
+
+    claimed = [
+        worker_assignments.claim_next_assignment(device_public_id=phone) for phone in phones
+    ]
+    task_ids = [item["taskId"] for item in claimed if item is not None]
+    assert len(task_ids) == 4
+    assert len(set(task_ids)) == 4
+    assert worker_assignments.claim_next_assignment(device_public_id="phone_a") is None
     assert worker_assignments.preferred_device_public_id() is None
 
-    worker_assignments.enqueue_dev_assignment(
-        task_id="tsk_dev_second",
-        task_type="text.summarize",
-    )
-    assert worker_assignments.claim_next_assignment(device_public_id="phone_c") is None
-    second = worker_assignments.claim_next_assignment(device_public_id="phone_a")
+
+def test_completed_phone_can_claim_the_next_task() -> None:
+    worker_assignments._pending.clear()
+    worker_assignments._completed.clear()
+    worker_assignments._delivered_devices.clear()
+    worker_assignments._in_flight_devices.clear()
+    worker_assignments._failed_devices.clear()
+    worker_assignments._exclusive_device_public_id = None
+    worker_assignments.clear_online_devices()
+    worker_assignments.enqueue_dev_assignment(task_id="tsk_dev_first", task_type="text.direct")
+    first = worker_assignments.claim_next_assignment(device_public_id="phone_a53")
+    assert first is not None
+    worker_assignments.mark_completed(first["assignmentId"])
+
+    worker_assignments.enqueue_dev_assignment(task_id="tsk_dev_second", task_type="text.direct")
+    second = worker_assignments.claim_next_assignment(device_public_id="phone_a53")
     assert second is not None
     assert second["taskId"] == "tsk_dev_second"
 
@@ -112,7 +116,7 @@ def test_dev_assignment_deadlines_begin_when_delivered(
 
     assert assignment is not None
     assert datetime.fromisoformat(assignment["startDeadlineAt"]) == (
-        delivered_at + timedelta(minutes=5)
+        delivered_at + timedelta(minutes=30)
     )
     assert datetime.fromisoformat(assignment["leaseExpiresAt"]) == (
         delivered_at + timedelta(minutes=30)

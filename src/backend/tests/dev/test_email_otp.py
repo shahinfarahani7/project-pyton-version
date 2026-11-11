@@ -128,7 +128,7 @@ def test_password_locks_after_repeated_failures() -> None:
         email_otp.verify_email_password(email_otp.DEV_LOGIN_EMAIL, email_otp.DEV_LOGIN_PASSWORD)
 
 
-def test_worker_sign_in_lasts_thirty_days_and_portal_does_not() -> None:
+def test_worker_and_portal_sign_in_last_thirty_days() -> None:
     worker_absolute, worker_idle = api_gateway.browser_session_ttl(
         "worker",
         settings_ttl_seconds=2_592_000,
@@ -139,8 +139,8 @@ def test_worker_sign_in_lasts_thirty_days_and_portal_does_not() -> None:
     )
     assert worker_absolute == timedelta(days=30)
     assert worker_idle == timedelta(days=30)
-    assert portal_absolute == timedelta(hours=12)
-    assert portal_idle == timedelta(minutes=30)
+    assert portal_absolute == timedelta(days=30)
+    assert portal_idle == timedelta(days=30)
 
 
 def test_http_wrong_password_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:

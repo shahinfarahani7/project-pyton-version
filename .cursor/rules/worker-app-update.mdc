@@ -1,0 +1,23 @@
+---
+description: Worker APK update must install, and browser downloads must finish
+alwaysApply: true
+---
+
+# Worker app update
+
+A phone that already has the worker app must be able to install a newer build from the worker server. Do not require USB or a manual uninstall for a same-signature update.
+
+## Install
+
+- Publish a higher `versionCode` at `GET /worker-app/release` and serve the APK at `GET /worker-app/release/apk`.
+- The browser download name is `FibonAi.apk` (`Content-Disposition`). Keep the `.apk` suffix.
+- Open Android's package installer from the foreground activity with a `FileProvider` URI. Do not commit a `PackageInstaller` session and then `close()` it; that closes the session before the install screen appears.
+- Sign the update with the same certificate as the installed app. A new debug keystore cannot replace an already-installed app (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
+- If the certificates differ, copy the APK to public Downloads (it must survive uninstall), ask the user to uninstall, then open the installer for that Downloads file. Do not leave the private `app-updates` file as the only copy.
+- The model is not inside the APK. When Gemma is missing after install, show the model download dialog even if an app-update card is also visible.
+
+## Browser download
+
+- Streamed APK and model responses must keep `Content-Length`. Stripping it and using chunked encoding makes the phone download reach the end and never finish.
+- `worker-gateway` must set `NO_PROXY=*` (and `no_proxy=*`). Docker's injected HTTP proxy turns internal calls to `worker-registry` into a MikroTik 404 and breaks heartbeats and downloads.
+- Recreating `worker-gateway` or `worker-registry` must not drop that proxy bypass.

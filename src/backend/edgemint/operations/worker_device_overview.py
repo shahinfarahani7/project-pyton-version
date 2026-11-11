@@ -109,6 +109,21 @@ def _last_contact(row: Mapping[str, Any]) -> datetime | None:
     return None
 
 
+def worker_has_current_app(
+    *,
+    app_version: str | None,
+    app_version_code: int | None,
+    release_name: str | None,
+    release_code: int | None,
+) -> bool:
+    """A worker is updated when the installed build matches the published release."""
+    if type(app_version_code) is int and type(release_code) is int:
+        return app_version_code >= release_code
+    installed = app_version.strip() if isinstance(app_version, str) else ""
+    published = release_name.strip() if isinstance(release_name, str) else ""
+    return bool(installed) and installed == published
+
+
 def overview_item_from_row(row: Mapping[str, Any], *, now: datetime) -> dict[str, Any]:
     capability = row.get("heartbeat_capability") or row.get("device_capability") or {}
     resource_vector = capability.get("resourceVector") or {}
@@ -139,6 +154,7 @@ def overview_item_from_row(row: Mapping[str, Any], *, now: datetime) -> dict[str
         "platform": row["platform"],
         "deviceTier": row["device_tier"],
         "appVersion": row["app_version"],
+        "appVersionCode": _int_or_none(telemetry.get("appVersionCode")),
         "device": _device_identity(device),
         "presence": presence,
         "activity": activity,

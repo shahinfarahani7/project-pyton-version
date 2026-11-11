@@ -3,7 +3,11 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from edgemint.operations.worker_device_overview import device_type_label, overview_item_from_row
+from edgemint.operations.worker_device_overview import (
+    device_type_label,
+    overview_item_from_row,
+    worker_has_current_app,
+)
 
 NOW = datetime(2026, 10, 28, 10, 0, tzinfo=UTC)
 
@@ -35,6 +39,42 @@ def _row(**overrides: Any) -> dict[str, Any]:
     }
     row.update(overrides)
     return row
+
+
+def test_current_app_matches_published_build_code_before_name() -> None:
+    assert worker_has_current_app(
+        app_version="5.0.0",
+        app_version_code=40200,
+        release_name="5.0.1",
+        release_code=40200,
+    )
+    assert not worker_has_current_app(
+        app_version="5.0.1",
+        app_version_code=40100,
+        release_name="5.0.1",
+        release_code=40200,
+    )
+    assert worker_has_current_app(
+        app_version="5.0.1",
+        app_version_code=None,
+        release_name="5.0.1",
+        release_code=None,
+    )
+    assert not worker_has_current_app(
+        app_version="5.0.0",
+        app_version_code=None,
+        release_name="5.0.1",
+        release_code=40200,
+    )
+
+
+def test_overview_reads_installed_build_from_heartbeat_telemetry() -> None:
+    item = overview_item_from_row(
+        _row(telemetry_json={"cpuUsageBps": 4_200, "appVersionCode": 40200}),
+        now=NOW,
+    )
+    assert item["appVersion"] == "1.0.0"
+    assert item["appVersionCode"] == 40200
 
 
 def test_online_worker_with_lease_is_busy_with_specs() -> None:

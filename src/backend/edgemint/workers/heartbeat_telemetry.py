@@ -57,6 +57,7 @@ class WorkerHeartbeatTelemetry(BaseModel):
     calibrationView: WorkerCalibrationView | None = None
     resourceReservationsView: WorkerResourceReservationsView | None = None
     identityLifecycleView: dict[str, Any] | None = None
+    appVersionCode: int | None = Field(default=None, ge=1)
 
     model_config = {"extra": "forbid"}
 
@@ -73,6 +74,7 @@ def telemetry_from_heartbeat(payload: HeartbeatRequest) -> WorkerHeartbeatTeleme
         calibrationView=payload.calibrationView,
         resourceReservationsView=payload.resourceReservationsView,
         identityLifecycleView=identity_view,
+        appVersionCode=payload.appVersionCode,
     )
     if telemetry.model_dump(exclude_none=True, exclude_defaults=True):
         return telemetry

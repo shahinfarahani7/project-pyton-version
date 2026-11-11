@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../models/worker_model_catalog.dart';
+
 enum ModelUpdatePromptResult { update, later }
 
-/// Shown on Home when work cannot start until the required download finishes.
+/// Shown when Gemma is missing, including while an app update card is up.
 Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
   BuildContext context,
 ) {
+  final modelName = WorkerModelCatalog.displayName;
   return showDialog<ModelUpdatePromptResult>(
     context: context,
     barrierDismissible: false,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Update required'),
-        content: const Text(
-          'An update is required before this device can run tasks.',
+        title: Text('Download $modelName'),
+        content: Text(
+          '$modelName is not on this phone yet. '
+          'Download it before this device can run tasks.',
         ),
         actions: [
           TextButton(
@@ -24,7 +28,7 @@ Future<ModelUpdatePromptResult?> showModelUpdatePromptDialog(
           FilledButton(
             onPressed: () =>
                 Navigator.of(context).pop(ModelUpdatePromptResult.update),
-            child: const Text('Update'),
+            child: const Text('Download'),
           ),
         ],
       );

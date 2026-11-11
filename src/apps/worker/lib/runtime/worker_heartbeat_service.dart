@@ -52,6 +52,8 @@ class WorkerHeartbeatService {
           contributionModeId: context.contributionModeId,
           includeCapabilitySnapshot: context.includeCapabilitySnapshot,
           identityLifecycleView: context.identityLifecycleView,
+          appVersion: context.appVersion,
+          appVersionCode: context.appVersionCode,
         ),
       );
 

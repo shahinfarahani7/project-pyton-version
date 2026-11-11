@@ -49,14 +49,15 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _ModelUpdateCard(controller: controller),
               ),
+            if (controller.showsModelDownloadProgressCard)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: WorkerModelDownloadProgressCard(controller: controller),
+              ),
             if (!locked) ...[
               _WorkerCharacter(
                 working: _hasActiveTask(controller.executionStatus.phase),
               ),
-              if (controller.showsModelDownloadProgressCard) ...[
-                const SizedBox(height: 16),
-                WorkerModelDownloadProgressCard(controller: controller),
-              ],
               const SizedBox(height: 16),
               _HomeStatRow(
                 tasksCompleted: controller.tasksProcessed,

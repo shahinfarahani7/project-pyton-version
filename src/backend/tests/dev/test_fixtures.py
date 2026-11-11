@@ -7,6 +7,14 @@ import pytest
 from edgemint.dev import fixtures
 
 
+def test_portal_workspace_starts_with_one_million_fibon_tokens() -> None:
+    from edgemint.economy.fibonai_token import cached_economy
+
+    fixtures._fibonai_available.pop(fixtures.DEV_WORKSPACE_PRIMARY, None)
+    atomic = fixtures.fibonai_available(fixtures.DEV_WORKSPACE_PRIMARY)
+    assert atomic == 1_000_000 * cached_economy().atomic_units_per_token
+
+
 def test_dev_workspaces_include_primary_and_staging() -> None:
     workspace_ids = {item["id"] for item in fixtures.dev_workspaces()}
     assert str(fixtures.DEV_WORKSPACE_PRIMARY) in workspace_ids

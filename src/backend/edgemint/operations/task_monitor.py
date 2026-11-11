@@ -46,6 +46,27 @@ class TaskNotFound(Exception):
         self.task_id = task_id
 
 
+def sold_task_atomic(tasks: Sequence[Mapping[str, Any]]) -> int:
+    """FibonAI atomic units customers paid on tasks that finished and were kept."""
+    total = 0
+    for task in tasks:
+        if task.get("fibonaiSettlement") != "spent":
+            continue
+        charge = task.get("fibonaiChargeAtomic")
+        if type(charge) is not int or charge < 0:
+            continue
+        total += charge
+    return total
+
+
+def with_tokens_given(monitor: dict[str, Any], credits: Mapping[str, int]) -> dict[str, Any]:
+    """Attach the FibonAI atomic units actually credited for each task."""
+    for item in monitor["items"]:
+        paid = credits.get(str(item["id"]), 0)
+        item["tokensGivenAtomic"] = paid if type(paid) is int and paid >= 0 else 0
+    return monitor
+
+
 def build_task_monitor(
     tasks: Sequence[Mapping[str, Any]],
     state: Mapping[str, Any],
@@ -93,6 +114,7 @@ def build_task_monitor(
             ),
             "pinnedDeviceId": state.get("exclusiveDeviceId"),
             "pinnedDeviceName": devices.get(state.get("exclusiveDeviceId"), {}).get("deviceName"),
+            "soldAtomic": sold_task_atomic(items),
         },
     }
 

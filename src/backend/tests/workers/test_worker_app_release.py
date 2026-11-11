@@ -160,6 +160,19 @@ def test_app_and_model_updates_are_published_together(
     assert [item["target"] for item in body["updates"]] == ["application", "model"]
 
 
+def test_apk_download_keeps_the_length_a_browser_needs_to_finish() -> None:
+    headers = worker_gateway._filter_headers(
+        {
+            "content-length": "333432700",
+            "transfer-encoding": "chunked",
+            "content-type": "application/vnd.android.package-archive",
+        },
+        preserve_content_length=True,
+    )
+    assert headers["content-length"] == "333432700"
+    assert "transfer-encoding" not in {key.lower() for key in headers}
+
+
 def test_worker_gateway_streams_the_apk() -> None:
     assert worker_gateway.response_should_stream("/worker-app/release/apk") is True
     assert worker_gateway.response_should_stream("/worker-app/release") is False

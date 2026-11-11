@@ -68,5 +68,20 @@ void main() {
       'storageBytes': 0,
     });
     expect(payload['capabilitySnapshot'], isNotNull);
+    expect(payload.containsKey('appVersion'), isFalse);
+  });
+
+  test('reports the installed app build on the heartbeat', () {
+    final payload = WorkerHeartbeatTelemetry.build(
+      WorkerHeartbeatTelemetryContext(
+        sequence: 2,
+        snapshot: snapshot,
+        appVersion: ' 5.0.1 ',
+        appVersionCode: 40200,
+      ),
+    );
+
+    expect(payload['appVersion'], '5.0.1');
+    expect(payload['appVersionCode'], 40200);
   });
 }

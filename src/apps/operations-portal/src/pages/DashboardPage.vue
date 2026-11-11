@@ -5,12 +5,15 @@ import { RouterLink } from 'vue-router';
 import { opsApi } from '../api/client';
 import { useSession } from '../auth/session';
 import { usePolling } from '../composables/polling';
+import { formatFibon } from '../formatFibon';
 
 const session = useSession();
 const { data, error, updatedAt } = usePolling(() => opsApi.overview());
 
 const workers = computed(() => data.value?.workers ?? null);
 const tasks = computed(() => data.value?.tasks ?? null);
+const tokensSold = computed(() => formatFibon(data.value?.tokens?.soldAtomic));
+const tokensGiven = computed(() => formatFibon(data.value?.tokens?.issuedAtomic));
 
 const alerts = computed(() => {
   const list = [];
@@ -60,6 +63,18 @@ function count(group, key) {
       <div class="stat"><span>Waiting in queue</span><strong>{{ tasks.queueDepth }}</strong></div>
       <div v-for="(value, status) in tasks.byStatus" :key="status" class="stat">
         <span>{{ status }}</span><strong>{{ value }}</strong>
+      </div>
+    </div>
+
+    <h2>Tokens</h2>
+    <div v-if="data" class="stat-grid">
+      <div class="stat" data-stat="tokens-sold">
+        <span>Sold</span>
+        <strong>{{ tokensSold }}</strong>
+      </div>
+      <div class="stat" data-stat="tokens-given">
+        <span>Paid for tasks</span>
+        <strong>{{ tokensGiven }}</strong>
       </div>
     </div>
 

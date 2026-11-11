@@ -5,7 +5,13 @@ from uuid import uuid4
 
 import pytest
 from edgemint.dev import fixtures, worker_assignments
-from edgemint.operations.task_monitor import build_task_monitor, device_ids_in, device_record_from_row
+from edgemint.operations.task_monitor import (
+    build_task_monitor,
+    device_ids_in,
+    device_record_from_row,
+    sold_task_atomic,
+    with_tokens_given,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -56,6 +62,8 @@ def test_monitor_task_rows_exclude_customer_content(monkeypatch: pytest.MonkeyPa
         assert len(rows) == 1
         assert rows[0]["workspaceId"] == str(workspace_id)
         assert rows[0]["taskType"] == "text.summarize"
+        assert rows[0]["fibonaiSettlement"] == "reserved"
+        assert type(rows[0]["fibonaiChargeAtomic"]) is int
         assert "secret customer text" not in repr(rows[0])
         assert "inputSource" not in rows[0]
     finally:
@@ -110,7 +118,37 @@ def test_build_task_monitor_joins_tasks_deliveries_and_devices() -> None:
         "failedDeliveries": 1,
         "pinnedDeviceId": "dev_A",
         "pinnedDeviceName": "Samsung Galaxy S24",
+        "soldAtomic": 0,
     }
+
+
+def test_with_tokens_given_uses_the_recorded_credit() -> None:
+    monitor = {
+        "items": [
+            {"id": "tsk_paid"},
+            {"id": "tsk_open"},
+            {"id": "tsk_bad"},
+        ]
+    }
+
+    with_tokens_given(monitor, {"tsk_paid": 300_000, "tsk_bad": -1})
+
+    assert monitor["items"][0]["tokensGivenAtomic"] == 300_000
+    assert monitor["items"][1]["tokensGivenAtomic"] == 0
+    assert monitor["items"][2]["tokensGivenAtomic"] == 0
+
+
+def test_sold_task_atomic_counts_only_kept_customer_charges() -> None:
+    assert sold_task_atomic(
+        [
+            {"fibonaiSettlement": "spent", "fibonaiChargeAtomic": 400_000},
+            {"fibonaiSettlement": "spent", "fibonaiChargeAtomic": 400_000},
+            {"fibonaiSettlement": "reserved", "fibonaiChargeAtomic": 400_000},
+            {"fibonaiSettlement": "refunded", "fibonaiChargeAtomic": 400_000},
+            {"fibonaiSettlement": "spent", "fibonaiChargeAtomic": True},
+            {"fibonaiSettlement": "spent"},
+        ]
+    ) == 800_000
 
 
 def test_internal_cancel_marks_task_cancelled_and_drops_worker_queue(monkeypatch: pytest.MonkeyPatch) -> None:

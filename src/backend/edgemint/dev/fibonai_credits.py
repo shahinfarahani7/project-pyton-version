@@ -5,14 +5,57 @@ Points are an integer display credit, not a euro amount and not contribution XP.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncConnection
 
 from edgemint.building_blocks.database import transaction
 
 RECENT_CREDIT_WINDOW_DAYS = 8
+
+_ISSUED_SQL = text(
+    """
+    SELECT COALESCE(SUM(points), 0) AS points
+    FROM public.worker_fibonai_credits
+    """
+)
+
+_TASK_CREDITS_SQL = text(
+    """
+    SELECT task_id, COALESCE(SUM(points), 0) AS points
+    FROM public.worker_fibonai_credits
+    WHERE task_id = ANY(:task_ids)
+    GROUP BY task_id
+    """
+)
+
+
+def issued_atomic(value: object) -> int:
+    """Coerce a credit sum into the atomic units already given to workers."""
+    if isinstance(value, bool) or not isinstance(value, int | Decimal):
+        raise TypeError("issued token total must be a whole number")
+    total = int(value)
+    if total < 0:
+        raise ValueError("issued token total must be non-negative")
+    return total
+
+
+async def sum_credited_points(connection: AsyncConnection) -> int:
+    """Total FibonAI atomic units credited to workers."""
+    result = await connection.execute(_ISSUED_SQL)
+    return issued_atomic(result.scalar_one())
+
+
+async def credits_by_task(connection: AsyncConnection, task_ids: Sequence[str]) -> dict[str, int]:
+    """FibonAI atomic units already credited for each task."""
+    ids = sorted({task_id.strip() for task_id in task_ids if task_id and task_id.strip()})
+    if not ids:
+        return {}
+    result = await connection.execute(_TASK_CREDITS_SQL, {"task_ids": ids})
+    return {str(row["task_id"]): issued_atomic(row["points"]) for row in result.mappings()}
 
 
 def points_per_accepted_task() -> int:

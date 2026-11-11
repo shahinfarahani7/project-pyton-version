@@ -395,6 +395,9 @@ class WorkerAppController extends ChangeNotifier {
     required String destination,
     required String label,
   }) async {
+    if (isDeviceOffline) {
+      return 'Connect to the internet to continue.';
+    }
     final trimmed = destination.trim();
     if (trimmed.length < 8) {
       return 'Enter a valid payout destination (at least 8 characters).';
@@ -419,6 +422,9 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> removePayoutWallet(String id) async {
+    if (isDeviceOffline) {
+      return;
+    }
     final next = payoutWallets.where((wallet) => wallet.id != id).toList();
     await _payoutWalletStore.writeAll(next);
     payoutWallets = next;
@@ -497,6 +503,9 @@ class WorkerAppController extends ChangeNotifier {
     required String password,
     required String confirmPassword,
   }) {
+    if (isDeviceOffline) {
+      return Future.value('Connect to the internet to continue.');
+    }
     final address = email.trim();
     if (!isPlausibleEmail(address)) {
       return Future.value('Enter a valid email address.');
@@ -517,6 +526,9 @@ class WorkerAppController extends ChangeNotifier {
     required String email,
     required String password,
   }) {
+    if (isDeviceOffline) {
+      return Future.value('Connect to the internet to continue.');
+    }
     final address = email.trim();
     if (!isPlausibleEmail(address)) {
       return Future.value('Enter a valid email address.');
@@ -535,6 +547,9 @@ class WorkerAppController extends ChangeNotifier {
 
   Future<({String? error, WorkerEmailCodeIssue? challenge})>
   requestEmailSignInCode(String email) async {
+    if (isDeviceOffline) {
+      return (error: 'Connect to the internet to continue.', challenge: null);
+    }
     final address = email.trim();
     if (!isPlausibleEmail(address)) {
       return (error: 'Enter a valid email address.', challenge: null);
@@ -552,6 +567,9 @@ class WorkerAppController extends ChangeNotifier {
     required String challengeId,
     required String code,
   }) {
+    if (isDeviceOffline) {
+      return Future.value('Connect to the internet to continue.');
+    }
     final address = email.trim();
     final submitted = code.trim();
     if (!isPlausibleEmail(address)) {
@@ -571,6 +589,9 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> signOutEmail() async {
+    if (isDeviceOffline) {
+      return;
+    }
     final session = emailSession;
     emailSession = null;
     accountProfile = null;
@@ -778,7 +799,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> acknowledgeMission(String missionId) async {
-    if (acknowledgedMissionIds.contains(missionId)) {
+    if (isDeviceOffline || acknowledgedMissionIds.contains(missionId)) {
       return;
     }
     acknowledgedMissionIds = {...acknowledgedMissionIds, missionId};
@@ -793,6 +814,9 @@ class WorkerAppController extends ChangeNotifier {
     required String newPassword,
     required String confirmPassword,
   }) async {
+    if (isDeviceOffline) {
+      return 'Connect to the internet to continue.';
+    }
     if (currentPassword.isEmpty) {
       return 'Enter your current password.';
     }
@@ -860,8 +884,60 @@ class WorkerAppController extends ChangeNotifier {
 
   int _assignmentLoopGeneration = 0;
   final ConnectivitySession _connectivity = ConnectivitySession();
+  Timer? _deviceNetworkTimer;
+  bool _deviceNetworkPollInFlight = false;
+  static const _deviceNetworkInterval = Duration(seconds: 2);
+
+  /// Last radio reading. Unknown until the first successful probe.
+  NetworkKind deviceNetwork = NetworkKind.unknown;
+
+  bool get isDeviceOffline => deviceNetwork == NetworkKind.offline;
 
   ConnectivityState get connectivityState => _connectivity.state;
+
+  void startDeviceNetworkWatch() {
+    if (_disposed || _deviceNetworkTimer != null) {
+      return;
+    }
+    unawaited(refreshDeviceNetwork());
+    _deviceNetworkTimer = Timer.periodic(_deviceNetworkInterval, (_) {
+      unawaited(refreshDeviceNetwork());
+    });
+  }
+
+  Future<void> refreshDeviceNetwork() async {
+    if (_disposed || _deviceNetworkPollInFlight) {
+      return;
+    }
+    _deviceNetworkPollInFlight = true;
+    try {
+      final snapshot = await _platform.readDeviceSnapshot();
+      _applyDeviceNetwork(snapshot.network);
+    } catch (_) {
+      // A failed probe is not proof the radio is off.
+    } finally {
+      _deviceNetworkPollInFlight = false;
+    }
+  }
+
+  void _applyDeviceNetwork(NetworkKind next) {
+    if (deviceNetwork == next) {
+      return;
+    }
+    final wasOffline = isDeviceOffline;
+    deviceNetwork = next;
+    if (next == NetworkKind.offline) {
+      _logTask(
+        'Device network offline — worker actions paused',
+        phase: WorkerPipelineLog.boot,
+      );
+    } else if (wasOffline) {
+      _logTask('Device network restored', phase: WorkerPipelineLog.boot);
+    }
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
 
   @visibleForTesting
   int get debugAssignmentLoopGeneration => _assignmentLoopGeneration;
@@ -973,7 +1049,8 @@ class WorkerAppController extends ChangeNotifier {
   bool get canStartGemmaDownload => modelPhase != ModelInstallPhase.downloading;
 
   void pauseGemmaModelDownload() {
-    if (modelPhase != ModelInstallPhase.downloading ||
+    if (isDeviceOffline ||
+        modelPhase != ModelInstallPhase.downloading ||
         _modelDownloadPauseRequested) {
       return;
     }
@@ -983,6 +1060,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   bool get canAcceptAssignments =>
+      !isDeviceOffline &&
       backendOnline &&
       !isGemmaDownloading &&
       available &&
@@ -1167,6 +1245,7 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   Future<void> bootstrap() async {
+    startDeviceNetworkWatch();
     _logTask('Worker bootstrap started', phase: WorkerPipelineLog.boot);
 
     await _platform.setConsentsGranted(const [
@@ -1228,6 +1307,8 @@ class WorkerAppController extends ChangeNotifier {
     notifyListeners();
 
     if (available) {
+      unawaited(_platform.allowExecutionWhileLocked());
+      unawaited(_platform.startAssignmentWatch());
       if (WorkerAssignmentLoopGate.mayStart(
         available: available,
         authenticated: hasManualCredentials || workerEnrolled,
@@ -1328,7 +1409,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> installOfferedAppUpdate() async {
-    if (_disposed || _appUpdateInFlight) {
+    if (_disposed || _appUpdateInFlight || isDeviceOffline) {
       return;
     }
     if (appUpdateFromPlay) {
@@ -1413,13 +1494,19 @@ class WorkerAppController extends ChangeNotifier {
         appUpdateError = workerAppUpdateUserMessage(
           const WorkerAppUpdateException('INSTALL_PERMISSION_REQUIRED'),
         );
-      } else {
+      } else if (prompt == WorkerAppInstallPrompt.replaceRequired) {
         _awaitingInstallPermission = false;
         appUpdatePhase = WorkerAppUpdatePhase.available;
         appUpdateProgress = 1;
         appUpdateError = null;
         appUpdateNotice =
-            'Confirm the install screen to finish the update.';
+            'Confirm uninstall, then tap Install. This phone cannot replace the current app until that copy is removed.';
+      } else {
+        _awaitingInstallPermission = false;
+        appUpdatePhase = WorkerAppUpdatePhase.available;
+        appUpdateProgress = 1;
+        appUpdateError = null;
+        appUpdateNotice = 'Confirm the install screen to finish the update.';
       }
     } on WorkerAppUpdateException catch (error) {
       appUpdatePhase = WorkerAppUpdatePhase.failed;
@@ -1440,7 +1527,10 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> installOfferedModelUpdate() async {
-    if (_disposed || _appUpdateInFlight || isGemmaDownloading) {
+    if (_disposed ||
+        _appUpdateInFlight ||
+        isGemmaDownloading ||
+        isDeviceOffline) {
       return;
     }
     final release = _offeredModelRelease;
@@ -1544,7 +1634,7 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   void setAvailable(bool value) {
-    if (available == value) {
+    if (isDeviceOffline || available == value) {
       return;
     }
 
@@ -1553,6 +1643,8 @@ class WorkerAppController extends ChangeNotifier {
     if (value) {
       _logTask('Worker availability enabled - listening for assignments');
 
+      unawaited(_platform.allowExecutionWhileLocked());
+      unawaited(_platform.startAssignmentWatch());
       startAutoAssignmentLoop();
       _ensureLiveHeartbeat();
     } else {
@@ -1560,6 +1652,7 @@ class WorkerAppController extends ChangeNotifier {
 
       stopAutoAssignmentLoop();
       _stopLiveHeartbeat();
+      unawaited(_platform.stopAssignmentWatch());
 
       if (executionStatus.phase == ExecutionPhase.waitingForAssignment) {
         executionStatus = const ExecutionStatus(phase: ExecutionPhase.idle);
@@ -1659,6 +1752,7 @@ class WorkerAppController extends ChangeNotifier {
   Future<void> _refreshDeviceReadiness() async {
     try {
       final snapshot = await _platform.readDeviceSnapshot();
+      _applyDeviceNetwork(snapshot.network);
 
       batteryPercent = snapshot.batteryPercent;
 
@@ -2003,6 +2097,7 @@ class WorkerAppController extends ChangeNotifier {
 
     try {
       final snapshot = await _platform.readDeviceSnapshot();
+      final installedApp = await _platform.readInstalledAppVersion();
       final cpuUsageBps = _cpuUsageSampler.sample(
         totalJiffies: snapshot.cpuTotalJiffies,
         idleJiffies: snapshot.cpuIdleJiffies,
@@ -2036,6 +2131,8 @@ class WorkerAppController extends ChangeNotifier {
                 _processLifecycle.nativeHandlesInvalidated,
             hasActiveAssignment: _coordinator.activeAssignmentIds().isNotEmpty,
           ),
+          appVersion: installedApp?.versionName,
+          appVersionCode: installedApp?.versionCode,
         ),
       );
       await _persistHeartbeatSequence(sequence);
@@ -2252,6 +2349,10 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   Future<void> downloadGemmaModel({bool replaceInstalled = false}) async {
+    if (isDeviceOffline) {
+      return;
+    }
+
     if (usesDevMockInference) {
       _logTask(
         'Dev mock inference is active - '
@@ -3454,6 +3555,7 @@ class WorkerAppController extends ChangeNotifier {
   void handleAppLifecycleState(AppLifecycleState state) {
     _processLifecycle.handleAppLifecycleState(state);
     if (state == AppLifecycleState.resumed && !_disposed) {
+      unawaited(refreshDeviceNetwork());
       if (_awaitingInstallPermission && !_appUpdateInFlight) {
         _awaitingInstallPermission = false;
         unawaited(installOfferedAppUpdate());
@@ -3660,6 +3762,8 @@ class WorkerAppController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _deviceNetworkTimer?.cancel();
+    _deviceNetworkTimer = null;
     _enrollmentRetryTimer?.cancel();
     _stopLiveHeartbeat();
 

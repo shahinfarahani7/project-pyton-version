@@ -54,6 +54,9 @@ class AssignmentReceiver {
     this.minimumLeaseTokenLength = 16,
   }) : _clock = clock ?? DateTime.now;
 
+  // Callers may still inject a clock. Acceptance does not compare it with
+  // server timestamps; the execution budget starts when the task starts.
+  // ignore: unused_field
   final DateTime Function() _clock;
   final int minimumLeaseTokenLength;
 
@@ -122,24 +125,6 @@ class AssignmentReceiver {
         failureCode: 'INPUT_SCHEMA_INVALID',
         retryable: false,
         detail: 'executionStartsAutomatically must be true',
-      );
-    }
-
-    final now = _clock().toUtc();
-    if (!assignment.leaseExpiresAt.toUtc().isAfter(now)) {
-      return _reject(
-        step: AssignmentValidationStep.contract,
-        failureCode: 'LEASE_EXPIRED',
-        retryable: true,
-        detail: 'lease expired before execution',
-      );
-    }
-    if (!assignment.startDeadlineAt.toUtc().isAfter(now)) {
-      return _reject(
-        step: AssignmentValidationStep.contract,
-        failureCode: 'START_TIMEOUT',
-        retryable: true,
-        detail: 'start deadline elapsed',
       );
     }
 

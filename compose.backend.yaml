@@ -143,6 +143,8 @@ services:
     environment:
       <<: *backend-environment
       EDGEMINT_SERVICE_NAME: worker-gateway
+      NO_PROXY: "*"
+      no_proxy: "*"
     ports:
       - "8081:8080"
 

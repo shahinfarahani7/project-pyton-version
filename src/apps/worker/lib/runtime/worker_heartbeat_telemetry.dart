@@ -88,6 +88,8 @@ class WorkerHeartbeatTelemetryContext {
     this.contributionModeId = 'balanced',
     this.includeCapabilitySnapshot = true,
     this.identityLifecycleView,
+    this.appVersion,
+    this.appVersionCode,
   });
 
   final int sequence;
@@ -103,6 +105,8 @@ class WorkerHeartbeatTelemetryContext {
   final String contributionModeId;
   final bool includeCapabilitySnapshot;
   final Map<String, dynamic>? identityLifecycleView;
+  final String? appVersion;
+  final int? appVersionCode;
 }
 
 /// Builds heartbeat payloads aligned with Section 39 and dsl/schemas/workerheartbeattelemetry.schema.json.
@@ -141,6 +145,10 @@ abstract final class WorkerHeartbeatTelemetry {
       if (memoryAccounting != null) 'memoryAccounting': memoryAccounting,
       if (context.identityLifecycleView != null)
         'identityLifecycleView': context.identityLifecycleView,
+      if (context.appVersion != null && context.appVersion!.trim().isNotEmpty)
+        'appVersion': context.appVersion!.trim(),
+      if (context.appVersionCode != null && context.appVersionCode! > 0)
+        'appVersionCode': context.appVersionCode,
     };
   }
 

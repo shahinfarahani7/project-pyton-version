@@ -36,8 +36,7 @@ class SessionCreateRequest(BaseModel):
 
 
 WORKER_CLIENT_HEADER = "X-Edgemint-Client"
-_PORTAL_SESSION_ABSOLUTE_TTL = timedelta(hours=12)
-_PORTAL_SESSION_IDLE_TTL = timedelta(minutes=30)
+_PORTAL_SESSION_TTL = timedelta(days=30)
 
 
 def browser_session_ttl(
@@ -45,11 +44,11 @@ def browser_session_ttl(
     *,
     settings_ttl_seconds: int,
 ) -> tuple[timedelta, timedelta]:
-    """Worker sign-in lasts one month and slides. The customer portal keeps its own window."""
+    """Worker and customer-portal sign-in last one month and slide on each visit."""
     if (client_header or "").strip().lower() == "worker":
         worker_ttl = timedelta(seconds=settings_ttl_seconds)
         return worker_ttl, worker_ttl
-    return _PORTAL_SESSION_ABSOLUTE_TTL, _PORTAL_SESSION_IDLE_TTL
+    return _PORTAL_SESSION_TTL, _PORTAL_SESSION_TTL
 
 
 class SessionResponse(BaseModel):

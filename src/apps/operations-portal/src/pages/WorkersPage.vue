@@ -1,11 +1,17 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import { opsApi } from '../api/client';
 import { usePolling } from '../composables/polling';
 
 const { data, error, updatedAt, refresh: load } = usePolling(() => opsApi.workerDevices(), 2_000);
+const appFilter = ref('all');
 const items = computed(() => data.value?.items ?? []);
+const release = computed(() => data.value?.release ?? null);
+const visibleItems = computed(() => {
+  if (appFilter.value !== 'latest') return items.value;
+  return items.value.filter((item) => item.appUpdated === true);
+});
 
 const ACTIVITY_LABELS = { busy: 'Running task', idle: 'Idle', unknown: 'Unknown' };
 const PRESENCE_LABELS = { online: 'Online', offline: 'Offline', never_seen: 'Never seen' };
@@ -51,6 +57,12 @@ function deviceDetail(item) {
     .join(' · ');
 }
 
+function appLabel(item) {
+  if (!item.appVersion && !item.appVersionCode) return '—';
+  if (item.appVersion && item.appVersionCode) return `${item.appVersion} (${item.appVersionCode})`;
+  return item.appVersion || String(item.appVersionCode);
+}
+
 function batteryLabel(battery) {
   const level = percent(battery.levelBps);
   return battery.charging ? `${level} (charging)` : level;
@@ -66,14 +78,28 @@ function batteryLabel(battery) {
       <button type="button" class="ghost" @click="load">Refresh</button>
     </div>
     <p v-if="error" class="alert" role="alert">{{ error }}</p>
+
+    <div class="filters">
+      <label>
+        App
+        <select v-model="appFilter">
+          <option value="all">All devices</option>
+          <option value="latest">Latest update</option>
+        </select>
+      </label>
+      <p v-if="release" class="muted">Published build {{ release.versionName }} ({{ release.versionCode }})</p>
+      <p v-else class="muted">No published app build to compare.</p>
+    </div>
+
     <div class="table-wrap">
-    <table>
+    <table data-table="workers">
       <thead>
         <tr>
           <th scope="col">Device</th>
           <th scope="col">Device ID</th>
           <th scope="col">Worker</th>
           <th scope="col">Registration</th>
+          <th scope="col">App</th>
           <th scope="col">Presence</th>
           <th scope="col">Task</th>
           <th scope="col">CPU usage</th>
@@ -83,7 +109,7 @@ function batteryLabel(battery) {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in items" :key="item.id" :data-activity="item.activity">
+        <tr v-for="item in visibleItems" :key="item.id" :data-activity="item.activity">
           <td class="device-name">
             <strong>{{ item.device?.name ?? 'Unknown device' }}</strong>
             <small v-if="deviceDetail(item)">{{ deviceDetail(item) }}</small>
@@ -91,6 +117,7 @@ function batteryLabel(battery) {
           <td class="mono">{{ item.id }}</td>
           <td class="mono">{{ item.workerId }}</td>
           <td>{{ item.status }}</td>
+          <td>{{ appLabel(item) }}</td>
           <td><span class="pill" :data-presence="item.presence">{{ presenceLabel(item.presence) }}</span></td>
           <td>{{ ACTIVITY_LABELS[item.activity] ?? item.activity }}</td>
           <td>{{ liveCpu(item) }}</td>
@@ -98,8 +125,8 @@ function batteryLabel(battery) {
           <td>{{ batteryLabel(item.battery) }}</td>
           <td>{{ seenAgo(item.lastHeartbeatAt) }}</td>
         </tr>
-        <tr v-if="!items.length && !error">
-          <td colspan="10">No workers registered.</td>
+        <tr v-if="!visibleItems.length && !error">
+          <td colspan="11">{{ appFilter === 'latest' ? 'No devices on the latest update.' : 'No workers registered.' }}</td>
         </tr>
       </tbody>
     </table>

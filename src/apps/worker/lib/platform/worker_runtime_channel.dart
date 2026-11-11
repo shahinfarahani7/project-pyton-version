@@ -18,6 +18,36 @@ class WorkerRuntimeChannel {
     });
   }
 
+  Future<void> allowExecutionWhileLocked() async {
+    try {
+      await _channel.invokeMethod<void>('allowExecutionWhileLocked');
+    } on MissingPluginException {
+      return;
+    } on PlatformException {
+      return;
+    }
+  }
+
+  Future<void> startAssignmentWatch() async {
+    try {
+      await _channel.invokeMethod<void>('startAssignmentWatch');
+    } on MissingPluginException {
+      return;
+    } on PlatformException {
+      return;
+    }
+  }
+
+  Future<void> stopAssignmentWatch() async {
+    try {
+      await _channel.invokeMethod<void>('stopAssignmentWatch');
+    } on MissingPluginException {
+      return;
+    } on PlatformException {
+      return;
+    }
+  }
+
   Future<void> updateForegroundStatus({required int progressMilli, required String detail}) async {
     await _channel.invokeMethod<void>('updateForegroundStatus', {
       'progressMilli': progressMilli,
@@ -382,6 +412,15 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
 
   @override
   Future<void> startForegroundService({required String assignmentId, required String taskType}) async {}
+
+  @override
+  Future<void> allowExecutionWhileLocked() async {}
+
+  @override
+  Future<void> startAssignmentWatch() async {}
+
+  @override
+  Future<void> stopAssignmentWatch() async {}
 
   @override
   Future<void> updateForegroundStatus({required int progressMilli, required String detail}) async {}

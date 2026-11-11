@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from uuid import UUID
 
@@ -119,8 +120,14 @@ def test_dev_portal_lists_workspace_data(gateway_client: TestClient) -> None:
     assert len(workspaces.json()["items"]) == 2
 
     tasks = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks")
-    assert tasks.status_code == 200
+    assert tasks.status_code == 200, tasks.text
     assert len(tasks.json()["items"]) >= 3
+    assert "edgemint-session=" in tasks.headers.get("set-cookie", "")
+    detail = gateway_client.get(
+        f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks/{tasks.json()['items'][0]['id']}"
+    )
+    assert detail.status_code == 200, detail.text
+    assert "edgemint-session=" in detail.headers.get("set-cookie", "")
 
     billing = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/credit-balance")
     assert billing.status_code == 200
@@ -128,6 +135,72 @@ def test_dev_portal_lists_workspace_data(gateway_client: TestClient) -> None:
 
     wrong_workspace = gateway_client.get(f"/v1/workspaces/{fixtures.DEV_WORKSPACE_STAGING}/tasks")
     assert wrong_workspace.status_code == 403
+
+
+@requires_postgres
+async def test_dev_portal_parallel_task_reads_slide_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The portal polls several task routes at once. Each one slides the same session row."""
+    import httpx
+
+    monkeypatch.setattr(
+        api_gateway,
+        "settings",
+        Settings(
+            _env_file=None,
+            environment="test",
+            jwt_signing_secret=TEST_SIGNING_SECRET,
+            database_url=os.environ.get("EDGEMINT_DATABASE_URL"),
+        ),
+    )
+    transport = httpx.ASGITransport(app=api_gateway.app)
+    path = f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks"
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        login = await client.post(
+            "/auth/sessions",
+            json={
+                "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+                "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+                "permissions": ["customer.tasks:read"],
+            },
+        )
+        assert login.status_code == 200, login.text
+        responses = await asyncio.gather(*(client.get(path) for _ in range(8)))
+    assert [response.status_code for response in responses] == [200] * 8
+
+
+@requires_postgres
+async def test_dev_portal_parallel_task_reads_slide_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The portal polls several task routes at once. Each one slides the same session row."""
+    import httpx
+
+    monkeypatch.setattr(
+        api_gateway,
+        "settings",
+        Settings(
+            _env_file=None,
+            environment="test",
+            jwt_signing_secret=TEST_SIGNING_SECRET,
+            database_url=os.environ.get("EDGEMINT_DATABASE_URL"),
+        ),
+    )
+    transport = httpx.ASGITransport(app=api_gateway.app)
+    path = f"/v1/workspaces/{fixtures.DEV_WORKSPACE_PRIMARY}/tasks"
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        login = await client.post(
+            "/auth/sessions",
+            json={
+                "principalId": str(fixtures.DEV_PRINCIPAL_ID),
+                "workspaceId": str(fixtures.DEV_WORKSPACE_PRIMARY),
+                "permissions": ["customer.tasks:read"],
+            },
+        )
+        assert login.status_code == 200, login.text
+        responses = await asyncio.gather(*(client.get(path) for _ in range(8)))
+    assert [response.status_code for response in responses] == [200] * 8
 
 
 @requires_postgres

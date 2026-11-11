@@ -131,6 +131,7 @@ class AssignmentCoordinator {
   final FailureEvidenceMapper _failureMapper = const FailureEvidenceMapper();
   final ExecutionStopTracker _stopTracker = ExecutionStopTracker();
   bool _assignmentStarted = false;
+  DateTime? _executionDeadline;
   WorkerResourceReservationEntry? _activeReservation;
   Timer? _leaseRenewalTimer;
   Timer? _cancelWatchTimer;
@@ -265,6 +266,7 @@ class AssignmentCoordinator {
     _cancelRequested = false;
     _assignmentStarted = false;
     final startedAt = DateTime.now();
+    _executionDeadline = assignment.deadlineFromStart(startedAt);
     try {
       await _executeAssignmentBody(
         assignment,
@@ -867,9 +869,9 @@ class AssignmentCoordinator {
   void _startLeaseRenewal(WorkerAssignment assignment) {
     _stopLeaseRenewal();
     _startCancelWatch(assignment);
-    final now = DateTime.now().toUtc();
-    final ttl = assignment.leaseExpiresAt.difference(now);
-    if (ttl.isNegative) {
+    final deadline = _executionDeadline ?? assignment.deadlineFromStart(DateTime.now());
+    final ttl = deadline.difference(DateTime.now().toUtc());
+    if (ttl <= Duration.zero) {
       return;
     }
     final renewIn = Duration(
@@ -1009,6 +1011,8 @@ class AssignmentCoordinator {
     WorkerCalibrationView? calibrationView,
     String contributionModeId = 'balanced',
     Map<String, dynamic>? identityLifecycleView,
+    String? appVersion,
+    int? appVersionCode,
   }) {
     return WorkerHeartbeatTelemetryContext(
       sequence: sequence,
@@ -1022,6 +1026,8 @@ class AssignmentCoordinator {
       activeReservation: _activeReservation,
       contributionModeId: contributionModeId,
       identityLifecycleView: identityLifecycleView,
+      appVersion: appVersion,
+      appVersionCode: appVersionCode,
     );
   }
 
@@ -1055,7 +1061,9 @@ class AssignmentCoordinator {
     await _resultOutbox.enqueue(idempotencyKey, {
       'kind': kind,
       'assignmentId': assignment.assignmentId,
-      'leaseExpiresAt': assignment.leaseExpiresAt.toUtc().toIso8601String(),
+      'leaseExpiresAt': (_executionDeadline ?? assignment.leaseExpiresAt)
+          .toUtc()
+          .toIso8601String(),
       'outcome': outcome,
       'reassigned': reassigned,
       'body': body,

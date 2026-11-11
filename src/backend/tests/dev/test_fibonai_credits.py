@@ -1,9 +1,26 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from types import SimpleNamespace
 
-from edgemint.dev.fibonai_credits import recent_credit_records
+import pytest
+from edgemint.dev.fibonai_credits import issued_atomic, recent_credit_records
+
+
+def test_issued_atomic_accepts_a_non_negative_credit_sum() -> None:
+    assert issued_atomic(0) == 0
+    assert issued_atomic(300_000) == 300_000
+    assert issued_atomic(Decimal("300000")) == 300_000
+
+
+def test_issued_atomic_rejects_a_partial_or_negative_total() -> None:
+    with pytest.raises(TypeError):
+        issued_atomic(1.5)
+    with pytest.raises(TypeError):
+        issued_atomic(True)
+    with pytest.raises(ValueError):
+        issued_atomic(-1)
 
 
 def test_recent_credit_records_emit_positive_points_as_utc() -> None:

@@ -457,13 +457,15 @@ class WorkerEnrollmentService:
                 "received_at_utc": now,
             },
         )
+        reported_version = (payload.appVersion or "").strip() or None
         if payload.capabilitySnapshot is not None:
             await connection.execute(
                 text(
                     """
                     UPDATE public.worker_devices
                     SET capability_snapshot_json = CAST(:capability_snapshot_json AS jsonb),
-                        last_seen_at_utc = :last_seen_at_utc
+                        last_seen_at_utc = :last_seen_at_utc,
+                        app_version = COALESCE(:app_version, app_version)
                     WHERE id = :device_id
                     """
                 ),
@@ -471,6 +473,7 @@ class WorkerEnrollmentService:
                     "device_id": session.device_id,
                     "capability_snapshot_json": capability_json,
                     "last_seen_at_utc": now,
+                    "app_version": reported_version,
                 },
             )
         else:
@@ -478,11 +481,16 @@ class WorkerEnrollmentService:
                 text(
                     """
                     UPDATE public.worker_devices
-                    SET last_seen_at_utc = :last_seen_at_utc
+                    SET last_seen_at_utc = :last_seen_at_utc,
+                        app_version = COALESCE(:app_version, app_version)
                     WHERE id = :device_id
                     """
                 ),
-                {"device_id": session.device_id, "last_seen_at_utc": now},
+                {
+                    "device_id": session.device_id,
+                    "last_seen_at_utc": now,
+                    "app_version": reported_version,
+                },
             )
         await self.memory_accounting.ensure_base_commitment(
             connection,

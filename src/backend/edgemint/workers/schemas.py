@@ -85,6 +85,8 @@ class HeartbeatRequest(BaseModel):
     calibrationView: WorkerCalibrationView | None = None
     resourceReservationsView: WorkerResourceReservationsView | None = None
     identityLifecycleView: WorkerIdentityLifecycleView | None = None
+    appVersion: str | None = Field(default=None, min_length=1, max_length=32)
+    appVersionCode: int | None = Field(default=None, ge=1)
 
 
 class WorkerScheduleWindow(BaseModel):

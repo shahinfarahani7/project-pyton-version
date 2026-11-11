@@ -203,3 +203,25 @@ def test_heartbeat_accepts_identity_lifecycle_view_from_worker() -> None:
     assert telemetry is not None
     assert telemetry.identityLifecycleView is not None
     assert telemetry.identityLifecycleView["recentMutations"][0]["before"] == {"hasActiveModel": False}
+
+
+def test_heartbeat_keeps_the_installed_app_build() -> None:
+    heartbeat = HeartbeatRequest.model_validate(
+        {
+            "sequence": 3,
+            "observedAt": datetime.now(UTC),
+            "batteryBps": 7800,
+            "charging": True,
+            "thermalState": "nominal",
+            "freeRamBytes": 3221225472,
+            "freeStorageBytes": 21474836480,
+            "network": "wifi",
+            "appVersion": "5.0.1",
+            "appVersionCode": 40200,
+        }
+    )
+
+    telemetry = telemetry_json_from_heartbeat(heartbeat)
+    assert heartbeat.appVersion == "5.0.1"
+    assert telemetry is not None
+    assert telemetry["appVersionCode"] == 40200

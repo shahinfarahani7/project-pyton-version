@@ -71,6 +71,56 @@ describe('WorkersPage', () => {
     expect(rows[2].text()).toContain('—');
   });
 
+  it('lists workers who are on the published app build', async () => {
+    vi.spyOn(opsApi, 'workerDevices').mockResolvedValue({
+      release: { versionName: '5.0.1', versionCode: 40200 },
+      items: [
+        {
+          id: 'dev_new',
+          workerId: 'wrk_new',
+          status: 'active',
+          presence: 'online',
+          activity: 'idle',
+          appVersion: '5.0.1',
+          appVersionCode: 40200,
+          appUpdated: true,
+          device: { name: 'Pixel 8' },
+          cpu: {},
+          ram: {},
+          battery: {},
+          lastHeartbeatAt: null,
+        },
+        {
+          id: 'dev_old',
+          workerId: 'wrk_old',
+          status: 'active',
+          presence: 'offline',
+          activity: 'unknown',
+          appVersion: '5.0.0',
+          appVersionCode: 40100,
+          appUpdated: false,
+          device: { name: 'Old phone' },
+          cpu: {},
+          ram: {},
+          battery: {},
+          lastHeartbeatAt: null,
+        },
+      ],
+    });
+    const wrapper = mount(WorkersPage);
+    await flushPromises();
+    expect(wrapper.findAll('[data-table="workers"] tbody tr')).toHaveLength(2);
+    expect(wrapper.text()).toContain('Published build 5.0.1 (40200)');
+
+    await wrapper.find('select').setValue('latest');
+    const rows = wrapper.findAll('[data-table="workers"] tbody tr');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].text()).toContain('Pixel 8');
+    expect(rows[0].text()).toContain('5.0.1 (40200)');
+    expect(wrapper.find('[data-table="workers"]').text()).not.toContain('Old phone');
+    wrapper.unmount();
+  });
+
   it('shows an error when loading fails', async () => {
     vi.spyOn(opsApi, 'workerDevices').mockRejectedValue(new Error('boom'));
     const wrapper = mount(WorkersPage);

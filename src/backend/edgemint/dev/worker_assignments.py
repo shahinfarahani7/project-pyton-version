@@ -25,6 +25,10 @@ _exclusive_device_public_id: str | None = (
 _seen_devices: dict[str, datetime] = {}
 _reserved_device: dict[str, str] = {}
 _ONLINE_FOR = timedelta(seconds=90)
+# Phones can be several minutes ahead of the server clock. A five-minute
+# start deadline is already in the past for those phones, so they reject the
+# task immediately with START_TIMEOUT.
+_START_DEADLINE = timedelta(minutes=30)
 
 
 def _now() -> datetime:
@@ -49,7 +53,8 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
         "modelVersionId": _WORKER_MODEL_VERSION_ID,
         "inputManifestUrl": f"{api_base}/v1/dev/worker/tasks/{task_id}/input",
         "outputUploadUrl": f"{api_base}/v1/dev/worker/tasks/{task_id}/output",
-        "startDeadlineAt": (_now() + timedelta(minutes=5)).isoformat(),
+        "startDeadlineAt": (_now() + _START_DEADLINE).isoformat(),
+        "executionDurationSeconds": int(_START_DEADLINE.total_seconds()),
         "taskId": task_id,
     }
     _pending.append(assignment)
@@ -109,10 +114,68 @@ def choose_online_device(device_ids: list[str], requesting: str) -> str:
     return secrets.choice(device_ids)
 
 
-def _peek_pending() -> dict[str, Any] | None:
-    for assignment in _pending:
-        if assignment["assignmentId"] not in _completed:
-            return assignment
+def _pending_assignments() -> list[dict[str, Any]]:
+    return [
+        assignment
+        for assignment in _pending
+        if assignment["assignmentId"] not in _completed
+    ]
+
+
+def _task_id_of(assignment: dict[str, Any]) -> str:
+    return str(assignment.get("taskId") or assignment["assignmentId"])
+
+
+def _devices_running_a_task() -> set[str]:
+    busy: set[str] = set()
+    for devices in _in_flight_devices.values():
+        busy.update(devices)
+    return busy
+
+
+def order_idle_phones(device_ids: list[str]) -> list[str]:
+    """Shuffle idle phones so queued tasks are not always handed out in one order."""
+    ordered = list(device_ids)
+    secrets.SystemRandom().shuffle(ordered)
+    return ordered
+
+
+def _reserve_one_task_per_idle_phone(online: list[str]) -> None:
+    """Each free phone can hold one queued task. Extra tasks stay unreserved."""
+    busy = _devices_running_a_task()
+    pending = _pending_assignments()
+    pending_ids = {_task_id_of(assignment) for assignment in pending}
+    idle = [device_id for device_id in online if device_id not in busy]
+    for task_id, device_id in list(_reserved_device.items()):
+        if task_id not in pending_ids or device_id not in idle:
+            _reserved_device.pop(task_id, None)
+    reserved_phones = set(_reserved_device.values())
+    free_phones = order_idle_phones(
+        [device_id for device_id in idle if device_id not in reserved_phones]
+    )
+    for assignment in pending:
+        task_id = _task_id_of(assignment)
+        if task_id in _reserved_device:
+            continue
+        if not free_phones:
+            break
+        _reserved_device[task_id] = free_phones.pop(0)
+
+
+def _pop_assignment(assignment_id: str) -> dict[str, Any] | None:
+    for index, assignment in enumerate(_pending):
+        if assignment["assignmentId"] != assignment_id:
+            continue
+        if assignment_id in _completed:
+            return None
+        _pending.pop(index)
+        delivered_at = _now()
+        assignment["leaseExpiresAt"] = (
+            delivered_at + timedelta(minutes=30)
+        ).isoformat()
+        assignment["startDeadlineAt"] = (delivered_at + _START_DEADLINE).isoformat()
+        assignment["executionDurationSeconds"] = int(_START_DEADLINE.total_seconds())
+        return assignment
     return None
 
 
@@ -121,30 +184,37 @@ def claim_next_assignment(
     device_public_id: str | None = None,
     claim_exclusive: bool = False,
 ) -> dict[str, Any] | None:
-    """Give the next task to one online phone, chosen at random.
+    """Give each idle online phone one different queued task.
 
-    ``claim_exclusive`` no longer pins every later task to the first phone.
-    An explicit ``EDGEMINT_DEV_PIN_DEVICE_ID`` still limits delivery to that phone.
+    Four queued tasks and four polling phones therefore run together.
+    ``claim_exclusive`` no longer pins later tasks to the first phone.
     """
     del claim_exclusive
     if not _assignment_allowed_for_device(device_public_id):
         return None
     note_online_device(device_public_id)
-    pending = _peek_pending()
-    if pending is None:
+    if device_public_id and device_public_id in _devices_running_a_task():
         return None
-    task_id = str(pending.get("taskId") or pending["assignmentId"])
+    if not _pending_assignments():
+        return None
     if device_public_id:
-        online = online_device_ids()
-        reserved = _reserved_device.get(task_id)
-        if reserved not in online:
-            reserved = choose_online_device(online, device_public_id)
-            _reserved_device[task_id] = reserved
-        if device_public_id != reserved:
+        _reserve_one_task_per_idle_phone(online_device_ids())
+        matched = next(
+            (
+                assignment
+                for assignment in _pending_assignments()
+                if _reserved_device.get(_task_id_of(assignment)) == device_public_id
+            ),
+            None,
+        )
+        if matched is None:
             return None
-    assignment = pop_next_assignment()
+        assignment = _pop_assignment(matched["assignmentId"])
+    else:
+        assignment = pop_next_assignment()
     if assignment is None:
         return None
+    task_id = _task_id_of(assignment)
     _reserved_device.pop(task_id, None)
     note_task_delivery(task_id, device_public_id)
     return assignment
@@ -196,8 +266,11 @@ def pop_next_assignment() -> dict[str, Any] | None:
                 delivered_at + timedelta(minutes=30)
             ).isoformat()
             assignment["startDeadlineAt"] = (
-                delivered_at + timedelta(minutes=5)
+                delivered_at + _START_DEADLINE
             ).isoformat()
+            assignment["executionDurationSeconds"] = int(
+                _START_DEADLINE.total_seconds()
+            )
             return assignment
     return None
 
@@ -213,6 +286,8 @@ def command_receipt(operation_id: str) -> dict[str, Any]:
 
 def mark_completed(assignment_id: str) -> None:
     _reserved_device.pop(assignment_id, None)
+    # A finished task must not keep the phone busy, or the next task never arrives.
+    _in_flight_devices.pop(assignment_id, None)
     if assignment_id not in _completed:
         _completed.append(assignment_id)
     _pending[:] = [

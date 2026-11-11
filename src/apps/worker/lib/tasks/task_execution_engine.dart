@@ -382,7 +382,7 @@ class TaskExecutionEngine {
         );
 
         DeviceInferencePlan.instance.noteAssignmentLease(
-          context.assignment.leaseExpiresAt,
+          context.assignment.deadlineFromStart(DateTime.now()),
         );
 
         Future<WorkerTaskResult> invokeHandler() => handler.handle(

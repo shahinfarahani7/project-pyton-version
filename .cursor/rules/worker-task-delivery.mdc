@@ -1,0 +1,20 @@
+---
+description: An online worker with a ready model must keep receiving tasks
+alwaysApply: true
+---
+
+# Worker task delivery
+
+A phone that is online, available, and has Gemma ready must keep asking for tasks. Heartbeats alone are not task delivery.
+
+## Server
+
+- Completing a task must remove that phone from `_in_flight_devices`. `mark_completed` has to free the phone. Leaving it "running" makes every later `claim_next_assignment` return nothing for that device.
+- One finished task must not block the next queued task for the same phone.
+- Cover this with a regression test: claim, `mark_completed`, enqueue another task, claim again and get the new task.
+
+## Phone
+
+- The assignment loop must survive a rejected poll. A low battery, a constraint exception, or a failed request must skip that attempt and keep looping. Do not let the exception end `_runAutoAssignmentLoop` while the heartbeat timer keeps running.
+- Below `ExecutionPolicy.minimumBatteryPercent` (20), do not take work, but resume polling when the battery is high enough again. Do not require the user to force-close the app.
+- `canAcceptAssignments` stays false until Gemma is actually ready. A downloaded file that failed activation is not ready, and the UI must not present it as ready.

@@ -27,7 +27,11 @@ const installedModelShaStoreKey = 'worker.installed-model-sha256';
 const modelUpdateNeedsNewerAppMessage =
     'Install the app update first.';
 
-enum WorkerAppInstallPrompt { installerLaunched, permissionRequired }
+enum WorkerAppInstallPrompt {
+  installerLaunched,
+  permissionRequired,
+  replaceRequired,
+}
 
 /// An update published on Google Play for this install.
 class PlayAppUpdateOffer {
@@ -356,6 +360,7 @@ WorkerAppInstallPrompt parseWorkerAppInstallPrompt(String? raw) {
   return switch (raw) {
     'installerLaunched' => WorkerAppInstallPrompt.installerLaunched,
     'permissionRequired' => WorkerAppInstallPrompt.permissionRequired,
+    'replaceRequired' => WorkerAppInstallPrompt.replaceRequired,
     _ => throw const WorkerAppUpdateException('INSTALL_PROMPT_UNKNOWN'),
   };
 }

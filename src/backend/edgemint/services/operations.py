@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, Request
 from fastapi.responses import JSONResponse
@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.settings import get_settings
+from edgemint.dev.fibonai_credits import credits_by_task, sum_credited_points
 from edgemint.operations.auth import (
     CSRF_HEADER,
     OPERATOR_SESSION_TTL,
@@ -30,9 +31,14 @@ from edgemint.operations.task_monitor import (
     device_ids_in,
     fetch_dev_sources,
     load_devices,
+    with_tokens_given,
 )
-from edgemint.operations.worker_device_overview import list_worker_device_overview
+from edgemint.operations.worker_device_overview import (
+    list_worker_device_overview,
+    worker_has_current_app,
+)
 from edgemint.security.tokens import BrowserSessionStore
+from edgemint.workers.app_release import WorkerAppReleaseError, resolve_worker_app_release
 
 app = create_service_app("operations")
 operations_service = OperationsService()
@@ -172,12 +178,39 @@ async def search_view(view_name: str, operator: Operator) -> JSONResponse:
     return JSONResponse({"items": items, "page": {"limit": 50, "hasMore": False}}, status_code=200)
 
 
+def _published_worker_app() -> dict[str, object] | None:
+    try:
+        release = resolve_worker_app_release(get_settings())
+    except WorkerAppReleaseError:
+        return None
+    return {"versionName": release.version_name, "versionCode": release.version_code}
+
+
+def _mark_updated_workers(
+    items: list[dict[str, Any]],
+    release: dict[str, object] | None,
+) -> None:
+    release_name = release.get("versionName") if release else None
+    release_code = release.get("versionCode") if release else None
+    for item in items:
+        version = item.get("appVersion")
+        code = item.get("appVersionCode")
+        item["appUpdated"] = worker_has_current_app(
+            app_version=version if isinstance(version, str) else None,
+            app_version_code=code if type(code) is int else None,
+            release_name=release_name if isinstance(release_name, str) else None,
+            release_code=release_code if type(release_code) is int else None,
+        )
+
+
 @app.get("/internal/operations/worker-devices", tags=["operations"])
 async def worker_devices(operator: Operator) -> JSONResponse:
     operator.require("operations.read")
     async with transaction(isolation="READ COMMITTED") as connection:
         items = await list_worker_device_overview(connection)
-    return JSONResponse({"items": items}, status_code=200)
+    release = _published_worker_app()
+    _mark_updated_workers(items, release)
+    return JSONResponse({"items": items, "release": release}, status_code=200)
 
 
 async def _task_monitor() -> dict[str, object]:
@@ -189,7 +222,9 @@ async def _task_monitor() -> dict[str, object]:
         raise operations_error("UPSTREAM_UNAVAILABLE", detail=exc.source) from exc
     async with transaction(isolation="READ COMMITTED") as connection:
         devices = await load_devices(connection, device_ids_in(state))
-    return build_task_monitor(tasks, state, devices)
+        monitor = build_task_monitor(tasks, state, devices)
+        credits = await credits_by_task(connection, [str(item["id"]) for item in monitor["items"]])
+    return with_tokens_given(monitor, credits)
 
 
 @app.get("/internal/operations/task-monitor", tags=["operations"])
@@ -217,10 +252,16 @@ async def overview(operator: Operator) -> JSONResponse:
     operator.require("operations.read")
     async with transaction(isolation="READ COMMITTED") as connection:
         workers = await list_worker_device_overview(connection)
+        issued_atomic = await sum_credited_points(connection)
     tasks: dict[str, object] | None
     task_error: str | None = None
+    sold_atomic: int | None = None
     try:
-        tasks = (await _task_monitor())["summary"]  # type: ignore[assignment]
+        summary = (await _task_monitor())["summary"]
+        tasks = summary  # type: ignore[assignment]
+        raw_sold = summary.get("soldAtomic") if isinstance(summary, dict) else None
+        if type(raw_sold) is int and raw_sold >= 0:
+            sold_atomic = raw_sold
     except OperationsServiceError as exc:
         tasks = None
         task_error = exc.detail or exc.code
@@ -246,6 +287,7 @@ async def overview(operator: Operator) -> JSONResponse:
             },
             "tasks": tasks,
             "tasksError": task_error,
+            "tokens": {"soldAtomic": sold_atomic, "issuedAtomic": issued_atomic},
         },
         status_code=200,
     )

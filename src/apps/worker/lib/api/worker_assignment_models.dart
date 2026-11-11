@@ -17,6 +17,7 @@ class WorkerAssignment {
     this.executionStartsAutomatically = true,
     this.executionPlan,
     this.allocation,
+    this.executionDurationSeconds,
   });
 
   factory WorkerAssignment.fromJson(Map<String, dynamic> json) => WorkerAssignment(
@@ -37,6 +38,7 @@ class WorkerAssignment {
         executionStartsAutomatically: json['executionStartsAutomatically'] as bool? ?? true,
         executionPlan: json['executionPlan'] as Map<String, dynamic>?,
         allocation: json['allocation'] as Map<String, dynamic>?,
+        executionDurationSeconds: _optionalPositiveInt(json['executionDurationSeconds']),
       );
 
   final String assignmentId;
@@ -56,6 +58,35 @@ class WorkerAssignment {
   final bool executionStartsAutomatically;
   final Map<String, dynamic>? executionPlan;
   final Map<String, dynamic>? allocation;
+  final int? executionDurationSeconds;
+
+  /// How long the task may run after this phone starts it.
+  ///
+  /// The phone clock is not compared with the server clock. A stamp that is
+  /// already in the past on the phone does not shrink or cancel this budget.
+  Duration get executionBudget {
+    final seconds = executionDurationSeconds;
+    if (seconds != null && seconds > 0) {
+      return Duration(seconds: seconds);
+    }
+    final betweenStamps = leaseExpiresAt.difference(startDeadlineAt);
+    if (betweenStamps > Duration.zero) {
+      return betweenStamps;
+    }
+    return const Duration(minutes: 30);
+  }
+
+  DateTime deadlineFromStart(DateTime startedAt) {
+    return startedAt.toUtc().add(executionBudget);
+  }
+}
+
+int? _optionalPositiveInt(Object? raw) {
+  final value = raw is int ? raw : raw is num ? raw.toInt() : null;
+  if (value == null || value <= 0) {
+    return null;
+  }
+  return value;
 }
 
 class CommandReceipt {

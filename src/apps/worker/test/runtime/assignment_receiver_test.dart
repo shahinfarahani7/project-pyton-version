@@ -11,6 +11,7 @@ WorkerAssignment _validAssignment({
   String taskType = 'document.ocr',
   String assignmentMode = 'auto',
   bool executionStartsAutomatically = true,
+  int? executionDurationSeconds,
   String inputManifestUrl = 'https://example/input',
   String outputUploadUrl = 'https://example/output',
 }) {
@@ -28,6 +29,7 @@ WorkerAssignment _validAssignment({
     startDeadlineAt: startDeadlineAt ?? DateTime.parse('2026-09-02T13:30:00Z'),
     assignmentMode: assignmentMode,
     executionStartsAutomatically: executionStartsAutomatically,
+    executionDurationSeconds: executionDurationSeconds,
   );
 }
 
@@ -64,21 +66,22 @@ void main() {
       expect(verdict.issue!.failureCode, 'INPUT_RUNTIME_UNSUPPORTED');
     });
 
-    test('rejects expired lease', () {
-      final verdict = receiver.validateContract(
-        _validAssignment(leaseExpiresAt: DateTime.parse('2026-09-02T09:00:00Z')),
+    test('a server deadline already in the past still starts on this phone', () {
+      final ahead = AssignmentReceiver(
+        clock: () => DateTime.parse('2026-09-02T18:00:00Z'),
       );
-      expect(verdict.accepted, isFalse);
-      expect(verdict.issue!.failureCode, 'LEASE_EXPIRED');
-      expect(verdict.issue!.retryable, isTrue);
-    });
-
-    test('rejects elapsed start deadline', () {
-      final verdict = receiver.validateContract(
-        _validAssignment(startDeadlineAt: DateTime.parse('2026-09-02T09:30:00Z')),
+      final assignment = _validAssignment(
+        leaseExpiresAt: DateTime.parse('2026-09-02T09:00:00Z'),
+        startDeadlineAt: DateTime.parse('2026-09-02T09:30:00Z'),
+        executionDurationSeconds: 1800,
       );
-      expect(verdict.accepted, isFalse);
-      expect(verdict.issue!.failureCode, 'START_TIMEOUT');
+      final verdict = ahead.validateContract(assignment);
+      expect(verdict.accepted, isTrue);
+      expect(assignment.executionBudget, const Duration(minutes: 30));
+      expect(
+        assignment.deadlineFromStart(DateTime.parse('2026-09-02T18:00:00Z')),
+        DateTime.parse('2026-09-02T18:30:00Z'),
+      );
     });
 
     test('rejects non-auto assignment mode', () {

@@ -25,7 +25,7 @@ _MAX_STORED_TEXT_CHARS = 32_000
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
 _fibonai_available: dict[UUID, int] = {}
-_DEV_FIBONAI_GRANT_TOKENS = 1_000
+_DEV_FIBONAI_GRANT_TOKENS = 1_000_000
 
 
 def _fibonai_grant_atomic() -> int:
@@ -282,6 +282,8 @@ _MONITOR_TASK_FIELDS = (
     "updatedAt",
     "assignmentId",
     "failureReasonCode",
+    "fibonaiChargeAtomic",
+    "fibonaiSettlement",
 )
 
 
