@@ -1,7 +1,7 @@
 name: edgemint_worker
 description: EdgeMint production Worker application.
 publish_to: none
-version: 5.0.4+40104
+version: 5.0.8+40108
 environment:
   sdk: '>=3.8.0 <4.0.0'
 dependencies:

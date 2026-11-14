@@ -57,6 +57,7 @@ flutter {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.12")
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.19.2")
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("com.google.mediapipe:tasks-vision-image-generator:0.10.26.1")

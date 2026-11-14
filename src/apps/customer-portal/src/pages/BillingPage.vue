@@ -7,7 +7,7 @@ import { useAsyncResource } from '../composables/useAsyncResource';
 import EmptyState from '../components/ui/EmptyState.vue';
 import StrokeIcon from '../components/ui/StrokeIcon.vue';
 import { t } from '../i18n';
-import { formatMicroEur, formatNumber } from '../utils/format';
+import { FIBON_ATOMIC_PER_TOKEN, formatFibon, formatNumber } from '../utils/format';
 
 const session = useSession();
 const walletName = ref('');
@@ -16,7 +16,7 @@ const adding = ref(false);
 const formOpen = ref(false);
 const addError = ref('');
 
-function wholeMicro(value) {
+function wholeAtomic(value) {
   return Number.isInteger(value) ? value : 0;
 }
 
@@ -33,8 +33,8 @@ async function loadWallets() {
         {
           id: 'wal_primary',
           name: 'Primary',
-          availableMicroEur: balance?.availableMicroEur ?? 0,
-          reservedMicroEur: balance?.reservedMicroEur ?? 0,
+          availableFibonAtomic: wholeAtomic(balance?.availableFibonAtomic),
+          reservedFibonAtomic: wholeAtomic(balance?.reservedFibonAtomic),
           builtin: true,
         },
       ],
@@ -61,22 +61,36 @@ const loading = computed(
 );
 
 const walletItems = computed(() => wallets.value?.items ?? []);
-const availableMicro = computed(() =>
-  walletItems.value.reduce((sum, wallet) => sum + wholeMicro(wallet.availableMicroEur), 0),
+
+function walletAvailable(wallet) {
+  return wholeAtomic(wallet?.availableFibonAtomic);
+}
+
+function walletReserved(wallet) {
+  return wholeAtomic(wallet?.reservedFibonAtomic);
+}
+
+function formatCredit(amount) {
+  return formatFibon(amount);
+}
+
+function invoiceCharge(invoice) {
+  return wholeAtomic(invoice?.amountFibonAtomic);
+}
+
+const availableAmount = computed(() =>
+  walletItems.value.reduce((sum, wallet) => sum + walletAvailable(wallet), 0),
 );
-const reservedMicro = computed(() =>
-  walletItems.value.reduce((sum, wallet) => sum + wholeMicro(wallet.reservedMicroEur), 0),
+const reservedAmount = computed(() =>
+  walletItems.value.reduce((sum, wallet) => sum + walletReserved(wallet), 0),
 );
-const usedMicro = computed(() => wholeMicro(usage.value?.computeMicroEur));
+const usedAmount = computed(() => wholeAtomic(usage.value?.computeFibonAtomic));
 const invoiceItems = computed(() => invoices.value?.items ?? []);
 const openInvoices = computed(() =>
   invoiceItems.value.filter((invoice) => String(invoice.status || '').toLowerCase() === 'open'),
 );
-const amountDueMicro = computed(() =>
-  openInvoices.value.reduce((sum, invoice) => {
-    const amount = invoice.amountDueMicroEur;
-    return Number.isInteger(amount) ? sum + amount : sum;
-  }, 0),
+const amountDue = computed(() =>
+  openInvoices.value.reduce((sum, invoice) => sum + invoiceCharge(invoice), 0),
 );
 
 function walletLabel(wallet) {
@@ -88,7 +102,8 @@ function invoiceStatus(status) {
   if (value === 'paid') return { label: t('billing.statusPaid'), tone: '' };
   if (value === 'open') return { label: t('billing.statusOpen'), tone: 'warn' };
   if (value === 'draft') return { label: t('billing.statusDraft'), tone: 'neutral' };
-  if (value === 'void' || value === 'failed') return { label: String(status), tone: 'bad' };
+  if (value === 'void') return { label: t('billing.statusVoid'), tone: 'bad' };
+  if (value === 'failed') return { label: String(status), tone: 'bad' };
   return { label: status ? String(status) : '—', tone: 'neutral' };
 }
 
@@ -102,8 +117,8 @@ function invoiceDue(invoice) {
 
 async function addWallet() {
   const name = walletName.value.trim();
-  const euros = Number(walletAmount.value);
-  if (!name || !Number.isInteger(euros) || euros <= 0 || !canReadBilling()) {
+  const tokens = Number(walletAmount.value);
+  if (!name || !Number.isInteger(tokens) || tokens <= 0 || !canReadBilling()) {
     addError.value = t('wallet.addError');
     return;
   }
@@ -112,7 +127,7 @@ async function addWallet() {
   try {
     const created = await portalApi.addWallet(session.workspaceId, {
       name,
-      amountMicroEur: euros * 1_000_000,
+      amountFibonAtomic: tokens * FIBON_ATOMIC_PER_TOKEN,
     });
     const current = wallets.value?.items ?? [];
     const next = current.some((wallet) => wallet.id === created.id)
@@ -142,16 +157,16 @@ async function addWallet() {
           <div class="fn-card-head">
             <h2 class="em-section-title">{{ t('billing.available') }}</h2>
           </div>
-          <p class="fn-money">{{ formatMicroEur(availableMicro) }}</p>
+          <p class="fn-money">{{ formatCredit(availableAmount) }}</p>
           <p class="fn-card-note">{{ t('billing.availableHint') }}</p>
           <dl class="fn-kv">
             <div>
               <dt>{{ t('dashboard.reserved') }}</dt>
-              <dd>{{ formatMicroEur(reservedMicro) }}</dd>
+              <dd>{{ formatCredit(reservedAmount) }}</dd>
             </div>
             <div>
               <dt>{{ t('billing.computePeriod') }}</dt>
-              <dd>{{ formatMicroEur(usedMicro) }}</dd>
+              <dd>{{ formatCredit(usedAmount) }}</dd>
             </div>
           </dl>
         </article>
@@ -164,7 +179,7 @@ async function addWallet() {
           <dl class="fn-kv">
             <div>
               <dt>{{ t('billing.currency') }}</dt>
-              <dd>EUR</dd>
+              <dd>FIBON</dd>
             </div>
             <div>
               <dt>{{ t('dashboard.usagePeriod') }}</dt>
@@ -176,7 +191,7 @@ async function addWallet() {
             </div>
             <div>
               <dt>{{ t('billing.amount') }}</dt>
-              <dd>{{ formatMicroEur(amountDueMicro) }}</dd>
+              <dd>{{ formatCredit(amountDue) }}</dd>
             </div>
           </dl>
         </article>
@@ -211,12 +226,12 @@ async function addWallet() {
             <span class="fn-badge fn-badge--neutral">{{ wallet.builtin ? t('wallet.primary') : t('wallet.custom') }}</span>
           </div>
           <h2>{{ walletLabel(wallet) }}</h2>
-          <p class="fn-wallet-amount">{{ formatMicroEur(wallet.availableMicroEur) }}</p>
+          <p class="fn-wallet-amount">{{ formatCredit(walletAvailable(wallet)) }}</p>
           <p class="fn-card-note">{{ t('billing.available') }}</p>
           <dl class="fn-kv">
             <div>
               <dt>{{ t('dashboard.reserved') }}</dt>
-              <dd>{{ formatMicroEur(wallet.reservedMicroEur) }}</dd>
+              <dd>{{ formatCredit(walletReserved(wallet)) }}</dd>
             </div>
             <div>
               <dt>{{ t('wallet.walletId') }}</dt>
@@ -251,7 +266,7 @@ async function addWallet() {
                 <tr v-for="invoice in invoiceItems" :key="invoice.id">
                   <td><strong>{{ invoice.id }}</strong></td>
                   <td>{{ invoicePeriod(invoice) }}</td>
-                  <td>{{ formatMicroEur(invoice.amountDueMicroEur) }}</td>
+                  <td>{{ formatCredit(invoiceCharge(invoice)) }}</td>
                   <td>
                     <span
                       class="fn-badge"

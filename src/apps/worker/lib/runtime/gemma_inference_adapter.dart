@@ -32,6 +32,28 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
   /// When true, omit the default EdgeMint system instruction (portal direct prompt).
   bool usePortalPassthroughChat = false;
 
+  /// One-shot rule for portal answers. Null keeps raw passthrough (OCR).
+  String? portalSessionSystemInstruction;
+
+  static const defaultSystemInstruction =
+      'You are EdgeMint worker AI. '
+      'Answer concisely for the assigned task payload.';
+
+  /// System text actually passed to Gemma for this session.
+  static String? resolveChatSystemInstruction({
+    required bool portalPassthrough,
+    String? portalSessionSystemInstruction,
+  }) {
+    final custom = portalSessionSystemInstruction?.trim();
+    if (custom != null && custom.isNotEmpty) {
+      return custom;
+    }
+    if (portalPassthrough) {
+      return null;
+    }
+    return defaultSystemInstruction;
+  }
+
   ModelRuntimeManager get runtimeManager => _runtime;
 
   @override
@@ -108,9 +130,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       } on WorkerError {
         rethrow;
       } catch (error) {
-        final classified = GemmaLitertMultimodalVisionPolicy.classifyInferenceFailure(
-          error,
-        );
+        final classified =
+            GemmaLitertMultimodalVisionPolicy.classifyInferenceFailure(error);
         if (classified != null) {
           throw classified;
         }
@@ -174,10 +195,10 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         maxOutputTokens: outputTokenCap,
         supportImage: multimodal,
         modelType: ModelType.gemma4,
-        systemInstruction: usePortalPassthroughChat
-            ? null
-            : 'You are EdgeMint worker AI. '
-                  'Answer concisely for the assigned task payload.',
+        systemInstruction: resolveChatSystemInstruction(
+          portalPassthrough: usePortalPassthroughChat,
+          portalSessionSystemInstruction: portalSessionSystemInstruction,
+        ),
       );
       _log('[LLM SESSION] created');
       final passedTemperature = temperature ?? this.temperature;
@@ -284,10 +305,13 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
           metrics: {
             'backend': backend.name,
             'modelProfile': WorkerModelCatalog.profileId,
-            'inputBytes': multimodal ? imageBytes.length : utf8.encode(prompt).length,
+            'inputBytes': multimodal
+                ? imageBytes.length
+                : utf8.encode(prompt).length,
             'outputChars': text.length,
             'elapsedMs': stopwatch.elapsedMilliseconds,
-            'maxTokens': DeviceInferencePlan.instance.contextTokensForResidentLoad() ??
+            'maxTokens':
+                DeviceInferencePlan.instance.contextTokensForResidentLoad() ??
                 WorkerModelCatalog.runtimeMaxTokens,
             'configuredOutputLimit': generation.configuredOutputLimit,
             'generatedChunks': generation.generatedChunks,
@@ -321,9 +345,8 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         error,
         stackTrace,
       );
-      final classified = GemmaLitertMultimodalVisionPolicy.classifyInferenceFailure(
-        error,
-      );
+      final classified =
+          GemmaLitertMultimodalVisionPolicy.classifyInferenceFailure(error);
       if (classified != null) {
         throw classified;
       }

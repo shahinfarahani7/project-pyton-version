@@ -24,6 +24,7 @@ const localError = ref('');
 const dragOver = ref(false);
 
 const acceptAttr = taskTypeAccept('text.direct');
+const MAX_INPUT_FILE_BYTES = 50 * 1024 * 1024;
 
 function resizeComposer() {
   const field = composerEl.value;
@@ -82,7 +83,7 @@ function validatePayload() {
     localError.value = t('tasks.inputFileOrTextRequired');
     return false;
   }
-  if (file && file.size > 2 * 1024 * 1024) {
+  if (file && file.size > MAX_INPUT_FILE_BYTES) {
     localError.value = t('tasks.inputFileTooLarge');
     return false;
   }

@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import '../../contracts/worker_error.dart';
 import '../../contracts/worker_task_request.dart';
 import '../../contracts/worker_task_result.dart';
+import '../../inference/llm/direct_answer_instruction.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../inference/ocr/ocr_engine.dart';
 import '../../runtime/checkpoint_manager.dart';
@@ -79,7 +80,8 @@ class DirectPromptHandler implements TaskHandler {
         name: 'EdgeMintTaskEngine',
       );
     }
-    final stageOutputLimit = selection?.selectedOutputLimit(decision.answerClass) ??
+    final stageOutputLimit =
+        selection?.selectedOutputLimit(decision.answerClass) ??
         decision.effectiveOutputLimit;
     final sampling = selection == null
         ? null
@@ -114,14 +116,15 @@ class DirectPromptHandler implements TaskHandler {
       },
     );
     final generation = DirectGenerationReceipt(
-      text: staged.text,
+      text: DirectAnswerInstruction.stripTrailingInvitation(staged.text),
       stopReason: staged.stopReason,
       configuredOutputLimit: stageOutputLimit,
       generatedChunks: staged.generatedChunks,
       generatedTokens: staged.generatedTokens,
     );
     metrics.llmMs = DateTime.now().difference(llmStart).inMilliseconds;
-    final continued = decision.staged ||
+    final continued =
+        decision.staged ||
         staged.stagesUsed > 1 ||
         staged.stopReason == GemmaGenerationOutputLimit.leaseBudgetExhausted ||
         staged.stopReason == GemmaGenerationOutputLimit.longFormStageLimit;
@@ -148,9 +151,11 @@ class DirectPromptHandler implements TaskHandler {
     required WorkerTaskMetrics metrics,
     bool? truncated,
   }) {
-    final reportedTruncated = truncated ??
+    final reportedTruncated =
+        truncated ??
         (generation.hitOutputLimit ||
-            generation.stopReason == GemmaGenerationOutputLimit.longFormStageLimit);
+            generation.stopReason ==
+                GemmaGenerationOutputLimit.longFormStageLimit);
     final evidence = <String, dynamic>{
       'rawText': generation.text,
       'modelTranscript': generation.text,
@@ -171,8 +176,10 @@ class DirectPromptHandler implements TaskHandler {
       );
     }
     final stageLimited =
-        generation.stopReason == GemmaGenerationOutputLimit.longFormStageLimit ||
-        generation.stopReason == GemmaGenerationOutputLimit.leaseBudgetExhausted;
+        generation.stopReason ==
+            GemmaGenerationOutputLimit.longFormStageLimit ||
+        generation.stopReason ==
+            GemmaGenerationOutputLimit.leaseBudgetExhausted;
     if (stageLimited) {
       if (freeForm || request.options.allowTruncatedOutput) {
         return WorkerTaskResult(
@@ -199,7 +206,8 @@ class DirectPromptHandler implements TaskHandler {
         ),
       );
     }
-    final partialSuccess = generation.hitOutputLimit &&
+    final partialSuccess =
+        generation.hitOutputLimit &&
         freeForm &&
         generation.text.trim().isNotEmpty;
     if (generation.hitOutputLimit &&

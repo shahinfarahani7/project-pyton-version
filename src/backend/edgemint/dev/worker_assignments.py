@@ -25,10 +25,10 @@ _exclusive_device_public_id: str | None = (
 _seen_devices: dict[str, datetime] = {}
 _reserved_device: dict[str, str] = {}
 _ONLINE_FOR = timedelta(seconds=90)
-# Phones can be several minutes ahead of the server clock. A five-minute
-# start deadline is already in the past for those phones, so they reject the
-# task immediately with START_TIMEOUT.
-_START_DEADLINE = timedelta(minutes=30)
+# A five-minute start or execution window is already in the past on a phone
+# whose clock is ahead, so the phone rejects the task with START_TIMEOUT
+# before the model can finish. Dev work is not capped at that window.
+_ASSIGNMENT_WINDOW = timedelta(hours=24)
 
 
 def _now() -> datetime:
@@ -48,13 +48,13 @@ def enqueue_dev_assignment(*, task_id: str, task_type: str) -> dict[str, Any]:
         "revisionId": f"rev_{secrets.token_hex(4)}",
         "leaseToken": f"lease_{secrets.token_hex(8)}",
         "fenceToken": 1,
-        "leaseExpiresAt": (_now() + timedelta(minutes=30)).isoformat(),
+        "leaseExpiresAt": (_now() + _ASSIGNMENT_WINDOW).isoformat(),
         "taskType": task_type,
         "modelVersionId": _WORKER_MODEL_VERSION_ID,
         "inputManifestUrl": f"{api_base}/v1/dev/worker/tasks/{task_id}/input",
         "outputUploadUrl": f"{api_base}/v1/dev/worker/tasks/{task_id}/output",
-        "startDeadlineAt": (_now() + _START_DEADLINE).isoformat(),
-        "executionDurationSeconds": int(_START_DEADLINE.total_seconds()),
+        "startDeadlineAt": (_now() + _ASSIGNMENT_WINDOW).isoformat(),
+        "executionDurationSeconds": int(_ASSIGNMENT_WINDOW.total_seconds()),
         "taskId": task_id,
     }
     _pending.append(assignment)
@@ -170,11 +170,9 @@ def _pop_assignment(assignment_id: str) -> dict[str, Any] | None:
             return None
         _pending.pop(index)
         delivered_at = _now()
-        assignment["leaseExpiresAt"] = (
-            delivered_at + timedelta(minutes=30)
-        ).isoformat()
-        assignment["startDeadlineAt"] = (delivered_at + _START_DEADLINE).isoformat()
-        assignment["executionDurationSeconds"] = int(_START_DEADLINE.total_seconds())
+        assignment["leaseExpiresAt"] = (delivered_at + _ASSIGNMENT_WINDOW).isoformat()
+        assignment["startDeadlineAt"] = (delivered_at + _ASSIGNMENT_WINDOW).isoformat()
+        assignment["executionDurationSeconds"] = int(_ASSIGNMENT_WINDOW.total_seconds())
         return assignment
     return None
 
@@ -263,13 +261,13 @@ def pop_next_assignment() -> dict[str, Any] | None:
             # or an emulator sleeps. Deadlines begin at actual delivery.
             delivered_at = _now()
             assignment["leaseExpiresAt"] = (
-                delivered_at + timedelta(minutes=30)
+                delivered_at + _ASSIGNMENT_WINDOW
             ).isoformat()
             assignment["startDeadlineAt"] = (
-                delivered_at + _START_DEADLINE
+                delivered_at + _ASSIGNMENT_WINDOW
             ).isoformat()
             assignment["executionDurationSeconds"] = int(
-                _START_DEADLINE.total_seconds()
+                _ASSIGNMENT_WINDOW.total_seconds()
             )
             return assignment
     return None

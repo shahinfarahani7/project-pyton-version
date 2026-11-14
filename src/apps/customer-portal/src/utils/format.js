@@ -26,12 +26,7 @@ export function formatTaskType(value, taskOrLocale) {
   return formatTaskTypeLabel(value, locale);
 }
 
-export function formatMicroEur(micro) {
-  if (micro == null) return '—';
-  return new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(micro / 1_000_000);
-}
-
-const FIBON_ATOMIC_PER_TOKEN = 10_000;
+export const FIBON_ATOMIC_PER_TOKEN = 10_000;
 
 export function formatFibon(atomic) {
   if (!Number.isInteger(atomic)) return '—';

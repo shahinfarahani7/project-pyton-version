@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import base64
 import json
+import tempfile
+from pathlib import Path
 from typing import Any
 
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 
 from edgemint.dev.dev_public_urls import dev_api_public_base
 from edgemint.dev.task_type_catalog import image_blob_family, pipeline_family
@@ -49,7 +51,12 @@ _TASK_INPUTS: dict[str, dict[str, Any]] = {}
 _INPUT_BLOBS: dict[str, dict[str, Any]] = {}
 _RESULT_BLOBS: dict[str, dict[str, Any]] = {}
 _MAX_TEXT_CHARS = 32_000
-_MAX_FILE_BYTES = 2 * 1024 * 1024
+# Same cap as Settings.file_max_upload_bytes. Customer uploads above
+# _MEMORY_RESIDENT_BLOB_BYTES are written under the temp spool and removed
+# when the task reaches a terminal state.
+_MAX_FILE_BYTES = 50 * 1024 * 1024
+_MEMORY_RESIDENT_BLOB_BYTES = 1 * 1024 * 1024
+_TERMINAL_TASK_STATES = frozenset({"succeeded", "failed", "cancelled", "expired"})
 
 _FLEX_SAMPLES: dict[str, dict[str, Any]] = {
     "catalog.fake_listing": {"listing": {"title": "New phone - unusually low price", "description": "Prepay by crypto", "price": 99, "currency": "EUR", "sellerSignals": {"accountAgeDays": 1, "completedSales": 0}}},
@@ -285,12 +292,60 @@ def _prompt_for_custom(
     return f"Process this {task_type} customer payload:\n\n{body}{note}"
 
 
+def _input_spool_dir() -> Path:
+    directory = Path(tempfile.gettempdir()) / "edgemint-dev-task-inputs"
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
+
+
+def _spool_path(task_id: str) -> Path:
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in task_id)[:80] or "task"
+    return _input_spool_dir() / safe
+
+
+def _delete_spooled_file(path_value: object) -> None:
+    if not isinstance(path_value, str) or not path_value:
+        return
+    try:
+        path = Path(path_value).resolve()
+        root = _input_spool_dir().resolve()
+    except OSError:
+        return
+    if path.parent != root:
+        return
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        return
+
+
 def _store_input_blob(*, task_id: str, file_bytes: bytes, file_mime: str, file_name: str) -> None:
+    previous = _INPUT_BLOBS.get(task_id)
+    if previous is not None:
+        _delete_spooled_file(previous.get("path"))
+    if len(file_bytes) > _MEMORY_RESIDENT_BLOB_BYTES:
+        path = _spool_path(task_id)
+        path.write_bytes(file_bytes)
+        _INPUT_BLOBS[task_id] = {
+            "path": str(path),
+            "mimeType": file_mime,
+            "fileName": file_name,
+            "sizeBytes": len(file_bytes),
+        }
+        return
     _INPUT_BLOBS[task_id] = {
         "bytes": file_bytes,
         "mimeType": file_mime,
         "fileName": file_name,
     }
+
+
+def release_task_input(task_id: str) -> None:
+    """Drop the uploaded file once the worker no longer needs it."""
+    blob = _INPUT_BLOBS.pop(task_id, None)
+    if blob is None:
+        return
+    _delete_spooled_file(blob.get("path"))
 
 
 def _ensure_sample_image(task_id: str, task_type: str) -> None:
@@ -441,12 +496,18 @@ def result_content(task_id: str) -> dict[str, Any] | None:
 def content_response(blob: dict[str, Any] | None) -> Response:
     if blob is None:
         raise ValueError("CONTENT_NOT_FOUND")
+    media_type = blob.get("mimeType", "application/octet-stream")
+    file_name = str(blob.get("fileName") or "result").replace('"', "")
+    disposition = f'inline; filename="{file_name}"'
+    spooled = blob.get("path")
+    if isinstance(spooled, str) and spooled and "bytes" not in blob:
+        response = FileResponse(spooled, media_type=media_type)
+        response.headers["content-disposition"] = disposition
+        return response
     return Response(
         content=blob["bytes"],
-        media_type=blob.get("mimeType", "application/octet-stream"),
-        headers={
-            "Content-Disposition": f'inline; filename="{blob.get("fileName", "result")}"',
-        },
+        media_type=media_type,
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -486,20 +547,16 @@ def record_output(
                 pass
 
     existing = fixtures.dev_task_by_id(task_id)
-    if existing is not None and existing.get("lifecycleStatus") in {
-        "failed",
-        "cancelled",
-        "expired",
-    }:
-        return False
-    if existing is not None and existing.get("lifecycleStatus") == "succeeded":
-        _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
-        _TASK_INPUTS[task_id]["lastOutput"] = {
-            "resultText": result_text[:_MAX_TEXT_CHARS],
-            "modelTranscript": model_transcript[:_MAX_TEXT_CHARS],
-            "metrics": metrics or {},
-            "hasResultFile": bool(result_file_bytes),
-        }
+    if existing is not None and existing.get("lifecycleStatus") in _TERMINAL_TASK_STATES:
+        if existing.get("lifecycleStatus") == "succeeded":
+            _TASK_INPUTS.setdefault(task_id, {"taskId": task_id})
+            _TASK_INPUTS[task_id]["lastOutput"] = {
+                "resultText": result_text[:_MAX_TEXT_CHARS],
+                "modelTranscript": model_transcript[:_MAX_TEXT_CHARS],
+                "metrics": metrics or {},
+                "hasResultFile": bool(result_file_bytes),
+            }
+        release_task_input(task_id)
         return False
 
     workspace_id = _workspace_id_for_task(task_id)
@@ -533,4 +590,5 @@ def record_output(
         "metrics": metrics or {},
         "hasResultFile": bool(result_file_bytes),
     }
+    release_task_input(task_id)
     return True

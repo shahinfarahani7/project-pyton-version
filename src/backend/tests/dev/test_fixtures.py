@@ -37,18 +37,26 @@ def test_dev_task_lookup() -> None:
     assert fixtures.dev_task(fixtures.DEV_WORKSPACE_PRIMARY, "missing") is None
 
 
-def test_add_dev_wallet_stores_integer_micro_eur() -> None:
+def test_add_dev_wallet_credits_whole_fibon_tokens() -> None:
     workspace_id = UUID(int=7)
     fixtures._added_wallets.pop(workspace_id, None)
-    created = fixtures.add_dev_wallet(workspace_id, name=" Ops ", amount_micro_eur=5_000_000)
+    fixtures._fibonai_available[workspace_id] = 0
+    created = fixtures.add_dev_wallet(workspace_id, name=" Ops ", amount_fibon_atomic=5 * 10_000)
     listed = fixtures.dev_wallets(workspace_id)
-    assert created["availableMicroEur"] == 5_000_000
+    assert created["availableFibonAtomic"] == 50_000
     assert created["name"] == "Ops"
+    assert fixtures.fibonai_available(workspace_id) == 50_000
     assert listed["items"][0]["id"] == "wal_primary"
+    assert listed["items"][0]["availableFibonAtomic"] == 0
     assert listed["items"][-1]["id"] == created["id"]
+    assert listed["items"][-1]["availableFibonAtomic"] == 50_000
+    assert sum(item["availableFibonAtomic"] for item in listed["items"]) == 50_000
     with pytest.raises(ValueError, match="WALLET_AMOUNT_INVALID"):
-        fixtures.add_dev_wallet(workspace_id, name="Ops", amount_micro_eur=0)
+        fixtures.add_dev_wallet(workspace_id, name="Ops", amount_fibon_atomic=0)
+    with pytest.raises(ValueError, match="WALLET_AMOUNT_INVALID"):
+        fixtures.add_dev_wallet(workspace_id, name="Ops", amount_fibon_atomic=10_001)
     fixtures._added_wallets.pop(workspace_id, None)
+    fixtures._fibonai_available.pop(workspace_id, None)
 
 
 def test_dev_billing_payloads() -> None:
@@ -56,8 +64,12 @@ def test_dev_billing_payloads() -> None:
     balance = fixtures.dev_credit_balance(fixtures.DEV_WORKSPACE_PRIMARY)
     invoices = fixtures.dev_invoices(fixtures.DEV_WORKSPACE_PRIMARY)
     assert usage["status"] == "ready"
-    assert balance["availableMicroEur"] > 0
-    assert len(invoices["items"]) == 2
+    assert usage["computeFibonAtomic"] >= 0
+    assert balance["availableFibonAtomic"] == fixtures.fibonai_available(fixtures.DEV_WORKSPACE_PRIMARY)
+    assert balance["reservedFibonAtomic"] == fixtures.fibonai_reserved(fixtures.DEV_WORKSPACE_PRIMARY)
+    assert "availableMicroEur" not in balance
+    assert "computeMicroEur" not in usage
+    assert isinstance(invoices["items"], list)
 
 
 def test_dev_principal_constant() -> None:

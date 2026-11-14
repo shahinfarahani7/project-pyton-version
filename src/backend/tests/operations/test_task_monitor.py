@@ -10,6 +10,7 @@ from edgemint.operations.task_monitor import (
     device_ids_in,
     device_record_from_row,
     sold_task_atomic,
+    tokens_given_atomic,
     with_tokens_given,
 )
 
@@ -64,6 +65,8 @@ def test_monitor_task_rows_exclude_customer_content(monkeypatch: pytest.MonkeyPa
         assert rows[0]["taskType"] == "text.summarize"
         assert rows[0]["fibonaiSettlement"] == "reserved"
         assert type(rows[0]["fibonaiChargeAtomic"]) is int
+        assert type(rows[0]["fibonaiWorkerRewardAtomic"]) is int
+        assert rows[0]["fibonaiWorkerRewardAtomic"] > 0
         assert "secret customer text" not in repr(rows[0])
         assert "inputSource" not in rows[0]
     finally:
@@ -120,6 +123,17 @@ def test_build_task_monitor_joins_tasks_deliveries_and_devices() -> None:
         "pinnedDeviceName": "Samsung Galaxy S24",
         "soldAtomic": 0,
     }
+
+
+def test_tokens_given_atomic_uses_the_worker_reward_when_no_credit_was_stored() -> None:
+    succeeded = {
+        "lifecycleStatus": "succeeded",
+        "fibonaiSettlement": "spent",
+        "fibonaiWorkerRewardAtomic": 300_000,
+    }
+    assert tokens_given_atomic(succeeded, 0) == 300_000
+    assert tokens_given_atomic(succeeded, 300_000) == 300_000
+    assert tokens_given_atomic({"lifecycleStatus": "running", "fibonaiWorkerRewardAtomic": 300_000}, 0) == 0
 
 
 def test_with_tokens_given_uses_the_recorded_credit() -> None:

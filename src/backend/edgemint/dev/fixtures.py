@@ -25,7 +25,9 @@ _MAX_STORED_TEXT_CHARS = 32_000
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
 _fibonai_available: dict[UUID, int] = {}
+_billing_invoices: dict[UUID, dict[str, dict[str, Any]]] = {}
 _DEV_FIBONAI_GRANT_TOKENS = 1_000_000
+_MAX_WALLET_TOKENS = 1_000_000
 
 
 def _fibonai_grant_atomic() -> int:
@@ -63,6 +65,7 @@ def _reserve_task_fibonai(workspace_id: UUID, task: dict[str, Any]) -> None:
     task["fibonaiWorkerRewardAtomic"] = quote.worker_reward_atomic
     task["fibonaiTreasuryAtomic"] = quote.treasury_atomic
     task["fibonaiSettlement"] = "reserved"
+    _upsert_task_invoice(workspace_id, task, "open")
 
 
 def _settle_task_fibonai(workspace_id: UUID, task: dict[str, Any], status: str) -> None:
@@ -70,6 +73,7 @@ def _settle_task_fibonai(workspace_id: UUID, task: dict[str, Any], status: str) 
         return
     if status == "succeeded":
         task["fibonaiSettlement"] = "spent"
+        _upsert_task_invoice(workspace_id, task, "paid")
         return
     if status not in {"failed", "cancelled", "expired"}:
         return
@@ -77,10 +81,39 @@ def _settle_task_fibonai(workspace_id: UUID, task: dict[str, Any], status: str) 
     if type(charge) is int and charge >= 0:
         _fibonai_available[workspace_id] = fibonai_available(workspace_id) + charge
     task["fibonaiSettlement"] = "refunded"
+    _upsert_task_invoice(workspace_id, task, "void")
 
 
 def _now_iso() -> str:
     return datetime.now(tz=UTC).isoformat()
+
+
+def _credit_fibonai(workspace_id: UUID, amount: int) -> None:
+    _fibonai_available[workspace_id] = fibonai_available(workspace_id) + amount
+
+
+def _upsert_task_invoice(workspace_id: UUID, task: dict[str, Any], status: str) -> None:
+    charge = task.get("fibonaiChargeAtomic")
+    task_id = task.get("id")
+    if type(charge) is not int or charge < 0 or not isinstance(task_id, str) or not task_id:
+        return
+    bucket = _billing_invoices.setdefault(workspace_id, {})
+    current = bucket.get(task_id)
+    now = _now_iso()
+    if current is None:
+        bucket[task_id] = {
+            "id": f"inv_{task_id.removeprefix('tsk_')}",
+            "status": status,
+            "amountFibonAtomic": charge,
+            "taskId": task_id,
+            "period": now[:7],
+            "dueDate": now[:10],
+            "createdAt": now,
+        }
+        return
+    current["status"] = status
+    current["amountFibonAtomic"] = charge
+    current["updatedAt"] = now
 
 
 def _task_row(
@@ -283,6 +316,7 @@ _MONITOR_TASK_FIELDS = (
     "assignmentId",
     "failureReasonCode",
     "fibonaiChargeAtomic",
+    "fibonaiWorkerRewardAtomic",
     "fibonaiSettlement",
 )
 
@@ -358,7 +392,7 @@ def create_dev_task(
             "instructions": instructions,
             "file_name": file_name,
             "file_mime": file_mime,
-            "file_bytes": file_bytes,
+            "file_bytes": None,
         }
     _reserve_task_fibonai(workspace_id, task)
     _created_tasks.setdefault(workspace_id, []).append(task)
@@ -375,13 +409,15 @@ def create_dev_task(
             file_bytes=file_bytes,
             summarize_options=summarize_options,
         )
+        # The upload lives in the input spool. Do not keep a second copy on the task row.
+        task.pop("inputSource", None)
         enqueue_assignment_for_worker(task_id=task["id"], task_type=task_type)
     except Exception:
+        worker_task_inputs.release_task_input(task["id"])
         _created_tasks[workspace_id].remove(task)
         _settle_task_fibonai(workspace_id, task, "failed")
         raise
     task["assignmentId"] = task["id"]
-    task.pop("inputSource", None)
     _notify_task_event(workspace_id, task["id"], "task.created")
     return task
 
@@ -442,6 +478,9 @@ def cancel_dev_task(workspace_id: UUID, task_id: str) -> dict[str, Any] | None:
     task["version"] = int(task.get("version", 0)) + 1
     _settle_task_fibonai(workspace_id, task, "cancelled")
     cancel_assignment_for_worker(assignment_id=task_id)
+    from edgemint.dev import worker_task_inputs
+
+    worker_task_inputs.release_task_input(task_id)
     _notify_task_event(workspace_id, task_id, "task.cancelled")
     return task
 
@@ -515,6 +554,10 @@ def update_dev_task_execution(
                     task["failureReason"] = failure_reason[:500]
                 _settle_task_fibonai(ws_id, task, lifecycle_status)
                 updated = True
+    if updated and lifecycle_status in {"succeeded", "failed", "cancelled", "expired"}:
+        from edgemint.dev import worker_task_inputs
+
+        worker_task_inputs.release_task_input(task_id)
     if updated and workspace_id is not None:
         _notify_task_event(workspace_id, task_id, "task.updated")
     return updated
@@ -593,21 +636,24 @@ def dev_api_keys(workspace_id: UUID) -> dict[str, Any]:
 
 
 def dev_usage(workspace_id: UUID) -> dict[str, Any]:
-    if workspace_id == DEV_WORKSPACE_PRIMARY:
-        return {
-            "status": "ready",
-            "period": "2026-07",
-            "taskCount": 1284,
-            "computeMicroEur": 45200000,
-        }
-    if workspace_id == DEV_WORKSPACE_STAGING:
-        return {
-            "status": "ready",
-            "period": "2026-07",
-            "taskCount": 42,
-            "computeMicroEur": 890000,
-        }
-    return {"status": "empty", "period": "2026-07", "taskCount": 0, "computeMicroEur": 0}
+    period = datetime.now(tz=UTC).strftime("%Y-%m")
+    tasks = _created_tasks.get(workspace_id, [])
+    submitted = [task for task in tasks if str(task.get("createdAt") or "").startswith(period)]
+    spent = 0
+    for task in tasks:
+        if task.get("fibonaiSettlement") != "spent":
+            continue
+        stamp = str(task.get("updatedAt") or task.get("createdAt") or "")
+        charge = task.get("fibonaiChargeAtomic")
+        if stamp.startswith(period) and type(charge) is int and charge >= 0:
+            spent += charge
+    status = "ready" if workspace_id in DEV_WORKSPACE_IDS else "empty"
+    return {
+        "status": status,
+        "period": period,
+        "taskCount": len(submitted),
+        "computeFibonAtomic": spent,
+    }
 
 
 def dev_credit_balance(workspace_id: UUID) -> dict[str, Any]:
@@ -622,61 +668,76 @@ def dev_credit_balance(workspace_id: UUID) -> dict[str, Any]:
         "workerRewardAtomic": quote.worker_reward_atomic,
         "fibonAtomicPerToken": policy.atomic_units_per_token,
     }
-    if workspace_id == DEV_WORKSPACE_PRIMARY:
-        return {"status": "ready", "availableMicroEur": 250000000, "reservedMicroEur": 12500000, **fibonai}
-    if workspace_id == DEV_WORKSPACE_STAGING:
-        return {"status": "ready", "availableMicroEur": 50000000, "reservedMicroEur": 0, **fibonai}
-    return {"status": "empty", "availableMicroEur": 0, "reservedMicroEur": 0, **fibonai}
+    if workspace_id in DEV_WORKSPACE_IDS:
+        return {"status": "ready", **fibonai}
+    return {"status": "empty", **fibonai}
 
 
 _added_wallets: dict[UUID, list[dict[str, Any]]] = {}
-_MAX_WALLET_MICRO_EUR = 1_000_000 * 1_000_000
 
 
 def dev_wallets(workspace_id: UUID) -> dict[str, Any]:
-    balance = dev_credit_balance(workspace_id)
+    return {"items": _wallet_items(workspace_id)}
+
+
+def _wallet_items(workspace_id: UUID) -> list[dict[str, Any]]:
+    custom = [dict(item) for item in _added_wallets.get(workspace_id, [])]
+    ledger = fibonai_available(workspace_id)
+    custom_total = sum(int(item.get("availableFibonAtomic") or 0) for item in custom)
+    if ledger >= custom_total:
+        primary_available = ledger - custom_total
+    else:
+        primary_available = 0
+        overflow = custom_total - ledger
+        for item in reversed(custom):
+            face = int(item.get("availableFibonAtomic") or 0)
+            take = face if face < overflow else overflow
+            item["availableFibonAtomic"] = face - take
+            overflow -= take
+            if overflow == 0:
+                break
     primary = {
         "id": "wal_primary",
         "name": "Primary",
-        "availableMicroEur": int(balance["availableMicroEur"]),
-        "reservedMicroEur": int(balance["reservedMicroEur"]),
+        "availableFibonAtomic": primary_available,
+        "reservedFibonAtomic": fibonai_reserved(workspace_id),
         "builtin": True,
     }
-    return {"items": [primary, *_added_wallets.get(workspace_id, [])]}
+    for item in custom:
+        item["reservedFibonAtomic"] = 0
+    return [primary, *custom]
 
 
-def add_dev_wallet(workspace_id: UUID, *, name: str, amount_micro_eur: int) -> dict[str, Any]:
+def add_dev_wallet(workspace_id: UUID, *, name: str, amount_fibon_atomic: int) -> dict[str, Any]:
+    from edgemint.economy.fibonai_token import cached_economy
+
     cleaned = name.strip()
     if not cleaned or len(cleaned) > 80:
         raise ValueError("WALLET_NAME_INVALID")
+    unit = cached_economy().atomic_units_per_token
     if (
-        not isinstance(amount_micro_eur, int)
-        or isinstance(amount_micro_eur, bool)
-        or amount_micro_eur <= 0
-        or amount_micro_eur > _MAX_WALLET_MICRO_EUR
+        type(amount_fibon_atomic) is not int
+        or amount_fibon_atomic <= 0
+        or unit <= 0
+        or amount_fibon_atomic % unit != 0
+        or amount_fibon_atomic // unit > _MAX_WALLET_TOKENS
     ):
         raise ValueError("WALLET_AMOUNT_INVALID")
     wallet = {
         "id": f"wal_{secrets.token_hex(6)}",
         "name": cleaned,
-        "availableMicroEur": amount_micro_eur,
-        "reservedMicroEur": 0,
+        "availableFibonAtomic": amount_fibon_atomic,
+        "reservedFibonAtomic": 0,
         "builtin": False,
     }
+    _credit_fibonai(workspace_id, amount_fibon_atomic)
     _added_wallets.setdefault(workspace_id, []).append(wallet)
     return wallet
 
 
 def dev_invoices(workspace_id: UUID) -> dict[str, Any]:
-    if workspace_id == DEV_WORKSPACE_PRIMARY:
-        items = [
-            {"id": "inv_dev_open_001", "status": "open", "amountDueMicroEur": 125000000},
-            {"id": "inv_dev_paid_002", "status": "paid", "amountDueMicroEur": 89000000},
-        ]
-    elif workspace_id == DEV_WORKSPACE_STAGING:
-        items = [{"id": "inv_dev_staging_draft", "status": "draft", "amountDueMicroEur": 42000000}]
-    else:
-        items = []
+    items = [dict(item) for item in _billing_invoices.get(workspace_id, {}).values()]
+    items.sort(key=lambda item: str(item.get("createdAt") or ""), reverse=True)
     return {"items": items, "page": PAGE}
 
 

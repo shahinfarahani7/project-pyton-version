@@ -12,6 +12,7 @@ import '../../runtime/model_runtime_manager.dart';
 import '../../runtime/worker_content_diagnostics.dart';
 import '../../validation/json_output_validator.dart';
 import 'context_budget_manager.dart';
+import 'direct_answer_instruction.dart';
 import 'formatted_prompt_builder.dart';
 import 'evidence_partial_validator.dart';
 import 'hierarchical_reduce_bounds.dart';
@@ -171,12 +172,11 @@ class QwenTaskProcessor {
     String inputText, {
     int? reservedPromptTokens,
     int? experimentalSourceChunkTokenCap,
-  }) =>
-      _chunkEngine.chunk(
-        inputText,
-        reservedPromptTokens: reservedPromptTokens,
-        experimentalSourceChunkTokenCap: experimentalSourceChunkTokenCap,
-      );
+  }) => _chunkEngine.chunk(
+    inputText,
+    reservedPromptTokens: reservedPromptTokens,
+    experimentalSourceChunkTokenCap: experimentalSourceChunkTokenCap,
+  );
 
   void _log(String message) => log?.call(message);
 
@@ -221,7 +221,8 @@ class QwenTaskProcessor {
 
   Future<Map<String, dynamic>> runJsonTask({
     required String prompt,
-    SummarizeInferenceStage inferenceStage = SummarizeInferenceStage.genericJson,
+    SummarizeInferenceStage inferenceStage =
+        SummarizeInferenceStage.genericJson,
     Map<String, dynamic>? outputSchema,
     required String signingKey,
     int maxArrayItems = 3,
@@ -230,7 +231,10 @@ class QwenTaskProcessor {
   }) async {
     final policy = SummarizeStagePolicy.forStage(inferenceStage);
     final stageLabel = policy.logLabel;
-    WorkerContentDiagnostics.logInferencePrompt(stage: stageLabel, prompt: prompt);
+    WorkerContentDiagnostics.logInferencePrompt(
+      stage: stageLabel,
+      prompt: prompt,
+    );
     _log(
       '[MODEL REQUEST] stage=$stageLabel promptChars=${prompt.length} '
       'prompt="${_preview(prompt)}"',
@@ -256,7 +260,9 @@ class QwenTaskProcessor {
       stopReason: reply.stopReason,
       inferenceStage: inferenceStage,
       policy: policy,
-      sourcePrompt: labeledFallback && policy.allowLabeledFallback ? prompt : null,
+      sourcePrompt: labeledFallback && policy.allowLabeledFallback
+          ? prompt
+          : null,
       correctiveBudget: correctiveBudget,
     );
     if (inferenceStage == SummarizeInferenceStage.mapEvidence) {
@@ -426,7 +432,9 @@ class QwenTaskProcessor {
     );
     _logValidation(validation, prefix: 'STRUCTURAL');
     if (!validation.passed && correctiveBudget.consume()) {
-      final factsEvidence = factsOnly ? pipeline.lastFinalReduceEvidenceJson : null;
+      final factsEvidence = factsOnly
+          ? pipeline.lastFinalReduceEvidenceJson
+          : null;
       final repairPrompt = factsEvidence != null
           ? _factsOnlySummaryRepairPrompt(
               evidenceJson: factsEvidence,
@@ -510,7 +518,8 @@ class QwenTaskProcessor {
   ///
   /// Uses production [PromptTemplates.summarizeMapChunk] → [runJsonTask] with
   /// [SummarizeInferenceStage.mapEvidence]. Does not run Reduce or upload output.
-  Future<SummarizeMapEvidenceDiagnosticResult> runIsolatedMapEvidenceDiagnostic({
+  Future<SummarizeMapEvidenceDiagnosticResult>
+  runIsolatedMapEvidenceDiagnostic({
     required String signingKey,
     String? runId,
     SummarizeMapEvidenceDiagnosticFixtureId fixtureId =
@@ -756,7 +765,8 @@ class QwenTaskProcessor {
     if (facts.isEmpty) {
       issue = 'facts_only_facts_empty';
     } else if (openItems.isNotEmpty || priority.trim().isNotEmpty) {
-      issue = 'facts_only_classification_fields_populated:'
+      issue =
+          'facts_only_classification_fields_populated:'
           'openItems=${openItems.length}:priorityChars=${priority.length}';
     } else {
       issue = null;
@@ -775,15 +785,18 @@ class QwenTaskProcessor {
 
   /// Facts-only experiment Step 2. Sees only [snapshot].facts, never the source,
   /// and spends the experiment's shared corrective allowance.
-  Future<FactsClassificationDiagnosticResult> runFactsOnlyClassificationDiagnostic({
+  Future<FactsClassificationDiagnosticResult>
+  runFactsOnlyClassificationDiagnostic({
     required String signingKey,
     required FactsOnlyExtractionSnapshot snapshot,
   }) async {
     SummarizeDiagnosticMap.assertArmedOrThrow();
     snapshot.markClassificationStarted();
 
-    final classificationRunId = SummarizeDiagnosticMap.newRunId()
-        .replaceFirst('diag_map_', 'diag_cls_');
+    final classificationRunId = SummarizeDiagnosticMap.newRunId().replaceFirst(
+      'diag_map_',
+      'diag_cls_',
+    );
     final facts = snapshot.facts;
     final prompt = PromptTemplates.factsClassificationDiagnostic(facts: facts);
     if (!_fitsDirectInference(prompt)) {
@@ -916,11 +929,15 @@ class QwenTaskProcessor {
     ).object;
     if (parsed == null) {
       if (!budget.consume()) {
-        _log('[JSON REPAIR SKIPPED] stage=factsClassification '
-            'corrective budget exhausted');
+        _log(
+          '[JSON REPAIR SKIPPED] stage=factsClassification '
+          'corrective budget exhausted',
+        );
       } else {
-        _log('[JSON CORRECTIVE] action=json_repair stage=factsClassification '
-            'call=corrective budgetRemaining=${budget.maxCalls - budget.used}');
+        _log(
+          '[JSON CORRECTIVE] action=json_repair stage=factsClassification '
+          'call=corrective budgetRemaining=${budget.maxCalls - budget.used}',
+        );
         final repairPrompt = _jsonRepairPrompt(raw);
         if (repairPrompt != null) {
           final repair = await _runPromptReply(
@@ -997,7 +1014,10 @@ class QwenTaskProcessor {
     }
   }
 
-  void _logValidation(SummarizeValidationResult validation, {required String prefix}) {
+  void _logValidation(
+    SummarizeValidationResult validation, {
+    required String prefix,
+  }) {
     if (validation.passed) {
       _log('[SUMMARY $prefix OK]');
     } else {
@@ -1068,8 +1088,7 @@ class QwenTaskProcessor {
   bool labeledFallbackEnabled({
     required String? sourcePrompt,
     required SummarizeStagePolicy policy,
-  }) =>
-      sourcePrompt != null && policy.allowLabeledFallback;
+  }) => sourcePrompt != null && policy.allowLabeledFallback;
 
   void _logJsonRejection({
     required JsonExtractResult extract,
@@ -1083,7 +1102,11 @@ class QwenTaskProcessor {
       'reason=${extract.rejectionReason ?? "unknown"} '
       'extractStage=${extract.rejectionStage ?? "unknown"} '
       'stopReason=$stopReason truncated=$truncated '
-      'correctiveRemaining=${correctiveBudget == null ? "unbounded" : correctiveBudget.hasRemaining ? correctiveBudget.maxCalls - correctiveBudget.used : 0}',
+      'correctiveRemaining=${correctiveBudget == null
+          ? "unbounded"
+          : correctiveBudget.hasRemaining
+          ? correctiveBudget.maxCalls - correctiveBudget.used
+          : 0}',
     );
   }
 
@@ -1198,7 +1221,9 @@ class QwenTaskProcessor {
     if (_fitsDirectInference(prompt)) {
       return prompt;
     }
-    _log('[SUMMARY CONSTRAINT REPAIR] factsOnly prompt does not fit; not shortened');
+    _log(
+      '[SUMMARY CONSTRAINT REPAIR] factsOnly prompt does not fit; not shortened',
+    );
     return null;
   }
 
@@ -1294,7 +1319,9 @@ class QwenTaskProcessor {
     if (issues.isEmpty) {
       return;
     }
-    _log('[EVIDENCE PARTIAL REJECTED] stage=$stageLabel issues=${issues.join('; ')}');
+    _log(
+      '[EVIDENCE PARTIAL REJECTED] stage=$stageLabel issues=${issues.join('; ')}',
+    );
     throw WorkerError(
       code: WorkerErrorCode.outputSchemaMismatch,
       message:
@@ -1471,9 +1498,7 @@ class QwenTaskProcessor {
             }
             parsed = _validateEvidencePartialOrNull(parsed);
             if (parsed == null) {
-              _log(
-                '[JSON REPAIR FAILED] reason=repair_output_not_evidence_v2',
-              );
+              _log('[JSON REPAIR FAILED] reason=repair_output_not_evidence_v2');
             }
           }
         }
@@ -1489,15 +1514,15 @@ class QwenTaskProcessor {
         code: WorkerErrorCode.llmInvalidJson,
         message: evidenceStage
             ? budgetExhausted
-                ? 'Evidence partial JSON could not be recovered locally '
-                    '(reason=corrective_budget_exhausted; priorReason=$reason)'
-                : 'Evidence partial JSON could not be recovered locally '
-                    '(reason=$reason; stopReason=$stopReason)'
+                  ? 'Evidence partial JSON could not be recovered locally '
+                        '(reason=corrective_budget_exhausted; priorReason=$reason)'
+                  : 'Evidence partial JSON could not be recovered locally '
+                        '(reason=$reason; stopReason=$stopReason)'
             : budgetExhausted
             ? 'LLM output is not valid JSON after repair attempt '
-                '(reason=corrective_budget_exhausted; priorReason=$reason)'
+                  '(reason=corrective_budget_exhausted; priorReason=$reason)'
             : 'LLM output is not valid JSON after repair attempt '
-                '(reason=$reason)',
+                  '(reason=$reason)',
         retryable: correctiveBudget == null,
         stage: WorkerTaskStage.llm,
       );
@@ -1546,9 +1571,7 @@ class QwenTaskProcessor {
       ),
       jsonRequired: true,
     );
-    if (!limit.treatAsSuccess &&
-        policy.allowTrimToLimits &&
-        !summarizePath) {
+    if (!limit.treatAsSuccess && policy.allowTrimToLimits && !summarizePath) {
       final shrunk = JsonOutputValidator.trimToLimits(
         parsed,
         maxArrayItems: maxArrayItems,
@@ -1763,9 +1786,10 @@ class QwenTaskProcessor {
         stage: WorkerTaskStage.llm,
       );
     }
-    final prompt = trimmed.isEmpty
+    final base = trimmed.isEmpty
         ? 'Describe this image and answer any question implied by the user.'
         : trimmed;
+    final prompt = DirectAnswerInstruction.attach(base);
     _log(
       '[DIRECT USER PROMPT] chars=${prompt.length} '
       'imageBytes=${imageBytes?.length ?? 0}',
@@ -1773,7 +1797,7 @@ class QwenTaskProcessor {
     final reply = await _runPromptReply(
       prompt,
       signingKey: signingKey,
-      systemInstruction: '',
+      systemInstruction: DirectAnswerInstruction.system,
       imageBytes: imageBytes,
       maxOutputTokens: maxOutputTokens,
       temperature: temperature,
@@ -1822,24 +1846,32 @@ class QwenTaskProcessor {
     );
     _contextBudget.ensureDirectInferenceOrThrow(
       prompt: prompt,
+      systemInstruction:
+          (systemInstruction != null && systemInstruction.isNotEmpty)
+          ? systemInstruction
+          : null,
       maxOutputTokens: outputCap,
     );
     final runner = _runner;
-    if (runner != null) {
-      final reply = _PromptReply(
-        text: await runner(formatted),
-        truncated: testRunnerTruncated,
-        stopReason: testRunnerTruncated ? testRunnerStopReason : 'model_eos',
-      );
-      _throwIfCancelled(reply.stopReason);
-      return reply;
-    }
-    final hasImage = imageBytes != null && imageBytes.isNotEmpty;
-    await ensureLoaded(signingKey: signingKey, requireVision: hasImage);
-    if (systemInstruction == '') {
+    final sessionInstruction = systemInstruction;
+    final portalChat = sessionInstruction != null;
+    if (sessionInstruction != null) {
       _adapter.usePortalPassthroughChat = true;
+      _adapter.portalSessionSystemInstruction =
+          sessionInstruction.trim().isEmpty ? null : sessionInstruction;
     }
     try {
+      if (runner != null) {
+        final reply = _PromptReply(
+          text: await runner(formatted),
+          truncated: testRunnerTruncated,
+          stopReason: testRunnerTruncated ? testRunnerStopReason : 'model_eos',
+        );
+        _throwIfCancelled(reply.stopReason);
+        return reply;
+      }
+      final hasImage = imageBytes != null && imageBytes.isNotEmpty;
+      await ensureLoaded(signingKey: signingKey, requireVision: hasImage);
       final InferenceOutput output;
       output = await _adapter.runUserPrompt(
         prompt: prompt,
@@ -1850,11 +1882,13 @@ class QwenTaskProcessor {
         topP: topP,
         shouldContinue: () => activeCancellation?.call() != true,
       );
-      final stopReason = output.metrics['stopReason']?.toString() ?? 'model_eos';
+      final stopReason =
+          output.metrics['stopReason']?.toString() ?? 'model_eos';
       _throwIfCancelled(stopReason);
       return _PromptReply(
         text: utf8.decode(output.resultBytes),
-        truncated: stopReason == 'output_limit' ||
+        truncated:
+            stopReason == 'output_limit' ||
             stopReason == GemmaGenerationOutputLimit.outputLimit ||
             stopReason == 'repetition',
         stopReason: stopReason,
@@ -1864,8 +1898,9 @@ class QwenTaskProcessor {
         generatedTokens: output.metrics['generatedTokens'] as int? ?? 0,
       );
     } finally {
-      if (systemInstruction == '') {
+      if (portalChat) {
         _adapter.usePortalPassthroughChat = false;
+        _adapter.portalSessionSystemInstruction = null;
       }
     }
   }

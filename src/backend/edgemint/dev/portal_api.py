@@ -66,7 +66,7 @@ def _bounded_form_text(
 
 class DevAddWalletRequest(BaseModel):
     name: str = Field(min_length=1, max_length=80)
-    amountMicroEur: int = Field(gt=0, le=1_000_000_000_000)
+    amountFibonAtomic: int = Field(gt=0, le=10_000_000_000)
 
 
 class DevCreateTaskRequest(BaseModel):
@@ -626,7 +626,7 @@ async def create_wallet(
         return fixtures.add_dev_wallet(
             workspace_id,
             name=body.name,
-            amount_micro_eur=body.amountMicroEur,
+            amount_fibon_atomic=body.amountFibonAtomic,
         )
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc

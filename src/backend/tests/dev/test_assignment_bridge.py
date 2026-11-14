@@ -116,8 +116,10 @@ def test_dev_assignment_deadlines_begin_when_delivered(
 
     assert assignment is not None
     assert datetime.fromisoformat(assignment["startDeadlineAt"]) == (
-        delivered_at + timedelta(minutes=30)
+        delivered_at + timedelta(hours=24)
     )
     assert datetime.fromisoformat(assignment["leaseExpiresAt"]) == (
-        delivered_at + timedelta(minutes=30)
+        delivered_at + timedelta(hours=24)
     )
+    assert assignment["executionDurationSeconds"] == 24 * 60 * 60
+    assert assignment["executionDurationSeconds"] != 5 * 60

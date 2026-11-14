@@ -57,18 +57,19 @@ class WorkerRuntimePlugin(
                 val taskType =
                     call.argument<String>("taskType") ?: "mission"
 
-                ExecutionForegroundService.start(
-                    context,
-                    assignmentId,
-                    taskType,
-                )
-
-                result.success(null)
+                runForeground(result) {
+                    ExecutionForegroundService.start(
+                        context,
+                        assignmentId,
+                        taskType,
+                    )
+                }
             }
 
             "allowExecutionWhileLocked" -> {
-                ExecutionForegroundService.allowWhileLocked(context)
-                result.success(null)
+                runForeground(result) {
+                    ExecutionForegroundService.allowWhileLocked(context)
+                }
             }
 
             "updateForegroundStatus" -> {
@@ -77,28 +78,31 @@ class WorkerRuntimePlugin(
                 val detail =
                     call.argument<String>("detail") ?: "running"
 
-                ExecutionForegroundService.update(
-                    context,
-                    progress,
-                    detail,
-                )
-
-                result.success(null)
+                runForeground(result) {
+                    ExecutionForegroundService.update(
+                        context,
+                        progress,
+                        detail,
+                    )
+                }
             }
 
             "stopForegroundService" -> {
-                ExecutionForegroundService.finishTask(context)
-                result.success(null)
+                runForeground(result) {
+                    ExecutionForegroundService.finishTask(context)
+                }
             }
 
             "startAssignmentWatch" -> {
-                ExecutionForegroundService.watch(context)
-                result.success(null)
+                runForeground(result) {
+                    ExecutionForegroundService.watch(context)
+                }
             }
 
             "stopAssignmentWatch" -> {
-                ExecutionForegroundService.stop(context)
-                result.success(null)
+                runForeground(result) {
+                    ExecutionForegroundService.stop(context)
+                }
             }
 
             "readDeviceSnapshot" -> {
@@ -195,6 +199,19 @@ class WorkerRuntimePlugin(
         }
     }
 
+    private fun runForeground(result: MethodChannel.Result, body: () -> Unit) {
+        try {
+            body()
+        } catch (error: Exception) {
+            android.util.Log.w(
+                "ExecutionForegroundService",
+                "Foreground request failed",
+                error,
+            )
+        }
+        result.success(null)
+    }
+
     private fun readInstalledAppVersion(): Map<String, Any?> {
         val packageInfo =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -243,7 +260,16 @@ class WorkerRuntimePlugin(
                     data = Uri.parse("package:${context.packageName}")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-            context.startActivity(settingsIntent)
+            try {
+                context.startActivity(settingsIntent)
+            } catch (error: Exception) {
+                result.error(
+                    "INSTALL_UNAVAILABLE",
+                    error.message ?: "Could not open install permission settings.",
+                    null,
+                )
+                return
+            }
             result.success("permissionRequired")
             return
         }
@@ -835,34 +861,41 @@ class WorkerRuntimePlugin(
     }
 
     private fun readNetworkState(): String {
-        val manager =
-            context.getSystemService(
-                Context.CONNECTIVITY_SERVICE,
-            ) as? ConnectivityManager
-                ?: return "unknown"
+        try {
+            val manager =
+                context.getSystemService(
+                    Context.CONNECTIVITY_SERVICE,
+                ) as? ConnectivityManager
+                    ?: return "unknown"
 
-        val network =
-            manager.activeNetwork
-                ?: return "offline"
+            val network = manager.activeNetwork ?: return "offline"
+            val caps = manager.getNetworkCapabilities(network) ?: return "offline"
+            if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                return "offline"
+            }
 
-        val caps =
-            manager.getNetworkCapabilities(network)
-                ?: return "unknown"
+            return when {
+                caps.hasTransport(
+                    NetworkCapabilities.TRANSPORT_WIFI,
+                ) -> "wifi"
 
-        return when {
-            caps.hasTransport(
-                NetworkCapabilities.TRANSPORT_WIFI,
-            ) -> "wifi"
+                caps.hasTransport(
+                    NetworkCapabilities.TRANSPORT_CELLULAR,
+                ) -> "cellular"
 
-            caps.hasTransport(
-                NetworkCapabilities.TRANSPORT_CELLULAR,
-            ) -> "cellular"
+                caps.hasTransport(
+                    NetworkCapabilities.TRANSPORT_ETHERNET,
+                ) -> "ethernet"
 
-            caps.hasTransport(
-                NetworkCapabilities.TRANSPORT_ETHERNET,
-            ) -> "ethernet"
-
-            else -> "unknown"
+                else -> "unknown"
+            }
+        } catch (error: Exception) {
+            android.util.Log.w(
+                "WorkerRuntimePlugin",
+                "Network probe failed",
+                error,
+            )
+            return "unknown"
         }
     }
 

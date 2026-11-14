@@ -7,7 +7,7 @@ import { useAsyncResource } from '../composables/useAsyncResource';
 import StatCard from '../components/ui/StatCard.vue';
 import UsageTrendChart from '../components/UsageTrendChart.vue';
 import { t } from '../i18n';
-import { formatMicroEur, formatNumber, taskStatusGroup } from '../utils/format';
+import { formatFibon, formatNumber, taskStatusGroup } from '../utils/format';
 
 const session = useSession();
 
@@ -30,21 +30,29 @@ const loading = computed(() => usageLoading.value || balanceLoading.value || tas
 
 const taskItems = computed(() => tasks.value?.items ?? []);
 
-const usedMicro = computed(() => usage.value?.computeMicroEur ?? 0);
-const limitMicro = computed(() => {
-  const available = balance.value?.availableMicroEur ?? 0;
-  const reserved = balance.value?.reservedMicroEur ?? 0;
-  return Math.max(usedMicro.value + available + reserved, 1);
-});
+function wholeAtomic(value) {
+  return Number.isInteger(value) ? value : 0;
+}
+
+const usedAmount = computed(() => wholeAtomic(usage.value?.computeFibonAtomic));
+const availableAmount = computed(() => wholeAtomic(balance.value?.availableFibonAtomic));
+const reservedAmount = computed(() => wholeAtomic(balance.value?.reservedFibonAtomic));
+const limitAmount = computed(() =>
+  Math.max(usedAmount.value + availableAmount.value + reservedAmount.value, 1),
+);
 const usageRate = computed(() => {
   if (!usage.value && !balance.value) return '—';
-  return `${Math.min(100, Math.round((usedMicro.value / limitMicro.value) * 100))}%`;
+  return `${Math.min(100, Math.round((usedAmount.value / limitAmount.value) * 100))}%`;
 });
 const requestCount = computed(() => usage.value?.taskCount ?? taskItems.value.length);
-const averageMicro = computed(() => {
+const averageAmount = computed(() => {
   if (!requestCount.value) return 0;
-  return Math.round(usedMicro.value / requestCount.value);
+  return Math.floor(usedAmount.value / requestCount.value);
 });
+
+function formatCredit(amount) {
+  return formatFibon(amount);
+}
 
 const STATUS_ORDER = ['done', 'running', 'queued', 'cancel'];
 const STATUS_LABELS = {
@@ -132,8 +140,8 @@ const taskTypeStats = computed(() => {
         />
         <StatCard
           :label="t('billing.compute')"
-          :value="formatMicroEur(usedMicro)"
-          :hint="`${usageRate} · ${t('usage.averageCost')} ${formatMicroEur(averageMicro)}`"
+          :value="formatCredit(usedAmount)"
+          :hint="`${usageRate} · ${t('usage.averageCost')} ${formatCredit(averageAmount)}`"
           icon="wallet"
         />
         <StatCard

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'worker_theme.dart';
 
-const workerOfflineDialogRouteName = 'worker-offline-connection';
-
 /// Blocks the worker until the phone has a network again.
-class WorkerOfflineGate extends StatefulWidget {
+///
+/// This is an overlay, not a [DialogRoute]. Pushing and removing a route when
+/// the radio flaps calls [NavigatorState.removeRoute] on a route that may
+/// already be gone, and that throws in release. The system then shows the
+/// Android Close app dialog.
+class WorkerOfflineGate extends StatelessWidget {
   const WorkerOfflineGate({
     super.key,
     required this.offline,
@@ -16,89 +19,23 @@ class WorkerOfflineGate extends StatefulWidget {
   final Widget child;
 
   @override
-  State<WorkerOfflineGate> createState() => _WorkerOfflineGateState();
-}
-
-class _WorkerOfflineGateState extends State<WorkerOfflineGate> {
-  Route<void>? _route;
-
-  @override
-  void initState() {
-    super.initState();
-    _schedule();
-  }
-
-  @override
-  void didUpdateWidget(WorkerOfflineGate oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.offline != widget.offline) {
-      _schedule();
-    }
-  }
-
-  @override
-  void dispose() {
-    final route = _route;
-    _route = null;
-    if (route != null && route.isActive) {
-      route.navigator?.removeRoute(route);
-    }
-    super.dispose();
-  }
-
-  void _schedule() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      if (widget.offline) {
-        _show();
-      } else {
-        _dismiss();
-      }
-    });
-  }
-
-  void _show() {
-    final current = _route;
-    if (current != null && current.isActive) {
-      return;
-    }
-    final navigator = Navigator.of(context, rootNavigator: true);
-    final route = _OfflineConnectionRoute(
-      context: context,
-      barrierLabel: 'No connection',
-      settings: const RouteSettings(name: workerOfflineDialogRouteName),
-      builder: (context) => const WorkerOfflineConnectionDialog(),
-    );
-    _route = route;
-    navigator.push(route);
-  }
-
-  void _dismiss() {
-    final route = _route;
-    _route = null;
-    if (route != null && route.isActive) {
-      route.navigator?.removeRoute(route);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AbsorbPointer(absorbing: widget.offline, child: widget.child);
+    return PopScope(
+      canPop: !offline,
+      child: Stack(
+        children: [
+          AbsorbPointer(absorbing: offline, child: child),
+          if (offline) ...[
+            const ModalBarrier(
+              dismissible: false,
+              color: Colors.black54,
+            ),
+            const Center(child: WorkerOfflineConnectionDialog()),
+          ],
+        ],
+      ),
+    );
   }
-}
-
-class _OfflineConnectionRoute extends DialogRoute<void> {
-  _OfflineConnectionRoute({
-    required super.context,
-    required super.builder,
-    required super.settings,
-    super.barrierLabel,
-  }) : super(barrierDismissible: false);
-
-  @override
-  RoutePopDisposition get popDisposition => RoutePopDisposition.doNotPop;
 }
 
 class WorkerOfflineConnectionDialog extends StatelessWidget {

@@ -18,11 +18,11 @@ describe('UsagePage', () => {
     vi.spyOn(portalApi, 'usage').mockResolvedValue({
       period: '2026-07',
       taskCount: 4,
-      computeMicroEur: 4_000_000,
+      computeFibonAtomic: 4_000_000,
     });
     vi.spyOn(portalApi, 'balance').mockResolvedValue({
-      availableMicroEur: 6_000_000,
-      reservedMicroEur: 1_000_000,
+      availableFibonAtomic: 6_000_000,
+      reservedFibonAtomic: 1_000_000,
     });
     vi.spyOn(portalApi, 'tasks').mockResolvedValue({
       items: [

@@ -38,4 +38,27 @@ describe('TaskSubmitForm chat composer', () => {
     expect(wrapper.find('.em-chat__typing').exists()).toBe(true);
     expect(wrapper.get('.em-chat__send').attributes('disabled')).toBeDefined();
   });
+
+  it('accepts a file up to 50 MB and rejects a larger one', async () => {
+    async function attach(wrapper, size) {
+      const input = wrapper.get('input[type="file"]');
+      const file = new File(['x'], 'schedule.png', { type: 'image/png' });
+      Object.defineProperty(file, 'size', { configurable: true, value: size });
+      Object.defineProperty(input.element, 'files', { configurable: true, value: [file] });
+      await input.trigger('change');
+    }
+
+    const accepted = mount(TaskSubmitForm);
+    await attach(accepted, 50 * 1024 * 1024);
+    await accepted.get('form').trigger('submit');
+    expect(accepted.emitted('submit')).toHaveLength(1);
+    expect(accepted.emitted('submit')[0][0].inputFile.name).toBe('schedule.png');
+    expect(accepted.text()).not.toContain('File is too large');
+
+    const rejected = mount(TaskSubmitForm);
+    await attach(rejected, 50 * 1024 * 1024 + 1);
+    await rejected.get('form').trigger('submit');
+    expect(rejected.emitted('submit')).toBeUndefined();
+    expect(rejected.text()).toContain('File is too large (max 50 MB).');
+  });
 });

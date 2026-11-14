@@ -8,7 +8,7 @@ import StatCard from '../components/ui/StatCard.vue';
 import StrokeIcon from '../components/ui/StrokeIcon.vue';
 import UsageTrendChart from '../components/UsageTrendChart.vue';
 import { t } from '../i18n';
-import { formatDateTime, formatFibon, formatMicroEur, formatNumber, taskListTitle, taskStatusGroup } from '../utils/format';
+import { formatDateTime, formatFibon, formatNumber, taskListTitle, taskStatusGroup } from '../utils/format';
 
 const session = useSession();
 const loading = ref(true);
@@ -56,13 +56,8 @@ const distribution = computed(() => {
 });
 
 const recentTasks = computed(() => taskItems.value.slice(0, 5));
-const usesFibonai = computed(() => Number.isInteger(balance.value?.availableFibonAtomic));
-const balanceAmount = computed(() =>
-  usesFibonai.value ? formatFibon(balance.value.availableFibonAtomic) : formatMicroEur(balance.value?.availableMicroEur),
-);
-const balanceReserved = computed(() =>
-  usesFibonai.value ? formatFibon(balance.value.reservedFibonAtomic ?? 0) : formatMicroEur(balance.value?.reservedMicroEur),
-);
+const balanceAmount = computed(() => formatFibon(balance.value?.availableFibonAtomic));
+const balanceReserved = computed(() => formatFibon(balance.value?.reservedFibonAtomic));
 
 function statusPresentation(status) {
   const group = taskStatusGroup(status);

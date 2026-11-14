@@ -59,11 +59,30 @@ def sold_task_atomic(tasks: Sequence[Mapping[str, Any]]) -> int:
     return total
 
 
+def tokens_given_atomic(task: Mapping[str, Any], credited: int = 0) -> int:
+    """FibonAI atomic units paid for one task.
+
+    A recorded worker credit wins. A succeeded task still shows its worker
+    reward when that credit row has not been stored.
+    """
+    if type(credited) is int and credited > 0:
+        return credited
+    status = str(task.get("lifecycleStatus") or "").lower()
+    settled = task.get("fibonaiSettlement") == "spent"
+    finished = status in {"succeeded", "completed", "done"} or settled
+    reward = task.get("fibonaiWorkerRewardAtomic")
+    if finished and type(reward) is int and reward > 0:
+        return reward
+    if type(credited) is int and credited >= 0:
+        return credited
+    return 0
+
+
 def with_tokens_given(monitor: dict[str, Any], credits: Mapping[str, int]) -> dict[str, Any]:
-    """Attach the FibonAI atomic units actually credited for each task."""
+    """Attach the FibonAI atomic units paid for each task."""
     for item in monitor["items"]:
         paid = credits.get(str(item["id"]), 0)
-        item["tokensGivenAtomic"] = paid if type(paid) is int and paid >= 0 else 0
+        item["tokensGivenAtomic"] = tokens_given_atomic(item, paid if type(paid) is int else 0)
     return monitor
 
 
@@ -91,13 +110,13 @@ def build_task_monitor(
                     "deviceName": device.get("deviceName"),
                 }
             )
-        items.append(
-            {
-                **task,
-                "inWorkerQueue": task_id in queued_ids,
-                "devices": assigned,
-            }
-        )
+        item = {
+            **task,
+            "inWorkerQueue": task_id in queued_ids,
+            "devices": assigned,
+        }
+        item["tokensGivenAtomic"] = tokens_given_atomic(item)
+        items.append(item)
     items.sort(key=lambda item: str(item.get("createdAt") or ""), reverse=True)
     status_counts = Counter(str(item.get("lifecycleStatus") or "unknown") for item in items)
     return {

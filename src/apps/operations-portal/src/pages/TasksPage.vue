@@ -73,6 +73,18 @@ function deviceLabel(device) {
   return device.deviceName || device.deviceId;
 }
 
+function tokensPaid(task) {
+  const credited = task.tokensGivenAtomic;
+  if (Number.isInteger(credited) && credited > 0) return formatFibon(credited);
+  const status = String(task.lifecycleStatus ?? '').toLowerCase();
+  const finished = ['succeeded', 'completed', 'done'].includes(status) || task.fibonaiSettlement === 'spent';
+  if (finished && Number.isInteger(task.fibonaiWorkerRewardAtomic)) {
+    return formatFibon(task.fibonaiWorkerRewardAtomic);
+  }
+  if (Number.isInteger(credited)) return formatFibon(credited);
+  return '—';
+}
+
 const pinnedDevice = computed(() => {
   const id = summary.value?.pinnedDeviceId;
   if (!id) return null;
@@ -144,7 +156,7 @@ const pinnedDevice = computed(() => {
       <tbody>
         <tr v-for="task in filtered" :key="task.id">
           <td class="mono">{{ task.id }}</td>
-          <td data-field="tokens-paid">{{ formatFibon(task.tokensGivenAtomic) }}</td>
+          <td data-field="tokens-paid">{{ tokensPaid(task) }}</td>
           <td>{{ task.taskType }}</td>
           <td class="mono" :title="task.workspaceId">{{ short(task.workspaceId) }}</td>
           <td>

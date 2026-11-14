@@ -835,9 +835,14 @@ class WorkerAppController extends ChangeNotifier {
   // Configuration
   // ---------------------------------------------------------------------------
 
-  static const _assignmentPollInterval = Duration(seconds: 2);
+  @visibleForTesting
+  Duration assignmentPollInterval = const Duration(seconds: 2);
 
   static const _assignmentLongPollSeconds = 20;
+
+  /// A poll that has not reached execution by this age is stuck.
+  /// Longer than the long-poll HTTP timeout (wait + 15s).
+  static const _assignmentAttemptStall = Duration(seconds: 50);
 
   /// Dev Mock is now explicit.
   ///
@@ -883,6 +888,11 @@ class WorkerAppController extends ChangeNotifier {
   static const _maxEnrollmentRetries = 5;
 
   int _assignmentLoopGeneration = 0;
+  bool _assignmentLoopWanted = false;
+  bool _assignmentLoopActive = false;
+  int _pollEpoch = 0;
+  DateTime? _lastAssignmentLoopBeat;
+  DateTime? _processingAssignmentSince;
   final ConnectivitySession _connectivity = ConnectivitySession();
   Timer? _deviceNetworkTimer;
   bool _deviceNetworkPollInFlight = false;
@@ -937,10 +947,35 @@ class WorkerAppController extends ChangeNotifier {
     if (!_disposed) {
       notifyListeners();
     }
+    if (wasOffline && !isDeviceOffline && available && !_disposed) {
+      unawaited(_platform.startAssignmentWatch());
+      _kickAssignmentLoopIfStalled();
+    }
   }
 
   @visibleForTesting
   int get debugAssignmentLoopGeneration => _assignmentLoopGeneration;
+
+  /// A session that is already sending heartbeats. The enrolled flag can be
+  /// false after a later enrollment error while this token still works.
+  bool get _hasLiveWorkerSession =>
+      hasManualCredentials ||
+      workerEnrolled ||
+      (_runtimeWorkerId.isNotEmpty && _runtimeAccessToken.isNotEmpty);
+
+  @visibleForTesting
+  void debugAdoptLiveSession({
+    required String workerId,
+    required String accessToken,
+  }) {
+    _runtimeWorkerId = workerId;
+    updateWorkerAccessToken(accessToken);
+  }
+
+  @visibleForTesting
+  void debugHeartbeatTick() {
+    _kickAssignmentLoopIfStalled();
+  }
 
   String get workerId => _runtimeWorkerId;
 
@@ -999,6 +1034,7 @@ class WorkerAppController extends ChangeNotifier {
     }
     _liveHeartbeatTimer = Timer.periodic(_liveHeartbeatInterval, (_) {
       unawaited(_sendHeartbeatIfConfigured());
+      _kickAssignmentLoopIfStalled();
     });
     unawaited(_sendHeartbeatIfConfigured());
   }
@@ -1065,7 +1101,7 @@ class WorkerAppController extends ChangeNotifier {
       !isGemmaDownloading &&
       available &&
       (usesDevMockInference || isGemmaReady) &&
-      (hasManualCredentials || workerEnrolled);
+      _hasLiveWorkerSession;
 
   bool get canPollAssignments => canAcceptAssignments;
 
@@ -1245,6 +1281,7 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   Future<void> bootstrap() async {
+    await refreshDeviceNetwork();
     startDeviceNetworkWatch();
     _logTask('Worker bootstrap started', phase: WorkerPipelineLog.boot);
 
@@ -1255,7 +1292,9 @@ class WorkerAppController extends ChangeNotifier {
       'reward_disclosure',
     ]);
 
-    await _resolveBackendUrl();
+    if (!isDeviceOffline) {
+      await _resolveBackendUrl();
+    }
 
     await _refreshBackendHealth();
     _rememberInstalledAppVersion(await _platform.readInstalledAppVersion());
@@ -1672,7 +1711,7 @@ class WorkerAppController extends ChangeNotifier {
     }
     if (!WorkerAssignmentLoopGate.mayStart(
       available: available,
-      authenticated: hasManualCredentials || workerEnrolled,
+      authenticated: _hasLiveWorkerSession,
     )) {
       _logTask(
         'Auto-assignment loop not started — worker auth is not valid',
@@ -1681,31 +1720,126 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
 
+    _assignmentLoopWanted = true;
     _assignmentLoopGeneration++;
-
     final generation = _assignmentLoopGeneration;
-
+    _assignmentLoopActive = true;
     unawaited(_runAutoAssignmentLoop(generation));
   }
 
   void stopAutoAssignmentLoop() {
+    _assignmentLoopWanted = false;
+    _assignmentLoopActive = false;
     _assignmentLoopGeneration++;
+  }
+
+  /// Heartbeats keep the phone "online" even after this loop has died.
+  /// The next heartbeat starts it again. Reopening the app is not required.
+  void _kickAssignmentLoopIfStalled() {
+    if (_disposed || !available || isDeviceOffline) {
+      return;
+    }
+    if (!WorkerAssignmentLoopGate.mayStart(
+      available: available,
+      authenticated: _hasLiveWorkerSession,
+    )) {
+      return;
+    }
+    if (_assignmentLoopActive) {
+      final beat = _lastAssignmentLoopBeat;
+      final since = _processingAssignmentSince;
+      final attemptStuck =
+          _processingAssignment &&
+          !_isBusyExecuting &&
+          since != null &&
+          DateTime.now().difference(since) > _assignmentAttemptStall;
+      final beatStale =
+          beat != null &&
+          DateTime.now().difference(beat) > _assignmentAttemptStall;
+      if (!attemptStuck && !beatStale) {
+        return;
+      }
+      _logTask(
+        'Assignment loop stalled; polling again',
+        phase: WorkerPipelineLog.assign,
+      );
+      _pollEpoch++;
+      _processingAssignment = false;
+      _processingAssignmentSince = null;
+    }
+    _lastAssignmentLoopBeat = DateTime.now();
+    startAutoAssignmentLoop();
+  }
+
+  Future<void> _recheckAssignmentGate() async {
+    if (isDeviceOffline) {
+      return;
+    }
+    await _refreshBackendHealth();
+    if (backendOnline && _connectivity.state != ConnectivityState.online) {
+      _connectivity.restored();
+    }
+    if (_disposed || isGemmaReady || isGemmaDownloading || usesDevMockInference) {
+      return;
+    }
+    try {
+      await ensureModelReady().timeout(const Duration(seconds: 12));
+    } on TimeoutException {
+      _logTask(
+        'Model readiness check timed out; assignment loop continues',
+        phase: WorkerPipelineLog.assign,
+      );
+    } catch (error, stackTrace) {
+      _logError(
+        'Model readiness check failed; assignment loop continues',
+        error,
+        stackTrace,
+        WorkerPipelineLog.assign,
+      );
+    }
   }
 
   Future<void> _runAutoAssignmentLoop(int generation) async {
     _logTask('Auto-assignment loop started', phase: WorkerPipelineLog.assign);
 
     while (!_disposed && generation == _assignmentLoopGeneration && available) {
-      if (!canAcceptAssignments) {
-        await Future<void>.delayed(_assignmentPollInterval);
-
+      _lastAssignmentLoopBeat = DateTime.now();
+      if (isDeviceOffline) {
+        await Future<void>.delayed(assignmentPollInterval);
         continue;
+      }
+      if (!canAcceptAssignments) {
+        await _recheckAssignmentGate();
+        if (_disposed ||
+            generation != _assignmentLoopGeneration ||
+            !available) {
+          break;
+        }
+        if (!canAcceptAssignments) {
+          await Future<void>.delayed(assignmentPollInterval);
+          continue;
+        }
       }
 
       if (_processingAssignment || _isBusyExecuting) {
-        await Future<void>.delayed(_assignmentPollInterval);
-
-        continue;
+        final since = _processingAssignmentSince;
+        final stuckBeforeRun =
+            _processingAssignment &&
+            !_isBusyExecuting &&
+            since != null &&
+            DateTime.now().difference(since) > _assignmentAttemptStall;
+        if (stuckBeforeRun) {
+          _logTask(
+            'Assignment attempt stuck before execution; polling again',
+            phase: WorkerPipelineLog.assign,
+          );
+          _pollEpoch++;
+          _processingAssignment = false;
+          _processingAssignmentSince = null;
+        } else {
+          await Future<void>.delayed(assignmentPollInterval);
+          continue;
+        }
       }
 
       if (_connectivity.state != ConnectivityState.online) {
@@ -1724,10 +1858,19 @@ class WorkerAppController extends ChangeNotifier {
         }
       }
 
-      await _processNextAssignment(
-        announceEmptyQueue: false,
-        waitSeconds: _assignmentLongPollSeconds,
-      );
+      try {
+        await _processNextAssignment(
+          announceEmptyQueue: false,
+          waitSeconds: _assignmentLongPollSeconds,
+        );
+      } catch (error, stackTrace) {
+        _logError(
+          'Assignment poll failed; loop continues',
+          error,
+          stackTrace,
+          WorkerPipelineLog.assign,
+        );
+      }
 
       if (_disposed || generation != _assignmentLoopGeneration || !available) {
         break;
@@ -1737,10 +1880,11 @@ class WorkerAppController extends ChangeNotifier {
         continue;
       }
 
-      await Future<void>.delayed(_assignmentPollInterval);
+      await Future<void>.delayed(assignmentPollInterval);
     }
 
     if (generation == _assignmentLoopGeneration) {
+      _assignmentLoopActive = false;
       _logTask('Auto-assignment loop stopped', phase: WorkerPipelineLog.assign);
     }
   }
@@ -1869,7 +2013,9 @@ class WorkerAppController extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   Future<void> refreshBackendHealth() async {
-    await _resolveBackendUrl();
+    if (!isDeviceOffline) {
+      await _resolveBackendUrl();
+    }
 
     await _refreshBackendHealth();
 
@@ -2054,6 +2200,11 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> _refreshBackendHealth() async {
+    if (isDeviceOffline) {
+      backendMessage = 'Phone has no internet connection.';
+      lastSync = _formatNow();
+      return;
+    }
     try {
       final response = await _http
           .get(_config.resolve('/health/live'))
@@ -2086,7 +2237,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   Future<void> _sendHeartbeatIfConfigured() async {
-    if (_disposed || _heartbeatSendInFlight || !available) {
+    if (_disposed || _heartbeatSendInFlight || !available || isDeviceOffline) {
       return;
     }
     final heartbeat = _heartbeat;
@@ -2663,21 +2814,35 @@ class WorkerAppController extends ChangeNotifier {
       return;
     }
 
+    final epoch = _pollEpoch;
     _processingAssignment = true;
+    _processingAssignmentSince = DateTime.now();
 
     try {
       await _runAssignmentCycle(
         announceEmptyQueue: announceEmptyQueue,
         waitSeconds: waitSeconds,
+        epoch: epoch,
+      );
+    } catch (error, stackTrace) {
+      _logError(
+        'Assignment poll failed; loop continues',
+        error,
+        stackTrace,
+        WorkerPipelineLog.assign,
       );
     } finally {
-      _processingAssignment = false;
+      if (epoch == _pollEpoch) {
+        _processingAssignment = false;
+        _processingAssignmentSince = null;
+      }
     }
   }
 
   Future<void> _runAssignmentCycle({
     required bool announceEmptyQueue,
     required int waitSeconds,
+    required int epoch,
   }) async {
     _logTask('Checking for next assignment', phase: WorkerPipelineLog.assign);
 
@@ -2697,7 +2862,7 @@ class WorkerAppController extends ChangeNotifier {
     try {
       await _refreshBackendHealth();
 
-      await _refreshDeviceReadiness();
+      await _refreshDeviceReadiness().timeout(const Duration(seconds: 12));
 
       _logTask(
         'Device: '
@@ -2730,9 +2895,9 @@ class WorkerAppController extends ChangeNotifier {
         _connectivity.restored();
       }
 
-      if (!hasManualCredentials && !workerEnrolled) {
-        await _ensureWorkerSession();
-        if (!workerEnrolled) {
+      if (!_hasLiveWorkerSession) {
+        await _ensureWorkerSession().timeout(const Duration(seconds: 12));
+        if (!_hasLiveWorkerSession) {
           _logTask(
             'Assignment aborted - '
             'worker not enrolled (${enrollmentMessage ?? "unknown"})',
@@ -2741,11 +2906,17 @@ class WorkerAppController extends ChangeNotifier {
         }
       }
 
-      await _refreshSessionIfNeeded();
+      await _refreshSessionIfNeeded().timeout(const Duration(seconds: 12));
 
-      await _sendHeartbeatIfConfigured();
+      await _sendHeartbeatIfConfigured().timeout(const Duration(seconds: 12));
 
-      if (await _coordinator.hasPendingServerSync()) {
+      if (epoch != _pollEpoch) {
+        return;
+      }
+
+      if (await _coordinator.hasPendingServerSync().timeout(
+        const Duration(seconds: 12),
+      )) {
         _logTask(
           'Pending server sync; reconcile before assignments:next',
           phase: WorkerPipelineLog.assign,
@@ -2789,7 +2960,11 @@ class WorkerAppController extends ChangeNotifier {
       }
 
       if (!isGemmaReady) {
-        await ensureModelReady();
+        await ensureModelReady().timeout(const Duration(seconds: 12));
+      }
+
+      if (epoch != _pollEpoch) {
+        return;
       }
 
       _logTask(
@@ -3556,6 +3731,15 @@ class WorkerAppController extends ChangeNotifier {
     _processLifecycle.handleAppLifecycleState(state);
     if (state == AppLifecycleState.resumed && !_disposed) {
       unawaited(refreshDeviceNetwork());
+      if (isDeviceOffline) {
+        return;
+      }
+      if (available) {
+        // Android may have stopped the watch service. Bring it back while
+        // the activity is allowed to start a foreground service.
+        unawaited(_platform.startAssignmentWatch());
+      }
+      _kickAssignmentLoopIfStalled();
       if (_awaitingInstallPermission && !_appUpdateInFlight) {
         _awaitingInstallPermission = false;
         unawaited(installOfferedAppUpdate());
