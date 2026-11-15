@@ -257,7 +257,7 @@ async function addWallet() {
                 <tr>
                   <th scope="col">{{ t('billing.invoiceId') }}</th>
                   <th scope="col">{{ t('billing.colPeriod') }}</th>
-                  <th scope="col">{{ t('billing.amount') }}</th>
+                  <th scope="col">{{ t('billing.colAmount') }}</th>
                   <th scope="col">{{ t('billing.status') }}</th>
                   <th scope="col">{{ t('billing.colDue') }}</th>
                 </tr>

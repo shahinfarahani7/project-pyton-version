@@ -69,6 +69,18 @@ class DeviceInferencePlan {
   /// so existing benchmark/catalog behavior stays in tests that never publish.
   int? contextTokensForResidentLoad() => textSelection?.selectedContextTokens;
 
+  /// Re-reads free RAM and the resident engine. The cached selection can
+  /// still say admitted after the model load has used the headroom.
+  ModelSelection? reevaluate({
+    required String taskType,
+    required bool wantsVision,
+  }) {
+    if (profile == null) {
+      return null;
+    }
+    return _select(taskType: taskType, wantsVision: wantsVision);
+  }
+
   ModelSelection? selectionFor({
     required String taskType,
     required bool wantsVision,

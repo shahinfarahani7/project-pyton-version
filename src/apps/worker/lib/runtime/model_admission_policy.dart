@@ -50,6 +50,15 @@ class ModelDescriptor {
 
   int peakForContext(int contextTokens) =>
       peakEstimatedMemoryByContextMb[contextTokens] ?? peakEstimatedMemoryMb;
+
+  /// Weights plus the context working set. Free RAM is compared with this,
+  /// because a peak table below the file size still faults those pages in
+  /// during generation and the process is killed when they do not fit.
+  int predictedWorkingSetMb(int contextTokens) {
+    final peak = peakForContext(contextTokens);
+    final fileMb = modelFileSizeBytes ~/ (1024 * 1024);
+    return fileMb > peak ? fileMb : peak;
+  }
 }
 
 class ModelAdmissionResult {
@@ -523,14 +532,18 @@ class ModelAdmissionPolicy {
     if (available != null && available < floor) {
       reasons.add('resident_session_safety_floor');
     }
+    final budget = config.memory.safeBudgetMb(
+      availableRamMb: available,
+      totalRamMb: device.totalRamMb,
+    );
+    final predicted = model.predictedWorkingSetMb(requested);
+    if (budget != null && predicted >= budget) {
+      reasons.add('resident_generation_exceeds_free_ram');
+    }
     final admitted = reasons.isEmpty;
     if (admitted) {
       reasons.add('resident_model_reuse');
     }
-    final budget = config.memory.safeBudgetMb(
-      availableRamMb: device.availableRamMb,
-      totalRamMb: device.totalRamMb,
-    );
     _trace(
       model: model,
       contextTokens: requested,
@@ -538,9 +551,9 @@ class ModelAdmissionPolicy {
       budget: budget,
       observedPeakRssMb: null,
       peakForContextMb: model.peakForContext(requested),
-      peak: null,
+      peak: predicted,
       benchmarkStatus: 'resident',
-      comparison: 'fullPeakRecheck=false',
+      comparison: budget == null ? 'budget == null' : '$predicted >= $budget',
       admitted: admitted,
       reasons: reasons,
       phase: 'POST_MODEL_LOAD',

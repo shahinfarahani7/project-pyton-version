@@ -5,6 +5,15 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
+from edgemint.dev.fibonai_billing import (
+    WorkspaceBook,
+    detach_book,
+    ensure_book,
+    existing_book,
+    forget_book,
+    install_book,
+    restore_book,
+)
 from edgemint.security.api_key_directory import ApiKeyError
 from edgemint.security.api_key_directory import directory as api_key_directory
 
@@ -24,96 +33,69 @@ _PREVIEW_RESULT_CHARS = 500
 _MAX_STORED_TEXT_CHARS = 32_000
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
-_fibonai_available: dict[UUID, int] = {}
-_billing_invoices: dict[UUID, dict[str, dict[str, Any]]] = {}
-_DEV_FIBONAI_GRANT_TOKENS = 1_000_000
-_MAX_WALLET_TOKENS = 1_000_000
 
 
-def _fibonai_grant_atomic() -> int:
-    from edgemint.economy.fibonai_token import cached_economy
-
-    policy = cached_economy()
-    return _DEV_FIBONAI_GRANT_TOKENS * policy.atomic_units_per_token
+def _fibonai_book(workspace_id: UUID) -> WorkspaceBook:
+    return ensure_book(workspace_id, DEV_WORKSPACE_IDS)
 
 
 def fibonai_available(workspace_id: UUID) -> int:
-    if workspace_id not in _fibonai_available:
-        grant = _fibonai_grant_atomic() if workspace_id in DEV_WORKSPACE_IDS else 0
-        _fibonai_available[workspace_id] = grant
-    return _fibonai_available[workspace_id]
+    return _fibonai_book(workspace_id).available_total()
 
 
 def fibonai_reserved(workspace_id: UUID) -> int:
-    return sum(
-        int(task["fibonaiChargeAtomic"])
-        for task in _created_tasks.get(workspace_id, [])
-        if task.get("fibonaiSettlement") == "reserved" and type(task.get("fibonaiChargeAtomic")) is int
-    )
+    return _fibonai_book(workspace_id).reserved_total()
+
+
+def forget_fibonai_book(workspace_id: UUID) -> None:
+    forget_book(workspace_id)
+
+
+def detach_fibonai_book(workspace_id: UUID) -> WorkspaceBook | None:
+    return detach_book(workspace_id)
+
+
+def restore_fibonai_book(workspace_id: UUID, book: WorkspaceBook | None) -> None:
+    restore_book(workspace_id, book)
+
+
+def install_fibonai_book(workspace_id: UUID, *, primary_atomic: int) -> WorkspaceBook:
+    book = WorkspaceBook.open(workspace_id, grant_atomic=primary_atomic)
+    install_book(book)
+    return book
 
 
 def _reserve_task_fibonai(workspace_id: UUID, task: dict[str, Any]) -> None:
     from edgemint.economy.fibonai_token import quote_accepted_task
 
     quote = quote_accepted_task()
-    available = fibonai_available(workspace_id)
-    if available < quote.charge_atomic:
-        raise ValueError("INSUFFICIENT_FIBONAI")
-    _fibonai_available[workspace_id] = available - quote.charge_atomic
+    _fibonai_book(workspace_id).reserve(
+        str(task["id"]),
+        difficulty_grade=quote.difficulty_grade,
+        charge_atomic=quote.charge_atomic,
+        worker_reward_atomic=quote.worker_reward_atomic,
+        treasury_atomic=quote.treasury_atomic,
+        now=_now_iso(),
+    )
     task["fibonaiDifficultyGrade"] = quote.difficulty_grade
     task["fibonaiChargeAtomic"] = quote.charge_atomic
     task["fibonaiWorkerRewardAtomic"] = quote.worker_reward_atomic
     task["fibonaiTreasuryAtomic"] = quote.treasury_atomic
     task["fibonaiSettlement"] = "reserved"
-    _upsert_task_invoice(workspace_id, task, "open")
 
 
 def _settle_task_fibonai(workspace_id: UUID, task: dict[str, Any], status: str) -> None:
-    if task.get("fibonaiSettlement") != "reserved":
+    book = existing_book(workspace_id)
+    if book is None or task.get("fibonaiSettlement") != "reserved":
         return
-    if status == "succeeded":
-        task["fibonaiSettlement"] = "spent"
-        _upsert_task_invoice(workspace_id, task, "paid")
+    receipt = book.settle(str(task["id"]), status, now=_now_iso())
+    if receipt is None:
         return
-    if status not in {"failed", "cancelled", "expired"}:
-        return
-    charge = task.get("fibonaiChargeAtomic")
-    if type(charge) is int and charge >= 0:
-        _fibonai_available[workspace_id] = fibonai_available(workspace_id) + charge
-    task["fibonaiSettlement"] = "refunded"
-    _upsert_task_invoice(workspace_id, task, "void")
+    task["fibonaiSettlement"] = "spent" if receipt.status == "spent" else "refunded"
 
 
 def _now_iso() -> str:
     return datetime.now(tz=UTC).isoformat()
-
-
-def _credit_fibonai(workspace_id: UUID, amount: int) -> None:
-    _fibonai_available[workspace_id] = fibonai_available(workspace_id) + amount
-
-
-def _upsert_task_invoice(workspace_id: UUID, task: dict[str, Any], status: str) -> None:
-    charge = task.get("fibonaiChargeAtomic")
-    task_id = task.get("id")
-    if type(charge) is not int or charge < 0 or not isinstance(task_id, str) or not task_id:
-        return
-    bucket = _billing_invoices.setdefault(workspace_id, {})
-    current = bucket.get(task_id)
-    now = _now_iso()
-    if current is None:
-        bucket[task_id] = {
-            "id": f"inv_{task_id.removeprefix('tsk_')}",
-            "status": status,
-            "amountFibonAtomic": charge,
-            "taskId": task_id,
-            "period": now[:7],
-            "dueDate": now[:10],
-            "createdAt": now,
-        }
-        return
-    current["status"] = status
-    current["amountFibonAtomic"] = charge
-    current["updatedAt"] = now
 
 
 def _task_row(
@@ -639,20 +621,12 @@ def dev_usage(workspace_id: UUID) -> dict[str, Any]:
     period = datetime.now(tz=UTC).strftime("%Y-%m")
     tasks = _created_tasks.get(workspace_id, [])
     submitted = [task for task in tasks if str(task.get("createdAt") or "").startswith(period)]
-    spent = 0
-    for task in tasks:
-        if task.get("fibonaiSettlement") != "spent":
-            continue
-        stamp = str(task.get("updatedAt") or task.get("createdAt") or "")
-        charge = task.get("fibonaiChargeAtomic")
-        if stamp.startswith(period) and type(charge) is int and charge >= 0:
-            spent += charge
     status = "ready" if workspace_id in DEV_WORKSPACE_IDS else "empty"
     return {
         "status": status,
         "period": period,
         "taskCount": len(submitted),
-        "computeFibonAtomic": spent,
+        "computeFibonAtomic": _fibonai_book(workspace_id).spent_in_period(period),
     }
 
 
@@ -673,72 +647,23 @@ def dev_credit_balance(workspace_id: UUID) -> dict[str, Any]:
     return {"status": "empty", **fibonai}
 
 
-_added_wallets: dict[UUID, list[dict[str, Any]]] = {}
-
-
 def dev_wallets(workspace_id: UUID) -> dict[str, Any]:
-    return {"items": _wallet_items(workspace_id)}
-
-
-def _wallet_items(workspace_id: UUID) -> list[dict[str, Any]]:
-    custom = [dict(item) for item in _added_wallets.get(workspace_id, [])]
-    ledger = fibonai_available(workspace_id)
-    custom_total = sum(int(item.get("availableFibonAtomic") or 0) for item in custom)
-    if ledger >= custom_total:
-        primary_available = ledger - custom_total
-    else:
-        primary_available = 0
-        overflow = custom_total - ledger
-        for item in reversed(custom):
-            face = int(item.get("availableFibonAtomic") or 0)
-            take = face if face < overflow else overflow
-            item["availableFibonAtomic"] = face - take
-            overflow -= take
-            if overflow == 0:
-                break
-    primary = {
-        "id": "wal_primary",
-        "name": "Primary",
-        "availableFibonAtomic": primary_available,
-        "reservedFibonAtomic": fibonai_reserved(workspace_id),
-        "builtin": True,
-    }
-    for item in custom:
-        item["reservedFibonAtomic"] = 0
-    return [primary, *custom]
+    return {"items": _fibonai_book(workspace_id).wallet_rows()}
 
 
 def add_dev_wallet(workspace_id: UUID, *, name: str, amount_fibon_atomic: int) -> dict[str, Any]:
     from edgemint.economy.fibonai_token import cached_economy
 
-    cleaned = name.strip()
-    if not cleaned or len(cleaned) > 80:
-        raise ValueError("WALLET_NAME_INVALID")
-    unit = cached_economy().atomic_units_per_token
-    if (
-        type(amount_fibon_atomic) is not int
-        or amount_fibon_atomic <= 0
-        or unit <= 0
-        or amount_fibon_atomic % unit != 0
-        or amount_fibon_atomic // unit > _MAX_WALLET_TOKENS
-    ):
-        raise ValueError("WALLET_AMOUNT_INVALID")
-    wallet = {
-        "id": f"wal_{secrets.token_hex(6)}",
-        "name": cleaned,
-        "availableFibonAtomic": amount_fibon_atomic,
-        "reservedFibonAtomic": 0,
-        "builtin": False,
-    }
-    _credit_fibonai(workspace_id, amount_fibon_atomic)
-    _added_wallets.setdefault(workspace_id, []).append(wallet)
-    return wallet
+    return _fibonai_book(workspace_id).add_named_wallet(
+        name=name,
+        amount_atomic=amount_fibon_atomic,
+        unit=cached_economy().atomic_units_per_token,
+        now=_now_iso(),
+    )
 
 
 def dev_invoices(workspace_id: UUID) -> dict[str, Any]:
-    items = [dict(item) for item in _billing_invoices.get(workspace_id, {}).values()]
-    items.sort(key=lambda item: str(item.get("createdAt") or ""), reverse=True)
-    return {"items": items, "page": PAGE}
+    return {"items": _fibonai_book(workspace_id).invoice_items(), "page": PAGE}
 
 
 def dev_disputes(workspace_id: UUID) -> dict[str, Any]:

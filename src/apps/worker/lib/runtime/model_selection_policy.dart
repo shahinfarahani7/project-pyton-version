@@ -162,6 +162,7 @@ class ModelSelectionPolicy {
   }) {
     final tierPolicy = _policyFor(device);
     final evaluations = <ModelAdmissionResult, ModelDescriptor>{};
+    ModelAdmissionResult? rejection;
     for (final model in request.candidates) {
       if (request.wantsVision && !model.supportsVision) {
         continue;
@@ -187,6 +188,8 @@ class ModelSelectionPolicy {
       }
       if (fitted != null && fitted.admitted) {
         evaluations[fitted] = model;
+      } else if (fitted != null) {
+        rejection ??= fitted;
       }
     }
 
@@ -259,7 +262,7 @@ class ModelSelectionPolicy {
         ? (downgraded
             ? 'context_downgraded_to_$fittedContext'
             : (admissionResult!.reasons.isEmpty ? 'admitted' : admissionResult.reasons.join(',')))
-        : 'no_admitted_model';
+        : (rejection?.reasons.join(',') ?? 'no_admitted_model');
     final selection = ModelSelection(
       selectedModelId: admittedOk ? model.modelId : 'none',
       selectedBackend: admittedOk ? admissionResult!.selectedBackend : 'none',

@@ -149,7 +149,7 @@ void main() {
     expect(result.admitted, isTrue);
   });
 
-  test('a resident 2048 engine stays selected after its own RAM use', () {
+  test('a resident engine is refused when free RAM cannot hold the weight file', () {
     final device = measured(
       totalRamMb: 7398,
       availableRamMb: 672,
@@ -164,19 +164,16 @@ void main() {
     );
     expect(result.admissionPhase, 'POST_MODEL_LOAD');
     expect(result.fullPeakRecheck, isFalse);
-    expect(result.reasons, contains('resident_model_reuse'));
-    expect(result.reasons, isNot(contains('memory_budget_exceeded')));
-    expect(result.admitted, isTrue);
+    expect(result.reasons, contains('resident_generation_exceeds_free_ram'));
+    expect(result.reasons, isNot(contains('resident_model_reuse')));
+    expect(result.admitted, isFalse);
     final chosen = selection.select(
       device: device,
       request: const ModelSelectionRequest(taskType: 'text.direct'),
       residentEngine: resident,
     );
-    expect(chosen.hardwareTier, HardwareTier.t2);
-    expect(chosen.selectedModelId, gemma.modelId);
-    expect(chosen.selectedModelId, isNot('none'));
-    expect(chosen.selectedContextTokens, 2048);
-    expect(chosen.admitted, isTrue);
+    expect(chosen.admitted, isFalse);
+    expect(chosen.reason, contains('resident_generation_exceeds_free_ram'));
     final installed = policy.evaluate(
       device: device,
       model: gemma,
@@ -191,8 +188,25 @@ void main() {
       ),
     );
     expect(installed.admissionPhase, 'POST_MODEL_LOAD');
-    expect(installed.admitted, isTrue);
-    expect(installed.reasons, contains('resident_model_reuse'));
+    expect(installed.admitted, isFalse);
+    expect(installed.reasons, contains('resident_generation_exceeds_free_ram'));
+  });
+
+  test('a resident engine still runs when free RAM covers the weight file', () {
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 5000,
+      cpuPartIds: const [0xD41],
+    );
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 2048,
+      residentEngine: liveGemma(),
+    );
+    expect(result.admitted, isTrue);
+    expect(result.reasons, contains('resident_model_reuse'));
+    expect(gemma.predictedWorkingSetMb(2048), greaterThan(gemma.peakForContext(2048)));
   });
 
   test('a larger context than the resident window uses pre-load admission', () {

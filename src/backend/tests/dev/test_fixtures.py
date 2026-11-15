@@ -3,14 +3,13 @@ from __future__ import annotations
 from uuid import UUID
 
 import pytest
-
 from edgemint.dev import fixtures
 
 
 def test_portal_workspace_starts_with_one_million_fibon_tokens() -> None:
     from edgemint.economy.fibonai_token import cached_economy
 
-    fixtures._fibonai_available.pop(fixtures.DEV_WORKSPACE_PRIMARY, None)
+    fixtures.forget_fibonai_book(fixtures.DEV_WORKSPACE_PRIMARY)
     atomic = fixtures.fibonai_available(fixtures.DEV_WORKSPACE_PRIMARY)
     assert atomic == 1_000_000 * cached_economy().atomic_units_per_token
 
@@ -39,8 +38,7 @@ def test_dev_task_lookup() -> None:
 
 def test_add_dev_wallet_credits_whole_fibon_tokens() -> None:
     workspace_id = UUID(int=7)
-    fixtures._added_wallets.pop(workspace_id, None)
-    fixtures._fibonai_available[workspace_id] = 0
+    fixtures.forget_fibonai_book(workspace_id)
     created = fixtures.add_dev_wallet(workspace_id, name=" Ops ", amount_fibon_atomic=5 * 10_000)
     listed = fixtures.dev_wallets(workspace_id)
     assert created["availableFibonAtomic"] == 50_000
@@ -55,8 +53,7 @@ def test_add_dev_wallet_credits_whole_fibon_tokens() -> None:
         fixtures.add_dev_wallet(workspace_id, name="Ops", amount_fibon_atomic=0)
     with pytest.raises(ValueError, match="WALLET_AMOUNT_INVALID"):
         fixtures.add_dev_wallet(workspace_id, name="Ops", amount_fibon_atomic=10_001)
-    fixtures._added_wallets.pop(workspace_id, None)
-    fixtures._fibonai_available.pop(workspace_id, None)
+    fixtures.forget_fibonai_book(workspace_id)
 
 
 def test_dev_billing_payloads() -> None:

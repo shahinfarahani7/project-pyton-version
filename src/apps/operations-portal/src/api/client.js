@@ -21,6 +21,7 @@ export async function fetchJson(path, options = {}) {
   const response = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? ''}${path}`, {
     method: options.method ?? (options.body ? 'POST' : 'GET'),
     credentials: 'include',
+    cache: 'no-store',
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });

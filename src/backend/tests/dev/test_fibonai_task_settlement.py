@@ -86,9 +86,8 @@ def test_added_wallet_funds_the_next_task() -> None:
 
     workspace_id = UUID(int=11)
     quote = quote_accepted_task()
-    fixtures._fibonai_available[workspace_id] = 0
-    fixtures._added_wallets.pop(workspace_id, None)
-    fixtures._billing_invoices.pop(workspace_id, None)
+    fixtures.forget_fibonai_book(workspace_id)
+    fixtures.install_fibonai_book(workspace_id, primary_atomic=0)
     fixtures._created_tasks.pop(workspace_id, None)
     try:
         fixtures.add_dev_wallet(workspace_id, name="Travel", amount_fibon_atomic=quote.charge_atomic)
@@ -100,16 +99,14 @@ def test_added_wallet_funds_the_next_task() -> None:
         rows = fixtures.dev_wallets(workspace_id)["items"]
         assert sum(row["availableFibonAtomic"] for row in rows) == 0
     finally:
-        fixtures._added_wallets.pop(workspace_id, None)
-        fixtures._billing_invoices.pop(workspace_id, None)
+        fixtures.forget_fibonai_book(workspace_id)
         fixtures._created_tasks.pop(workspace_id, None)
-        fixtures._fibonai_available.pop(workspace_id, None)
 
 
 def test_empty_balance_rejects_the_task() -> None:
     workspace_id = fixtures.DEV_WORKSPACE_PRIMARY
-    previous = fixtures.fibonai_available(workspace_id)
-    fixtures._fibonai_available[workspace_id] = 0
+    previous = fixtures.detach_fibonai_book(workspace_id)
+    fixtures.install_fibonai_book(workspace_id, primary_atomic=0)
     try:
         with patch("edgemint.dev.assignment_bridge.enqueue_assignment_for_worker", return_value={}):
             try:
@@ -119,4 +116,4 @@ def test_empty_balance_rejects_the_task() -> None:
             else:
                 raise AssertionError("expected INSUFFICIENT_FIBONAI")
     finally:
-        fixtures._fibonai_available[workspace_id] = previous
+        fixtures.restore_fibonai_book(workspace_id, previous)

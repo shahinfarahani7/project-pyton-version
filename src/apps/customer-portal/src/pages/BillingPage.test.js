@@ -43,6 +43,8 @@ describe('billing page', () => {
     expect(wrapper.text()).toContain('FIBON');
     expect(wrapper.text()).toContain('2026-07');
     expect(wrapper.text()).toContain('Open invoices');
+    expect(wrapper.text()).toContain('Held on open tasks');
+    expect(wrapper.text()).not.toContain('Amount due');
     expect(wrapper.text()).toContain('42 FIBON');
     expect(wrapper.text()).toContain('86.2 FIBON');
     expect(wrapper.text()).not.toContain('€');

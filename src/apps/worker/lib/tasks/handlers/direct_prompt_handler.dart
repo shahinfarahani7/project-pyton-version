@@ -13,6 +13,19 @@ import '../../runtime/gemma_generation_output_limit.dart';
 import '../../telemetry/worker_task_metrics.dart';
 import 'task_handler.dart';
 
+bool _freeRamBlocksGeneration(String reason) {
+  const markers = [
+    'resident_generation_exceeds_free_ram',
+    'memory_budget_exceeded',
+    'below_minimum_ram',
+    'peak_rss_exceeds_budget',
+    'resident_session_safety_floor',
+    'android_low_memory',
+    'memory_unknown',
+  ];
+  return markers.any(reason.contains);
+}
+
 /// Sends portal intake to the on-device Gemma model (text and/or image).
 class DirectPromptHandler implements TaskHandler {
   @override
@@ -71,6 +84,22 @@ class DirectPromptHandler implements TaskHandler {
         '[DEVICE CONFIG] vision restricted reason=${selection.reason}; '
         'resident model stays loaded',
         name: 'EdgeMintTaskEngine',
+      );
+    }
+    final liveAdmission = DeviceInferencePlan.instance.reevaluate(
+      taskType: taskType,
+      wantsVision: hasImage,
+    );
+    if (liveAdmission != null &&
+        !liveAdmission.admitted &&
+        _freeRamBlocksGeneration(liveAdmission.reason)) {
+      throw WorkerError(
+        code: WorkerErrorCode.outOfMemoryRisk,
+        message:
+            'Free RAM ${liveAdmission.memoryBudgetMb ?? 'unknown'} MB cannot hold '
+            'this generation (${liveAdmission.reason}).',
+        retryable: true,
+        stage: WorkerTaskStage.llm,
       );
     }
     if (selection != null && !selection.admitted) {

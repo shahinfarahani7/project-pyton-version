@@ -10,6 +10,7 @@ describe('operations api client', () => {
   it('keeps fetch helpers in plain JavaScript', () => {
     const source = readFileSync(path.join(rootDir, 'client.js'), 'utf8');
     expect(source).toContain('fetchJson');
+    expect(source).toContain("cache: 'no-store'");
     expect(source).toContain('opsApi');
     expect(source).not.toMatch(/:\s*Promise</);
   });
