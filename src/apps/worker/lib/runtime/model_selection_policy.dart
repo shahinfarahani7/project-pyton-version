@@ -46,6 +46,7 @@ class ModelSelection {
     required this.multimodalEligible,
     required this.longFormBudget,
     required this.riskLevel,
+    this.reasonCodes = const [],
   });
 
   final String selectedModelId;
@@ -71,6 +72,9 @@ class ModelSelection {
   final bool multimodalEligible;
   final LongFormExecutionBudget longFormBudget;
   final AdmissionRisk riskLevel;
+
+  /// Exact admission codes. Callers match these, not substrings of [reason].
+  final List<String> reasonCodes;
 
   int outputFor(String answerClass) {
     return switch (answerClass) {
@@ -170,6 +174,26 @@ class ModelSelectionPolicy {
       if (!model.supportsText && request.taskType.startsWith('text.')) {
         continue;
       }
+      final residentWindow = residentEngine != null &&
+              residentEngine.sameEngine(model, config.runtimeVersion)
+          ? residentEngine.contextTokens
+          : null;
+      if (residentWindow != null) {
+        // A smaller ladder step does not shrink the engine already loaded.
+        final result = admission.evaluate(
+          device: device,
+          model: model,
+          contextTokens: residentWindow,
+          visionRequested: request.wantsVision,
+          residentEngine: residentEngine,
+        );
+        if (result.admitted) {
+          evaluations[result] = model;
+        } else {
+          rejection ??= result;
+        }
+        continue;
+      }
       final preferred = _contextFor(device, model, tierPolicy);
       ModelAdmissionResult? fitted;
       for (final context in _contextsToTry(preferred)) {
@@ -258,11 +282,14 @@ class ModelSelectionPolicy {
       maxStages = budget.maxStages;
     }
     final downgraded = admittedOk && fittedContext < tierPolicy.contextTokens;
+    final reasonCodes = admittedOk
+        ? List<String>.from(admissionResult!.reasons)
+        : List<String>.from(rejection?.reasons ?? const ['no_admitted_model']);
     final reason = admittedOk
         ? (downgraded
             ? 'context_downgraded_to_$fittedContext'
             : (admissionResult!.reasons.isEmpty ? 'admitted' : admissionResult.reasons.join(',')))
-        : (rejection?.reasons.join(',') ?? 'no_admitted_model');
+        : reasonCodes.join(',');
     final selection = ModelSelection(
       selectedModelId: admittedOk ? model.modelId : 'none',
       selectedBackend: admittedOk ? admissionResult!.selectedBackend : 'none',
@@ -290,6 +317,7 @@ class ModelSelectionPolicy {
       multimodalEligible: budget.multimodalEligible,
       longFormBudget: budget,
       riskLevel: admissionResult?.riskLevel ?? AdmissionRisk.high,
+      reasonCodes: reasonCodes,
     );
     WorkerPipelineLog.info(
       WorkerPipelineLog.model,

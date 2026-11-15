@@ -31,6 +31,7 @@ import 'inference_adapter.dart';
 import '../telemetry/execution_cost_feedback.dart';
 import '../telemetry/worker_task_metrics.dart';
 import 'result_signer.dart';
+import 'interrupted_execution.dart';
 import 'result_submission_outbox.dart';
 import '../tasks/task_execution_engine.dart';
 import '../tasks/task_type_mapper.dart';
@@ -86,6 +87,7 @@ class AssignmentCoordinator {
   }) : _api = api,
        _checkpointStore = CheckpointStore(store),
        _resultOutbox = ResultSubmissionOutbox(store: store),
+       _executionJournal = ActiveExecutionJournal(store: store),
        _platform = platform,
        _inference = inference,
        _constraints = constraints ?? const DeviceConstraints(),
@@ -110,6 +112,7 @@ class AssignmentCoordinator {
   final WorkerApiClient _api;
   final CheckpointStore _checkpointStore;
   final ResultSubmissionOutbox _resultOutbox;
+  final ActiveExecutionJournal _executionJournal;
   final WorkerRuntimeChannel _platform;
   final InferenceAdapter _inference;
   final DeviceConstraints _constraints;
@@ -549,11 +552,12 @@ class AssignmentCoordinator {
       }
     }
 
-    final InferenceOutput output;
+    late final InferenceOutput output;
     _log(
       '[INFERENCE ROUTE] ${usePipeline ? "task-pipeline" : "direct-model"} '
       'taskType=${assignment.taskType}',
     );
+    await armInterruptionGuard(assignment);
     if (usePipeline) {
       final eventReporter = AssignmentEventReporter(
         api: _api,
@@ -568,7 +572,8 @@ class AssignmentCoordinator {
           outcome: 'UNKNOWN_OUTCOME',
         ),
       );
-      output = await _taskEngine.execute(
+      try {
+        output = await _taskEngine.execute(
         context: TaskExecutionContext(
           assignment: assignment,
           manifest: bundle.manifest,
@@ -582,13 +587,20 @@ class AssignmentCoordinator {
         eventReporter: eventReporter,
       );
       await onProgressWrapper(1000);
+      } finally {
+        await disarmInterruptionGuard();
+      }
     } else {
-      output = await _inference.run(
-        inputBytes: bundle.inputBytes,
-        resumedState: decision.resumedState,
-        onProgress: onProgressWrapper,
-        shouldContinue: () => !_cancelRequested,
-      );
+      try {
+        output = await _inference.run(
+          inputBytes: bundle.inputBytes,
+          resumedState: decision.resumedState,
+          onProgress: onProgressWrapper,
+          shouldContinue: () => !_cancelRequested,
+        );
+      } finally {
+        await disarmInterruptionGuard();
+      }
     }
     _log(
       '[INFERENCE OUTPUT] bytes=${output.resultBytes.length} '
@@ -1068,6 +1080,85 @@ class AssignmentCoordinator {
       'reassigned': reassigned,
       'body': body,
     });
+  }
+
+  Future<void> armInterruptionGuard(WorkerAssignment assignment) async {
+    final record = ActiveExecutionRecord(
+      processRunId: ProcessRun.id,
+      assignmentId: assignment.assignmentId,
+      attemptId: assignment.attemptId,
+      fenceToken: assignment.fenceToken,
+      phase: 'before_inference',
+      startedAt: DateTime.now().toUtc(),
+      leaseExpiresAt: assignment.leaseExpiresAt.toUtc(),
+    );
+    await _executionJournal.save(record);
+    await _resultOutbox.enqueue(
+      interruptionIdempotencyKey(record),
+      interruptionOutboxPayload(
+        record: record,
+        leaseToken: assignment.leaseToken,
+      ),
+    );
+  }
+
+  Future<void> disarmInterruptionGuard() async {
+    final record = await _executionJournal.read();
+    await _executionJournal.clear();
+    if (record == null) {
+      return;
+    }
+    await _resultOutbox.ack(interruptionIdempotencyKey(record));
+  }
+
+  /// After a new process starts, report an execution that died mid-inference.
+  ///
+  /// A completed, cancelled, reassigned, or expired lease is not submitted
+  /// again. Resume is not attempted from this path.
+  Future<InterruptionDisposition?> recoverInterruptedExecution({
+    DateTime? now,
+    String? serverStatus,
+    List<Map<String, dynamic>>? exits,
+  }) async {
+    final record = await _executionJournal.read();
+    if (record == null || record.processRunId == ProcessRun.id) {
+      return null;
+    }
+    final clock = (now ?? DateTime.now()).toUtc();
+    final pending = await _resultOutbox.pending();
+    final key = interruptionIdempotencyKey(record);
+    final stored = pending[key];
+    final reassigned = stored?['reassigned'] == true;
+    final disposition = planInterruption(
+      leaseExpiresAt: record.leaseExpiresAt,
+      now: clock,
+      reassigned: reassigned,
+      serverStatus: serverStatus,
+    );
+    if (disposition != InterruptionDisposition.report) {
+      await _resultOutbox.ack(key);
+      await _executionJournal.clear();
+      return disposition;
+    }
+    final history = exits ?? await _platform.readProcessExitHistory();
+    final exitInfo = matchProcessExit(exits: history, startedAt: record.startedAt);
+    final leaseToken = stored?['body'] is Map
+        ? (stored!['body'] as Map)['leaseToken'] as String? ?? ''
+        : '';
+    if (leaseToken.isEmpty) {
+      await _executionJournal.clear();
+      return disposition;
+    }
+    await _resultOutbox.enqueue(
+      key,
+      interruptionOutboxPayload(
+        record: record,
+        leaseToken: leaseToken,
+        exitInfo: exitInfo,
+      ),
+    );
+    await _executionJournal.clear();
+    return disposition;
   }
 
   /// Replays durable server operations. Returns false when the network is still down.

@@ -193,18 +193,30 @@
         "memory": {
           "additionalProperties": false,
           "type": "object",
-          "required": ["totalRamBytes", "availableBytes", "safetyReserveBytes"],
+          "required": ["safetyReserveBytes"],
           "properties": {
             "totalRamBytes": {
-              "type": "integer",
+              "type": ["integer", "null"],
               "minimum": 0
             },
             "availableBytes": {
-              "type": "integer",
+              "type": ["integer", "null"],
               "minimum": 0
             },
             "safetyReserveBytes": {
               "type": "integer",
+              "minimum": 0
+            },
+            "attribution": {
+              "type": "string",
+              "enum": ["measured", "unknown"]
+            },
+            "memoryBudgetBytes": {
+              "type": ["integer", "null"],
+              "minimum": 0
+            },
+            "processPssBytes": {
+              "type": ["integer", "null"],
               "minimum": 0
             }
           }

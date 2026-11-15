@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+import asyncio
+import contextlib
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -11,11 +13,23 @@ from .database import dispose_engine, readiness
 CONTRACT_VERSION = "5.0.0"
 
 
-def create_service_app(service_name: str) -> FastAPI:
+def create_service_app(
+    service_name: str,
+    background: Callable[[], Awaitable[None]] | None = None,
+) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        yield
-        await dispose_engine()
+        task: asyncio.Task[None] | None = None
+        if background is not None:
+            task = asyncio.create_task(background())
+        try:
+            yield
+        finally:
+            if task is not None:
+                task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
+            await dispose_engine()
 
     app = FastAPI(
         title=f"EdgeMint {service_name}",

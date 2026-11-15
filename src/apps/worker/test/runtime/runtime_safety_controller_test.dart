@@ -85,6 +85,34 @@ void main() {
     );
   });
 
+  test('during work uses the snapshot RAM and pauses when it was not measured', () {
+    const controller = RuntimeSafetyController();
+    final measured = controller.evaluate(
+      DeviceSnapshot(
+        available: true,
+        batteryPercent: 80,
+        isCharging: true,
+        thermalState: ThermalState.normal,
+        network: NetworkKind.wifi,
+        freeStorageMb: 4096,
+        withinSchedule: true,
+        consentsGranted: const ['terms'],
+        deviceAvailableRamMb: 100,
+        deviceTotalRamMb: 4096,
+      ),
+      heavyTask: true,
+      phase: RuntimeSafetyPhase.duringWork,
+    );
+    expect(measured.decision, RuntimeSafetyDecision.abortForSafety);
+    final unknown = controller.evaluate(
+      _snapshot(),
+      heavyTask: true,
+      phase: RuntimeSafetyPhase.duringWork,
+    );
+    expect(unknown.decision, RuntimeSafetyDecision.pauseForSafety);
+    expect(unknown.detail, 'memory_unmeasured');
+  });
+
   test('runtime safety module avoids forbidden local scheduler tokens', () {
     final source = File('lib/runtime/runtime_safety_controller.dart').readAsStringSync();
     for (final token in const [

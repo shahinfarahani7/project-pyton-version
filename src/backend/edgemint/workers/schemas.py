@@ -72,7 +72,12 @@ class HeartbeatRequest(BaseModel):
     batteryBps: int = Field(ge=0, le=10_000)
     charging: bool
     thermalState: Literal["nominal", "fair", "serious", "critical"]
-    freeRamBytes: int = Field(ge=0)
+    freeRamBytes: int | None = Field(default=None, ge=0)
+    memoryAttribution: Literal["measured", "unknown"] = "unknown"
+    totalRamBytes: int | None = Field(default=None, ge=0)
+    memoryBudgetBytes: int | None = Field(default=None, ge=0)
+    processPssBytes: int | None = Field(default=None, ge=0)
+    memoryAccounting: dict[str, Any] | None = None
     freeStorageBytes: int = Field(ge=0)
     network: Literal["offline", "cellular", "wifi", "ethernet"]
     currentLeases: list[str] = Field(default_factory=list)

@@ -13,6 +13,7 @@ enum WorkerErrorCode {
   cancelled,
   outOfMemoryRisk,
   visionRuntimeNotReady,
+  thermalBlock,
   internalError,
 }
 
@@ -69,6 +70,7 @@ class WorkerError {
         'CANCELLED' => WorkerErrorCode.cancelled,
         'OUT_OF_MEMORY_RISK' => WorkerErrorCode.outOfMemoryRisk,
         'VISION_RUNTIME_NOT_READY' => WorkerErrorCode.visionRuntimeNotReady,
+        'THERMAL_BLOCK' => WorkerErrorCode.thermalBlock,
         _ => WorkerErrorCode.internalError,
       },
       message: json?['message'] as String? ?? fallbackMessage,
@@ -97,6 +99,7 @@ class WorkerError {
     WorkerErrorCode.cancelled => 'CANCELLED',
     WorkerErrorCode.outOfMemoryRisk => 'OUT_OF_MEMORY_RISK',
     WorkerErrorCode.visionRuntimeNotReady => 'VISION_RUNTIME_NOT_READY',
+    WorkerErrorCode.thermalBlock => 'THERMAL_BLOCK',
     WorkerErrorCode.internalError => 'INTERNAL_ERROR',
   };
 

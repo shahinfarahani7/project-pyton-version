@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import '../inference/llm/context_budget_manager.dart';
 import '../validation/json_stream_boundary.dart';
 import '../validation/output_repetition_guard.dart';
 import 'device_inference_policy_config.dart';
 import 'gemma_stage_merger.dart';
+import 'generation_watch.dart';
 import 'long_form_execution_budget.dart';
 import 'long_form_section_plan.dart';
 import 'worker_pipeline_log.dart';
@@ -839,7 +842,18 @@ class GemmaChunkGeneration {
     required Future<void> Function() onStop,
     TokenEstimator estimator = const TokenEstimator(),
     bool Function()? shouldContinue,
+    GenerationWatch? watch,
   }) async {
+    if (watch != null) {
+      return _collectWatched(
+        pieces: pieces,
+        configuredOutputLimit: configuredOutputLimit,
+        onStop: onStop,
+        estimator: estimator,
+        shouldContinue: shouldContinue,
+        watch: watch,
+      );
+    }
     final maxOutputChars =
         (configuredOutputLimit * estimator.charactersPerToken).floor();
     final boundary = JsonObjectBoundaryScanner();
@@ -874,6 +888,162 @@ class GemmaChunkGeneration {
       }
       stopRequested = true;
       await onStop();
+    }
+
+    final stopReason = GemmaGenerationOutputLimit.finalizeStopReason(
+      provisional: provisional,
+      generatedChunks: generatedChunks,
+      configuredOutputLimit: configuredOutputLimit,
+    );
+    final text = buffer.toString();
+    return GemmaBoundedDecode(
+      text: text,
+      stopReason: stopReason,
+      generatedChunks: generatedChunks,
+      generatedTokens: estimator.estimate(text),
+      configuredOutputLimit: configuredOutputLimit,
+    );
+  }
+
+  /// Polls cancellation, silence, prefill, deadline, and memory without
+  /// waiting for the next token. A silent stream still reaches [onStop].
+  static Future<GemmaBoundedDecode> _collectWatched({
+    required Stream<GemmaDecodePiece> pieces,
+    required int configuredOutputLimit,
+    required Future<void> Function() onStop,
+    required TokenEstimator estimator,
+    required GenerationWatch watch,
+    bool Function()? shouldContinue,
+  }) async {
+    final maxOutputChars =
+        (configuredOutputLimit * estimator.charactersPerToken).floor();
+    final boundary = JsonObjectBoundaryScanner();
+    final repetition = OutputRepetitionGuard();
+    final buffer = StringBuffer();
+    var provisional = 'model_eos';
+    var generatedChunks = 0;
+    var stopRequested = false;
+    final started = watch.now();
+    DateTime? firstToken;
+    DateTime? lastToken;
+    final iterator = StreamIterator<GemmaDecodePiece>(pieces);
+    final interrupt = Completer<String>();
+
+    void interruptWith(String reason) {
+      if (!interrupt.isCompleted) {
+        interrupt.complete(reason);
+      }
+    }
+
+    var safetyRead = false;
+    final timer = Timer.periodic(watch.pollInterval, (_) {
+      if (stopRequested) {
+        return;
+      }
+      final now = watch.now();
+      if (shouldContinue?.call() == false) {
+        interruptWith(GemmaGenerationOutputLimit.cancelled);
+        return;
+      }
+      if (now.difference(started) >= watch.overallDeadline) {
+        interruptWith('generation_deadline');
+        return;
+      }
+      if (firstToken == null && now.difference(started) >= watch.prefillTimeout) {
+        interruptWith('prefill_timeout');
+        return;
+      }
+      final last = lastToken;
+      if (firstToken != null &&
+          last != null &&
+          now.difference(last) >= watch.silenceTimeout) {
+        interruptWith('output_silence');
+      }
+      final readSafety = watch.readSafety;
+      if (readSafety != null && !safetyRead) {
+        safetyRead = true;
+        readSafety().then((verdict) {
+          safetyRead = false;
+          if (!verdict.mayExecute) {
+            interruptWith(verdict.telemetryCode.toLowerCase());
+          }
+        });
+      }
+    });
+
+    Future<bool>? pendingMove;
+
+    Future<void> requestStop(String reason, {required bool confirm}) async {
+      if (stopRequested) {
+        return;
+      }
+      stopRequested = true;
+      provisional = reason;
+      await onStop();
+      if (!confirm || !watch.confirmNativeStop) {
+        return;
+      }
+      final pending = pendingMove;
+      if (pending == null) {
+        throw GenerationStopUnconfirmed(reason);
+      }
+      try {
+        final first = await pending.timeout(watch.stopConfirmationTimeout);
+        if (!first) {
+          return;
+        }
+        final ended = await iterator
+            .moveNext()
+            .timeout(watch.stopConfirmationTimeout);
+        if (ended) {
+          throw GenerationStopUnconfirmed(reason);
+        }
+      } on TimeoutException {
+        throw GenerationStopUnconfirmed(reason);
+      }
+    }
+
+    try {
+      while (!stopRequested) {
+        final move = iterator.moveNext();
+        pendingMove = move;
+        final raced = await Future.any<Object>([
+          move.then((hasNext) => hasNext ? 'piece' : 'end'),
+          interrupt.future,
+        ]);
+        if (raced != 'piece') {
+          if (raced == 'end') {
+            break;
+          }
+          await requestStop(raced as String, confirm: true);
+          break;
+        }
+        if (shouldContinue?.call() == false) {
+          await requestStop(GemmaGenerationOutputLimit.cancelled, confirm: false);
+          break;
+        }
+        final piece = iterator.current;
+        generatedChunks += 1;
+        firstToken ??= watch.now();
+        lastToken = watch.now();
+        buffer.write(piece.text);
+        final answerFragment = piece.answer ? piece.text : '';
+        if (boundary.feed(answerFragment)) {
+          provisional = 'json_complete';
+        } else if (buffer.length >= maxOutputChars ||
+            generatedChunks >= configuredOutputLimit) {
+          provisional = 'output_limit';
+        } else if (repetition.feed(answerFragment)) {
+          provisional = 'repetition';
+        } else {
+          continue;
+        }
+        await requestStop(provisional, confirm: false);
+        break;
+      }
+    } finally {
+      timer.cancel();
+      await iterator.cancel();
     }
 
     final stopReason = GemmaGenerationOutputLimit.finalizeStopReason(

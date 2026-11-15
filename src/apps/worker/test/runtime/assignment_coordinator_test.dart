@@ -16,6 +16,7 @@ import 'package:edgemint_worker/runtime/device_snapshot.dart';
 import 'package:edgemint_worker/runtime/encrypted_store.dart';
 import 'package:edgemint_worker/runtime/execution_status.dart';
 import 'package:edgemint_worker/runtime/inference_adapter.dart';
+import 'package:edgemint_worker/runtime/interrupted_execution.dart';
 import 'package:edgemint_worker/runtime/result_submission_outbox.dart';
 import 'package:edgemint_worker/runtime/model_artifact_verifier.dart';
 import 'package:edgemint_worker/runtime/result_signer.dart';
@@ -64,6 +65,7 @@ class _ExecutionMockClient extends http.BaseClient {
   int completeCalls = 0;
   int startedCalls = 0;
   int failCalls = 0;
+  int failHttpStatus = 200;
   bool abandonCalled = false;
   int completeHttpStatus = 202;
   final Map<String, int> transportFailuresLeft = {};
@@ -109,6 +111,9 @@ class _ExecutionMockClient extends http.BaseClient {
     }
     if (path.endsWith(':fail')) {
       failCalls += 1;
+      if (failHttpStatus >= 400) {
+        return _json(failHttpStatus, {'code': 'ASSIGNMENT_STALE_FENCE'});
+      }
       return _receipt('failAssignment');
     }
     if (path.endsWith(':abandon')) {
@@ -744,6 +749,181 @@ void main() {
     await coordinator.executeAssignment(assignment);
     expect(inference.runs, 1);
     expect(await coordinator.hasPendingServerSync(), isFalse);
+  });
+
+  test('a new process reports one interrupted execution and does not resume it', () async {
+    final store = InMemoryEncryptedStore();
+    final record = ActiveExecutionRecord(
+      processRunId: 'previous-run',
+      assignmentId: 'asg_test',
+      attemptId: 'att_test',
+      fenceToken: 3,
+      phase: 'before_inference',
+      startedAt: DateTime.utc(2026, 11, 15, 7),
+      leaseExpiresAt: DateTime.utc(2026, 12, 26, 14),
+    );
+    await ActiveExecutionJournal(store: store).save(record);
+    await ResultSubmissionOutbox(store: store).enqueue(
+      interruptionIdempotencyKey(record),
+      interruptionOutboxPayload(
+        record: record,
+        leaseToken: 'lease-token-1234567890',
+      ),
+    );
+    final mockHttp = _ExecutionMockClient();
+    final inference = _RunCountingInference();
+    final coordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: mockHttp,
+      ),
+      store: store,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: inference,
+    );
+    final disposition = await coordinator.recoverInterruptedExecution(
+      now: DateTime.utc(2026, 11, 15, 8),
+      exits: [
+        {
+          'reasonName': 'signaled',
+          'status': 9,
+          'timestamp': DateTime.utc(2026, 11, 15, 7, 5).millisecondsSinceEpoch,
+        },
+      ],
+    );
+    expect(disposition, InterruptionDisposition.report);
+    expect(resumePermitted(record), isFalse);
+    final pending = await ResultSubmissionOutbox(store: store).pending();
+    final diagnostics =
+        (pending[interruptionIdempotencyKey(record)]!['body'] as Map)['diagnostics']
+            as Map;
+    expect(diagnostics['exitClassification'], 'signaled_not_oom');
+    expect(diagnostics.containsKey('leaseToken'), isFalse);
+    expect(await coordinator.recoverInterruptedExecution(), isNull);
+    expect(await coordinator.flushPendingServerSync(), isTrue);
+    expect(mockHttp.failCalls, 1);
+    expect(inference.runs, 0);
+    expect(await coordinator.flushPendingServerSync(), isTrue);
+    expect(mockHttp.failCalls, 1);
+  });
+
+  test('expired, reassigned, and already-terminal interruptions are not sent again', () async {
+    Future<AssignmentCoordinator> prepare({
+      required DateTime leaseExpiresAt,
+      bool reassigned = false,
+      String? serverStatus,
+    }) async {
+      final store = InMemoryEncryptedStore();
+      final record = ActiveExecutionRecord(
+        processRunId: 'previous-run',
+        assignmentId: 'asg_test',
+        attemptId: 'att_test',
+        fenceToken: 3,
+        phase: 'before_inference',
+        startedAt: DateTime.utc(2026, 11, 15, 7),
+        leaseExpiresAt: leaseExpiresAt,
+      );
+      await ActiveExecutionJournal(store: store).save(record);
+      final payload = interruptionOutboxPayload(
+        record: record,
+        leaseToken: 'lease-token-1234567890',
+      );
+      payload['reassigned'] = reassigned;
+      await ResultSubmissionOutbox(store: store).enqueue(
+        interruptionIdempotencyKey(record),
+        payload,
+      );
+      final coordinator = AssignmentCoordinator(
+        api: WorkerApiClient(
+          config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+          httpClient: _ExecutionMockClient(),
+        ),
+        store: store,
+        platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+        inference: _RunCountingInference(),
+      );
+      await coordinator.recoverInterruptedExecution(
+        now: DateTime.utc(2026, 11, 15, 8),
+        serverStatus: serverStatus,
+      );
+      return coordinator;
+    }
+
+    final expired = await prepare(leaseExpiresAt: DateTime.utc(2026, 11, 15, 7, 30));
+    expect(await expired.hasPendingServerSync(), isFalse);
+
+    final reassigned = await prepare(
+      leaseExpiresAt: DateTime.utc(2026, 12, 26),
+      reassigned: true,
+    );
+    expect(await reassigned.hasPendingServerSync(), isFalse);
+
+    final completed = await prepare(
+      leaseExpiresAt: DateTime.utc(2026, 12, 26),
+      serverStatus: 'completed',
+    );
+    expect(await completed.hasPendingServerSync(), isFalse);
+  });
+
+  test('an interrupted report survives one network failure and a stale fence', () async {
+    Future<void> seed(EncryptedStore store) async {
+      final record = ActiveExecutionRecord(
+        processRunId: 'previous-run',
+        assignmentId: 'asg_test',
+        attemptId: 'att_test',
+        fenceToken: 3,
+        phase: 'before_inference',
+        startedAt: DateTime.utc(2026, 11, 15, 7),
+        leaseExpiresAt: DateTime.utc(2026, 12, 26, 14),
+      );
+      await ActiveExecutionJournal(store: store).save(record);
+      await ResultSubmissionOutbox(store: store).enqueue(
+        interruptionIdempotencyKey(record),
+        interruptionOutboxPayload(
+          record: record,
+          leaseToken: 'lease-token-1234567890',
+        ),
+      );
+    }
+
+    final offlineStore = InMemoryEncryptedStore();
+    await seed(offlineStore);
+    final offline = _ExecutionMockClient()..transportFailuresLeft[':fail'] = 1;
+    final offlineCoordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: offline,
+      ),
+      store: offlineStore,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: _RunCountingInference(),
+    );
+    await offlineCoordinator.recoverInterruptedExecution(
+      now: DateTime.utc(2026, 11, 15, 8),
+    );
+    expect(await offlineCoordinator.flushPendingServerSync(), isFalse);
+    expect(await offlineCoordinator.hasPendingServerSync(), isTrue);
+    expect(await offlineCoordinator.flushPendingServerSync(), isTrue);
+    expect(offline.failCalls, 1);
+
+    final staleStore = InMemoryEncryptedStore();
+    await seed(staleStore);
+    final stale = _ExecutionMockClient()..failHttpStatus = 409;
+    final staleCoordinator = AssignmentCoordinator(
+      api: WorkerApiClient(
+        config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:8080')),
+        httpClient: stale,
+      ),
+      store: staleStore,
+      platform: NoopWorkerRuntimeChannel(material: 'test-signing-material'),
+      inference: _RunCountingInference(),
+    );
+    await staleCoordinator.recoverInterruptedExecution(
+      now: DateTime.utc(2026, 11, 15, 8),
+    );
+    expect(await staleCoordinator.flushPendingServerSync(), isTrue);
+    expect(stale.failCalls, 1);
+    expect(await staleCoordinator.hasPendingServerSync(), isFalse);
   });
 }
 

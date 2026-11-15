@@ -65,6 +65,7 @@ class MemorySafetyConfig {
     this.mediumRiskRatio = 0.70,
     this.highRiskRatio = 0.85,
     this.residentSessionSafetyFloorMb = 512,
+    this.residentUnmappedWeightMarginMb = 256,
   });
 
   final double maxFreeResourceFraction;
@@ -76,6 +77,10 @@ class MemorySafetyConfig {
   /// model is already resident. Same 512 MB quantum as [DeviceInferencePolicyConfig.visionHeadroomMb].
   /// This is not the model peak.
   final int residentSessionSafetyFloorMb;
+
+  /// Configured allowance for weight pages and GPU memory that a live
+  /// engine handle does not prove are already resident. Not a measurement.
+  final int residentUnmappedWeightMarginMb;
 
   double get availableFactor => maxFreeResourceFraction;
 

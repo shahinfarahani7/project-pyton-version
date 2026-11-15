@@ -2,6 +2,7 @@ import 'device_capability_profile.dart';
 import 'device_inference_policy_config.dart';
 import 'device_snapshot.dart';
 import 'long_form_execution_budget.dart';
+import 'memory_sample.dart';
 import 'model_admission_policy.dart';
 import 'model_selection_policy.dart';
 import 'worker_pipeline_log.dart';
@@ -22,6 +23,14 @@ class DeviceInferencePlan {
   /// Reads [GemmaModelRuntimeManager.residentIdentity]. Tests leave this null.
   ResidentEngineIdentity? Function()? readResidentEngine;
 
+  /// Production reads Android MemoryInfo. Tests inject a sample.
+  Future<MemorySample> Function()? readMemorySample;
+
+  DateTime Function() clock = DateTime.now;
+
+  /// A sample older than this is not used to allow generation.
+  Duration memorySampleMaxAge = const Duration(seconds: 5);
+
   void debugReset() {
     config = const DeviceInferencePolicyConfig();
     cache = AdmissionResultCache();
@@ -30,6 +39,9 @@ class DeviceInferencePlan {
     signals = const LongFormRuntimeSignals();
     assignmentLeaseExpiresAt = null;
     readResidentEngine = null;
+    readMemorySample = null;
+    clock = DateTime.now;
+    memorySampleMaxAge = const Duration(seconds: 5);
   }
 
   void useStore(AdmissionCacheStore store) {
@@ -69,16 +81,84 @@ class DeviceInferencePlan {
   /// so existing benchmark/catalog behavior stays in tests that never publish.
   int? contextTokensForResidentLoad() => textSelection?.selectedContextTokens;
 
-  /// Re-reads free RAM and the resident engine. The cached selection can
-  /// still say admitted after the model load has used the headroom.
-  ModelSelection? reevaluate({
+  /// Reads a new memory sample and the current resident engine.
+  ///
+  /// A missing, failed, or stale sample returns an explicit rejection.
+  /// It does not reuse the cached profile's RAM to allow generation.
+  /// Benchmark data on the cached profile is copied onto the fresh profile.
+  Future<ModelSelection?> reevaluate({
     required String taskType,
     required bool wantsVision,
-  }) {
-    if (profile == null) {
+  }) async {
+    final base = profile;
+    if (base == null) {
       return null;
     }
-    return _select(taskType: taskType, wantsVision: wantsVision);
+    final reader = readMemorySample;
+    if (reader == null) {
+      return _explicitRejection(const ['memory_snapshot_unknown']);
+    }
+    MemorySample sample;
+    try {
+      sample = await reader();
+    } catch (_) {
+      return _explicitRejection(const ['memory_snapshot_unknown']);
+    }
+    final age = clock().toUtc().difference(sample.sampledAt.toUtc());
+    final usable = sample.freshness == MemorySampleFreshness.fresh &&
+        sample.snapshot != null &&
+        !age.isNegative &&
+        age <= memorySampleMaxAge;
+    if (!usable) {
+      final unknown = sample.snapshot == null ||
+          sample.freshness == MemorySampleFreshness.unavailable;
+      return _explicitRejection(
+        unknown ? const ['memory_snapshot_unknown'] : const ['memory_snapshot_stale'],
+      );
+    }
+    final refreshed = DeviceCapabilityCollector.collect(
+      sample.snapshot!,
+      benchmark: base.benchmark,
+    );
+    if (refreshed.availableRamMb == null || refreshed.totalRamMb == null) {
+      return _explicitRejection(const ['memory_snapshot_unknown']);
+    }
+    return _select(
+      taskType: taskType,
+      wantsVision: wantsVision,
+      device: refreshed,
+    );
+  }
+
+  ModelSelection _explicitRejection(List<String> codes) {
+    final shape = textSelection ??
+        _select(taskType: 'text.direct', wantsVision: false);
+    return ModelSelection(
+      selectedModelId: 'none',
+      selectedBackend: 'none',
+      selectedContextTokens: shape.selectedContextTokens,
+      shortOutputTokens: shape.shortOutputTokens,
+      mediumOutputTokens: shape.mediumOutputTokens,
+      detailedOutputTokens: shape.detailedOutputTokens,
+      perStageOutput: shape.perStageOutput,
+      maxStages: shape.maxStages,
+      hardMaxStages: shape.hardMaxStages,
+      deviceTier: shape.deviceTier,
+      hardwareTier: shape.hardwareTier,
+      ramTier: shape.ramTier,
+      cpuTier: shape.cpuTier,
+      cpuClass: shape.cpuClass,
+      memoryBudgetMb: null,
+      maxImages: shape.maxImages,
+      parallelInference: shape.parallelInference,
+      residentModels: shape.residentModels,
+      reason: codes.join(','),
+      admitted: false,
+      multimodalEligible: false,
+      longFormBudget: shape.longFormBudget,
+      riskLevel: AdmissionRisk.high,
+      reasonCodes: codes,
+    );
   }
 
   ModelSelection? selectionFor({
@@ -141,18 +221,20 @@ class DeviceInferencePlan {
       multimodalEligible: budget.multimodalEligible,
       longFormBudget: budget,
       riskLevel: current.riskLevel,
+      reasonCodes: current.reasonCodes,
     );
   }
 
   ModelSelection _select({
     required String taskType,
     required bool wantsVision,
+    DeviceCapabilityProfile? device,
   }) {
     return ModelSelectionPolicy(
       config: config,
       admission: ModelAdmissionPolicy(config: config, cache: cache),
     ).select(
-      device: profile!,
+      device: device ?? profile!,
       request: ModelSelectionRequest(
         taskType: taskType,
         wantsVision: wantsVision,

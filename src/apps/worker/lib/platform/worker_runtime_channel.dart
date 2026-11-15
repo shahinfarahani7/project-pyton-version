@@ -59,6 +59,26 @@ class WorkerRuntimeChannel {
     await _channel.invokeMethod<void>('stopForegroundService');
   }
 
+  /// Android 11+ historical exits. Older platforms and channel failures
+  /// return an empty list so the caller keeps the reason unknown.
+  Future<List<Map<String, dynamic>>> readProcessExitHistory() async {
+    try {
+      final raw = await _channel.invokeMethod<Map<Object?, Object?>>(
+        'readProcessExitHistory',
+      );
+      final exits = raw?['exits'];
+      if (exits is! List) {
+        return const [];
+      }
+      return exits
+          .whereType<Map>()
+          .map((exit) => Map<String, dynamic>.from(exit))
+          .toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
   Future<DeviceSnapshot> readDeviceSnapshot() async {
     final raw = await _channel.invokeMethod<Map<Object?, Object?>>('readDeviceSnapshot');
     if (raw == null) {
@@ -358,6 +378,9 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
       freeStorageMb: 8192,
       withinSchedule: true,
       consentsGranted: ['terms', 'privacy', 'resource_use', 'reward_disclosure'],
+      deviceTotalRamMb: 8192,
+      deviceAvailableRamMb: 4096,
+      lowMemory: false,
     ),
     this.material = 'test-signing-material',
     this.installedAppVersion,
@@ -377,6 +400,9 @@ class NoopWorkerRuntimeChannel extends WorkerRuntimeChannel {
 
   @override
   Future<DeviceSnapshot> readDeviceSnapshot() async => snapshot;
+
+  @override
+  Future<List<Map<String, dynamic>>> readProcessExitHistory() async => const [];
 
   @override
   Future<String> signingMaterial() async => material;

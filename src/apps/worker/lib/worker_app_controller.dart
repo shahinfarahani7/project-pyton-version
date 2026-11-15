@@ -36,6 +36,8 @@ import 'runtime/assignment_output_upload_coordinator.dart';
 import 'runtime/checkpoint_manager.dart';
 import 'runtime/dev_mock_inference_adapter.dart';
 import 'runtime/device_inference_plan.dart';
+import 'runtime/memory_sample.dart';
+import 'runtime/worker_inference_gate.dart';
 import 'runtime/device_cpu_usage.dart';
 import 'runtime/device_snapshot.dart';
 import 'runtime/encrypted_store.dart';
@@ -103,6 +105,7 @@ class WorkerAppController extends ChangeNotifier {
     );
     DeviceInferencePlan.instance.readResidentEngine = () =>
         _runtimeManager.residentIdentity;
+    DeviceInferencePlan.instance.readMemorySample = _readMemorySample;
     const inferenceConfig = QwenInferenceConfig();
     _primaryInferenceAdapter = GemmaLiteRtInferenceAdapter(
       runtimeManager: _runtimeManager,
@@ -1096,6 +1099,7 @@ class WorkerAppController extends ChangeNotifier {
   }
 
   bool get canAcceptAssignments =>
+      WorkerInferenceGate.instance.acceptsWork &&
       !isDeviceOffline &&
       backendOnline &&
       !isGemmaDownloading &&
@@ -1801,6 +1805,16 @@ class WorkerAppController extends ChangeNotifier {
 
   Future<void> _runAutoAssignmentLoop(int generation) async {
     _logTask('Auto-assignment loop started', phase: WorkerPipelineLog.assign);
+    try {
+      await _coordinator.recoverInterruptedExecution();
+    } catch (error, stackTrace) {
+      _logError(
+        'Interrupted execution recovery failed',
+        error,
+        stackTrace,
+        WorkerPipelineLog.assign,
+      );
+    }
 
     while (!_disposed && generation == _assignmentLoopGeneration && available) {
       _lastAssignmentLoopBeat = DateTime.now();
@@ -1893,6 +1907,11 @@ class WorkerAppController extends ChangeNotifier {
   // Device readiness
   // ---------------------------------------------------------------------------
 
+  Future<MemorySample> _readMemorySample() async {
+    final snapshot = await _platform.readDeviceSnapshot();
+    return MemorySample.measured(snapshot);
+  }
+
   Future<void> _refreshDeviceReadiness() async {
     try {
       final snapshot = await _platform.readDeviceSnapshot();
@@ -1920,6 +1939,7 @@ class WorkerAppController extends ChangeNotifier {
         ThermalState.throttled => 'Throttled',
         ThermalState.critical => 'Critical',
       };
+      DeviceInferencePlan.instance.readMemorySample = _readMemorySample;
       DeviceInferencePlan.instance.publishFromSnapshot(snapshot);
 
       if (isEmulator) {

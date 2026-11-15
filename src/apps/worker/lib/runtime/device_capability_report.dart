@@ -1,5 +1,6 @@
 import '../runtime/device_snapshot.dart';
 import '../tasks/mobile_task_dispatcher.dart';
+import 'device_inference_policy_config.dart';
 import 'runtime_class_catalog.dart';
 
 /// Builds a DeviceCapability report payload aligned with
@@ -15,16 +16,39 @@ abstract final class DeviceCapabilityReport {
     String deviceTier = 'T4',
     String regionCode = 'US',
     String runtimeAbi = 'mediapipe-llm-v1',
-    int totalRamBytes = 8589934592,
+    int? totalRamBytes,
+    int? availableRamBytes,
     int safetyReserveBytes = 536870912,
     int maxAiStorageBytes = 5368709120,
     int minimumFreeBytes = 1073741824,
     int cpuUnits = 100,
-    int memoryBytes = 8589934592,
+    int? memoryBytes,
     int modelSessionUnits = 2,
   }) {
     final freeStorageBytes = snapshot.freeStorageMb * 1024 * 1024;
-    final availableRamBytes = (totalRamBytes * 0.67).round();
+    final probedTotalMb = snapshot.deviceTotalRamMb;
+    final probedAvailableMb = snapshot.deviceAvailableRamMb;
+    final totalBytes = totalRamBytes ??
+        (probedTotalMb != null && probedTotalMb > 0
+            ? probedTotalMb * 1024 * 1024
+            : null);
+    final availableBytes = availableRamBytes ??
+        (probedAvailableMb != null && probedAvailableMb >= 0
+            ? probedAvailableMb * 1024 * 1024
+            : null);
+    final measured = totalBytes != null && availableBytes != null;
+    final int? budgetMb;
+    if (totalBytes != null && availableBytes != null) {
+      budgetMb = const MemorySafetyConfig().safeBudgetMb(
+        availableRamMb: availableBytes ~/ (1024 * 1024),
+        totalRamMb: totalBytes ~/ (1024 * 1024),
+      );
+    } else {
+      budgetMb = null;
+    }
+    final processPssBytes = snapshot.processPssKb == null
+        ? null
+        : snapshot.processPssKb! * 1024;
     final runtimeClasses = RuntimeClassCatalog.fromTaskCapabilities(taskCapabilities);
     final device = _device(snapshot);
 
@@ -41,7 +65,8 @@ abstract final class DeviceCapabilityReport {
       'runtimeAbi': runtimeAbi,
       'resourceVector': {
         'cpuUnits': cpuUnits,
-        'memoryBytes': memoryBytes,
+        if ((memoryBytes ?? totalBytes) != null)
+          'memoryBytes': memoryBytes ?? totalBytes,
         'storageBytes': freeStorageBytes,
         'acceleratorUnits': 0,
         'modelSessionUnits': modelSessionUnits,
@@ -53,9 +78,12 @@ abstract final class DeviceCapabilityReport {
         'maxAiStorageBytes': maxAiStorageBytes,
       },
       'memory': {
-        'totalRamBytes': totalRamBytes,
-        'availableBytes': availableRamBytes,
+        'attribution': measured ? 'measured' : 'unknown',
+        if (totalBytes != null) 'totalRamBytes': totalBytes,
+        if (availableBytes != null) 'availableBytes': availableBytes,
         'safetyReserveBytes': safetyReserveBytes,
+        if (budgetMb != null) 'memoryBudgetBytes': budgetMb * 1024 * 1024,
+        if (processPssBytes != null) 'processPssBytes': processPssBytes,
       },
       'thermal': {
         'state': _thermalState(snapshot.thermalState),

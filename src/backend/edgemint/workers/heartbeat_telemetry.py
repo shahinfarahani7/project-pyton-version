@@ -58,6 +58,7 @@ class WorkerHeartbeatTelemetry(BaseModel):
     resourceReservationsView: WorkerResourceReservationsView | None = None
     identityLifecycleView: dict[str, Any] | None = None
     appVersionCode: int | None = Field(default=None, ge=1)
+    memoryAccounting: dict[str, Any] | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -75,6 +76,7 @@ def telemetry_from_heartbeat(payload: HeartbeatRequest) -> WorkerHeartbeatTeleme
         resourceReservationsView=payload.resourceReservationsView,
         identityLifecycleView=identity_view,
         appVersionCode=payload.appVersionCode,
+        memoryAccounting=payload.memoryAccounting,
     )
     if telemetry.model_dump(exclude_none=True, exclude_defaults=True):
         return telemetry

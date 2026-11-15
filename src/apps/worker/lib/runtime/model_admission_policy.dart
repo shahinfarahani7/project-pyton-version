@@ -51,14 +51,51 @@ class ModelDescriptor {
   int peakForContext(int contextTokens) =>
       peakEstimatedMemoryByContextMb[contextTokens] ?? peakEstimatedMemoryMb;
 
-  /// Weights plus the context working set. Free RAM is compared with this,
-  /// because a peak table below the file size still faults those pages in
-  /// during generation and the process is killed when they do not fit.
-  int predictedWorkingSetMb(int contextTokens) {
-    final peak = peakForContext(contextTokens);
-    final fileMb = modelFileSizeBytes ~/ (1024 * 1024);
-    return fileMb > peak ? fileMb : peak;
+  /// Configured cold total-peak estimate for [contextTokens].
+  ///
+  /// [peakEstimatedMemoryByContextMb] is a total-peak estimate for a cold
+  /// process at that context. It is not a measurement, not the file size,
+  /// and not an incremental allocation on top of the file. The file size is
+  /// an artifact size, not proof of RAM that will be faulted in.
+  int coldPeakEstimateMb(int contextTokens) => peakForContext(contextTokens);
+
+  /// Extra RAM a warm resident engine may still allocate or fault in.
+  ///
+  /// Available RAM is already net of whatever the process has charged.
+  /// This does not add the weight file or the full cold peak again.
+  /// Growth above the smallest profiled context is the configured KV/session
+  /// delta. [unmappedWeightMarginMb] stays in the estimate because a live
+  /// handle does not prove every weight page is resident, and GPU memory is
+  /// not measured. Both numbers are `configured_estimate`, not a measurement.
+  int residentIncrementalEstimateMb(
+    int contextTokens, {
+    int unmappedWeightMarginMb = 256,
+  }) {
+    final margin = unmappedWeightMarginMb < 0 ? 0 : unmappedWeightMarginMb;
+    if (peakEstimatedMemoryByContextMb.isEmpty) {
+      return peakEstimatedMemoryMb + margin;
+    }
+    var baseline = peakEstimatedMemoryMb;
+    for (final value in peakEstimatedMemoryByContextMb.values) {
+      if (value < baseline) {
+        baseline = value;
+      }
+    }
+    final total = peakForContext(contextTokens);
+    final growth = total > baseline ? total - baseline : 0;
+    return growth + margin;
   }
+
+  /// Resident incremental estimate. Kept as the name admission already calls.
+  /// This is not max(file size, cold peak).
+  int predictedWorkingSetMb(
+    int contextTokens, {
+    int unmappedWeightMarginMb = 256,
+  }) =>
+      residentIncrementalEstimateMb(
+        contextTokens,
+        unmappedWeightMarginMb: unmappedWeightMarginMb,
+      );
 }
 
 class ModelAdmissionResult {
@@ -73,6 +110,7 @@ class ModelAdmissionResult {
     this.reusedBenchmark = false,
     this.admissionPhase = 'PRE_MODEL_LOAD',
     this.fullPeakRecheck = true,
+    this.memoryAccounting,
   });
 
   final bool admitted;
@@ -85,6 +123,10 @@ class ModelAdmissionResult {
   final bool reusedBenchmark;
   final String admissionPhase;
   final bool fullPeakRecheck;
+
+  /// `cold_total_peak_configured_estimate` or
+  /// `resident_incremental_configured_estimate`. Null on older cache rows.
+  final String? memoryAccounting;
 
   String logLine() =>
       '[MODEL ADMISSION] model=$modelId admitted=$admitted '
@@ -102,6 +144,7 @@ class ModelAdmissionResult {
         'reusedBenchmark': reusedBenchmark,
         'admissionPhase': admissionPhase,
         'fullPeakRecheck': fullPeakRecheck,
+        if (memoryAccounting != null) 'memoryAccounting': memoryAccounting,
       };
 
   static ModelAdmissionResult fromJson(Map<String, Object?> json) {
@@ -116,6 +159,7 @@ class ModelAdmissionResult {
       reusedBenchmark: json['reusedBenchmark'] == true,
       admissionPhase: json['admissionPhase'] as String? ?? 'PRE_MODEL_LOAD',
       fullPeakRecheck: json['fullPeakRecheck'] != false,
+      memoryAccounting: json['memoryAccounting'] as String?,
     );
   }
 }
@@ -363,6 +407,7 @@ class ModelAdmissionPolicy {
         modelId: cached.modelId,
         visionEligible: cached.visionEligible,
         reusedBenchmark: true,
+        memoryAccounting: cached.memoryAccounting,
       );
       _trace(
         model: model,
@@ -503,6 +548,7 @@ class ModelAdmissionPolicy {
       visionEligible: visionEligible && !visionRequested ? visionEligible : visionEligible,
       benchmarkFailedHard: observed != null &&
           (observed.nativeOom || observed.lowMemoryOrLmk),
+      memoryAccounting: 'cold_total_peak_configured_estimate',
     );
   }
 
@@ -536,24 +582,34 @@ class ModelAdmissionPolicy {
       availableRamMb: available,
       totalRamMb: device.totalRamMb,
     );
-    final predicted = model.predictedWorkingSetMb(requested);
-    if (budget != null && predicted >= budget) {
+    // The loaded window does not shrink when policy asks for fewer tokens.
+    final accountedContext = resident.contextTokens;
+    final predicted = model.residentIncrementalEstimateMb(
+      accountedContext,
+      unmappedWeightMarginMb: config.memory.residentUnmappedWeightMarginMb,
+    );
+    if (available == null || budget == null) {
+      reasons.add('memory_snapshot_unknown');
+    } else if (predicted >= budget) {
       reasons.add('resident_generation_exceeds_free_ram');
     }
     final admitted = reasons.isEmpty;
     if (admitted) {
       reasons.add('resident_model_reuse');
     }
+    const accounting = 'resident_incremental_configured_estimate';
     _trace(
       model: model,
-      contextTokens: requested,
+      contextTokens: accountedContext,
       device: device,
       budget: budget,
       observedPeakRssMb: null,
-      peakForContextMb: model.peakForContext(requested),
+      peakForContextMb: model.peakForContext(accountedContext),
       peak: predicted,
       benchmarkStatus: 'resident',
-      comparison: budget == null ? 'budget == null' : '$predicted >= $budget',
+      comparison: 'resident_incremental=$predicted '
+          'basis=$accounting '
+          'budget=${budget ?? 'unknown'}',
       admitted: admitted,
       reasons: reasons,
       phase: 'POST_MODEL_LOAD',
@@ -565,13 +621,14 @@ class ModelAdmissionPolicy {
     return _finish(
       device: device,
       model: model,
-      contextTokens: requested,
+      contextTokens: accountedContext,
       admitted: admitted,
       risk: admitted ? AdmissionRisk.low : AdmissionRisk.high,
       reasons: reasons,
       visionEligible: admitted && model.supportsVision,
       admissionPhase: 'POST_MODEL_LOAD',
       fullPeakRecheck: false,
+      memoryAccounting: accounting,
       storeInCache: false,
     );
   }
@@ -691,6 +748,7 @@ class ModelAdmissionPolicy {
     bool benchmarkFailedHard = false,
     String admissionPhase = 'PRE_MODEL_LOAD',
     bool fullPeakRecheck = true,
+    String? memoryAccounting,
     bool storeInCache = true,
   }) {
     final result = ModelAdmissionResult(
@@ -703,6 +761,7 @@ class ModelAdmissionPolicy {
       visionEligible: admitted && visionEligible,
       admissionPhase: admissionPhase,
       fullPeakRecheck: fullPeakRecheck,
+      memoryAccounting: memoryAccounting,
     );
     if (benchmarkFailedHard) {
       cache?.writeOom(

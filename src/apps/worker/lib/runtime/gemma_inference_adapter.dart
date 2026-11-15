@@ -7,6 +7,10 @@ import '../contracts/worker_error.dart';
 import '../models/worker_model_catalog.dart';
 import 'device_inference_plan.dart';
 import 'gemma_generation_output_limit.dart';
+import 'generation_watch.dart';
+import 'memory_sample.dart';
+import 'runtime_safety_controller.dart';
+import 'worker_inference_gate.dart';
 import 'gemma_multimodal_vision_runtime.dart';
 import 'gemma_model_runtime_manager.dart';
 import 'inference_adapter.dart';
@@ -146,6 +150,7 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       );
     }
 
+    WorkerInferenceGate.instance.ensureAcceptsWork();
     return _runtime.withFreshSession(
       stageId: multimodal ? 'multimodal' : 'inference',
       sessionOwner: 'GemmaLiteRtInferenceAdapter.runUserPrompt',
@@ -237,6 +242,10 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
         );
         final generation = await GemmaChunkGeneration.collect(
           shouldContinue: shouldContinue,
+          watch: GenerationWatch(
+            confirmNativeStop: true,
+            readSafety: _liveSafety,
+          ),
           pieces: chat.generateChatResponseAsync().map(
             (response) => switch (response) {
               TextResponse(:final token) => GemmaDecodePiece(token),
@@ -322,17 +331,30 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
             'multimodal': multimodal,
           },
         );
+      } on GenerationStopUnconfirmed catch (error) {
+        WorkerInferenceGate.instance.markStopUnconfirmed(error.reason);
+        throw WorkerError(
+          code: WorkerErrorCode.modelNotAvailable,
+          message: 'Native generation did not confirm stop (${error.reason}). '
+              'This worker will not accept another task.',
+          retryable: false,
+          stage: WorkerTaskStage.llm,
+        );
       } finally {
-        try {
-          await chat.session.close();
-          _log('[LLM SESSION] closed');
-        } catch (error, stackTrace) {
-          WorkerPipelineLog.error(
-            WorkerPipelineLog.exec,
-            '[LLM SESSION] close failed',
-            error,
-            stackTrace,
-          );
+        if (WorkerInferenceGate.instance.acceptsWork) {
+          try {
+            await chat.session.close();
+            _log('[LLM SESSION] closed');
+          } catch (error, stackTrace) {
+            WorkerPipelineLog.error(
+              WorkerPipelineLog.exec,
+              '[LLM SESSION] close failed',
+              error,
+              stackTrace,
+            );
+          }
+        } else {
+          _log('[LLM SESSION] left open; native stop was not confirmed');
         }
       }
     } catch (error, stackTrace) {
@@ -352,6 +374,25 @@ class GemmaLiteRtInferenceAdapter implements InferenceAdapter {
       }
       rethrow;
     }
+  }
+
+  Future<RuntimeSafetyVerdict> _liveSafety() async {
+    final reader = DeviceInferencePlan.instance.readMemorySample;
+    if (reader == null) {
+      return const RuntimeSafetyVerdict.pause(
+        RuntimeSafetyReason.memoryPressure,
+        'memory_unmeasured',
+      );
+    }
+    final sample = await reader();
+    final snapshot = sample.snapshot;
+    if (snapshot == null || sample.freshness != MemorySampleFreshness.fresh) {
+      return const RuntimeSafetyVerdict.pause(
+        RuntimeSafetyReason.memoryPressure,
+        'memory_unmeasured',
+      );
+    }
+    return evaluateLiveMemory(const RuntimeSafetyController(), snapshot);
   }
 
   Future<void> _stopGeneration(InferenceChat chat) async {

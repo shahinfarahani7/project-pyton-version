@@ -84,4 +84,42 @@ void main() {
     expect(payload['appVersion'], '5.0.1');
     expect(payload['appVersionCode'], 40200);
   });
+
+  test('reports measured RAM and keeps an unprobed device unknown', () {
+    final measured = WorkerHeartbeatTelemetry.build(
+      WorkerHeartbeatTelemetryContext(
+        sequence: 3,
+        snapshot: const DeviceSnapshot(
+          available: true,
+          batteryPercent: 40,
+          isCharging: false,
+          thermalState: ThermalState.normal,
+          network: NetworkKind.wifi,
+          freeStorageMb: 1000,
+          withinSchedule: true,
+          consentsGranted: ['terms'],
+          deviceTotalRamMb: 3700,
+          deviceAvailableRamMb: 900,
+          processPssKb: 512000,
+        ),
+      ),
+    );
+    expect(measured['memoryAttribution'], 'measured');
+    expect(measured['freeRamBytes'], 900 * 1024 * 1024);
+    expect(measured['totalRamBytes'], 3700 * 1024 * 1024);
+    expect(measured['freeRamBytes'], isNot(8589934592));
+    expect(measured.containsKey('memoryBudgetBytes'), isTrue);
+    expect(measured['processPssBytes'], 512000 * 1024);
+    final accounting = measured['memoryAccounting'] as Map<String, dynamic>;
+    expect(accounting['attributionStatus'], 'known');
+
+    final unknown = WorkerHeartbeatTelemetry.build(
+      WorkerHeartbeatTelemetryContext(sequence: 4, snapshot: snapshot),
+    );
+    expect(unknown['memoryAttribution'], 'unknown');
+    expect(unknown.containsKey('freeRamBytes'), isFalse);
+    expect(unknown.containsKey('totalRamBytes'), isFalse);
+    final unknownAccounting = unknown['memoryAccounting'] as Map<String, dynamic>;
+    expect(unknownAccounting['attributionStatus'], 'uncertain');
+  });
 }

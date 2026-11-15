@@ -14,7 +14,7 @@ class PlatformSpec(BaseModel):
 
 class ResourceVector(BaseModel):
     cpuUnits: int = Field(ge=1)
-    memoryBytes: int = Field(ge=0)
+    memoryBytes: int | None = Field(default=None, ge=0)
     storageBytes: int = Field(ge=0)
     acceleratorUnits: int = Field(ge=0)
     modelSessionUnits: int = Field(ge=0)
@@ -27,9 +27,12 @@ class StorageSpec(BaseModel):
 
 
 class MemorySpec(BaseModel):
-    totalRamBytes: int = Field(ge=0)
-    availableBytes: int = Field(ge=0)
+    totalRamBytes: int | None = Field(default=None, ge=0)
+    availableBytes: int | None = Field(default=None, ge=0)
     safetyReserveBytes: int = Field(ge=0)
+    attribution: Literal["measured", "unknown"] = "unknown"
+    memoryBudgetBytes: int | None = Field(default=None, ge=0)
+    processPssBytes: int | None = Field(default=None, ge=0)
 
 
 class ThermalSpec(BaseModel):

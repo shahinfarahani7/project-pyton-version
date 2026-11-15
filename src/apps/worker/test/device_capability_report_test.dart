@@ -59,5 +59,26 @@ void main() {
       'totalRamBytes': 11811 * 1024 * 1024,
     });
     expect(report['resourceVector']['cpuUnits'], 100);
+    expect(report['memory']['attribution'], 'unknown');
+    expect(report['memory']['totalRamBytes'], 11811 * 1024 * 1024);
+    expect(report['memory'].containsKey('availableBytes'), isFalse);
+  });
+
+  test('unprobed RAM is unknown instead of an 8 GiB default', () {
+    const snapshot = DeviceSnapshot(
+      available: true,
+      batteryPercent: 10,
+      isCharging: false,
+      thermalState: ThermalState.normal,
+      network: NetworkKind.wifi,
+      freeStorageMb: 100,
+      withinSchedule: true,
+      consentsGranted: const ['terms'],
+    );
+    final report = DeviceCapabilityReport.fromDispatcher(snapshot: snapshot);
+    expect(report['memory']['attribution'], 'unknown');
+    expect(report['memory'].containsKey('totalRamBytes'), isFalse);
+    expect(report['memory'].containsKey('availableBytes'), isFalse);
+    expect(report['memory'].toString(), isNot(contains('8589934592')));
   });
 }

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 from datetime import UTC, datetime
 
@@ -19,6 +20,7 @@ from edgemint.workers.app_release import (
 from edgemint.workers.dependencies import WorkerBearerToken
 from edgemint.workers.enrollment import WorkerEnrollmentService
 from edgemint.workers.errors import WorkerServiceError
+from edgemint.workers.lease_expiry import expire_elapsed_assignment_leases
 from edgemint.workers.resource_policy import build_contribution_policy_view
 from edgemint.workers.schemas import (
     CreateChallengeRequest,
@@ -30,7 +32,19 @@ from edgemint.workers.schemas import (
 )
 from edgemint.workers.sessions import resolve_worker_session
 
-app = create_service_app("worker-registry")
+_log = logging.getLogger(__name__)
+
+
+async def _expire_leases_forever() -> None:
+    while True:
+        try:
+            await expire_elapsed_assignment_leases()
+        except Exception:
+            _log.exception("assignment lease expiry sweep failed")
+        await asyncio.sleep(30)
+
+
+app = create_service_app("worker-registry", background=_expire_leases_forever)
 enrollment = WorkerEnrollmentService()
 
 

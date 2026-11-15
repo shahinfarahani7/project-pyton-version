@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'device_snapshot.dart';
+import 'worker_inference_gate.dart';
 
 /// Local exclusive-group gate aligned with production-exclusive-groups-v1 (Sections 29–31).
 ///
@@ -57,8 +58,10 @@ class RuntimeExclusiveGroupEnforcer {
     try {
       return await body();
     } finally {
-      _heavyLlmSessions -= 1;
-      _wakeOcrWaiters();
+      if (WorkerInferenceGate.instance.acceptsWork) {
+        _heavyLlmSessions -= 1;
+        _wakeOcrWaiters();
+      }
     }
   }
 

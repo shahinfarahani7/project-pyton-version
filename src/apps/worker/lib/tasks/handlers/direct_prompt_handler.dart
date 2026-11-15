@@ -6,28 +6,33 @@ import '../../contracts/worker_task_result.dart';
 import '../../inference/llm/direct_answer_instruction.dart';
 import '../../inference/llm/qwen_task_processor.dart';
 import '../../inference/ocr/ocr_engine.dart';
+import '../../runtime/admission_decision.dart';
 import '../../runtime/checkpoint_manager.dart';
 import '../../runtime/device_inference_plan.dart';
 import '../../runtime/device_inference_policy_config.dart';
 import '../../runtime/gemma_generation_output_limit.dart';
+import '../../runtime/model_selection_policy.dart';
 import '../../telemetry/worker_task_metrics.dart';
 import 'task_handler.dart';
 
-bool _freeRamBlocksGeneration(String reason) {
-  const markers = [
-    'resident_generation_exceeds_free_ram',
-    'memory_budget_exceeded',
-    'below_minimum_ram',
-    'peak_rss_exceeds_budget',
-    'resident_session_safety_floor',
-    'android_low_memory',
-    'memory_unknown',
-  ];
-  return markers.any(reason.contains);
-}
+typedef DirectStageRunner = Future<GemmaStagePiece> Function(
+  int stageIndex,
+  String stagePrompt,
+  int maxOutputTokens,
+  GenerationSampling? sampling,
+);
 
 /// Sends portal intake to the on-device Gemma model (text and/or image).
 class DirectPromptHandler implements TaskHandler {
+  DirectPromptHandler({
+    DeviceInferencePlan? plan,
+    this.runStage,
+  }) : plan = plan ?? DeviceInferencePlan.instance;
+
+  final DeviceInferencePlan plan;
+
+  /// Test double for the model call. Production uses [QwenTaskProcessor].
+  final DirectStageRunner? runStage;
   @override
   String get capability => 'text.direct.v1';
 
@@ -75,10 +80,19 @@ class DirectPromptHandler implements TaskHandler {
     final taskType = request.sourceTaskType.isNotEmpty
         ? request.sourceTaskType
         : request.type;
-    final selection = DeviceInferencePlan.instance.selectionFor(
+    final liveAdmission = await plan.reevaluate(
       taskType: taskType,
       wantsVision: hasImage,
     );
+    final selection = liveAdmission ??
+        plan.selectionFor(
+          taskType: taskType,
+          wantsVision: hasImage,
+        );
+    final blocked = rejectionFor(selection);
+    if (blocked != null) {
+      throw blocked;
+    }
     if (selection != null && hasImage && !selection.multimodalEligible) {
       developer.log(
         '[DEVICE CONFIG] vision restricted reason=${selection.reason}; '
@@ -86,62 +100,62 @@ class DirectPromptHandler implements TaskHandler {
         name: 'EdgeMintTaskEngine',
       );
     }
-    final liveAdmission = DeviceInferencePlan.instance.reevaluate(
-      taskType: taskType,
-      wantsVision: hasImage,
-    );
-    if (liveAdmission != null &&
-        !liveAdmission.admitted &&
-        _freeRamBlocksGeneration(liveAdmission.reason)) {
-      throw WorkerError(
-        code: WorkerErrorCode.outOfMemoryRisk,
-        message:
-            'Free RAM ${liveAdmission.memoryBudgetMb ?? 'unknown'} MB cannot hold '
-            'this generation (${liveAdmission.reason}).',
-        retryable: true,
-        stage: WorkerTaskStage.llm,
-      );
-    }
-    if (selection != null && !selection.admitted) {
-      developer.log(
-        '[MODEL ADMISSION] admitted=false reason=${selection.reason}; '
-        'resident model stays loaded',
-        name: 'EdgeMintTaskEngine',
-      );
-    }
-    final stageOutputLimit =
+    _rejectContextMismatch(plan, selection);
+    var stageOutputLimit =
         selection?.selectedOutputLimit(decision.answerClass) ??
         decision.effectiveOutputLimit;
-    final sampling = selection == null
+    var sampling = selection == null
         ? null
         : GenerationSampling.forAnswerClass(decision.answerClass);
+    var stageBudget = selection?.longFormBudget;
+    var maxStages = selection?.maxStages;
+    var hardMaxStages = selection?.hardMaxStages;
 
     final llmStart = DateTime.now();
     final staged = await GemmaStagedDirectGeneration.run(
       decision: decision,
       prompt: userText,
-      maxStages: selection?.maxStages,
-      hardMaxStages: selection?.hardMaxStages,
-      executionBudget: selection?.longFormBudget,
-      readSignals: DeviceInferencePlan.instance.readSignals,
-      generateStage: (stageIndex, stagePrompt) {
-        return qwenProcessor
-            .runDirectUserGeneration(
-              stagePrompt,
-              signingKey: signingKey,
-              imageBytes: stageIndex == 0 && hasImage ? imageBytes : null,
-              maxOutputTokens: stageOutputLimit,
-              temperature: sampling?.temperature,
-              topP: sampling?.topP,
-            )
-            .then(
-              (receipt) => GemmaStagePiece(
-                text: receipt.text,
-                stopReason: receipt.stopReason,
-                generatedChunks: receipt.generatedChunks,
-                generatedTokens: receipt.generatedTokens,
-              ),
-            );
+      maxStages: maxStages,
+      hardMaxStages: hardMaxStages,
+      executionBudget: stageBudget,
+      readSignals: plan.readSignals,
+      generateStage: (stageIndex, stagePrompt) async {
+        if (stageIndex > 0) {
+          final again = await plan.reevaluate(
+            taskType: taskType,
+            wantsVision: hasImage,
+          );
+          final stageBlocked = rejectionFor(again);
+          if (stageBlocked != null) {
+            throw stageBlocked;
+          }
+          if (again != null) {
+            _rejectContextMismatch(plan, again);
+            stageOutputLimit = again.selectedOutputLimit(decision.answerClass);
+            sampling = GenerationSampling.forAnswerClass(decision.answerClass);
+            stageBudget = again.longFormBudget;
+            maxStages = again.maxStages;
+            hardMaxStages = again.hardMaxStages;
+          }
+        }
+        final runner = runStage;
+        if (runner != null) {
+          return runner(stageIndex, stagePrompt, stageOutputLimit, sampling);
+        }
+        final receipt = await qwenProcessor.runDirectUserGeneration(
+          stagePrompt,
+          signingKey: signingKey,
+          imageBytes: stageIndex == 0 && hasImage ? imageBytes : null,
+          maxOutputTokens: stageOutputLimit,
+          temperature: sampling?.temperature,
+          topP: sampling?.topP,
+        );
+        return GemmaStagePiece(
+          text: receipt.text,
+          stopReason: receipt.stopReason,
+          generatedChunks: receipt.generatedChunks,
+          generatedTokens: receipt.generatedTokens,
+        );
       },
     );
     final generation = DirectGenerationReceipt(
@@ -265,6 +279,32 @@ class DirectPromptHandler implements TaskHandler {
       status: WorkerResultStatus.succeeded,
       output: evidence,
       metrics: metrics.toJson(),
+    );
+  }
+
+  static void _rejectContextMismatch(
+    DeviceInferencePlan plan,
+    ModelSelection? selection,
+  ) {
+    if (selection == null || !selection.admitted) {
+      return;
+    }
+    final resident = plan.readResidentEngine?.call();
+    if (resident == null) {
+      return;
+    }
+    final sameModel = selection.selectedModelId == resident.modelVersionId ||
+        selection.reasonCodes.contains('resident_model_reuse');
+    if (!sameModel || selection.selectedContextTokens == resident.contextTokens) {
+      return;
+    }
+    throw WorkerError(
+      code: WorkerErrorCode.modelNotAvailable,
+      message:
+          'Selected context ${selection.selectedContextTokens} does not match '
+          'the loaded engine window ${resident.contextTokens}.',
+      retryable: true,
+      stage: WorkerTaskStage.llm,
     );
   }
 

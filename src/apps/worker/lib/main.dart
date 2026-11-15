@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'runtime/gemma_bootstrap.dart';
 import 'runtime/worker_app_update.dart';
+import 'ui/app_update_dialog.dart';
 import 'ui/fibonai_splash.dart';
 import 'ui/worker_login_screen.dart';
 import 'ui/gemma_download_dialog.dart';
@@ -49,6 +50,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
   int _selectedNavIndex = 0;
   bool _modelUpdatePromptOpen = false;
   bool _modelDownloadPromptDismissed = false;
+  bool _appUpdateDialogOpen = false;
   bool _splashDone = false;
 
   @override
@@ -68,6 +70,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     }
     setState(() => _controller = controller);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_maybeShowAppUpdateDialog());
       unawaited(_maybeShowModelUpdatePrompt());
     });
   }
@@ -78,6 +81,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     }
     setState(() {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_maybeShowAppUpdateDialog());
       unawaited(_maybeShowModelUpdatePrompt());
     });
   }
@@ -105,6 +109,36 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(controller.modelError ?? 'Model download failed')),
     );
+  }
+
+  Future<void> _maybeShowAppUpdateDialog() async {
+    final controller = _controller;
+    if (!mounted ||
+        controller == null ||
+        !_splashDone ||
+        _appUpdateDialogOpen ||
+        controller.isDeviceOffline ||
+        controller.needsEmailSignIn ||
+        !controller.showsAppUpdateCard) {
+      return;
+    }
+    final phase = controller.appUpdatePhase;
+    if (phase != WorkerAppUpdatePhase.available &&
+        phase != WorkerAppUpdatePhase.failed) {
+      return;
+    }
+    _appUpdateDialogOpen = true;
+    final result = await showAppUpdatePromptDialog(
+      context,
+      versionName: controller.appUpdateVersionName ?? '',
+      notes: controller.appUpdateNotes,
+      mandatory: controller.appUpdateMandatory,
+    );
+    _appUpdateDialogOpen = false;
+    if (!mounted || result != AppUpdatePromptResult.update) {
+      return;
+    }
+    await controller.installOfferedAppUpdate();
   }
 
   Future<void> _maybeShowModelUpdatePrompt() async {
@@ -157,6 +191,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
     setState(() => _selectedNavIndex = index);
     if (index == 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(_maybeShowAppUpdateDialog());
         unawaited(_maybeShowModelUpdatePrompt());
       });
     }
@@ -173,6 +208,7 @@ class _WorkerHomePageState extends State<WorkerHomePage>
             setState(() => _splashDone = true);
           }
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            unawaited(_maybeShowAppUpdateDialog());
             unawaited(_maybeShowModelUpdatePrompt());
           });
         },

@@ -17,6 +17,7 @@ import 'model_artifact_verifier.dart';
 import 'model_runtime_manager.dart';
 import 'runtime_exceptions.dart';
 import 'runtime_exclusive_group_enforcer.dart';
+import 'worker_inference_gate.dart';
 import 'worker_model_installer.dart';
 
 typedef GemmaActiveModelLoader = Future<InferenceModel> Function({
@@ -480,7 +481,9 @@ class GemmaModelRuntimeManager implements ModelRuntimeManager {
       try {
         return await body();
       } finally {
-        _openSessions -= 1;
+        if (WorkerInferenceGate.instance.acceptsWork) {
+          _openSessions -= 1;
+        }
         IdentityLifecycleTracer.instance.recordNativeSessionClose(
           caller: 'GemmaModelRuntimeManager.withFreshSession',
           stageId: stageId,

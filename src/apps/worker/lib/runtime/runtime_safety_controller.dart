@@ -99,12 +99,31 @@ class RuntimeSafetyController {
       );
     }
 
-    final memoryVerdict = _evaluateMemory(signals, phase: phase);
+    final measured = signals.availableMemoryMb ?? snapshot.deviceAvailableRamMb;
+    final liveSignals = measured == signals.availableMemoryMb
+        ? signals
+        : RuntimeSafetySignals(
+            availableMemoryMb: measured,
+            osMemoryPressure: snapshot.lowMemory == true
+                ? OsMemoryPressureLevel.critical
+                : signals.osMemoryPressure,
+            runtimeCorrupted: signals.runtimeCorrupted,
+          );
+    if (phase == RuntimeSafetyPhase.duringWork &&
+        heavyTask &&
+        liveSignals.availableMemoryMb == null &&
+        snapshot.lowMemory == null) {
+      return const RuntimeSafetyVerdict.pause(
+        RuntimeSafetyReason.memoryPressure,
+        'memory_unmeasured',
+      );
+    }
+    final memoryVerdict = _evaluateMemory(liveSignals, phase: phase);
     if (memoryVerdict != null) {
       return memoryVerdict;
     }
 
-    final osVerdict = _evaluateOsPressure(signals, phase: phase);
+    final osVerdict = _evaluateOsPressure(liveSignals, phase: phase);
     if (osVerdict != null) {
       return osVerdict;
     }

@@ -127,7 +127,15 @@ abstract final class WorkerHeartbeatTelemetry {
       'batteryBps': context.snapshot.batteryPercent * 100,
       'charging': context.snapshot.isCharging,
       'thermalState': capability['thermal']['state'],
-      'freeRamBytes': capability['memory']['availableBytes'],
+      if (capability['memory']['availableBytes'] != null)
+        'freeRamBytes': capability['memory']['availableBytes'],
+      'memoryAttribution': capability['memory']['attribution'],
+      if (capability['memory']['totalRamBytes'] != null)
+        'totalRamBytes': capability['memory']['totalRamBytes'],
+      if (capability['memory']['memoryBudgetBytes'] != null)
+        'memoryBudgetBytes': capability['memory']['memoryBudgetBytes'],
+      if (capability['memory']['processPssBytes'] != null)
+        'processPssBytes': capability['memory']['processPssBytes'],
       'freeStorageBytes': capability['storage']['availableBytes'],
       'network': capability['network']['type'],
       'currentLeases': context.currentLeases,
@@ -173,14 +181,15 @@ abstract final class WorkerHeartbeatTelemetry {
     }
     final capability = DeviceCapabilityReport.fromDispatcher(snapshot: context.snapshot);
     final memory = capability['memory'] as Map<String, dynamic>;
-    final available = memory['availableBytes'] as int? ?? 0;
-    final total = memory['totalRamBytes'] as int? ?? available;
-    final effectiveLimit = (total * 0.5).round();
+    final available = memory['availableBytes'] as int?;
+    final budget = memory['memoryBudgetBytes'] as int?;
+    final known = memory['attribution'] == 'measured' && available != null;
     final snapshot = MemoryAccounting.evaluate(
-      effectiveMemoryLimitBytes: effectiveLimit,
+      effectiveMemoryLimitBytes: known ? (budget ?? available) : 0,
       commitments: commitments,
-      attributionStatus:
-          available > 0 ? MemoryAttributionStatus.known : MemoryAttributionStatus.uncertain,
+      attributionStatus: known
+          ? MemoryAttributionStatus.known
+          : MemoryAttributionStatus.uncertain,
     );
     return snapshot.toJson();
   }

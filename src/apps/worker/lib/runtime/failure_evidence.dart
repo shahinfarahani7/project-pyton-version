@@ -198,6 +198,8 @@ class FailureEvidenceMapper {
           const _MappedFailure(ClosedFailureCode.modelUnavailable, true),
         WorkerErrorCode.outOfMemoryRisk =>
           const _MappedFailure(ClosedFailureCode.runtimeOutOfMemory, true),
+        WorkerErrorCode.thermalBlock =>
+          const _MappedFailure(ClosedFailureCode.thermalBlock, true),
         WorkerErrorCode.cancelled =>
           const _MappedFailure(ClosedFailureCode.taskCancelled, false),
         WorkerErrorCode.deadlineExceeded =>

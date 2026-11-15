@@ -149,7 +149,7 @@ void main() {
     expect(result.admitted, isTrue);
   });
 
-  test('a resident engine is refused when free RAM cannot hold the weight file', () {
+  test('a resident engine is refused when the incremental estimate exceeds the free-RAM budget', () {
     final device = measured(
       totalRamMb: 7398,
       availableRamMb: 672,
@@ -164,6 +164,7 @@ void main() {
     );
     expect(result.admissionPhase, 'POST_MODEL_LOAD');
     expect(result.fullPeakRecheck, isFalse);
+    expect(result.memoryAccounting, 'resident_incremental_configured_estimate');
     expect(result.reasons, contains('resident_generation_exceeds_free_ram'));
     expect(result.reasons, isNot(contains('resident_model_reuse')));
     expect(result.admitted, isFalse);
@@ -192,7 +193,7 @@ void main() {
     expect(installed.reasons, contains('resident_generation_exceeds_free_ram'));
   });
 
-  test('a resident engine still runs when free RAM covers the weight file', () {
+  test('a resident engine still runs when free RAM covers the incremental estimate', () {
     final device = measured(
       totalRamMb: 7398,
       availableRamMb: 5000,
@@ -206,7 +207,71 @@ void main() {
     );
     expect(result.admitted, isTrue);
     expect(result.reasons, contains('resident_model_reuse'));
-    expect(gemma.predictedWorkingSetMb(2048), greaterThan(gemma.peakForContext(2048)));
+    expect(result.memoryAccounting, 'resident_incremental_configured_estimate');
+    final incremental = gemma.predictedWorkingSetMb(2048);
+    expect(incremental, lessThan(gemma.peakForContext(2048)));
+    expect(incremental, lessThan(gemma.modelFileSizeBytes ~/ (1024 * 1024)));
+  });
+
+  test('free RAM between the incremental estimate and the file size still admits', () {
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 1600,
+      cpuPartIds: const [0xD41],
+    );
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 2048,
+      residentEngine: liveGemma(),
+    );
+    expect(result.admitted, isTrue);
+    expect(result.reasons, contains('resident_model_reuse'));
+    expect(
+      gemma.predictedWorkingSetMb(2048),
+      lessThan(gemma.modelFileSizeBytes ~/ (1024 * 1024)),
+    );
+  });
+
+  test('unknown free RAM does not admit a resident engine', () {
+    final device = measured(
+      totalRamMb: null,
+      availableRamMb: null,
+      cpuPartIds: const [0xD41],
+    );
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 2048,
+      residentEngine: liveGemma(),
+    );
+    expect(result.admitted, isFalse);
+    expect(result.reasons, contains('memory_snapshot_unknown'));
+  });
+
+  test('a smaller requested context does not shrink the loaded engine window', () {
+    final device = measured(
+      totalRamMb: 7398,
+      availableRamMb: 672,
+      cpuPartIds: const [0xD41],
+    );
+    final resident = liveGemma();
+    final result = policy.evaluate(
+      device: device,
+      model: gemma,
+      contextTokens: 1024,
+      residentEngine: resident,
+    );
+    expect(result.admitted, isFalse);
+    expect(result.selectedContextTokens, resident.contextTokens);
+    expect(result.reasons, contains('resident_generation_exceeds_free_ram'));
+    final chosen = selection.select(
+      device: device,
+      request: const ModelSelectionRequest(taskType: 'text.direct'),
+      residentEngine: resident,
+    );
+    expect(chosen.admitted, isFalse);
+    expect(chosen.reasonCodes, contains('resident_generation_exceeds_free_ram'));
   });
 
   test('a larger context than the resident window uses pre-load admission', () {

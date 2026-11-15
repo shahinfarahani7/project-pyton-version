@@ -2,6 +2,7 @@ package io.edgemint.edgemint_worker
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.ApplicationExitInfo
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ContentValues
@@ -107,6 +108,10 @@ class WorkerRuntimePlugin(
 
             "readDeviceSnapshot" -> {
                 result.success(readDeviceSnapshot())
+            }
+
+            "readProcessExitHistory" -> {
+                result.success(readProcessExitHistory())
             }
 
             "localStorePath" -> {
@@ -677,6 +682,52 @@ class WorkerRuntimePlugin(
             "nativeHeapKb" to
                     memory["nativeHeapKb"],
         )
+    }
+
+    private fun readProcessExitHistory(): Map<String, Any?> {
+        if (Build.VERSION.SDK_INT < 30) {
+            return mapOf(
+                "available" to false,
+                "exits" to emptyList<Map<String, Any?>>(),
+            )
+        }
+        val activityManager =
+            context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+                ?: return mapOf(
+                    "available" to false,
+                    "exits" to emptyList<Map<String, Any?>>(),
+                )
+        val exits =
+            activityManager.getHistoricalProcessExitReasons(context.packageName, 0, 8)
+        return mapOf(
+            "available" to true,
+            "exits" to
+                exits.map { info ->
+                    mapOf(
+                        "reason" to info.reason,
+                        "reasonName" to exitReasonName(info.reason),
+                        "status" to info.status,
+                        "timestamp" to info.timestamp,
+                        "importance" to info.importance,
+                    )
+                },
+        )
+    }
+
+    private fun exitReasonName(reason: Int): String {
+        if (Build.VERSION.SDK_INT < 30) {
+            return "unknown"
+        }
+        return when (reason) {
+            ApplicationExitInfo.REASON_LOW_MEMORY -> "low_memory"
+            ApplicationExitInfo.REASON_ANR -> "anr"
+            ApplicationExitInfo.REASON_CRASH -> "crash"
+            ApplicationExitInfo.REASON_CRASH_NATIVE -> "native_crash"
+            ApplicationExitInfo.REASON_SIGNALED -> "signaled"
+            ApplicationExitInfo.REASON_EXIT_SELF -> "exit_self"
+            ApplicationExitInfo.REASON_USER_REQUESTED -> "user_requested"
+            else -> "unknown"
+        }
     }
 
     private fun readMemorySnapshot(): Map<String, Any?> {
