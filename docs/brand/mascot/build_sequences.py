@@ -9,8 +9,8 @@ States (played in this order when work stops):
 All sequences share one canvas size and anchor, so switching state never jumps.
 Also writes animated WebP versions (2/3 size) plus two stills to src/apps/worker/assets/mascot/.
 
-The source clips in clips/ were exported and then removed. What the app and the
-docs keep are the outputs: sequences/ and src/apps/worker/assets/mascot/*.webp.
+The source clips in clips/ were exported and then removed. The PNG sequences are
+only an intermediate; the app keeps src/apps/worker/assets/mascot/*.webp.
 To run this again, put the four clips back in clips/ first.
 
 Usage (from repository root):
