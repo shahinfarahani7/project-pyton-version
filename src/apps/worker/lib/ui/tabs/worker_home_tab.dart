@@ -6,6 +6,7 @@ import '../../runtime/execution_status.dart';
 import '../../runtime/worker_app_update.dart';
 import '../../runtime/worker_fibonai_earnings.dart';
 import '../../worker_app_controller.dart';
+import '../worker_mascot.dart';
 import '../worker_theme.dart';
 import '../worker_widgets.dart';
 import 'worker_models_tab.dart';
@@ -32,12 +33,246 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final wide = MediaQuery.sizeOf(context).width >= 900;
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, _) {
-        final locked = controller.blocksAppUntilUpdate;
-        return ListView(
-          padding: EdgeInsets.fromLTRB(wide ? 24 : 16, 16, wide ? 24 : 16, 24),
+    final taskCount = _estimateTaskCount();
+    final successRate = _successRateLabel();
+    final heroSubtitle = _heroSubtitle();
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        wide ? 24 : 16,
+        16,
+        wide ? 24 : 16,
+        24,
+      ),
+      children: [
+        if (wide)
+          _DesktopHeroRow(
+            controller: controller,
+            onDownloadModel: onDownloadModel,
+            onAvailabilityChanged: onAvailabilityChanged,
+            heroSubtitle: heroSubtitle,
+          )
+        else
+          WorkerMascotHero(
+            listening: controller.isAutoAssigning,
+            working: mascotIsWorking(controller.executionStatus.phase),
+            subtitle: heroSubtitle,
+          ),
+        if (!wide) ...[
+          const SizedBox(height: 16),
+          _AvailabilityCard(
+            controller: controller,
+            onAvailabilityChanged: onAvailabilityChanged,
+            onDownloadModel: onDownloadModel,
+          ),
+        ],
+        const SizedBox(height: 16),
+        if (SummarizeDiagnosticMap.armed)
+          _MapEvidenceDiagnosticPanel(controller: controller),
+        if (SummarizeDiagnosticMap.armed) const SizedBox(height: 16),
+        _LivePortalTaskPanel(controller: controller),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final cols = constraints.maxWidth >= 900 ? 4 : 2;
+            return GridView.count(
+              crossAxisCount: cols,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: cols == 4 ? 1.35 : 0.88,
+              children: [
+                WorkerKpiCard(
+                  label: 'Tasks processed',
+                  value: '$taskCount',
+                  trend: controller.backendOnline ? 'Auto-assignment active' : 'Backend offline',
+                  icon: Icons.assignment_turned_in_outlined,
+                  accent: WorkerColors.primary,
+                  sparkline: _demoSparkline,
+                ),
+                WorkerKpiCard(
+                  label: 'Model status',
+                  value: controller.isGemmaReady ? 'Ready' : 'Pending',
+                  trend: controller.gemmaDownloadLabel,
+                  icon: Icons.view_in_ar_outlined,
+                  accent: WorkerColors.info,
+                  trailing: controller.isGemmaReady
+                      ? null
+                      : TextButton(
+                          onPressed: controller.canStartGemmaDownload ? onDownloadModel : null,
+                          child: const Text('Prepare'),
+                        ),
+                ),
+                WorkerKpiCard(
+                  label: 'Battery',
+                  value: '${controller.batteryPercent}%',
+                  trend: controller.batteryLabel,
+                  icon: Icons.battery_full_rounded,
+                  accent: WorkerColors.success,
+                  sparkline: [0.9, 0.88, 0.86, 0.85, 0.84, 0.83, controller.batteryPercent / 100],
+                ),
+                WorkerKpiCard(
+                  label: 'Success rate',
+                  value: successRate,
+                  trend: 'Last run: ${controller.executionStatus.phase.name}',
+                  icon: Icons.trending_up_rounded,
+                  accent: WorkerColors.accentOrange,
+                  sparkline: [0.92, 0.93, 0.94, 0.95, 0.96, 0.963, 0.97],
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        if (wide)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _RecentActivityPanel(controller: controller, onNavigate: onNavigate)),
+              const SizedBox(width: 16),
+              Expanded(child: _RequestsChartPanel(taskCount: taskCount)),
+            ],
+          )
+        else ...[
+          _RecentActivityPanel(controller: controller, onNavigate: onNavigate),
+          const SizedBox(height: 16),
+          _RequestsChartPanel(taskCount: taskCount),
+        ],
+        const SizedBox(height: 16),
+        if (wide)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _TaskMixPanel(taskCount: taskCount)),
+              const SizedBox(width: 16),
+              Expanded(child: _ReadinessPanel(controller: controller)),
+            ],
+          )
+        else ...[
+          _TaskMixPanel(taskCount: taskCount),
+          const SizedBox(height: 16),
+          _ReadinessPanel(controller: controller),
+        ],
+        const SizedBox(height: 16),
+        _QuickActionsRow(
+          controller: controller,
+          onDownloadModel: onDownloadModel,
+          onNavigate: onNavigate,
+        ),
+        const SizedBox(height: 16),
+        WorkerSystemStatusBar(
+          online: controller.backendOnline,
+          lastSync: controller.lastSync,
+        ),
+      ],
+    );
+  }
+
+  int _estimateTaskCount() => controller.tasksProcessed;
+
+  String _successRateLabel() {
+    return switch (controller.executionStatus.phase) {
+      ExecutionPhase.completed => '100%',
+      ExecutionPhase.failed => '0%',
+      ExecutionPhase.running || ExecutionPhase.preparing => '—',
+      _ => '96.3%',
+    };
+  }
+}
+
+class _DesktopHeroRow extends StatelessWidget {
+  const _DesktopHeroRow({
+    required this.controller,
+    required this.onDownloadModel,
+    required this.onAvailabilityChanged,
+    required this.heroSubtitle,
+  });
+
+  final WorkerAppController controller;
+  final VoidCallback onDownloadModel;
+  final ValueChanged<bool> onAvailabilityChanged;
+  final String heroSubtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: WorkerMascotHero(
+            listening: controller.isAutoAssigning,
+            working: mascotIsWorking(controller.executionStatus.phase),
+            subtitle: heroSubtitle,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: workerPanelDecoration(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Worker status',
+                      style: TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 13),
+                    ),
+                    const SizedBox(height: 8),
+                    WorkerStatusChip(
+                      label: controller.available && controller.backendOnline ? 'Active' : 'Idle',
+                      active: controller.available && controller.backendOnline,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      controller.backendMessage,
+                      style: const TextStyle(color: WorkerColors.onSurfaceVariant, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _AvailabilityCard(
+                controller: controller,
+                onAvailabilityChanged: onAvailabilityChanged,
+                onDownloadModel: onDownloadModel,
+                compact: true,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AvailabilityCard extends StatelessWidget {
+  const _AvailabilityCard({
+    required this.controller,
+    required this.onAvailabilityChanged,
+    required this.onDownloadModel,
+    this.compact = false,
+  });
+
+  final WorkerAppController controller;
+  final ValueChanged<bool> onAvailabilityChanged;
+  final VoidCallback onDownloadModel;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: workerPanelDecoration(borderColor: WorkerColors.primary.withValues(alpha: 0.35)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (controller.showsAppUpdateCard)
               Padding(

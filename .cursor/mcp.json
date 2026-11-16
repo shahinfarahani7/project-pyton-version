@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "refero": {
+      "url": "https://api.refero.design/mcp"
+    }
+  }
+}

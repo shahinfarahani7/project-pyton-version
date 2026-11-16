@@ -1,0 +1,9 @@
+{
+  "desktop": {
+    "count": 144,
+    "path": "/hero-sequence/desktop/frame_{i}.webp",
+    "pad": 4,
+    "width": 1600,
+    "height": 900
+  }
+}

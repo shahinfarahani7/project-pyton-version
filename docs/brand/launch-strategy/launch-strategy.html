@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>FibonAI — Launch design strategy</title>
+<style>
+  @font-face { font-family: 'Cal Sans'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/cal-sans/files/cal-sans-latin-400-normal.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Geist'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-sans/files/geist-sans-latin-400-normal.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Geist'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-sans/files/geist-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+  @font-face { font-family: 'Geist'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-sans/files/geist-sans-latin-600-normal.woff2') format('woff2'); font-weight: 600; }
+  @font-face { font-family: 'Geist Mono'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-mono/files/geist-mono-latin-400-normal.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Geist Mono'; src: url('../../../src/apps/marketing-site/node_modules/@fontsource/geist-mono/files/geist-mono-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+
+  @page { size: A4; margin: 0; }
+  :root {
+    --canvas: #0b0c0f; --panel: #101216; --panel-2: #15171b; --row: #1a1c20;
+    --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.2);
+    --text: #ffffff; --muted: #b3b5bd; --dim: #7a7c86;
+    --gold: #cdae6f; --gold-deep: #c0a064; --gold-soft: #f1e6cf; --slate: #262f38; --mark-line: #ece8df;
+    --check: #19c7b4; --hold: #e2456b;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: var(--canvas); color: var(--muted); font: 400 10.5pt/1.55 'Geist', system-ui, sans-serif; }
+  .page { width: 210mm; height: 297mm; padding: 18mm 17mm 16mm; position: relative; overflow: hidden; page-break-after: always; background: var(--canvas); }
+  .page:last-child { page-break-after: auto; }
+  .page::before { content: ''; position: absolute; inset: -30% -20% auto auto; width: 140mm; height: 140mm; background: radial-gradient(circle, rgba(205,174,111,.10), transparent 65%); pointer-events: none; }
+  .foot { position: absolute; left: 17mm; right: 17mm; bottom: 9mm; display: flex; justify-content: space-between; font: 400 7.5pt 'Geist Mono', monospace; color: var(--dim); border-top: 1px solid var(--line); padding-top: 3mm; }
+  h1, h2, h3 { color: var(--text); font-family: 'Cal Sans', 'Geist', sans-serif; font-weight: 400; letter-spacing: -.005em; margin: 0; }
+  h1 { font-size: 40pt; line-height: 1.03; }
+  h2 { font-size: 22pt; line-height: 1.08; margin-bottom: 5mm; }
+  h3 { font-size: 12.5pt; line-height: 1.2; margin: 0 0 2mm; }
+  p { margin: 0 0 3mm; }
+  strong { color: var(--text); font-weight: 600; }
+  .gold { color: var(--gold); }
+  .tight td { padding-top: 1.8mm; padding-bottom: 1.8mm; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 2.4mm; font: 500 7.5pt 'Geist Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 4mm; }
+  .eyebrow::before { content: ''; width: 6mm; height: 1px; background: var(--gold); }
+  .lead { font-size: 12pt; color: var(--muted); max-width: 150mm; }
+  .grid { display: grid; gap: 4mm; }
+  .g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 5mm; }
+  .card--gold { border-color: rgba(205,174,111,.32); background: linear-gradient(160deg, rgba(205,174,111,.08), var(--panel) 55%); }
+  .card--hold { border-color: rgba(226,69,107,.4); }
+  .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+  ul { margin: 0 0 3mm; padding-left: 4.5mm; } li { margin-bottom: 1.2mm; } li::marker { color: var(--gold); }
+  ul.x li::marker { content: '✕  '; color: var(--hold); } ul.ok li::marker { content: '✓  '; color: var(--check); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 9pt; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th { text-align: left; font: 500 7.5pt 'Geist Mono', monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); background: var(--panel-2); padding: 2.6mm 3mm; border-bottom: 1px solid var(--line); }
+  td { padding: 2.6mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; background: var(--panel); }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--text); font-weight: 500; }
+  .mono { font-family: 'Geist Mono', monospace; font-size: 8.5pt; }
+  .chip { display: inline-block; font: 500 7.5pt 'Geist Mono', monospace; padding: .6mm 2.4mm; border-radius: 800px; border: 1px solid var(--line-2); color: var(--muted); }
+  .chip--ok { color: var(--check); border-color: rgba(25,199,180,.45); }
+  .chip--hold { color: var(--hold); border-color: rgba(226,69,107,.5); }
+  .chip--gold { color: var(--gold); border-color: rgba(205,174,111,.5); }
+  .phase-num { font: 400 30pt 'Cal Sans', sans-serif; color: var(--gold); line-height: 1; }
+  .swatch { border-radius: 10px; height: 16mm; border: 1px solid var(--line); margin-bottom: 2mm; }
+  .sw-name { color: var(--text); font-weight: 500; font-size: 9pt; } .sw-hex { font: 400 8pt 'Geist Mono', monospace; color: var(--dim); }
+  .bar { display: flex; height: 4mm; border-radius: 800px; overflow: hidden; border: 1px solid var(--line); }
+  .bar span { display: block; height: 100%; }
+  .brand { display: flex; align-items: center; gap: 3mm; color: var(--mark-line); font: 600 13pt 'Geist', sans-serif; }
+  .brand .a { background: linear-gradient(180deg, var(--mark-line) 58%, var(--gold) 58%, var(--gold) 74%, var(--mark-line) 74%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .brand .i { color: var(--gold); }
+  .mark .ln { stroke: var(--mark-line); } .mark .gd { fill: var(--gold); }
+  .status { display: flex; gap: 4mm; align-items: flex-start; }
+  .status__badge { flex: none; font: 600 9pt 'Geist Mono', monospace; color: var(--hold); border: 1px solid rgba(226,69,107,.55); border-radius: 8px; padding: 2mm 3mm; }
+  .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 6mm 0 2mm; position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 0; right: 0; top: 3mm; height: 1px; background: linear-gradient(90deg, var(--gold), var(--line-2)); }
+  .tl { padding-right: 4mm; } .tl i { display: block; width: 6mm; height: 6mm; border-radius: 50%; background: var(--canvas); border: 1.5px solid var(--gold); margin-bottom: 3mm; position: relative; }
+  .tl:first-child i { background: var(--gold); }
+  .small { font-size: 8.5pt; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<!-- 1. Cover -->
+<section class="page" style="display:flex;flex-direction:column;justify-content:space-between;padding-top:24mm;">
+  <div class="brand">
+    <svg class="mark" width="34" height="32" viewBox="0 0 266 248" fill="none"><g class="ln" stroke-width="22.5"><path d="M143 11.25H11.25V236.75H168V182"/><path d="M168 132V11.25H254.75V157H47V85A38 38 0 0 1 85 47"/></g><g class="gd"><path d="M73 132V105A70 70 0 0 1 143 35V132Z"/><rect x="193" y="35" width="36" height="97"/></g></svg>
+    <span>Fibon<span class="a">A</span><span class="i">I</span></span>
+  </div>
+  <div>
+    <div class="eyebrow">Internal · Design team</div>
+    <h1>Launch design strategy.<br /><span class="gold">One idea at a time.</span></h1>
+    <p class="lead" style="margin-top:7mm;">How a three-person team introduces FibonAI in three phases, using the visual system of the marketing website. Phase 1 deliberately shows only a small part of the product.</p>
+  </div>
+  <div style="display:flex;justify-content:center;margin:4mm 0;">
+    <svg class="mark" width="300" height="280" viewBox="0 0 266 248" fill="none" style="opacity:.95"><g class="ln" stroke-width="22.5"><path d="M143 11.25H11.25V236.75H168V182"/><path d="M168 132V11.25H254.75V157H47V85A38 38 0 0 1 85 47"/></g><g class="gd"><path d="M73 132V105A70 70 0 0 1 143 35V132Z"/><rect x="193" y="35" width="36" height="97"/></g></svg>
+  </div>
+  <div class="grid g3" style="font-size:9pt;">
+    <div><span class="small">Version</span><br /><strong>Draft 1</strong></div>
+    <div><span class="small">Date</span><br /><strong>7 October 2026</strong></div>
+    <div><span class="small">Source of truth</span><br /><strong>Marketing site + DESIGN.md</strong></div>
+  </div>
+</section>
+
+<!-- 2. Principles + what FibonAI is -->
+<section class="page">
+  <div class="eyebrow">01 · Starting point</div>
+  <h2>What we are introducing</h2>
+  <p class="lead">FibonAI is an edge-first AI inference platform. Customers submit document, image, language and audio tasks. Each task gets a fixed EUR quote <em>before</em> it runs, then executes on opted-in devices running signed models, with cloud used only when policy allows and the reason recorded. Everything is written to an audit trail.</p>
+
+  <div class="card card--hold" style="margin:6mm 0;">
+    <h3>This page is internal</h3>
+    <p>The paragraph above is the whole product. It is here so the team understands what we hold back. Do not publish it in Phase 1.</p>
+  </div>
+
+  <h3 style="margin-top:6mm;">Five rules for every piece we publish</h3>
+  <div class="grid g2" style="margin-top:3mm;">
+    <div class="card"><h3>1. One idea per phase</h3><p>Each phase has a single message. If a post needs two ideas, it belongs to a later phase.</p></div>
+    <div class="card"><h3>2. Only true claims</h3><p>Say only what the product docs support. No performance numbers, customer names or dates that have not been approved.</p></div>
+    <div class="card"><h3>3. The website is the style guide</h3><p>Colours, fonts, glass objects and layout come from the marketing site and <span class="mono">docs/brand/DESIGN.md</span>. No new palettes per post.</p></div>
+    <div class="card"><h3>4. Real objects, glass style</h3><p>Phone, chip, padlock — realistic and frosted. No cartoons, coins, mining rigs or sci-fi holograms.</p></div>
+    <div class="card" style="grid-column:span 2;"><h3>5. Nothing goes out without the weekly review</h3><p>All three members check every asset against the checklist on page 9. An asset that fails is fixed, not published "for now".</p></div>
+  </div>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>02</span></div>
+</section>
+
+<!-- 3. Reveal map -->
+<section class="page">
+  <div class="eyebrow">02 · Reveal map</div>
+  <h2>Three phases, gradually more visible</h2>
+  <div class="timeline">
+    <div class="tl"><i></i><span class="phase-num">01</span><h3 style="margin-top:2mm;">Tease</h3><p class="small">Name, mark, one idea</p></div>
+    <div class="tl"><i></i><span class="phase-num" style="color:var(--muted)">02</span><h3 style="margin-top:2mm;">How it works</h3><p class="small">The flow and one real task</p></div>
+    <div class="tl"><i></i><span class="phase-num" style="color:var(--dim)">03</span><h3 style="margin-top:2mm;">Launch</h3><p class="small">Full product, two audiences</p></div>
+  </div>
+
+  <table class="tight" style="margin-top:5mm;">
+    <tr><th style="width:34%">Topic</th><th>Phase 1</th><th>Phase 2</th><th>Phase 3</th></tr>
+    <tr><td>Name, mark, colours</td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>"Runs on real devices near the data"</td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>"Price shown before it runs"</td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>Four-step flow (submit → quote → edge → result)</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>One worked example with a real price</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>Region policy, cloud fallback with reason</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--ok">show</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>Portal screens</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--gold">partial</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>Full task catalog and price table</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>Audit trail, verification tiers, developer API</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--ok">show</span></td></tr>
+    <tr><td>Worker programme and rewards</td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--hold">hold</span></td><td><span class="chip chip--ok">show*</span></td></tr>
+  </table>
+  <p class="small" style="margin-top:3mm;">* Worker messaging needs legal-checked copy: rewards are variable and not guaranteed, and FibonAI is not cryptocurrency mining.</p>
+
+  <div class="card card--gold" style="margin-top:5mm;">
+    <h3>Move to the next phase only when</h3>
+    <ul class="ok"><li>every asset of the current phase passed review,</li><li>the next phase's copy is approved,</li><li>the website section that the next phase points to is live.</li></ul>
+  </div>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>03</span></div>
+</section>
+
+<!-- 4. Phase 1 -->
+<section class="page">
+  <div class="eyebrow">03 · Phase 1 — Tease</div>
+  <h2>Make the name known. Keep the product mostly hidden.</h2>
+  <div class="card card--gold" style="margin-bottom:5mm;">
+    <span class="small">The one message</span>
+    <p style="font:400 17pt/1.2 'Cal Sans',sans-serif;color:var(--text);margin:2mm 0 0;">AI that runs on real devices — <span class="gold">and you see the price first.</span></p>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Allowed</h3>
+      <ul class="ok"><li>Name and mark, logo motion</li><li>Glass phone and chip as hero objects</li><li>"Edge-first AI" and "price before it runs"</li><li>Dark canvas, gold accent, Cal Sans headlines</li><li>A single "Get early access" call to action</li></ul></div>
+    <div class="card card--hold"><h3>Not allowed yet</h3>
+      <ul class="x"><li>Prices, task names, the catalog</li><li>Portal or app screenshots</li><li>Workers, rewards, earning</li><li>Audit, compliance, GDPR claims</li><li>Launch dates or customer names</li></ul></div>
+  </div>
+  <h3 style="margin-top:6mm;">Deliverables</h3>
+  <table>
+    <tr><th>Asset</th><th>Format</th><th>Owner</th></tr>
+    <tr><td>Logo motion — intro version</td><td class="mono">MP4 + MOV alpha, 2–3 s</td><td>Motion lead</td></tr>
+    <tr><td>Logo motion — end-card version</td><td class="mono">MP4, 1.5–2 s, holds last frame</td><td>Motion lead</td></tr>
+    <tr><td>Short teaser video</td><td class="mono">16:9, 9:16 and 1:1</td><td>Motion lead</td></tr>
+    <tr><td>Three still key visuals</td><td class="mono">PNG 1:1, 4:5, 16:9</td><td>Visual designer</td></tr>
+    <tr><td>Profile and cover images</td><td class="mono">Per channel sizes</td><td>Visual designer</td></tr>
+    <tr><td>Holding page with early-access form</td><td class="mono">Website section</td><td>Visual designer + copy</td></tr>
+    <tr><td>Captions and posting calendar</td><td class="mono">Shared doc</td><td>Copy &amp; review</td></tr>
+  </table>
+  <p class="small" style="margin-top:3mm;">Exit criteria: all assets reviewed, early-access form working, Phase 2 copy drafted and approved.</p>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>04</span></div>
+</section>
+
+<!-- 5. Phase 2 + 3 -->
+<section class="page">
+  <div class="eyebrow">04 · Phases 2 and 3</div>
+  <h2>Explain the flow, then open the whole product</h2>
+  <div class="card" style="margin-bottom:5mm;">
+    <div style="display:flex;gap:4mm;align-items:baseline;"><span class="phase-num">02</span><h3>How it works</h3></div>
+    <p style="margin-top:2mm;"><strong>Message:</strong> submit a task, get a fixed EUR quote, it runs on an edge device, the result comes back.</p>
+    <ul><li>Animate the four steps of the website's workflow section — one short clip per step and one combined explainer.</li>
+      <li>One worked example using a published rate exactly as written, e.g. <span class="mono">Document OCR · €0.0025 per page</span>. Never round or invent prices.</li>
+      <li>Introduce region policy and "cloud only when allowed, reason recorded".</li>
+      <li>Reveal the full marketing website at the end of the phase.</li></ul>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:4mm;align-items:baseline;"><span class="phase-num">03</span><h3>Launch — two audiences</h3></div>
+    <div class="grid g2" style="margin-top:3mm;">
+      <div><strong>Customers</strong>
+        <ul><li>Use cases: documents, vision, language</li><li>Published price table</li><li>Verification tiers and audit trail</li><li>Customer portal and developer API</li></ul></div>
+      <div><strong>Workers</strong>
+        <ul><li>Opt-in device participation</li><li>Signed models, device safety</li><li>Rewards are variable, not guaranteed</li><li>"Not cryptocurrency mining" on every worker asset</li></ul></div>
+    </div>
+    <p class="small">Keep the two audiences in separate assets. A worker message must never appear inside a customer ad, and the other way round.</p>
+  </div>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>05</span></div>
+</section>
+
+<!-- 6. Team -->
+<section class="page">
+  <div class="eyebrow">05 · Team</div>
+  <h2>Three roles, built around who knows motion</h2>
+  <p class="lead">Only the motion lead edits video. The other two members produce static and written work, and use templates the motion lead prepares — they never animate from scratch.</p>
+  <div class="grid g3" style="margin-top:5mm;">
+    <div class="card card--gold"><span class="chip chip--gold">Member 1</span><h3 style="margin-top:3mm;">Motion lead</h3><p class="small">Knows video editing and motion graphics</p>
+      <ul><li>Logo motions and all video</li><li>Builds editable templates: end card, lower third, caption style</li><li>Exports every size</li><li>Owns motion rules (page 8)</li></ul></div>
+    <div class="card"><span class="chip">Member 2</span><h3 style="margin-top:3mm;">Visual designer</h3><p class="small">Static design, no motion needed</p>
+      <ul><li>Key visuals and post layouts</li><li>Profile/cover images</li><li>Website and holding page</li><li>Keeps the shared template file tidy</li></ul></div>
+    <div class="card"><span class="chip">Member 3</span><h3 style="margin-top:3mm;">Copy &amp; review</h3><p class="small">Words, schedule, quality</p>
+      <ul><li>All text and captions</li><li>Checks claims against the docs</li><li>Posting calendar</li><li>Runs the weekly review</li></ul></div>
+  </div>
+  <h3 style="margin-top:7mm;">How the non-motion members contribute to video</h3>
+  <table>
+    <tr><th>Task</th><th>Who does it</th><th>How</th></tr>
+    <tr><td>Script and on-screen words</td><td>Copy &amp; review</td><td>Writes in a shared doc, one line per shot, with timing in seconds</td></tr>
+    <tr><td>Storyboard</td><td>Visual designer</td><td>Static frames in the template file — rough is fine</td></tr>
+    <tr><td>Swap text in a finished video</td><td>Either</td><td>Uses the motion lead's template with editable text fields only</td></tr>
+    <tr><td>Animation, timing, export</td><td>Motion lead only</td><td>Final say on motion</td></tr>
+  </table>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>06</span></div>
+</section>
+
+<!-- 7. Visual system -->
+<section class="page">
+  <div class="eyebrow">06 · Visual system</div>
+  <h2>Use the website's look — nothing new</h2>
+  <div class="grid g4" style="margin-bottom:4mm;">
+    <div><div class="swatch" style="background:#0b0c0f"></div><div class="sw-name">Canvas</div><div class="sw-hex">#0B0C0F</div></div>
+    <div><div class="swatch" style="background:#101216"></div><div class="sw-name">Panel</div><div class="sw-hex">#101216</div></div>
+    <div><div class="swatch" style="background:#cdae6f"></div><div class="sw-name">Gold</div><div class="sw-hex">#CDAE6F</div></div>
+    <div><div class="swatch" style="background:#ece8df"></div><div class="sw-name">Mark line</div><div class="sw-hex">#ECE8DF</div></div>
+    <div><div class="swatch" style="background:#ffffff"></div><div class="sw-name">Headline</div><div class="sw-hex">#FFFFFF</div></div>
+    <div><div class="swatch" style="background:#b3b5bd"></div><div class="sw-name">Body</div><div class="sw-hex">#B3B5BD</div></div>
+    <div><div class="swatch" style="background:#19c7b4"></div><div class="sw-name">Verified</div><div class="sw-hex">#19C7B4</div></div>
+    <div><div class="swatch" style="background:linear-gradient(135deg,#a6c0cb,#4d6472)"></div><div class="sw-name">Steel</div><div class="sw-hex">#A6C0CB → #4D6472</div></div>
+  </div>
+  <p class="small">Proportion on a typical frame: about 85% canvas and panels, 10% white/grey text, 5% gold. Gold marks one key word or the mark — never whole backgrounds.</p>
+  <div class="bar" style="margin:2mm 0 5mm;"><span style="width:85%;background:#101216"></span><span style="width:10%;background:#b3b5bd"></span><span style="width:5%;background:#cdae6f"></span></div>
+
+  <div class="grid g2">
+    <div class="card"><h3>Type</h3>
+      <p><span style="font:400 18pt 'Cal Sans';color:#fff;">Cal Sans</span> — headlines only, one line, at most 7 words.</p>
+      <p><span style="font:500 13pt 'Geist';color:#fff;">Geist</span> — body, captions, buttons.</p>
+      <p><span style="font:400 11pt 'Geist Mono';color:#fff;">Geist Mono</span> — prices, task names, small labels.</p></div>
+    <div class="card"><h3>Layout</h3>
+      <ul><li>Wide margins, one headline, one object.</li><li>Rounded cards (14–16 px), thin light borders, no drop shadows.</li><li>Pill buttons: white with dark text.</li><li>One highlighted word in the gold gradient per headline.</li></ul></div>
+    <div class="card"><h3>3D and imagery</h3>
+      <ul><li>Frosted-glass phone, chip, padlock with titanium edges.</li><li>Soft cool rim light, warm gold rim; dark background.</li><li>Objects can float slowly; never spin fast.</li></ul></div>
+    <div class="card card--hold"><h3>Never</h3>
+      <ul class="x"><li>Recoloured or stretched mark, mark with glow or shadow</li><li>Blue neon, holograms, coins, mining hardware</li><li>Stock photos of people pointing at screens</li><li>More than one gold word per headline</li></ul></div>
+  </div>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>07</span></div>
+</section>
+
+<!-- 8. Motion + logo motion status -->
+<section class="page">
+  <div class="eyebrow">07 · Motion</div>
+  <h2>Motion rules and logo motion review</h2>
+  <div class="grid g2">
+    <div class="card"><h3>Feel</h3>
+      <ul><li>Calm and precise: ease-out curves (website uses <span class="mono">cubic-bezier(0.22, 1, 0.36, 1)</span>).</li><li>Short moves, then hold. Text stays still long enough to read twice.</li><li>Hard cuts or short fades; no spins, flips, glitches or bounces.</li></ul></div>
+    <div class="card"><h3>Recommended timings</h3>
+      <ul><li>Logo intro: 2–3 s, last 0.5 s held still</li><li>End card: 1.5–2 s</li><li>Text in: 0.3–0.6 s</li><li>Minimum on-screen text time: 2 s per line</li></ul>
+      <p class="small">Starting values for the team, to be tuned by the motion lead.</p></div>
+  </div>
+
+  <div class="card card--hold" style="margin-top:6mm;">
+    <div class="status">
+      <div class="status__badge">NOT REVIEWED</div>
+      <div><h3>The two logo motions</h3>
+        <p>The files have not been shared with this review, so they are <strong>not approved</strong>. Do not publish them until both pass every check below. Place them in <span class="mono">docs/brand/motion/</span> for review.</p></div>
+    </div>
+  </div>
+
+  <table style="margin-top:5mm;">
+    <tr><th style="width:6%">#</th><th>Check</th><th style="width:15%">Motion 1</th><th style="width:15%">Motion 2</th></tr>
+    <tr><td>1</td><td>Mark keeps its exact shape — no bent strokes, no distortion</td><td>—</td><td>—</td></tr>
+    <tr><td>2</td><td>Only brand colours: #0B0C0F, #ECE8DF, gold #CDAE6F</td><td>—</td><td>—</td></tr>
+    <tr><td>3</td><td>Wordmark spelled FibonAI, gold I, gold triangle in A</td><td>—</td><td>—</td></tr>
+    <tr><td>4</td><td>No glow, shadow or outline on the final mark</td><td>—</td><td>—</td></tr>
+    <tr><td>5</td><td>Length within the recommended timing, ends on a clean held frame</td><td>—</td><td>—</td></tr>
+    <tr><td>6</td><td>Works small (profile picture size) and on dark and light backgrounds</td><td>—</td><td>—</td></tr>
+    <tr><td>7</td><td>Has a clear, different job: intro vs end card</td><td>—</td><td>—</td></tr>
+    <tr><td>8</td><td>A still frame exists for places where motion is off</td><td>—</td><td>—</td></tr>
+  </table>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>08</span></div>
+</section>
+
+<!-- 9. Workflow, review, files -->
+<section class="page">
+  <div class="eyebrow">08 · Workflow</div>
+  <h2>How work moves from idea to published</h2>
+  <div class="grid g4" style="margin-bottom:6mm;">
+    <div class="card"><span class="mono" style="color:var(--gold)">01</span><h3 style="margin-top:2mm;">Brief</h3><p class="small">Copy writes the message, phase and format.</p></div>
+    <div class="card"><span class="mono" style="color:var(--gold)">02</span><h3 style="margin-top:2mm;">Make</h3><p class="small">Designer or motion lead builds from templates.</p></div>
+    <div class="card"><span class="mono" style="color:var(--gold)">03</span><h3 style="margin-top:2mm;">Review</h3><p class="small">All three check against the list below.</p></div>
+    <div class="card"><span class="mono" style="color:var(--gold)">04</span><h3 style="margin-top:2mm;">Publish</h3><p class="small">Copy schedules it; final files archived.</p></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Weekly review checklist</h3>
+      <ul class="ok"><li>Belongs to the current phase — reveals nothing held back</li><li>One message only</li><li>Colours and fonts from page 7</li><li>Mark used correctly, enough space around it</li><li>Prices exactly as published, in EUR</li><li>No claims missing from the product docs</li><li>Text readable on a phone screen</li></ul></div>
+    <div class="card"><h3>Files and naming</h3>
+      <p class="mono" style="line-height:1.8;color:var(--text);">docs/brand/<br />&nbsp;&nbsp;motion/ &nbsp;&nbsp;logo motions, templates<br />&nbsp;&nbsp;phase-1/ &nbsp;final exports<br />&nbsp;&nbsp;phase-2/<br />&nbsp;&nbsp;phase-3/</p>
+      <p class="small">Name files as <span class="mono">phase_topic_format_v01</span>, e.g. <span class="mono">p1_teaser_9x16_v03.mp4</span>. Never overwrite an approved version — bump the number.</p></div>
+  </div>
+  <div class="card" style="margin-top:5mm;"><h3>Open items before Phase 1 starts</h3>
+    <ul><li>Share both logo motions for review.</li><li>Confirm the FibonAI domain — site emails still use the old domain.</li><li>Get the wordmark as a vector file for large formats.</li><li>Decide channels and the start date (team decision, not set in this document).</li></ul></div>
+  <div class="foot"><span>FibonAI · Launch design strategy</span><span>09</span></div>
+</section>
+
+</body>
+</html>

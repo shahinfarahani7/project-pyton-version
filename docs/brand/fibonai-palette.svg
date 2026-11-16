@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" font-family="Geist, 'Geist Sans', system-ui, sans-serif">
+  <title>FibonAI colour palette</title>
+  <rect width="1200" height="760" fill="#0B0C0F"/>
+  <text x="56" y="76" fill="#ECE8DF" font-size="34" font-weight="600">FibonAI palette</text>
+  <text x="56" y="108" fill="#B3B5BD" font-size="16">Brand � dark surfaces � text � status � light theme</text>
+
+  <g font-size="14">
+    <text x="56" y="160" fill="#7A7C86" font-size="12" letter-spacing="2">BRAND</text>
+    <g transform="translate(56 176)"><rect width="200" height="120" rx="14" fill="#CDAE6F"/><text y="146" fill="#ECE8DF">Gold</text><text y="168" fill="#7A7C86" font-family="Geist Mono, monospace">#CDAE6F</text></g>
+    <g transform="translate(276 176)"><rect width="200" height="120" rx="14" fill="#C0A064"/><text y="146" fill="#ECE8DF">Gold deep (logo)</text><text y="168" fill="#7A7C86" font-family="Geist Mono, monospace">#C0A064</text></g>
+    <g transform="translate(496 176)"><rect width="200" height="120" rx="14" fill="#F1E6CF"/><text y="146" fill="#ECE8DF">Gold soft</text><text y="168" fill="#7A7C86" font-family="Geist Mono, monospace">#F1E6CF</text></g>
+    <g transform="translate(716 176)"><rect width="200" height="120" rx="14" fill="#262F38" stroke="#ffffff" stroke-opacity=".12"/><text y="146" fill="#ECE8DF">Slate (logo)</text><text y="168" fill="#7A7C86" font-family="Geist Mono, monospace">#262F38</text></g>
+    <g transform="translate(936 176)"><rect width="200" height="120" rx="14" fill="#ECE8DF"/><text y="146" fill="#ECE8DF">Line (mark on dark)</text><text y="168" fill="#7A7C86" font-family="Geist Mono, monospace">#ECE8DF</text></g>
+
+    <text x="56" y="398" fill="#7A7C86" font-size="12" letter-spacing="2">DARK SURFACES</text>
+    <g transform="translate(56 414)"><rect width="200" height="80" rx="12" fill="#0B0C0F" stroke="#ffffff" stroke-opacity=".2"/><text y="106" fill="#ECE8DF">Canvas</text><text y="128" fill="#7A7C86" font-family="Geist Mono, monospace">#0B0C0F</text></g>
+    <g transform="translate(276 414)"><rect width="200" height="80" rx="12" fill="#101216" stroke="#ffffff" stroke-opacity=".09"/><text y="106" fill="#ECE8DF">Panel</text><text y="128" fill="#7A7C86" font-family="Geist Mono, monospace">#101216</text></g>
+    <g transform="translate(496 414)"><rect width="200" height="80" rx="12" fill="#15171B" stroke="#ffffff" stroke-opacity=".09"/><text y="106" fill="#ECE8DF">Panel 2</text><text y="128" fill="#7A7C86" font-family="Geist Mono, monospace">#15171B</text></g>
+    <g transform="translate(716 414)"><rect width="200" height="80" rx="12" fill="#1A1C20" stroke="#ffffff" stroke-opacity=".09"/><text y="106" fill="#ECE8DF">Row</text><text y="128" fill="#7A7C86" font-family="Geist Mono, monospace">#1A1C20</text></g>
+    <g transform="translate(936 414)"><rect width="200" height="80" rx="12" fill="url(#steel)"/><text y="106" fill="#ECE8DF">Steel gradient</text><text y="128" fill="#7A7C86" font-family="Geist Mono, monospace">#A6C0CB � #4D6472</text></g>
+
+    <text x="56" y="596" fill="#7A7C86" font-size="12" letter-spacing="2">TEXT � STATUS � LIGHT THEME</text>
+    <g transform="translate(56 612)"><rect width="120" height="56" rx="10" fill="#B3B5BD"/><text y="84" fill="#ECE8DF">Muted</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#B3B5BD</text></g>
+    <g transform="translate(196 612)"><rect width="120" height="56" rx="10" fill="#7A7C86"/><text y="84" fill="#ECE8DF">Dim</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#7A7C86</text></g>
+    <g transform="translate(336 612)"><rect width="120" height="56" rx="10" fill="#19C7B4"/><text y="84" fill="#ECE8DF">Check</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#19C7B4</text></g>
+    <g transform="translate(476 612)"><rect width="120" height="56" rx="10" fill="#E2456B"/><text y="84" fill="#ECE8DF">Hold</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#E2456B</text></g>
+    <g transform="translate(616 612)"><rect width="120" height="56" rx="10" fill="#2C84FF"/><text y="84" fill="#ECE8DF">Glow blue</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#2C84FF</text></g>
+    <g transform="translate(796 612)"><rect width="120" height="56" rx="10" fill="#F7F5F0"/><text y="84" fill="#ECE8DF">Paper</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#F7F5F0</text></g>
+    <g transform="translate(936 612)"><rect width="120" height="56" rx="10" fill="#806533"/><text y="84" fill="#ECE8DF">Gold ink</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#806533</text></g>
+    <g transform="translate(1076 612)"><rect width="68" height="56" rx="10" fill="#5B6470"/><text y="84" fill="#ECE8DF">Ink 2</text><text y="104" fill="#7A7C86" font-family="Geist Mono, monospace">#5B6470</text></g>
+  </g>
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A6C0CB"/><stop offset="1" stop-color="#4D6472"/></linearGradient>
+  </defs>
+</svg>

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<title>FibonAI — خلاصه تحلیلگر کسب‌وکار</title>
+<style>
+@page { margin: 16mm 14mm; }
+body {
+  font: 11pt/1.75 'Vazirmatn', Tahoma, sans-serif;
+  color: #1a1c20;
+  direction: rtl;
+  text-align: right;
+}
+h1 { font: 700 20pt 'Vazirmatn', sans-serif; border-bottom: 2px solid #cdae6f; padding-bottom: 6px; }
+h2 { font: 600 14pt 'Vazirmatn', sans-serif; margin-top: 1.3em; color: #262f38; page-break-after: avoid; }
+h3 { font: 600 12pt 'Vazirmatn', sans-serif; page-break-after: avoid; }
+table { border-collapse: collapse; width: 100%; font-size: 8.5pt; margin: 8px 0 12px; page-break-inside: avoid; }
+th, td { border: 1px solid #ccc; padding: 6px 8px; vertical-align: top; text-align: right; }
+th { background: #f7f5f0; }
+code.ltr, .ltr { direction: ltr; unicode-bidi: isolate; font: 9pt Consolas, monospace; background: #f0f0f0; padding: 1px 4px; }
+a { color: #806533; }
+hr { border: none; border-top: 1px solid #ddd; margin: 1.4em 0; }
+ul { padding-right: 1.2em; padding-left: 0; }
+</style></head><body><h1>FibonAI — خلاصه برای تحلیلگر کسب‌وکار</h1>
+<table>
+<tr><th>فیلد</th><th>مقدار</th></tr>
+<tr><td><strong>نوع سند</strong></td><td>معرفی قابل‌فهم محصول و فرایند</td></tr>
+<tr><td><strong>مخاطب</strong></td><td>تحلیلگر کسب‌وکار، مالک محصول، بازبین انطباق، شرکا</td></tr>
+<tr><td><strong>برند محصول</strong></td><td>FibonAI (فیبونای)</td></tr>
+<tr><td><strong>نام داخلی پلتفرم</strong></td><td>EdgeMint</td></tr>
+<tr><td><strong>نسخه</strong></td><td>۱.۰</td></tr>
+<tr><td><strong>تاریخ</strong></td><td>۱۴۰۵/۰۸/۰۶ (۲۰۲۶-۱۰-۲۸)</td></tr>
+<tr><td><strong>مرجع در تعارض</strong></td><td>معماری v2 و canonical-decisions.yaml</td></tr>
+<tr><td><strong>سند همراه (فنی)</strong></td><td>PROJECT-OVERVIEW.md</td></tr>
+</table>
+<hr/>
+<h2>۱. هدف این سند</h2>
+<p>این سند توضیح می‌دهد <strong>FibonAI به‌عنوان یک کسب‌وکار چیست</strong>، <strong>چه کسانی از آن استفاده می‌کنند</strong>، <strong>کار و پول چگونه جریان دارد</strong>، و <strong>کدام قواعد برای اولین عرضه تجاری (GA1) ثابت است</strong>. برای کار تحلیل: ردیابی نیازمندی‌ها، مدل فرایند، مصاحبه ذی‌نفعان، تحلیل شکاف و بازبینی انطباق نوشته شده است.</p>
+<p>این سند <strong>جایگزین</strong> متون حقوقی، مشخصات کامل معماری یا شواهد امضاشده تولید نیست.</p>
+<hr/>
+<h2>۲. خلاصه مدیریتی</h2>
+<p>FibonAI یک <strong>پلتفرم B2B اجرای هوش مصنوعی</strong> با مدل تجاری متمایز است:</p>
+<p>1. مشتری <strong>قبل از اجرای هر کار، قیمت ثابت به یورو</strong> می‌بیند («اول قیمت، بعد اجرا»).</p>
+<p>2. کار <strong>ترجیحاً روی گوشی‌های موبایل داوطلب</strong> (کارگر لبه) اجرا می‌شود، نه فقط در ابر متمرکز.</p>
+<p>3. اگر ظرفیت لبه یا سیاست مانع شود، <strong>بازگشت به ابر شفاف است</strong> — دلیل و هزینه ثبت می‌شود؛ مسیریابی پنهان وجود ندارد.</p>
+<p>4. <strong>هر گام برای تیم‌های تحت نظارت قابل ممیزی است</strong> (تخصیص، تأیید، صورتحساب، پاداش، fallback).</p>
+<p><strong>پیام فاز ۱:</strong> استنتاج AI با اولویت لبه، قیمت‌گذاری شفاف و اجرای قابل ممیزی — نه استخراج رمزارز، نه درآمد تضمینی کارگر، نه سرمایه‌گذاری توکن.</p>
+<hr/>
+<h2>۳. مسئله و ارزش کسب‌وکار</h2>
+<h3>۳.۱ مسئله مشتری</h3>
+<p>سازمان‌ها به OCR، استخراج، طبقه‌بندی، خلاصه‌سازی و moderation در حوزه سند، بینایی و زبان نیاز دارند، اما نمی‌خواهند:</p>
+<ul>
+<li>پس از اتمام کار، صورتحساب غافلگیرکننده ببینند</li>
+<li>مسیریابی مبهم («داده من کجا رفت؟»)</li>
+<li>ردپای ممیزی ضعیف برای مالی یا انطباق</li>
+</ul>
+<h3>۳.۲ ارزش برای مشتری</h3>
+<table>
+<tr><th>ارزش</th><th>تحویل FibonAI</th></tr>
+<tr><td><strong>قطعیت قیمت</strong></td><td>پیش‌فاکتور EUR غیرقابل تغییر قبل از تأیید؛ نرخ واحد منتشرشده به‌عنوان پایه</td></tr>
+<tr><td><strong>کنترل سیاست</strong></td><td>سیاست منطقه/اجرا در ورودی؛ ابر فقط وقتی سیاست اجازه دهد</td></tr>
+<tr><td><strong>ممیزی‌پذیری</strong></td><td>دفتر کل زنجیره‌هش از چرخه کار، تأیید، صورتحساب و fallback</td></tr>
+<tr><td><strong>یکپارچه‌سازی</strong></td><td>REST API، webhook، پورتال مشتری؛ چرخه کار ناهمزمان</td></tr>
+</table>
+<h3>۳.۳ ارزش برای کارگر (عرضه)</h3>
+<p>مالک گوشی با <strong>رضایت صریح</strong> می‌تواند در محدودیت‌هایی که خود تنظیم می‌کند (باتری، Wi‑Fi، دما) به کارهای تخصیص‌یافته کمک کند. <strong>پاداش متغیر به یورو</strong> (نه توکن در GA1) با شرط هویت/پرداخت.</p>
+<h3>۳.۴ ارزش برای اپراتور</h3>
+<p>تیم داخلی مسیریابی، کلاهبرداری، تطبیق، پشتیبانی کارگر، اختلاف صورتحساب و حوادث را از <strong>کنسول عملیات</strong> با همان دفتر کل ممیزی مشتری انجام می‌دهد.</p>
+<hr/>
+<h2>۴. ذی‌نفعان و پرسونا</h2>
+<table>
+<tr><th>ذی‌نفع</th><th>نمونه پرسونا</th><th>اهداف اصلی</th></tr>
+<tr><td><strong>سازمان مشتری</strong></td><td>مالی، مهندس یکپارچه‌سازی، انطباق</td><td>ارسال کار، کنترل هزینه، اثبات «چه کسی کجا اجرا کرد»</td></tr>
+<tr><td><strong>کاربر مشتری</strong></td><td>آپلود فاکتور در پورتال</td><td>آپلود → پیش‌فاکتور → نتیجه</td></tr>
+<tr><td><strong>کارگر</strong></td><td>کاربر اپ اندروید</td><td>کنترل زمان کار دستگاه؛ پاداش تضمین‌شده نیست</td></tr>
+<tr><td><strong>اپراتور</strong></td><td>پشتیبانی، fraud، مالی، SRE</td><td>رفع خطا، تطبیق پرداخت، اجرای سیاست</td></tr>
+<tr><td><strong>ارائه‌دهندگان پرداخت/هویت</strong></td><td>Stripe</td><td>صورتحساب مشتری؛ پرداخت کارگر در کشورهای پشتیبانی‌شده</td></tr>
+<tr><td><strong>ممیز خارجی</strong></td><td>ممیز مشتری</td><td>شواهد سیاست، قیمت و داده</td></tr>
+</table>
+<p><strong>مرزهای اعتماد (برای نیازمندی‌ها):</strong></p>
+<ul>
+<li>ورودی مشتری تا پیش از اعتبارسنجی <strong>غیرقابل اعتماد</strong> است.</li>
+<li>دستگاه کارگر و نتیجه ارسالی تا تأیید سرور <strong>غیرقابل اعتماد</strong> است.</li>
+<li><strong>هویت مشتری به کارگر نشان داده نمی‌شود</strong>؛ ورودی‌های موقت حداکثر <strong>۱۵ دقیقه</strong> نگه داشته می‌شوند.</li>
+<hr/>
+</ul>
+<h2>۵. قابلیت‌های اصلی (دامنه GA1)</h2>
+<table>
+<tr><th>حوزه</th><th>در GA1</th><th>یادداشت برای BA</th></tr>
+<tr><td>سایت بازاریابی و مستندات توسعه‌دهنده</td><td>بله</td><td>برند عمومی FibonAI</td></tr>
+<tr><td>سازمان/ workspace / کلید API مشتری</td><td>بله</td><td>جداسازی tenancy</td></tr>
+<tr><td>API ناهمزمان + فایل + webhook</td><td>بله</td><td>ایجاد idempotent</td></tr>
+<tr><td>کاتالوگ کار (OCR، سند، بینایی، NLP و …)</td><td>بله</td><td><strong>۵۶ نوع</strong>؛ همه handler اختصاصی روی دستگاه ندارند</td></tr>
+<tr><td>اپ کارگر (اول اندروید)</td><td>بله</td><td>رضایت، UI درآمد، gamification بدون قمار</td></tr>
+<tr><td>مسیریابی لبه + fallback ابر</td><td>بله</td><td>fallback باید ثبت شود</td></tr>
+<tr><td>صورتحساب EUR</td><td>بله</td><td>micro-EUR صحیح</td></tr>
+<tr><td>پاداش EUR کارگر</td><td>بله</td><td>Stripe Connect؛ محدودیت کشور</td></tr>
+<tr><td>کنسول عملیات</td><td>بله</td><td>ممیزی، fraud، تطبیق</td></tr>
+<tr><td>فروش عمومی توکن / تسویه on-chain</td><td><strong>خیر</strong></td><td>خارج از GA1</td></tr>
+<tr><td>انتشار مدل بدون مجوز</td><td><strong>خیر</strong></td><td>فقط کاتالوگ تأییدشده</td></tr>
+<tr><td>آموزش روی دستگاه کارگر</td><td><strong>خیر</strong></td><td>فقط inference</td></tr>
+<tr><td>تقسیم یک inference روی چند گوشی</td><td><strong>خیر</strong></td><td></td></tr>
+<tr><td>محاسبه پنهان پس‌زمینه</td><td><strong>خیر</strong></td><td>اجرای قابل‌مشاهده در اندروید</td></tr>
+</table>
+<p><strong>توکن:</strong> در GA1 <strong>توکن غیرفعال</strong> — پاداش و صورتحساب فقط <strong>بدهی EUR</strong>. در مواد GA1 ارزش توکن، سرمایه‌گذاری یا «کسب رمزارز» ننویسید.</p>
+<hr/>
+<h2>۶. فرایند end-to-end — «اجرای یک کار AI»</h2>
+<h3>۶.۱ خلاصه swimlane</h3>
+<table>
+<tr><th>گام</th><th>مشتری</th><th>پلتفرم</th><th>دستگاه کارگر</th><th>مالی / دفتر کل</th></tr>
+<tr><td>۱</td><td>ارسال کار + فایل</td><td>اعتبارسنجی ورودی و سیاست</td><td>—</td><td>—</td></tr>
+<tr><td>۲</td><td>دریافت <strong>پیش‌فاکتور</strong> (EUR، مسیر، hash سیاست)</td><td>قیمت از PriceBook + اصلاح‌ها</td><td>—</td><td>—</td></tr>
+<tr><td>۳</td><td>تأیید کار</td><td>قفل پیش‌فاکتور؛ زمان‌بندی</td><td>—</td><td>—</td></tr>
+<tr><td>۴</td><td>—</td><td>انتخاب کارگر؛ رزرو؛ <strong>lease + fence</strong></td><td>دریافت <strong>تخصیص</strong> امضاشده</td><td>—</td></tr>
+<tr><td>۵</td><td>پیشرفت (اختیاری)</td><td>ردیابی رویداد</td><td>اجرا با رضایت و ایمنی</td><td>—</td></tr>
+<tr><td>۶</td><td>—</td><td><strong>تأیید</strong> نتیجه</td><td>ارسال نتیجه / شواهد خطا</td><td>—</td></tr>
+<tr><td>۷</td><td>دریافت نتیجه</td><td>webhook / پورتال</td><td>—</td><td>یک بار صورتحساب؛ یک بار پاداش</td></tr>
+<tr><td>۸</td><td>—</td><td><strong>fallback ابر</strong> با دلیل ثبت‌شده (در صورت مجاز)</td><td>—</td><td>هزینه اضافه ثبت می‌شود</td></tr>
+</table>
+<h3>۶.۲ قواعد کسب‌وکار (BR)</h3>
+<table>
+<tr><th>شناسه</th><th>قاعده</th><th>دلیل</th></tr>
+<tr><td>BR-01</td><td>پیش‌فاکتور پس از صدور تا انقضا <strong>غیرقابل تغییر</strong></td><td>وعده «اول قیمت»</td></tr>
+<tr><td>BR-02</td><td><strong>فقط پلتفرم</strong> زمان‌بندی، retry، تخصیص مجدد و fallback را تصمیم می‌گیرد</td><td>جلوگیری از orchestration روی کارگر</td></tr>
+<tr><td>BR-03</td><td>کارگر در پروتکل تولید <strong>Accept/Reject</strong> هر کار ندارد</td><td>مدل رضایت: opt-in + availability</td></tr>
+<tr><td>BR-04</td><td><strong>دقیقاً یک</strong> تکمیل پذیرفته و <strong>یک</strong> شارژ مشتری به ازای revision</td><td>یکپارچگی صورتحساب</td></tr>
+<tr><td>BR-05</td><td><strong>دقیقاً یک</strong> پاداش به ازای مشارکت پذیرفته (طبق سیاست)</td><td>یکپارچگی payout</td></tr>
+<tr><td>BR-06</td><td>fallback ابر <strong>هرگز پنهان نیست</strong></td><td>انطباق و اعتماد</td></tr>
+<tr><td>BR-07</td><td>پاداش کارگر <strong>متغیر و تضمین‌شده نیست</strong></td><td>شرایط کارگر</td></tr>
+<tr><td>BR-08</td><td>پلتفرم <strong>استخراج رمزارز نیست</strong></td><td>guardrail بازاریابی</td></tr>
+<tr><td>BR-09</td><td>ورودی موقت مشتری <strong>ظرف ۱۵ دقیقه حذف</strong></td><td>حریم خصوصی</td></tr>
+<tr><td>BR-10</td><td>GA1: <strong>بدون</strong> فروش/ارزش/سرمایه‌گذاری توکن</td><td>canonical-decisions</td></tr>
+</table>
+<h3>۶.۳ مسیرهای استثنا</h3>
+<table>
+<tr><th>استثنا</th><th>رفتار پلتفرم</th><th>نتیجه برای مشتری</th></tr>
+<tr><td>کارگر واجد شرایط نیست</td><td>صف، retry یا fallback</td><td>تأخیر یا fallback با دلیل</td></tr>
+<tr><td>از دست رفتن رضایت میانه کار</td><td>توقف؛ تخصیص مجدد یا شکست</td><td>وضعیت + رویداد ممیزی</td></tr>
+<tr><td>شکست تأیید</td><td>retry/ارتقا طبق سیاست</td><td>failed یا escalated</td></tr>
+<tr><td>انقضای پیش‌فاکتور قبل از تأیید</td><td>رد تأیید؛ پیش‌فاکتور جدید</td><td>خطای واضح</td></tr>
+<tr><td>کشور پشتیبانی‌نشده کارگر</td><td>درآمد کارگر غیرفعال</td><td>—</td></tr>
+<tr><td>ارسال تکراری (idempotency)</td><td>همان هویت منطقی کار</td><td>بدون double bill</td></tr>
+</table>
+<hr/>
+<h2>۷. کاتالوگ محصول (نمای کسب‌وکار)</h2>
+<table>
+<tr><th>دسته</th><th>نمونه کار</th><th>ورودی</th><th>نرخ پایه منتشرشده (مثال)</th></tr>
+<tr><td>هوش سند</td><td>OCR، استخراج، verify</td><td>PDF، تصویر</td><td>OCR از <strong>€0.0025</strong> به ازای صفحه</td></tr>
+<tr><td>بینایی و کاتالوگ</td><td>classify، tag، safety</td><td>تصویر</td><td><strong>€0.0015</strong> به ازای تصویر</td></tr>
+<tr><td>زبان و NLP</td><td>خلاصه، ترجمه، moderation</td><td>متن</td><td><strong>€0.003</strong> به ازای ۱k کاراکتر</td></tr>
+</table>
+<ul>
+<li>کاتالوگ <strong>۵۶ نوع</strong>؛ بسیاری روی pipeline مشترک worker نگاشت می‌شوند.</li>
+<li>نرخ منتشرشده <strong>پایه</strong> است؛ پیش‌فاکتور شامل plan، اولویت، tier تأیید و سیاست اجرا می‌شود.</li>
+<li><strong>دقت OCR</strong> روی رسید واقعی <strong>پذیرش جدا</strong> از «JSON معتبر API» است.</li>
+<hr/>
+</ul>
+<h2>۸. مدل تجاری</h2>
+<h3>۸.۱ مشتری</h3>
+<table>
+<tr><th>عنصر</th><th>توضیح</th></tr>
+<tr><td>ارز</td><td><strong>فقط EUR</strong></td></tr>
+<tr><td>دقت پول</td><td><strong>micro-EUR</strong> صحیح (بدون float در دفتر کل)</td></tr>
+<tr><td>موتور قیمت</td><td>PriceBook + اصلاح پیش‌فاکتور</td></tr>
+<tr><td>صورتحساب</td><td>Stripe Billing؛ مالیات Stripe Tax</td></tr>
+<tr><td>پیش‌پرداخت</td><td>اعتبار محاسباتی (غیرقابل انتقال)</td></tr>
+</table>
+<h3>۸.۲ کارگر</h3>
+<table>
+<tr><th>عنصر</th><th>توضیح</th></tr>
+<tr><td>واحد پاداش</td><td>micro-EUR (<strong>Reward Micros</strong> — توکن نیست، غیرقابل انتقال)</td></tr>
+<tr><td>payout</td><td>Stripe Connect Express پس از KYC</td></tr>
+<tr><td>کشورهای غیرپشتیبانی</td><td>درآمد <strong>غیرفعال</strong></td></tr>
+<tr><td>پیام</td><td>بدون وعده درآمد تضمینی یا بازده سرمایه‌گذاری</td></tr>
+</table>
+<h3>۸.۳ ممنوع در copy فروش GA1</h3>
+<ul>
+<li>قیمت/APY توکن، «سرمایه‌گذاری در شبکه»، درآمد از کار دیگران</li>
+<li>درآمد تضمینی کارگر یا استعاره mining</li>
+<li>قیمت کل کار بدون پیش‌فاکتور واقعی از نرخ منتشرشده × مقدار</li>
+<hr/>
+</ul>
+<h2>۹. تأیید و کیفیت</h2>
+<table>
+<tr><th>سطح (مفهومی)</th><th>معنی کسب‌وکار</th></tr>
+<tr><td>Standard</td><td>یک مسیر تأیید</td></tr>
+<tr><td>Consensus</td><td>چند کارگر مستقل؛ قواعد anti-affinity</td></tr>
+<tr><td>Human review</td><td>وقتی خودکار کافی نیست</td></tr>
+</table>
+<p>انتخاب tier باید به <strong>اقلام پیش‌فاکتور</strong> و <strong>رویداد ممیزی</strong> وصل شود.</p>
+<hr/>
+<h2>۱۰. کانال‌ها</h2>
+<table>
+<tr><th>کانال</th><th>کاربر</th><th>اقدامات</th></tr>
+<tr><td>پورتال مشتری</td><td>کاربر کسب‌وکار</td><td>ایجاد کار، پیش‌فاکتور، وضعیت، ممیزی</td></tr>
+<tr><td>REST API</td><td>یکپارچه‌سازی</td><td>create، quote، lifecycle، webhook</td></tr>
+<tr><td>اپ کارگر</td><td>کارگر</td><td>opt-in، availability، اجرا، درآمد</td></tr>
+<tr><td>پورتال عملیات</td><td>داخلی</td><td>کار، کارگر، fraud، billing</td></tr>
+<tr><td>سایت بازاریابی</td><td>prospect</td><td>positioning، waitlist، جدول قیمت</td></tr>
+<tr><td>Webhook / SSE</td><td>سیستم مشتری</td><td>یکپارچه‌سازی رویدادمحور</td></tr>
+</table>
+<hr/>
+<h2>۱۱. چک‌لیست انطباق پیام</h2>
+<p>☐ پیش‌فاکتور <strong>قبل</strong> از تأیید اجرا</p>
+<p>☐ دلیل و هزینه fallback <strong>قابل مشاهده</strong></p>
+<p>☐ copy کارگر: پاداش <strong>متغیر / تضمین‌شده نیست</strong></p>
+<p>☐ بدون زبان <strong>سرمایه‌گذاری توکن</strong> یا <strong>mining</strong> در GA1</p>
+<p>☐ مبالغ <strong>EUR</strong> از نرخ منتشرشده یا پیش‌فاکتور</p>
+<p>☐ سیاست اقامت داده در صورت نیاز</p>
+<p>☐ ارجاع DPA، حریم خصوصی، شرایط کارگر برای امضای حقوقی</p>
+<hr/>
+<h2>۱۲. وضعیت پیاده‌سازی (برنامه‌ریزی، نه وعده مشتری)</h2>
+<table>
+<tr><th>موضوع</th><th>بیان برای BA</th></tr>
+<tr><td>معماری هدف</td><td>کامل و frozen (v2)</td></tr>
+<tr><td>کد و plan</td><td>پیاده‌سازی گسترده؛ TODO plan (۲۰۲۶-۰۹-۱۳)</td></tr>
+<tr><td><strong>گواهی production</strong></td><td><strong>کامل نیست</strong> — gate به شواهد محیط زنده نیاز دارد</td></tr>
+<tr><td>کیفیت OCR زنده</td><td><strong>گواهی کسب‌وکار نشده</strong></td></tr>
+<tr><td>تحویل real-time کارگر</td><td>هدف WebSocket؛ قبل از SLA تأیید کنید</td></tr>
+<tr><td>عرضه عمومی</td><td>دارایی waitlist؛ gateهای GA1 باز</td></tr>
+</table>
+<p>SLA مشتری تا gate production و UAT <strong>مسدود</strong> بماند.</p>
+<hr/>
+<h2>۱۳. واژه‌نامه</h2>
+<table>
+<tr><th>اصطلاح</th><th>معنی کسب‌وکار</th></tr>
+<tr><td><strong>Task</strong></td><td>درخواست یک واحد کار AI (هویت پایدار)</td></tr>
+<tr><td><strong>Revision</strong></td><td>نسخه immutable ورودی/تنظیمات</td></tr>
+<tr><td><strong>Quote</strong></td><td>قیمت ثابت EUR + مسیر + hash سیاست</td></tr>
+<tr><td><strong>Policy hash</strong></td><td>اثر انگشت سیاست برای ممیزی</td></tr>
+<tr><td><strong>Assignment</strong></td><td>دستور پلتفرم به یک کارگر برای یک attempt</td></tr>
+<tr><td><strong>Lease / fence</strong></td><td>حق انحصاری اجرا؛ fence از overwrite قدیمی جلوگیری می‌کند</td></tr>
+<tr><td><strong>Verification</strong></td><td>تصمیم پلتفرم درباره کیفیت/یکپارچگی</td></tr>
+<tr><td><strong>Cloud fallback</strong></td><td>اجرا در ابر تأییدشده وقتی لبه کافی نیست</td></tr>
+<tr><td><strong>Compute credit</strong></td><td>موجودی پیش‌پرداخت EUR مشتری</td></tr>
+<tr><td><strong>Reward micros</strong></td><td>مبلغ EUR قابل پرداخت کارگر (بدهی، نه توکن)</td></tr>
+<tr><td><strong>Workspace</strong></td><td>مرز tenancy داده و billing</td></tr>
+<tr><td><strong>Edge / worker</strong></td><td>دستگاه opt-in با مدل امضاشده</td></tr>
+<tr><td><strong>GA1</strong></td><td>دامنه اولین عرضه تجاری</td></tr>
+</table>
+<hr/>
+<h2>۱۴. خروجی‌های پیشنهادی BA</h2>
+<table>
+<tr><th>خروجی</th><th>محتوا</th></tr>
+<tr><td>نمودار context</td><td>مشتری، کارگر، اپراتور، Stripe، ابر</td></tr>
+<tr><td>BPMN</td><td>مسیر §۶ + استثناها</td></tr>
+<tr><td>نقشه ذی‌نفع</td><td>§۴ + RACI quote/fallback/payout</td></tr>
+<tr><td>backlog</td><td>ردیابی BR-01…BR-10</td></tr>
+<tr><td>فرهنگ داده</td><td>Task، Quote، Assignment، Result، Ledger</td></tr>
+<tr><td>ماتریس انطباق</td><td>BR → docs/09-legal</td></tr>
+</table>
+<hr/>
+<h2>۱۵. اسناد مرتبط</h2>
+<table>
+<tr><th>سند</th><th>کاربرد</th></tr>
+<tr><td>PROJECT-OVERVIEW.md</td><td>خلاصه فنی</td></tr>
+<tr><td>EDGE-MINT-TARGET-ARCHITECTURE-v2.md</td><td>زمان‌بندی، خطا، پاداش</td></tr>
+<tr><td>system-scope.md</td><td>داخل/خارج scope</td></tr>
+<tr><td>docs/02-product/</td><td>پورتال، worker، lifecycle</td></tr>
+<tr><td>docs/01-business/</td><td>قیمت، درآمد</td></tr>
+<tr><td>docs/09-legal/</td><td>شرایط، DPA</td></tr>
+</table>
+<hr/>
+<h2>۱۶. تاریخچه سند</h2>
+<table>
+<tr><th>نسخه</th><th>تاریخ</th><th>تغییر</th></tr>
+<tr><td>۱.۰</td><td>۲۰۲۶-۱۰-۲۸</td><td>نسخه اول انگلیسی</td></tr>
+<tr><td>۱.۰-fa</td><td>۲۰۲۶-۱۰-۲۸</td><td>ترجمه فارسی برای تحلیلگر کسب‌وکار</td></tr>
+</table></body></html>

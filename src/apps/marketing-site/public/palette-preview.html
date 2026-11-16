@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EdgeMint palette preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0e2439;
+      --signal: #0f5f6b;
+      --quote: #8c5e24;
+      --verified: #1b6b45;
+      --hold: #8e3b34;
+      --slate: #5c6b78;
+      --paper: #f4f7f8;
+      --card: #ffffff;
+      --line: #d5dee4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 2.5rem));
+      margin: 0 auto;
+      padding: 2.5rem 0 4rem;
+    }
+
+    .kicker {
+      margin: 0 0 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--signal);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .lead {
+      max-width: 62ch;
+      margin: 0.8rem 0 0;
+      color: var(--slate);
+    }
+
+    h2 {
+      margin: 2.2rem 0 0.9rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--slate);
+    }
+
+    .masters,
+    .subs,
+    .surfaces {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .masters { grid-template-columns: 1.4fr 1fr; }
+    .subs { grid-template-columns: repeat(4, 1fr); }
+    .surfaces { grid-template-columns: repeat(3, 1fr); }
+
+    .swatch {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--card);
+      min-height: 168px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .swatch__chip {
+      flex: 1;
+      min-height: 96px;
+    }
+
+    .swatch__meta {
+      padding: 0.85rem 1rem 1rem;
+    }
+
+    .swatch__role {
+      margin: 0;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--slate);
+    }
+
+    .swatch__name {
+      margin: 0.15rem 0 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .swatch__hex {
+      margin: 0.1rem 0 0;
+      font-family: ui-monospace, monospace;
+      font-size: 0.82rem;
+      color: var(--slate);
+    }
+
+    .sample {
+      margin-top: 0.4rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(14, 36, 57, 0.06);
+    }
+
+    .sample__bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.1rem;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--signal);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .sample__bar span { font-weight: 600; }
+
+    .sample__body { padding: 1.3rem 1.2rem 1.4rem; }
+
+    .sample__title {
+      margin: 0;
+      max-width: 18ch;
+      font-size: 1.7rem;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .sample__copy {
+      margin: 0.6rem 0 0;
+      max-width: 58ch;
+      color: var(--slate);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      border: 1px solid transparent;
+    }
+
+    .btn--ink { background: var(--ink); color: #fff; }
+    .btn--signal { background: var(--signal); color: #fff; }
+    .btn--line { background: #fff; color: var(--ink); border-color: var(--line); }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.1rem;
+    }
+
+    .chip {
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .chip--quote { background: #f6efe4; color: var(--quote); }
+    .chip--ok { background: #e7f4ec; color: var(--verified); }
+    .chip--hold { background: #f8ebe9; color: var(--hold); }
+    .chip--slate { background: #eef2f4; color: var(--slate); }
+
+    @media (max-width: 800px) {
+      .masters, .subs, .surfaces { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="kicker">Preview only</p>
+    <h1>EdgeMint corporate palette</h1>
+    <p class="lead">Ink and Signal carry the brand. Quote, Verified, and Hold are status colors for a locked price, a finished OCR check, and a policy stop. The homepage is unchanged.</p>
+
+    <h2>Masters</h2>
+    <div class="masters">
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#0E2439"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Master</p>
+          <p class="swatch__name">Ink</p>
+          <p class="swatch__hex">#0E2439</p>
+        </div>
+      </article>
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#0F5F6B"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Master</p>
+          <p class="swatch__name">Signal</p>
+          <p class="swatch__hex">#0F5F6B</p>
+        </div>
+      </article>
+    </div>
+
+    <h2>Job colors</h2>
+    <div class="subs">
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#8C5E24"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Sub</p>
+          <p class="swatch__name">Quote</p>
+          <p class="swatch__hex">#8C5E24</p>
+        </div>
+      </article>
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#1B6B45"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Sub</p>
+          <p class="swatch__name">Verified</p>
+          <p class="swatch__hex">#1B6B45</p>
+        </div>
+      </article>
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#8E3B34"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Sub</p>
+          <p class="swatch__name">Hold</p>
+          <p class="swatch__hex">#8E3B34</p>
+        </div>
+      </article>
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#5C6B78"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Sub</p>
+          <p class="swatch__name">Slate</p>
+          <p class="swatch__hex">#5C6B78</p>
+        </div>
+      </article>
+    </div>
+
+    <h2>Surfaces</h2>
+    <div class="surfaces">
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#F4F7F8; border-bottom:1px solid #D5DEE4"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Surface</p>
+          <p class="swatch__name">Paper</p>
+          <p class="swatch__hex">#F4F7F8</p>
+        </div>
+      </article>
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#FFFFFF; border-bottom:1px solid #D5DEE4"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Surface</p>
+          <p class="swatch__name">Card</p>
+          <p class="swatch__hex">#FFFFFF</p>
+        </div>
+      </article>
+      <article class="swatch">
+        <div class="swatch__chip" style="background:#D5DEE4"></div>
+        <div class="swatch__meta">
+          <p class="swatch__role">Surface</p>
+          <p class="swatch__name">Line</p>
+          <p class="swatch__hex">#D5DEE4</p>
+        </div>
+      </article>
+    </div>
+
+    <h2>In use</h2>
+    <section class="sample">
+      <div class="sample__bar">
+        <span class="mark">EM</span>
+        <span>EdgeMint</span>
+      </div>
+      <div class="sample__body">
+        <h3 class="sample__title">Quote before the phone runs the task.</h3>
+        <p class="sample__copy">OCR and other small jobs stay on the device. The price, the route, and the audit line use the job colors below.</p>
+        <div class="actions">
+          <span class="btn btn--ink">Talk to sales</span>
+          <span class="btn btn--signal">Customer login</span>
+          <span class="btn btn--line">View documentation</span>
+        </div>
+        <div class="chips">
+          <span class="chip chip--quote">Quote €0.0025</span>
+          <span class="chip chip--ok">OCR verified</span>
+          <span class="chip chip--hold">Policy hold</span>
+          <span class="chip chip--slate">842 ms · edge</span>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

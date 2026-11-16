@@ -10,7 +10,7 @@ import { modelCategories } from '../content/site.js';
         <p class="page-hero__eyebrow">Models & task types</p>
         <h1 class="page-hero__title">Signed models for every workload in the catalog</h1>
         <p class="page-hero__lead">
-          EdgeMint ships curated on-device models for document, vision, language, and moderation tasks. Each model is
+          FibonAI ships curated on-device models for document, vision, language, and moderation tasks. Each model is
           hash-verified and signed before workers execute assignments.
         </p>
       </div>

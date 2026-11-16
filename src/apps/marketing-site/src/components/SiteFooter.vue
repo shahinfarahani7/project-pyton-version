@@ -3,6 +3,8 @@ import { RouterLink } from 'vue-router';
 
 import { portalLoginUrl } from '../config/env.js';
 import { legalLinks, navLinks } from '../content/site.js';
+import BrandMark from './BrandMark.vue';
+import BrandWordmark from './BrandWordmark.vue';
 </script>
 
 <template>
@@ -10,8 +12,8 @@ import { legalLinks, navLinks } from '../content/site.js';
     <div class="site-footer__grid">
       <div class="site-footer__brand">
         <RouterLink class="site-brand site-brand--footer" to="/">
-          <span class="site-brand__mark" aria-hidden="true">EM</span>
-          <span class="site-brand__text">EdgeMint</span>
+          <BrandMark class="site-brand__mark" :size="30" />
+          <BrandWordmark class="site-brand__text" />
         </RouterLink>
         <p class="site-footer__tagline">
           Edge-first AI inference with quote-before-run pricing and auditable execution for regulated teams.
@@ -48,9 +50,9 @@ import { legalLinks, navLinks } from '../content/site.js';
     </div>
 
     <div class="site-footer__bottom">
-      <p>© {{ new Date().getFullYear() }} EdgeMint. All rights reserved.</p>
+      <p>© {{ new Date().getFullYear() }} FibonAI. All rights reserved.</p>
       <p class="site-footer__disclaimer">
-        Worker rewards are variable and not guaranteed. EdgeMint is not cryptocurrency mining.
+        Worker rewards are variable and not guaranteed. FibonAI is not cryptocurrency mining.
       </p>
     </div>
   </footer>

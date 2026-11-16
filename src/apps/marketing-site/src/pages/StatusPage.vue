@@ -10,7 +10,7 @@ import { statusComponents } from '../content/site.js';
         <h1 class="page-hero__title">Platform health overview</h1>
         <p class="page-hero__lead">
           Production status is published from a dedicated monitoring stack. This preview shows the components that make
-          up the EdgeMint platform.
+          up the FibonAI platform.
         </p>
       </div>
     </section>

@@ -40,7 +40,7 @@ const router = createRouter({
 
 router.afterEach((to) => {
   const pageTitle = to.meta?.title;
-  document.title = pageTitle ? `${pageTitle} · EdgeMint` : 'EdgeMint — Edge-first AI inference platform';
+  document.title = pageTitle ? `${pageTitle} · FibonAI` : 'FibonAI — Edge-first AI inference platform';
 
   const description = to.meta?.description;
   if (description) {

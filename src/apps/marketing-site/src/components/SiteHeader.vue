@@ -4,6 +4,8 @@ import { RouterLink } from 'vue-router';
 
 import { portalLoginUrl } from '../config/env.js';
 import { navLinks } from '../content/site.js';
+import BrandMark from './BrandMark.vue';
+import BrandWordmark from './BrandWordmark.vue';
 
 const menuOpen = ref(false);
 const scrolled = ref(false);
@@ -37,8 +39,8 @@ onUnmounted(() => {
   <header class="site-header" :class="{ 'site-header--scrolled': scrolled }">
     <div class="site-header__inner">
       <RouterLink class="site-brand" to="/" @click="closeMenu">
-        <span class="site-brand__mark" aria-hidden="true">EM</span>
-        <span class="site-brand__text">EdgeMint</span>
+        <BrandMark class="site-brand__mark" :size="30" />
+        <BrandWordmark class="site-brand__text" />
       </RouterLink>
 
       <button
