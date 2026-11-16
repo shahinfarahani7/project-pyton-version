@@ -10,7 +10,7 @@ export default defineConfig(({ command }) => ({
   plugins: [vue(), ...(command === 'serve' ? [devCspPlugin()] : [])],
   define: command === 'serve' ? devSameOriginApiDefine() : undefined,
   server: {
-    port: 5174,
+    port: 5175,
     strictPort: true,
     proxy: {
       '/internal': { target: devApiTarget, changeOrigin: true },

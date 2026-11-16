@@ -11,7 +11,7 @@ import { trackEvent } from '../telemetry';
 const session = useSession();
 const router = useRouter();
 const adminLoginUrl =
-  import.meta.env.VITE_OPERATIONS_PORTAL_URL ?? `${window.location.protocol}//${window.location.hostname}:5174/login`;
+  import.meta.env.VITE_OPERATIONS_PORTAL_URL ?? `${window.location.protocol}//${window.location.hostname}:5175/login`;
 
 const email = ref('dev-user@edgemint.local');
 const password = ref('');

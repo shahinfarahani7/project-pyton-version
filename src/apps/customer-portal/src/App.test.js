@@ -144,6 +144,7 @@ describe('customer-portal shell', () => {
   it('renders login journey without provider tokens in the DOM', async () => {
     await renderApp('/login');
     expect(document.body.textContent).toMatch(/sign in/i);
+    expect(document.querySelector('[data-testid="login-admin-entry"]')?.getAttribute('href')).toMatch(/:5175\/login$/);
     expect(document.body.textContent).not.toContain('Admin login');
     expect(document.body.textContent).not.toContain('Continue with SSO');
     expect(document.body.textContent).toContain('Password');
