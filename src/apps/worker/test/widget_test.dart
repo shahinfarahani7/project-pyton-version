@@ -34,10 +34,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(
-        find.bySemanticsLabel('Worker character waiting for a task'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('FibonAI mascot resting'), findsOneWidget);
       expect(find.text('Tasks completed'), findsOneWidget);
       expect(find.text('Fibonai'), findsOneWidget);
       expect(find.text('0'), findsOneWidget);
@@ -95,13 +92,10 @@ void main() {
     await tester.pump();
 
     expect(
-      find.bySemanticsLabel('Worker character running a task'),
+      find.bySemanticsLabel('FibonAI mascot running a task'),
       findsOneWidget,
     );
-    expect(
-      find.bySemanticsLabel('Worker character waiting for a task'),
-      findsNothing,
-    );
+    expect(find.bySemanticsLabel('FibonAI mascot resting'), findsNothing);
   });
 
   testWidgets('home shows download progress card while model is installing', (

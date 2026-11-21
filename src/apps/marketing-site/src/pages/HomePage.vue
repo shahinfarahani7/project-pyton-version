@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router';
 import BrandMark from '../components/BrandMark.vue';
 import GlassShapes from '../components/GlassShapes.vue';
 import HeroSequence from '../components/HeroSequence.vue';
+import { workerApkUrl } from '../config/env.js';
 import {
   capabilityChips,
   fanTargets,
@@ -51,6 +52,9 @@ function trackPointer(event) {
           <RouterLink class="em-pill em-pill--ghost" :to="{ name: hero.secondaryCta.to }">
             {{ hero.secondaryCta.label }} <span class="em-pill__chev">›</span>
           </RouterLink>
+          <a class="em-pill em-pill--ghost" :href="workerApkUrl" download="FibonAi.apk">
+            Download Android app <span class="em-pill__chev">↓</span>
+          </a>
         </div>
       </section>
     </HeroSequence>

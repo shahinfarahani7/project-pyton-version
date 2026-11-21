@@ -1,5 +1,6 @@
 <script setup>
 import CtaBand from '../components/CtaBand.vue';
+import { workerApkUrl } from '../config/env.js';
 import { workerPoints } from '../content/site.js';
 </script>
 
@@ -13,6 +14,10 @@ import { workerPoints } from '../content/site.js';
           The FibonAI Worker app runs assigned AI tasks on your device when you opt in. This is on-device inference —
           not cryptocurrency mining — with transparent, variable EUR rewards.
         </p>
+        <p>
+          <a class="btn btn--primary btn--lg" :href="workerApkUrl" download="FibonAi.apk">Download the Android app</a>
+        </p>
+        <p class="page-hero__lead">Android 8.0 or later. The AI model downloads separately after install.</p>
       </div>
     </section>
 
