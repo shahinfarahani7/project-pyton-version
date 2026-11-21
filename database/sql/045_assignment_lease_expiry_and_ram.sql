@@ -1,5 +1,8 @@
 -- Unknown free RAM must not be stored as a fabricated capacity.
 -- NULL fails `free_ram_bytes >= minimum`, so an unmeasured device is not selected.
+
+BEGIN;
+
 ALTER TABLE public.worker_heartbeats
   ALTER COLUMN free_ram_bytes DROP NOT NULL;
 
@@ -81,3 +84,5 @@ BEGIN
   RETURN expired_count;
 END
 $$;
+
+COMMIT;

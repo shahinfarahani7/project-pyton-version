@@ -19,6 +19,7 @@ dependencies = [
   "cryptography==46.0.4",
   "orjson==3.11.9",
   "httpx==0.28.1",
+  "jsonschema==4.26.0",
   "python-multipart==0.0.20"
 ]
 

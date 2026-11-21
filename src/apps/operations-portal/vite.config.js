@@ -7,10 +7,11 @@ const devApiTarget = process.env.VITE_DEV_API_PROXY ?? 'http://127.0.0.1:8083';
 const devAuthTarget = process.env.VITE_DEV_AUTH_PROXY ?? 'http://127.0.0.1:8080';
 
 export default defineConfig(({ command }) => ({
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [vue(), ...(command === 'serve' ? [devCspPlugin()] : [])],
   define: command === 'serve' ? devSameOriginApiDefine() : undefined,
   server: {
-    port: 5175,
+    port: 5174,
     strictPort: true,
     proxy: {
       '/internal': { target: devApiTarget, changeOrigin: true },

@@ -25,7 +25,17 @@ WORKDIR /src
 COPY . /src
 
 ARG EDGEMINT_WORKER_BASE_URL=http://172.20.34.71:8081
+# Required when the API is behind a domain: without it the app uses the
+# worker host on port 8080 for sign-in.
+ARG EDGEMINT_API_BASE_URL=
+ARG WORKER_MODEL_DOWNLOAD_SOURCE=
+ARG WORKER_BUILD_NAME=
+ARG WORKER_BUILD_NUMBER=
 ENV EDGEMINT_WORKER_BASE_URL=${EDGEMINT_WORKER_BASE_URL} \
+    EDGEMINT_API_BASE_URL=${EDGEMINT_API_BASE_URL} \
+    WORKER_MODEL_DOWNLOAD_SOURCE=${WORKER_MODEL_DOWNLOAD_SOURCE} \
+    WORKER_BUILD_NAME=${WORKER_BUILD_NAME} \
+    WORKER_BUILD_NUMBER=${WORKER_BUILD_NUMBER} \
     PATH="/opt/flutter/bin:${PATH}"
 
 RUN --mount=type=secret,id=android_debug_keystore,required=false \

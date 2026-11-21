@@ -7,10 +7,14 @@ COPY src/apps/customer-portal/package.json ./src/apps/customer-portal/
 COPY src/apps/operations-portal/package.json ./src/apps/operations-portal/
 RUN npm ci
 COPY generated/typescript ./generated/typescript
+COPY src/apps/shared ./src/apps/shared
+COPY src/shared/task-types ./src/shared/task-types
 COPY src/apps/operations-portal ./src/apps/operations-portal
 ARG VITE_API_BASE_URL=
 ARG VITE_TELEMETRY_ENABLED=false
+ARG VITE_BASE_PATH=/
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+ENV VITE_BASE_PATH=${VITE_BASE_PATH}
 ENV VITE_TELEMETRY_ENABLED=${VITE_TELEMETRY_ENABLED}
 RUN npm run build -w @edgemint/operations-portal
 

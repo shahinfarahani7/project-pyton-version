@@ -7,6 +7,8 @@ COPY src/apps/customer-portal/package.json ./src/apps/customer-portal/
 COPY src/apps/operations-portal/package.json ./src/apps/operations-portal/
 RUN npm ci
 COPY generated/typescript ./generated/typescript
+COPY src/apps/shared ./src/apps/shared
+COPY src/shared/task-types ./src/shared/task-types
 COPY src/apps/customer-portal ./src/apps/customer-portal
 ARG VITE_API_BASE_URL=
 ARG VITE_TELEMETRY_ENABLED=false
