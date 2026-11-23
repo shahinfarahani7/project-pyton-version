@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 
 const events = [
-  { mark: '✓', title: 'quote locked', detail: '€0.0025' },
+  { mark: '✓', title: 'task assessed', detail: '1 credit' },
   { mark: '◉', title: 'worker assigned', detail: 'edge' },
   { mark: '✓', title: 'ocr verified', detail: 'document.ocr' },
   { mark: '⛨', title: 'audit written', detail: 'ledger' },

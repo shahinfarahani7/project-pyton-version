@@ -7,7 +7,6 @@ import HomePage from '../pages/HomePage.vue';
 import HowItWorksPage from '../pages/HowItWorksPage.vue';
 import LegalPage from '../pages/LegalPage.vue';
 import ModelsPage from '../pages/ModelsPage.vue';
-import PricingPage from '../pages/PricingPage.vue';
 import SecurityPage from '../pages/SecurityPage.vue';
 import StatusPage from '../pages/StatusPage.vue';
 import UseCasesPage from '../pages/UseCasesPage.vue';
@@ -23,7 +22,7 @@ const router = createRouter({
     { path: '/', name: 'home', component: HomePage, meta: { title: 'Edge-first AI inference platform' } },
     { path: '/how-it-works', name: 'how-it-works', component: HowItWorksPage, meta: { title: 'How it works' } },
     { path: '/use-cases', name: 'use-cases', component: UseCasesPage, meta: { title: 'Use cases' } },
-    { path: '/pricing', name: 'pricing', component: PricingPage, meta: { title: 'Pricing' } },
+    { path: '/pricing', redirect: { name: 'how-it-works' } },
     { path: '/models', name: 'models', component: ModelsPage, meta: { title: 'Models & task types' } },
     { path: '/security', name: 'security', component: SecurityPage, meta: { title: 'Security' } },
     { path: '/workers', name: 'workers', component: WorkersPage, meta: { title: 'Worker participation' } },

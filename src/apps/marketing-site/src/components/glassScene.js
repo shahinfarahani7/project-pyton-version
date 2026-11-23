@@ -3,17 +3,20 @@ import {
   BoxGeometry,
   CanvasTexture,
   CatmullRomCurve3,
+  CircleGeometry,
   Color,
   CylinderGeometry,
+  DirectionalLight,
   ExtrudeGeometry,
   Group,
   InstancedMesh,
   Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
+  MeshStandardMaterial,
   Object3D,
-  Path,
   PerspectiveCamera,
+  PlaneGeometry,
   PMREMGenerator,
   PointLight,
   Scene,
@@ -29,36 +32,18 @@ import {
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 
-function glass(options) {
-  return new MeshPhysicalMaterial({
-    transmission: 1,
-    thickness: 1.2,
-    ior: 1.45,
-    roughness: 0.12,
-    metalness: 0,
-    iridescence: 0.6,
-    iridescenceIOR: 1.3,
-    iridescenceThicknessRange: [120, 640],
-    clearcoat: 1,
-    clearcoatRoughness: 0.08,
-    envMapIntensity: 1,
-    ...options,
-  });
-}
+const TEAL = '#19c7b4';
+const STEEL = '#a6c0cb';
+const UI_FONT = '"Geist Sans", "Geist", system-ui, sans-serif';
+const MASCOT_SRC = '/mascot/working.webp';
 
-function metal(color, roughness = 0.22) {
+function metal(color, roughness = 0.3) {
   return new MeshPhysicalMaterial({
     color: new Color(color),
     metalness: 1,
     roughness,
-    clearcoat: 0.4,
-    clearcoatRoughness: 0.2,
-    envMapIntensity: 1.2,
+    envMapIntensity: 1,
   });
-}
-
-function glow(radius, color) {
-  return new Mesh(new SphereGeometry(radius, 32, 16), new MeshBasicMaterial({ color: new Color(color) }));
 }
 
 function roundedRect(width, height, radius) {
@@ -77,181 +62,309 @@ function roundedRect(width, height, radius) {
   return shape;
 }
 
-function roundedRectPath(width, height, radius) {
-  const shape = roundedRect(width, height, radius);
-  const path = new Path();
-  path.curves = shape.curves;
-  return path;
+function fitUv(geometry, width, height) {
+  const uv = geometry.attributes.uv;
+  const pos = geometry.attributes.position;
+  for (let i = 0; i < uv.count; i += 1) {
+    uv.setXY(i, pos.getX(i) / width + 0.5, pos.getY(i) / height + 0.5);
+  }
 }
 
-function wallpaperTexture() {
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+}
+
+function checkMark(ctx, x, y, size) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(25, 199, 180, 0.16)';
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = TEAL;
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - size * 0.42, y + size * 0.02);
+  ctx.lineTo(x - size * 0.1, y + size * 0.34);
+  ctx.lineTo(x + size * 0.46, y - size * 0.3);
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** Android worker app screen: status bar, mascot, running task, verification checks. */
+function createScreenUi() {
   const canvas = document.createElement('canvas');
-  canvas.width = 256;
+  canvas.width = 512;
+  canvas.height = 1112;
+  const ctx = canvas.getContext('2d');
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  texture.anisotropy = 4;
+
+  const mascot = new Image();
+  let mascotReady = false;
+
+  function draw(progress) {
+    const W = canvas.width;
+    const H = canvas.height;
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#11161a');
+    bg.addColorStop(0.45, '#0b0d10');
+    bg.addColorStop(1, '#090a0c');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Status bar
+    ctx.fillStyle = '#e9ecef';
+    ctx.font = `500 24px ${UI_FONT}`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('12:30', 34, 40);
+    const right = W - 34;
+    ctx.fillRect(right - 34, 30, 30, 18);
+    ctx.fillRect(right - 3, 35, 4, 8);
+    ctx.fillStyle = '#0b0d10';
+    ctx.fillRect(right - 31, 33, 8, 12);
+    ctx.fillStyle = '#e9ecef';
+    [6, 10, 14, 18].forEach((h, i) => ctx.fillRect(right - 82 + i * 7, 48 - h, 5, h));
+    ctx.strokeStyle = '#e9ecef';
+    ctx.lineWidth = 3;
+    [8, 14].forEach((r) => {
+      ctx.beginPath();
+      ctx.arc(right - 108, 50, r, Math.PI * 1.25, Math.PI * 1.75);
+      ctx.stroke();
+    });
+
+    // App bar
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `600 30px ${UI_FONT}`;
+    ctx.fillText('FibonAI Worker', 34, 118);
+    ctx.fillStyle = '#9ea4ad';
+    ctx.font = `400 19px ${UI_FONT}`;
+    ctx.fillText('Opted in · Wi-Fi only · Battery above 40%', 34, 152);
+
+    // Mascot
+    const glow = ctx.createRadialGradient(W / 2, 330, 10, W / 2, 330, 230);
+    glow.addColorStop(0, 'rgba(25, 199, 180, 0.16)');
+    glow.addColorStop(1, 'rgba(25, 199, 180, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 180, W, 300);
+    if (mascotReady) {
+      const w = 440;
+      const h = (w * mascot.height) / mascot.width;
+      ctx.drawImage(mascot, (W - w) / 2, 196, w, h);
+    }
+
+    // Status chip
+    roundRectPath(ctx, 34, 480, 210, 44, 22);
+    ctx.fillStyle = 'rgba(25, 199, 180, 0.12)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(25, 199, 180, 0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = TEAL;
+    ctx.beginPath();
+    ctx.arc(58, 502, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#d8f5f1';
+    ctx.font = `500 19px ${UI_FONT}`;
+    ctx.fillText('Running a task', 74, 503);
+
+    // Task card
+    roundRectPath(ctx, 26, 548, W - 52, 196, 26);
+    ctx.fillStyle = '#15181c';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `600 23px ${UI_FONT}`;
+    ctx.fillText('document.ocr', 54, 592);
+    ctx.fillStyle = '#9ea4ad';
+    ctx.font = `400 18px ${UI_FONT}`;
+    ctx.fillText('invoice-0042.pdf · EU region', 54, 624);
+    roundRectPath(ctx, 54, 660, W - 108, 12, 6);
+    ctx.fillStyle = '#23272d';
+    ctx.fill();
+    const bar = ctx.createLinearGradient(54, 0, W - 54, 0);
+    bar.addColorStop(0, STEEL);
+    bar.addColorStop(1, TEAL);
+    roundRectPath(ctx, 54, 660, Math.max(12, (W - 108) * progress), 12, 6);
+    ctx.fillStyle = bar;
+    ctx.fill();
+    ctx.fillStyle = '#9ea4ad';
+    ctx.font = `400 17px ${UI_FONT}`;
+    ctx.fillText(`Chunk ${Math.min(4, 1 + Math.floor(progress * 4))} of 4`, 54, 704);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${Math.round(progress * 100)}%`, W - 54, 704);
+    ctx.textAlign = 'left';
+
+    // Verification card
+    roundRectPath(ctx, 26, 768, W - 52, 236, 26);
+    ctx.fillStyle = '#15181c';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.stroke();
+    ctx.fillStyle = '#9ea4ad';
+    ctx.font = `500 16px ${UI_FONT}`;
+    ctx.fillText('SECURITY CHECKS', 54, 806);
+    const checks = ['Model signature verified', 'SHA-256 matches pinned hash', 'Customer identity hidden'];
+    checks.forEach((label, i) => {
+      const y = 850 + i * 52;
+      checkMark(ctx, 70, y, 16);
+      ctx.fillStyle = '#e9ecef';
+      ctx.font = `400 19px ${UI_FONT}`;
+      ctx.fillText(label, 100, y + 1);
+    });
+
+    // Gesture bar
+    roundRectPath(ctx, W / 2 - 70, H - 30, 140, 7, 4);
+    ctx.fillStyle = 'rgba(233, 236, 239, 0.75)';
+    ctx.fill();
+
+    texture.needsUpdate = true;
+  }
+
+  return { texture, draw, mascot, setMascotReady: () => { mascotReady = true; } };
+}
+
+function chipLabelTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
   canvas.height = 512;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#05060c';
-  ctx.fillRect(0, 0, 256, 512);
-  const bloomA = ctx.createRadialGradient(70, 150, 10, 70, 150, 260);
-  bloomA.addColorStop(0, 'rgba(90, 140, 255, 0.95)');
-  bloomA.addColorStop(0.45, 'rgba(60, 70, 200, 0.45)');
-  bloomA.addColorStop(1, 'rgba(10, 10, 30, 0)');
-  ctx.fillStyle = bloomA;
-  ctx.fillRect(0, 0, 256, 512);
-  const bloomB = ctx.createRadialGradient(200, 400, 10, 200, 400, 240);
-  bloomB.addColorStop(0, 'rgba(200, 120, 255, 0.85)');
-  bloomB.addColorStop(0.5, 'rgba(110, 60, 190, 0.35)');
-  bloomB.addColorStop(1, 'rgba(10, 10, 30, 0)');
-  ctx.fillStyle = bloomB;
-  ctx.fillRect(0, 0, 256, 512);
+  ctx.clearRect(0, 0, 512, 512);
+  ctx.fillStyle = 'rgba(70, 76, 86, 0.9)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `600 64px ${UI_FONT}`;
+  ctx.fillText('FIBONAI', 256, 220);
+  ctx.font = `500 34px ${UI_FONT}`;
+  ctx.fillText('EDGE NPU', 256, 284);
+  ctx.font = `400 26px ${UI_FONT}`;
+  ctx.fillText('EM-26 · SIGNED', 256, 336);
+  ctx.beginPath();
+  ctx.arc(70, 70, 16, 0, Math.PI * 2);
+  ctx.fill();
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
   return texture;
 }
 
-function createPhone(textures) {
+/** Pixel-style Android phone: flat aluminium rail, punch-hole camera, edge-to-edge camera bar. */
+function createPhone(screenUi) {
   const group = new Group();
-  const width = 0.98;
-  const height = 2.02;
-  const depth = 0.1;
+  const width = 0.96;
+  const height = 2.06;
+  const depth = 0.085;
+  const radius = 0.12;
 
-  const frameShape = roundedRect(width, height, 0.17);
-  frameShape.holes.push(roundedRectPath(width - 0.06, height - 0.06, 0.145));
-  const frame = new Mesh(
-    new ExtrudeGeometry(frameShape, {
+  const body = new Mesh(
+    new ExtrudeGeometry(roundedRect(width, height, radius), {
       depth,
       bevelEnabled: true,
-      bevelThickness: 0.02,
-      bevelSize: 0.015,
-      bevelSegments: 6,
-      curveSegments: 32,
+      bevelThickness: 0.012,
+      bevelSize: 0.012,
+      bevelSegments: 4,
+      curveSegments: 24,
     }),
-    metal('#a7adba', 0.32),
+    metal('#8f959e', 0.38),
   );
-  frame.position.z = -depth / 2;
+  body.position.z = -depth / 2;
 
   const back = new Mesh(
-    new ExtrudeGeometry(roundedRect(width - 0.05, height - 0.05, 0.15), {
-      depth: 0.02,
-      bevelEnabled: false,
-      curveSegments: 32,
-    }),
-    glass({
-      thickness: 0.4,
-      roughness: 0.34,
-      color: new Color('#d9d2f2'),
-      attenuationColor: new Color('#8f86b8'),
-      attenuationDistance: 1.2,
-      iridescence: 0.4,
-    }),
+    new ShapeGeometry(roundedRect(width - 0.02, height - 0.02, radius - 0.01), 24),
+    new MeshPhysicalMaterial({ color: new Color('#1b1e23'), roughness: 0.62, clearcoat: 0.4, clearcoatRoughness: 0.5 }),
   );
-  back.position.z = -depth / 2 - 0.005;
+  back.rotation.y = Math.PI;
+  back.position.z = -depth / 2 - 0.013;
 
-  const wallpaper = wallpaperTexture();
-  textures.push(wallpaper);
+  const glass = new Mesh(
+    new ShapeGeometry(roundedRect(width - 0.02, height - 0.02, radius - 0.01), 24),
+    new MeshPhysicalMaterial({ color: new Color('#030405'), roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.02 }),
+  );
+  glass.position.z = depth / 2 + 0.013;
+
+  const screenW = width - 0.075;
+  const screenH = height - 0.075;
+  const screenGeometry = new ShapeGeometry(roundedRect(screenW, screenH, radius - 0.035), 24);
+  fitUv(screenGeometry, screenW, screenH);
   const screen = new Mesh(
-    new ShapeGeometry(roundedRect(width - 0.08, height - 0.08, 0.14), 32),
+    screenGeometry,
     new MeshPhysicalMaterial({
-      color: new Color('#05060a'),
+      color: new Color('#000000'),
       emissive: new Color('#ffffff'),
-      emissiveMap: wallpaper,
-      emissiveIntensity: 0.9,
-      roughness: 0.05,
-      metalness: 0,
+      emissiveMap: screenUi.texture,
+      emissiveIntensity: 1,
+      roughness: 0.06,
       clearcoat: 1,
-      clearcoatRoughness: 0.03,
-      envMapIntensity: 1.1,
+      clearcoatRoughness: 0.02,
     }),
   );
-  const uv = screen.geometry.attributes.uv;
-  const pos = screen.geometry.attributes.position;
-  for (let i = 0; i < uv.count; i += 1) {
-    uv.setXY(i, pos.getX(i) / (width - 0.08) + 0.5, pos.getY(i) / (height - 0.08) + 0.5);
-  }
-  screen.position.z = depth / 2 + 0.012;
+  screen.position.z = depth / 2 + 0.015;
 
-  const island = new Mesh(
-    new RoundedBoxGeometry(0.26, 0.07, 0.01, 4, 0.035),
-    new MeshPhysicalMaterial({ color: new Color('#000000'), roughness: 0.2, clearcoat: 1 }),
-  );
-  island.position.set(0, height / 2 - 0.12, depth / 2 + 0.02);
+  const punchHole = new Mesh(new CircleGeometry(0.026, 32), new MeshBasicMaterial({ color: new Color('#000000') }));
+  punchHole.position.set(0, height / 2 - 0.085, depth / 2 + 0.017);
+  const lensGlint = new Mesh(new CircleGeometry(0.011, 24), metal('#1c2a3a', 0.08));
+  lensGlint.position.set(0.004, height / 2 - 0.082, depth / 2 + 0.018);
 
-  const cameraIsland = new Group();
-  const plate = new Mesh(
-    new RoundedBoxGeometry(0.42, 0.42, 0.04, 4, 0.08),
-    glass({ thickness: 0.2, roughness: 0.2, color: new Color('#e2dcf5') }),
+  const visor = new Mesh(
+    new RoundedBoxGeometry(width - 0.01, 0.2, 0.055, 4, 0.025),
+    new MeshPhysicalMaterial({ color: new Color('#0c0d10'), roughness: 0.18, clearcoat: 1, clearcoatRoughness: 0.05 }),
   );
-  cameraIsland.add(plate);
-  const lensRing = metal('#c9ced8', 0.18);
-  const lensGlass = new MeshPhysicalMaterial({
-    color: new Color('#0a0c14'),
-    roughness: 0.02,
-    clearcoat: 1,
-    iridescence: 1,
-    iridescenceThicknessRange: [200, 600],
-    envMapIntensity: 1.6,
-  });
-  [[-0.09, 0.09], [-0.09, -0.09], [0.1, 0]].forEach(([x, y]) => {
-    const ring = new Mesh(new CylinderGeometry(0.075, 0.075, 0.05, 40), lensRing);
+  visor.position.set(0, height / 2 - 0.36, -depth / 2 - 0.035);
+  const lensMaterial = new MeshPhysicalMaterial({ color: new Color('#05070a'), roughness: 0.02, clearcoat: 1, envMapIntensity: 1.6 });
+  const ringMaterial = metal('#6d737c', 0.25);
+  [-0.26, -0.1].forEach((x) => {
+    const ring = new Mesh(new CylinderGeometry(0.062, 0.062, 0.02, 40), ringMaterial);
     ring.rotation.x = Math.PI / 2;
-    ring.position.set(x, y, -0.03);
-    const lens = new Mesh(new CylinderGeometry(0.055, 0.055, 0.052, 40), lensGlass);
+    ring.position.set(x, height / 2 - 0.36, -depth / 2 - 0.065);
+    const lens = new Mesh(new CylinderGeometry(0.046, 0.046, 0.022, 40), lensMaterial);
     lens.rotation.x = Math.PI / 2;
-    lens.position.set(x, y, -0.031);
-    cameraIsland.add(ring, lens);
+    lens.position.set(x, height / 2 - 0.36, -depth / 2 - 0.066);
+    group.add(ring, lens);
   });
-  cameraIsland.position.set(-width / 2 + 0.29, height / 2 - 0.29, -depth / 2 - 0.03);
 
-  const buttonMaterial = metal('#a7adba', 0.3);
-  [[0.42, 0.24], [0.12, 0.16]].forEach(([y, length]) => {
-    const button = new Mesh(new RoundedBoxGeometry(0.03, length, 0.05, 3, 0.012), buttonMaterial);
-    button.position.set(width / 2 + 0.018, y, 0);
+  const buttonMaterial = metal('#8f959e', 0.34);
+  [[0.52, 0.12], [0.24, 0.26]].forEach(([y, length]) => {
+    const button = new Mesh(new RoundedBoxGeometry(0.022, length, 0.04, 3, 0.009), buttonMaterial);
+    button.position.set(width / 2 + 0.014, y, 0);
     group.add(button);
   });
 
-  group.add(back, frame, screen, island, cameraIsland);
-  group.scale.setScalar(1.12);
-  return { group };
+  group.add(body, back, glass, screen, punchHole, lensGlint, visor);
+  group.scale.setScalar(1.4);
+  return { group, edge: new Vector3(-width / 2, 0.15, 0) };
 }
 
-function createChip() {
+/** QFP package on a dark substrate: brushed spreader with laser-etched label, gold leads, SMD parts. */
+function createChip(textures) {
   const group = new Group();
 
   const substrate = new Mesh(
-    new RoundedBoxGeometry(1.5, 1.5, 0.1, 4, 0.03),
-    new MeshPhysicalMaterial({
-      color: new Color('#15171c'),
-      roughness: 0.45,
-      metalness: 0.2,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.25,
-    }),
+    new RoundedBoxGeometry(1.5, 1.5, 0.06, 3, 0.02),
+    new MeshPhysicalMaterial({ color: new Color('#13221b'), roughness: 0.62, clearcoat: 0.5, clearcoatRoughness: 0.4 }),
   );
 
-  const spreader = new Mesh(
-    new RoundedBoxGeometry(1.02, 1.02, 0.2, 6, 0.05),
-    glass({
-      thickness: 0.6,
-      roughness: 0.1,
-      color: new Color('#cfdcff'),
-      attenuationColor: new Color('#6f84c8'),
-      attenuationDistance: 1.4,
-    }),
+  const spreader = new Mesh(new RoundedBoxGeometry(0.98, 0.98, 0.09, 4, 0.03), metal('#b7bcc4', 0.32));
+  spreader.position.z = 0.07;
+
+  const label = chipLabelTexture();
+  textures.push(label);
+  const etch = new Mesh(
+    new PlaneGeometry(0.9, 0.9),
+    new MeshStandardMaterial({ map: label, transparent: true, metalness: 0.4, roughness: 0.5 }),
   );
-  spreader.position.z = 0.14;
+  etch.position.z = 0.116;
 
-  const die = new Mesh(new BoxGeometry(0.46, 0.46, 0.04), new MeshBasicMaterial({ color: new Color('#e9efff') }));
-  die.position.z = 0.1;
-  const dieHalo = new Mesh(new BoxGeometry(0.62, 0.62, 0.02), new MeshBasicMaterial({ color: new Color('#5f7fe0') }));
-  dieHalo.position.z = 0.09;
-
-  const pinCount = 11;
-  const pins = new InstancedMesh(new BoxGeometry(0.045, 0.16, 0.025), metal('#d8b46a', 0.24), pinCount * 4);
+  const pinCount = 12;
+  const pins = new InstancedMesh(new BoxGeometry(0.04, 0.14, 0.018), metal('#d3b169', 0.26), pinCount * 4);
   const dummy = new Object3D();
   let index = 0;
   for (let side = 0; side < 4; side += 1) {
     for (let i = 0; i < pinCount; i += 1) {
       const offset = -0.6 + (1.2 / (pinCount - 1)) * i;
-      dummy.position.set(offset, 0.82, 0);
+      dummy.position.set(offset, 0.8, 0);
       dummy.rotation.set(0, 0, 0);
       dummy.position.applyAxisAngle(new Vector3(0, 0, 1), (side * Math.PI) / 2);
       dummy.rotation.z = (side * Math.PI) / 2;
@@ -262,70 +375,67 @@ function createChip() {
   }
   pins.instanceMatrix.needsUpdate = true;
 
-  const padMaterial = metal('#d8b46a', 0.3);
-  [[-0.58, -0.58], [0.58, -0.58], [-0.58, 0.58], [0.58, 0.58]].forEach(([x, y]) => {
-    const pad = new Mesh(new CylinderGeometry(0.035, 0.035, 0.012, 24), padMaterial);
-    pad.rotation.x = Math.PI / 2;
-    pad.position.set(x, y, 0.056);
-    group.add(pad);
+  const parts = [[-0.62, -0.3], [-0.62, 0.05], [0.62, 0.3], [0.62, -0.1], [-0.2, 0.62], [0.25, -0.62]];
+  const smd = new InstancedMesh(new BoxGeometry(0.07, 0.035, 0.03), new MeshPhysicalMaterial({ color: new Color('#8b7154'), roughness: 0.5 }), parts.length);
+  parts.forEach(([x, y], i) => {
+    dummy.position.set(x, y, 0.045);
+    dummy.rotation.set(0, 0, Math.abs(x) > 0.5 ? Math.PI / 2 : 0);
+    dummy.updateMatrix();
+    smd.setMatrixAt(i, dummy.matrix);
   });
+  smd.instanceMatrix.needsUpdate = true;
 
-  group.add(substrate, pins, dieHalo, die, spreader);
-  group.scale.setScalar(1.1);
-  return { group };
+  group.add(substrate, pins, smd, spreader, etch);
+  group.scale.setScalar(0.92);
+  return { group, port: new Vector3(0.45, 0.62, 0.12) };
 }
 
-function createPadlock() {
+/** Compact closed padlock with a verification seal ring around it. */
+function createLock() {
   const group = new Group();
 
-  const bodyDepth = 0.42;
-  const body = new Mesh(
-    new ExtrudeGeometry(roundedRect(1.25, 1.0, 0.2), {
-      depth: bodyDepth,
-      bevelEnabled: true,
-      bevelThickness: 0.08,
-      bevelSize: 0.07,
-      bevelSegments: 10,
-      curveSegments: 40,
-    }),
-    glass({
-      thickness: 1.4,
-      roughness: 0.22,
-      color: new Color('#e7e2f6'),
-      attenuationColor: new Color('#9d92c4'),
-      attenuationDistance: 2.2,
-    }),
-  );
-  body.position.set(0, -0.3, -bodyDepth / 2);
+  const body = new Mesh(new RoundedBoxGeometry(0.4, 0.32, 0.15, 5, 0.05), metal('#c2c7ce', 0.26));
+  body.position.y = -0.08;
 
-  const core = glow(0.2, '#f4efff');
-  core.position.set(0, -0.32, 0);
-
-  const radius = 0.36;
-  const points = [new Vector3(-radius, -0.05, 0), new Vector3(-radius, 0.3, 0)];
-  for (let i = 0; i <= 24; i += 1) {
-    const angle = Math.PI - (Math.PI * i) / 24;
-    points.push(new Vector3(Math.cos(angle) * radius, 0.3 + Math.sin(angle) * radius, 0));
+  const radius = 0.12;
+  const points = [new Vector3(-radius, -0.02, 0), new Vector3(-radius, 0.12, 0)];
+  for (let i = 0; i <= 20; i += 1) {
+    const angle = Math.PI - (Math.PI * i) / 20;
+    points.push(new Vector3(Math.cos(angle) * radius, 0.12 + Math.sin(angle) * radius, 0));
   }
-  points.push(new Vector3(radius, 0.3, 0), new Vector3(radius, -0.05, 0));
+  points.push(new Vector3(radius, 0.12, 0), new Vector3(radius, -0.02, 0));
   const shackle = new Mesh(
-    new TubeGeometry(new CatmullRomCurve3(points, false, 'centripetal'), 160, 0.085, 24, false),
-    metal('#dfe3ea', 0.12),
+    new TubeGeometry(new CatmullRomCurve3(points, false, 'centripetal'), 96, 0.032, 16, false),
+    metal('#e4e7ec', 0.1),
   );
 
-  const keyMaterial = metal('#3a3f4c', 0.35);
-  const keyFront = bodyDepth / 2 + 0.085;
-  const keyRing = new Mesh(new TorusGeometry(0.1, 0.022, 16, 48), metal('#c9ced8', 0.18));
-  keyRing.position.set(0, -0.22, keyFront);
-  const keyHole = new Mesh(new CylinderGeometry(0.07, 0.07, 0.02, 32), keyMaterial);
+  const keyMaterial = new MeshPhysicalMaterial({ color: new Color('#16181c'), roughness: 0.4, metalness: 0.6 });
+  const keyHole = new Mesh(new CylinderGeometry(0.032, 0.032, 0.01, 24), keyMaterial);
   keyHole.rotation.x = Math.PI / 2;
-  keyHole.position.set(0, -0.22, keyFront);
-  const keySlot = new Mesh(new BoxGeometry(0.05, 0.18, 0.02), keyMaterial);
-  keySlot.position.set(0, -0.35, keyFront);
+  keyHole.position.set(0, -0.05, 0.078);
+  const keySlot = new Mesh(new BoxGeometry(0.022, 0.07, 0.01), keyMaterial);
+  keySlot.position.set(0, -0.1, 0.078);
 
-  group.add(core, shackle, body, keyRing, keyHole, keySlot);
-  group.scale.setScalar(1.12);
-  return { group };
+  const seal = new Group();
+  const sealMaterial = new MeshBasicMaterial({ color: new Color(TEAL), transparent: true, opacity: 0.5 });
+  seal.add(new Mesh(new TorusGeometry(0.38, 0.004, 8, 96), sealMaterial));
+  const tickCount = 36;
+  const ticks = new InstancedMesh(new BoxGeometry(0.006, 0.035, 0.004), sealMaterial, tickCount);
+  const dummy = new Object3D();
+  for (let i = 0; i < tickCount; i += 1) {
+    const angle = (i / tickCount) * Math.PI * 2;
+    dummy.position.set(Math.cos(angle) * 0.42, Math.sin(angle) * 0.42, 0);
+    dummy.rotation.set(0, 0, angle - Math.PI / 2);
+    dummy.scale.setScalar(i % 3 === 0 ? 1.6 : 1);
+    dummy.updateMatrix();
+    ticks.setMatrixAt(i, dummy.matrix);
+  }
+  ticks.instanceMatrix.needsUpdate = true;
+  seal.add(ticks);
+  seal.position.y = -0.02;
+
+  group.add(body, shackle, keyHole, keySlot, seal);
+  return { group, seal };
 }
 
 export function createGlassScene(canvas, { reducedMotion = false } = {}) {
@@ -333,7 +443,7 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 0.95;
   renderer.setClearColor(0x000000, 0);
 
   const scene = new Scene();
@@ -341,38 +451,53 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
   const room = new RoomEnvironment();
   const envTexture = pmrem.fromScene(room, 0.04).texture;
   scene.environment = envTexture;
+  scene.environmentIntensity = 0.75;
 
-  const camera = new PerspectiveCamera(38, 1, 0.1, 50);
-  camera.position.set(0, 0, 9);
+  const camera = new PerspectiveCamera(36, 1, 0.1, 50);
+  camera.position.set(0, 0, 11);
 
-  const blue = new PointLight(0x3d7bff, 60, 14);
-  blue.position.set(-3.5, 1.5, 3);
-  const pink = new PointLight(0xff6fd0, 40, 14);
-  pink.position.set(3.5, -0.5, 2.5);
-  const white = new PointLight(0xffffff, 25, 12);
-  white.position.set(0.5, 3.5, 4);
-  scene.add(blue, pink, white);
+  const key = new DirectionalLight(0xffffff, 2.2);
+  key.position.set(3, 5, 6);
+  const rim = new DirectionalLight(new Color(STEEL), 1.8);
+  rim.position.set(-5, 2, -4);
+  const sealGlow = new PointLight(new Color(TEAL), 4, 4);
+  scene.add(key, rim, sealGlow);
 
   const rig = new Group();
   scene.add(rig);
 
   const textures = [];
+  const screenUi = createScreenUi();
+  textures.push(screenUi.texture);
 
-  const padlock = createPadlock();
-  padlock.group.rotation.set(0.18, -0.42, 0.14);
+  const phone = createPhone(screenUi);
+  phone.group.rotation.set(0.04, -0.34, -0.06);
 
-  const phone = createPhone(textures);
-  phone.group.rotation.set(0.08, -0.5, -0.16);
+  const chip = createChip(textures);
+  chip.group.rotation.set(-0.95, 0.22, 0.32);
 
-  const chip = createChip();
-  chip.group.rotation.set(-0.7, 0.32, 0.38);
+  const lock = createLock();
+  lock.group.rotation.set(0.05, 0.28, 0.02);
 
-  rig.add(padlock.group, phone.group, chip.group);
+  rig.add(phone.group, chip.group, lock.group);
+
+  const channelMaterial = new MeshBasicMaterial({ color: new Color(STEEL), transparent: true, opacity: 0.35 });
+  let channel = null;
+  let curve = null;
+  let lockT = 0.5;
+  const rawMaterial = new MeshBasicMaterial({ color: new Color('#e8edf2') });
+  const sealedMaterial = new MeshBasicMaterial({ color: new Color(TEAL) });
+  const packetGeometry = new SphereGeometry(0.022, 16, 12);
+  const packets = Array.from({ length: 6 }, (_, i) => {
+    const mesh = new Mesh(packetGeometry, rawMaterial);
+    rig.add(mesh);
+    return { mesh, offset: i / 6 };
+  });
 
   const items = [
-    { node: padlock.group, sway: [0.08, 0.3, 0.05], phase: 0 },
-    { node: phone.group, sway: [0.06, 0.42, 0.04], phase: 2.1 },
-    { node: chip.group, sway: [0.1, 0.18, 0.0], spinZ: 0.1, phase: 4.2 },
+    { node: phone.group, sway: [0.03, 0.12, 0.02], phase: 0 },
+    { node: chip.group, sway: [0.04, 0.08, 0.02], phase: 2.1 },
+    { node: lock.group, sway: [0.03, 0.18, 0.02], phase: 4.2 },
   ];
   items.forEach((item) => { item.baseRot = item.node.rotation.clone(); });
 
@@ -383,15 +508,51 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
   let running = false;
   let last = 0;
   let elapsed = 0;
+  let progress = 0.36;
+  let screenClock = 0;
+
+  function placePackets() {
+    if (!curve) return;
+    packets.forEach((packet) => {
+      const t = (packet.offset + elapsed * 0.09) % 1;
+      packet.mesh.position.copy(curve.getPointAt(t));
+      packet.mesh.material = t > lockT ? sealedMaterial : rawMaterial;
+    });
+  }
+
+  function buildChannel() {
+    phone.group.updateMatrixWorld(true);
+    chip.group.updateMatrixWorld(true);
+    const start = chip.port.clone().applyMatrix4(chip.group.matrix);
+    const end = phone.edge.clone().applyMatrix4(phone.group.matrix);
+    const via = lock.group.position.clone();
+    const startBend = new Vector3(start.x - 0.25, (start.y + via.y) / 2, start.z + 0.2);
+    const endBend = new Vector3((via.x + end.x) / 2, via.y - 0.15, (via.z + end.z) / 2);
+    const points = [start, startBend, via, endBend, end];
+    curve = new CatmullRomCurve3(points, false, 'centripetal');
+    const lengths = curve.getLengths(200);
+    const total = lengths[lengths.length - 1];
+    const viaLength = new CatmullRomCurve3(points.slice(0, 3), false, 'centripetal').getLength();
+    lockT = viaLength / total;
+    if (channel) {
+      rig.remove(channel);
+      channel.geometry.dispose();
+    }
+    channel = new Mesh(new TubeGeometry(curve, 160, 0.007, 8, false), channelMaterial);
+    rig.add(channel);
+  }
 
   function layout() {
     const aspect = width / Math.max(height, 1);
     const spread = Math.min(1, aspect / 0.85);
-    padlock.group.position.set(-0.8 * spread, 2.25, 0);
-    phone.group.position.set(1.0 * spread, 0.05, 0.2);
-    chip.group.position.set(-0.6 * spread, -2.3, 0);
+    phone.group.position.set(0.78 * spread, 0.35, 0);
+    chip.group.position.set(-1.1 * spread, -2.2, -0.2);
+    lock.group.position.set(-1.05 * spread, 1.15, 0.45);
+    sealGlow.position.set(lock.group.position.x, lock.group.position.y, lock.group.position.z + 0.6);
     items.forEach((item) => { item.baseY = item.node.position.y; });
-    camera.position.z = aspect < 0.75 ? 12 : 10.5;
+    camera.position.z = aspect < 0.75 ? 12 : 10.8;
+    buildChannel();
+    placePackets();
   }
 
   function resize() {
@@ -405,6 +566,14 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
     if (!running) renderer.render(scene, camera);
   }
 
+  screenUi.draw(progress);
+  screenUi.mascot.onload = () => {
+    screenUi.setMascotReady();
+    screenUi.draw(progress);
+    if (!running) renderer.render(scene, camera);
+  };
+  screenUi.mascot.src = MASCOT_SRC;
+
   function tick(now) {
     if (!running) return;
     const dt = Math.min(0.05, (now - (last || now)) / 1000);
@@ -412,18 +581,27 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
     elapsed += dt;
 
     items.forEach((item) => {
-      const wave = Math.sin(elapsed * 0.5 + item.phase);
-      const wave2 = Math.cos(elapsed * 0.4 + item.phase);
+      const wave = Math.sin(elapsed * 0.4 + item.phase);
+      const wave2 = Math.cos(elapsed * 0.32 + item.phase);
       item.node.rotation.x = item.baseRot.x + item.sway[0] * wave;
       item.node.rotation.y = item.baseRot.y + item.sway[1] * wave2;
-      item.node.rotation.z = item.baseRot.z + item.sway[2] * wave + (item.spinZ || 0) * Math.sin(elapsed * 0.3);
-      item.node.position.y = item.baseY + Math.sin(elapsed * 0.6 + item.phase) * 0.12;
+      item.node.rotation.z = item.baseRot.z + item.sway[2] * wave;
+      item.node.position.y = item.baseY + Math.sin(elapsed * 0.5 + item.phase) * 0.05;
     });
+    lock.seal.rotation.z -= dt * 0.25;
+    placePackets();
+
+    screenClock += dt;
+    if (screenClock > 0.25) {
+      screenClock = 0;
+      progress = progress >= 1 ? 0.08 : Math.min(1, progress + 0.012);
+      screenUi.draw(progress);
+    }
 
     pointer.x += (pointer.tx - pointer.x) * 0.06;
     pointer.y += (pointer.ty - pointer.y) * 0.06;
-    rig.rotation.y = pointer.x * 0.35;
-    rig.rotation.x = pointer.y * 0.22;
+    rig.rotation.y = pointer.x * 0.25;
+    rig.rotation.x = pointer.y * 0.15;
 
     renderer.render(scene, camera);
     frame = requestAnimationFrame(tick);
@@ -445,8 +623,8 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
     pointer.tx = x;
     pointer.ty = y;
     if (reducedMotion) {
-      rig.rotation.y = x * 0.2;
-      rig.rotation.x = y * 0.12;
+      rig.rotation.y = x * 0.15;
+      rig.rotation.x = y * 0.1;
       renderer.render(scene, camera);
     }
   }
@@ -465,7 +643,10 @@ export function createGlassScene(canvas, { reducedMotion = false } = {}) {
 
   function dispose() {
     stop();
+    screenUi.mascot.onload = null;
     disposeTree(scene);
+    rawMaterial.dispose();
+    sealedMaterial.dispose();
     textures.forEach((texture) => texture.dispose());
     envTexture.dispose();
     pmrem.dispose();

@@ -1,7 +1,6 @@
 export const navLinks = [
   { name: 'how-it-works', label: 'How it works' },
   { name: 'use-cases', label: 'Use cases' },
-  { name: 'pricing', label: 'Pricing' },
   { name: 'security', label: 'Security' },
   { name: 'workers', label: 'Workers' },
   { name: 'developers', label: 'Developers' },
@@ -9,24 +8,25 @@ export const navLinks = [
 
 export const hero = {
   eyebrow: 'Edge-first AI inference',
-  title: 'Run AI workloads where your policy allows — with a quote before every task.',
-  titleHighlight: 'a quote',
+  title: 'Run AI tasks on everyday phones — with your first month free.',
+  titleHighlight: 'your first month free',
   subtitle:
-    'FibonAI routes document, vision, and language tasks to a verified edge worker network first, with explicit cloud fallback, EUR-denominated billing, and a full audit trail for regulated teams.',
+    'FibonAI sends document, vision, and language tasks to at least three verified phones, returns only the answer they agree on, and keeps a full audit trail — with explicit cloud fallback when your policy allows.',
   primaryCta: { label: 'Talk to sales', to: 'contact' },
   secondaryCta: { label: 'View documentation', to: 'docs' },
 };
 
 export const stats = [
   { value: '60+', label: 'Task types in catalog', icon: '⬡' },
-  { value: 'EUR', label: 'Quote-before-run billing', icon: '€' },
-  { value: 'Edge', label: 'Preferred execution path', icon: '◈' },
-  { value: 'Audit', label: 'Immutable quote & event trail', icon: '⛨' },
+  { value: '1 month', label: 'Free to start, API included', icon: '✦' },
+  { value: '3+', label: 'Phones check every task', icon: '◈' },
+  { value: 'Audit', label: 'Immutable event trail', icon: '⛨' },
 ];
 
 export const trustBadges = [
   { icon: '⛨', label: 'Signed models' },
-  { icon: '€', label: 'Quote-before-run' },
+  { icon: '✦', label: 'First month free' },
+  { icon: '◎', label: '3-phone consensus' },
   { icon: '◈', label: 'Edge-preferred routing' },
   { icon: '⬡', label: '60+ task types' },
   { icon: '✓', label: 'GDPR-ready architecture' },
@@ -39,17 +39,17 @@ export const pillars = [
   {
     icon: '◈',
     title: 'Edge-preferred execution',
-    body: 'Workloads run on opted-in devices when policy and SLA allow. Cloud fallback is never silent — reasons and costs are recorded.',
+    body: 'Workloads run on opted-in devices when policy and SLA allow. Cloud fallback is never silent — the reason is recorded.',
   },
   {
-    icon: '€',
-    title: 'Deterministic pricing',
-    body: 'Every task receives an immutable quote with rule trace before execution. No surprise line items after the fact.',
+    icon: '✦',
+    title: 'First month free',
+    body: 'New accounts get a free first month with free API access. Each task is assessed for difficulty first, so you know how many credits it uses before it runs.',
   },
   {
     icon: '⛨',
-    title: 'Verification you can buy up to',
-    body: 'From standard inference through consensus and human review — choose the quality tier that matches your risk profile.',
+    title: 'Consensus, not trust',
+    body: 'Every task goes to at least three independent phones. Only the answer they agree on comes back to you; cheating devices are warned, then removed.',
   },
 ];
 
@@ -61,18 +61,18 @@ export const flowSteps = [
   },
   {
     step: '02',
-    title: 'Receive a quote',
-    body: 'FibonAI returns a deterministic EUR quote with policy hash, verification tier, and execution route before work begins.',
+    title: 'Quick assessment',
+    body: 'FibonAI checks the task is safe, estimates its difficulty and time, and shows how many credits it uses — never a price.',
   },
   {
     step: '03',
     title: 'Edge execution',
-    body: 'An available worker picks up the assignment, runs signed on-device models, and streams lifecycle events to your workspace.',
+    body: 'The platform sends the task to at least three eligible phones. Each runs signed on-device models and streams lifecycle events to your workspace.',
   },
   {
     step: '04',
-    title: 'Result & audit',
-    body: 'Structured output lands in your portal or webhook. Every attempt, revision, and billing event stays in the ledger.',
+    title: 'Consensus & result',
+    body: 'Answers are compared and only the agreed result lands in your portal or webhook. Every attempt, revision, and credit event stays in the ledger.',
   },
 ];
 
@@ -95,47 +95,44 @@ export const useCaseGroups = [
   },
 ];
 
-export const pricingRows = [
-  { task: 'Document OCR', measure: 'per page', price: '€0.0025' },
-  { task: 'Structured extract', measure: 'per document', price: '€0.020' },
-  { task: 'Document verify', measure: 'per document', price: '€0.012' },
-  { task: 'Image classify', measure: 'per image', price: '€0.0015' },
-  { task: 'Image detect', measure: 'per image', price: '€0.004' },
-  { task: 'Vision analyze', measure: 'per request', price: '€0.035' },
-  { task: 'Audio transcribe', measure: 'per 60 sec', price: '€0.009' },
-  { task: 'Text translate', measure: 'per 1k chars', price: '€0.003' },
-  { task: 'Text generate', measure: 'per 1k tokens', price: '€0.0065' },
-  { task: 'Text embedding', measure: 'per 1k tokens', price: '€0.001' },
+export const consensusSteps = [
+  { step: 'Assess', detail: 'difficulty', outcome: 'credits shown' },
+  { step: 'Dispatch', detail: '3+ phones', outcome: 'run independently' },
+  { step: 'Compare', detail: 'consensus', outcome: '2 of 3 agree' },
+  { step: 'Retry', detail: '+2 phones', outcome: 'max 10 rounds' },
+  { step: 'Deliver', detail: 'agreed only', outcome: 'result + audit' },
 ];
 
 export const taskFeed = [
-  { task: 'document.ocr', file: 'invoice-2291.pdf', meta: 'quote €0.0025 · edge worker', status: 'ok' },
-  { task: 'text.summarize', file: 'board-minutes.txt', meta: 'quote locked · edge worker', status: 'ok' },
+  { task: 'document.ocr', file: 'invoice-2291.pdf', meta: 'assessed · 3 phones agree', status: 'ok' },
+  { task: 'text.summarize', file: 'board-minutes.txt', meta: 'difficulty 2 · consensus reached', status: 'ok' },
   { task: 'document.verify', file: 'id-scan.png', meta: 'held · region policy EU-only', status: 'held' },
-  { task: 'image.classify', file: 'shelf-photo.jpg', meta: 'quote €0.0015 · edge worker', status: 'ok' },
+  { task: 'image.classify', file: 'shelf-photo.jpg', meta: 'free credit · 3 phones agree', status: 'ok' },
   { task: 'text.translate', file: 'terms-de.txt', meta: 'cloud fallback · reason recorded', status: 'ok' },
-  { task: 'document.ocr', file: 'receipt-118.jpg', meta: 'consensus tier · 2 workers', status: 'ok' },
+  { task: 'document.ocr', file: 'receipt-118.jpg', meta: 'round 2 · 3 of 5 agree', status: 'ok' },
 ];
 
-export const quoteSample = [
+export const assessmentSample = [
   '{',
   '  "task_type": "document.ocr",',
-  '  "quote": { "amount": "0.0025", "currency": "EUR" },',
-  '  "route": "edge_preferred",',
-  '  "verification": "standard",',
+  '  "difficulty": 1,',
+  '  "credits": 1,',
+  '  "workers": 3,',
+  '  "consensus": "min_2_of_3",',
   '  "fallback": "allowed_with_reason",',
   '  "policy_hash": "sha256:9f2c…e41a"',
   '}',
 ];
 
 export const taskCards = [
-  { glyph: 'OCR', title: 'Document OCR', body: 'Invoices, receipts, and forms to structured text.', price: '€0.0025 per page', to: 'models' },
-  { glyph: 'IMG', title: 'Image classify', body: 'Catalog tagging and safety checks on images.', price: '€0.0015 per image', to: 'models' },
-  { glyph: 'TXT', title: 'Text translate', body: 'Contracts, tickets, and support text across languages.', price: '€0.003 per 1k chars', to: 'models' },
+  { glyph: 'OCR', title: 'Document OCR', body: 'Invoices, receipts, and forms to structured text.', input: 'PDF or image', to: 'models' },
+  { glyph: 'IMG', title: 'Image classify', body: 'Catalog tagging and safety checks on images.', input: 'Image', to: 'models' },
+  { glyph: 'TXT', title: 'Text translate', body: 'Contracts, tickets, and support text across languages.', input: 'Text', to: 'models' },
 ];
 
 export const capabilityChips = [
-  { icon: '€', label: 'Immutable quotes' },
+  { icon: '✦', label: 'First month free' },
+  { icon: '◎', label: '3-phone consensus' },
   { icon: '⌖', label: 'Region policies' },
   { icon: '⚯', label: 'Signed webhooks' },
   { icon: '⛨', label: 'Signed models' },
@@ -145,7 +142,7 @@ export const capabilityChips = [
   { icon: '⇄', label: 'Replay & dead-letter' },
 ];
 
-export const portalNav = ['Tasks', 'Quotes', 'Workers', 'Billing', 'Audit log'];
+export const portalNav = ['Tasks', 'Credits', 'Workers', 'Audit log'];
 
 export const portalFields = [
   { label: 'Task type', value: 'document.ocr' },
@@ -161,11 +158,6 @@ export const fanTargets = [
   { label: 'Cloud', tone: 'cloud' },
   { label: 'Hook', tone: 'hook' },
   { label: 'Ledger', tone: 'ledger' },
-];
-
-export const pricingNotes = [
-  'Prices from published PriceBook public-eur-2026q3-v2. Final quotes include plan, priority, verification, and execution-policy modifiers.',
-  'Enterprise committed capacity and dedicated pools available on request.',
 ];
 
 export const securityFeatures = [
@@ -187,7 +179,7 @@ export const securityFeatures = [
   },
   {
     title: 'No silent fallback',
-    body: 'Cloud execution only when your policy permits. Fallback reason and incremental cost are recorded on every task.',
+    body: 'Cloud execution only when your policy permits. The fallback reason is recorded on every task.',
   },
   {
     title: 'Compliance-ready',
@@ -198,7 +190,7 @@ export const securityFeatures = [
 export const workerPoints = [
   'Explicit availability toggle — tasks run only while you opt in.',
   'Battery, Wi-Fi, and thermal controls stay under your settings.',
-  'Rewards shown in EUR before participation. No guaranteed income.',
+  'Earn FibonAI tokens when your answer matches the consensus. No guaranteed income.',
   'Not crypto mining — on-device AI inference for assigned tasks only.',
   'Foreground processing indicator while a task is active.',
   'Model downloads are signed and verified before execution.',
@@ -256,7 +248,7 @@ export const modelCategories = [
 export const docsSections = [
   {
     title: 'REST API reference',
-    body: '141-operation OpenAPI contract covering task create, quote, lifecycle, webhooks, and workspace administration.',
+    body: '141-operation OpenAPI contract covering task create, assessment, lifecycle, webhooks, and workspace administration.',
     links: [{ label: 'Developer integration guide', to: 'developers' }],
   },
   {
@@ -273,9 +265,9 @@ export const docsSections = [
     links: [{ label: 'Security architecture', to: 'security' }],
   },
   {
-    title: 'Pricing & quotes',
-    body: 'Immutable EUR quotes before execution. Published unit rates with plan and verification modifiers.',
-    links: [{ label: 'Pricing table', to: 'pricing' }],
+    title: 'Credits & assessment',
+    body: 'Your first month is free. Each task is assessed for difficulty before it runs, so you know how many credits it uses.',
+    links: [{ label: 'How it works', to: 'how-it-works' }],
   },
 ];
 
