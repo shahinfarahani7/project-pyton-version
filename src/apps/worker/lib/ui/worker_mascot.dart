@@ -243,6 +243,7 @@ class _WorkerMascotAnimationState extends State<WorkerMascotAnimation>
     final frame = _frame;
     return Semantics(
       image: true,
+      textDirection: TextDirection.ltr,
       label: working ? 'FibonAI mascot running a task' : 'FibonAI mascot resting',
       child: ExcludeSemantics(
         child: SizedBox(

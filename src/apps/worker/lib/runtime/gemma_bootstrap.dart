@@ -1,6 +1,5 @@
 import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
-import 'package:flutter_gemma_mediapipe/flutter_gemma_mediapipe.dart';
 
 abstract final class GemmaBootstrap {
   static bool _initialized = false;
@@ -10,10 +9,11 @@ abstract final class GemmaBootstrap {
       return;
     }
 
+    // Production models are `.litertlm` only. MediaPipe GenAI / image-generator
+    // natives added ~60+ MB and are not registered.
     await FlutterGemma.initialize(
       inferenceEngines: [
         LiteRtLmEngine(),
-        MediaPipeEngine(),
       ],
     );
 
