@@ -2,20 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../runtime/execution_status.dart';
 import '../../runtime/worker_app_update.dart';
 import '../../runtime/worker_fibonai_earnings.dart';
 import '../../worker_app_controller.dart';
 import '../worker_mascot.dart';
 import '../worker_theme.dart';
-import '../worker_widgets.dart';
 import 'worker_models_tab.dart';
 
 class WorkerHomeTab extends StatefulWidget {
-  const WorkerHomeTab({
-    super.key,
-    required this.controller,
-  });
+  const WorkerHomeTab({super.key, required this.controller});
 
   final WorkerAppController controller;
 
@@ -62,13 +57,8 @@ class _WorkerHomeTabState extends State<WorkerHomeTab> {
               const SizedBox(height: 16),
               _HomeStatRow(
                 tasksCompleted: controller.tasksProcessed,
-                fibonaiAtomic: controller.fibonaiBalanceFromServer
-                    ? controller.fibonaiBalanceAtomic
-                    : controller.tasksProcessed *
-                          fibonaiPointsPerCompletedTask,
+                fibonaiAtomic: controller.displayedFibonaiAtomic,
               ),
-              const SizedBox(height: 16),
-              _EarningsChart(values: controller.fibonaiDailyPoints),
             ],
           ],
         );
@@ -96,7 +86,10 @@ class _WorkerCharacter extends StatelessWidget {
 }
 
 class _HomeStatRow extends StatelessWidget {
-  const _HomeStatRow({required this.tasksCompleted, required this.fibonaiAtomic});
+  const _HomeStatRow({
+    required this.tasksCompleted,
+    required this.fibonaiAtomic,
+  });
 
   final int tasksCompleted;
   final int fibonaiAtomic;
@@ -170,52 +163,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _EarningsChart extends StatelessWidget {
-  const _EarningsChart({required this.values});
-
-  final List<double> values;
-
-  @override
-  Widget build(BuildContext context) {
-    final earned = values.fold<double>(0, (sum, value) => sum + value);
-    final hasEarnings = earned > 0;
-    final summary = hasEarnings
-        ? '${earned.round()} Fibonai over the last 7 days. '
-            'Rewards are variable and are not guaranteed.'
-        : 'No Fibonai earned in the last 7 days. '
-            'Rewards are variable and are not guaranteed.';
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: workerPanelDecoration(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Earnings',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            summary,
-            style: const TextStyle(
-              color: WorkerColors.onSurfaceVariant,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 16),
-          WorkerLineChart(
-            values: values,
-            color: WorkerColors.primary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _AppUpdateCard extends StatelessWidget {
   const _AppUpdateCard({required this.controller});
 
@@ -230,12 +177,12 @@ class _AppUpdateCard extends StatelessWidget {
     final title = switch (phase) {
       WorkerAppUpdatePhase.downloading =>
         'Downloading update ${(controller.appUpdateProgress * 100).toStringAsFixed(0)}%',
-      WorkerAppUpdatePhase.installing => controller.appUpdateFromPlay
-          ? 'Opening Google Play…'
-          : 'Opening installer…',
+      WorkerAppUpdatePhase.installing =>
+        controller.appUpdateFromPlay
+            ? 'Opening Google Play…'
+            : 'Opening installer…',
       WorkerAppUpdatePhase.failed => 'App update failed',
-      WorkerAppUpdatePhase.available ||
-      WorkerAppUpdatePhase.idle =>
+      WorkerAppUpdatePhase.available || WorkerAppUpdatePhase.idle =>
         controller.appUpdateMandatory ? 'Required app update' : 'App update',
     };
     final actionLabel = phase == WorkerAppUpdatePhase.failed
@@ -257,7 +204,10 @@ class _AppUpdateCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.system_update_alt, color: WorkerColors.primary),
+                const Icon(
+                  Icons.system_update_alt,
+                  color: WorkerColors.primary,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -407,4 +357,3 @@ class _ModelUpdateCard extends StatelessWidget {
     );
   }
 }
-

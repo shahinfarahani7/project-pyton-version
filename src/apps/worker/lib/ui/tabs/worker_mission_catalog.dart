@@ -6,7 +6,6 @@ enum WorkerMissionKind {
   socialTelegram,
   socialDiscord,
   socialTwitter,
-  defineWallet,
 }
 
 /// Static mission definition for the Missions tab.
@@ -91,7 +90,7 @@ abstract final class WorkerMissionCatalog {
       howToComplete:
           'Sign in with your email. Today\'s box is marked on this device and '
           'clears after local midnight. Point rewards still wait for the server.',
-      rewardPointsLabel: '10 pts / verified day',
+      rewardPointsLabel: '2 fibon / verified day',
       icon: Icons.schedule_outlined,
     ),
     WorkerMissionDefinition(
@@ -102,7 +101,7 @@ abstract final class WorkerMissionCatalog {
       howToComplete:
           'Open Telegram below, join the channel or group, then return here. '
           'Server verification will replace the on-device check when connected.',
-      rewardPointsLabel: '25 pts (one-time)',
+      rewardPointsLabel: '25 fibon (one-time)',
       icon: Icons.send_outlined,
     ),
     WorkerMissionDefinition(
@@ -113,7 +112,7 @@ abstract final class WorkerMissionCatalog {
       howToComplete:
           'Open Discord below, join the server, then return here. '
           'Server verification will replace the on-device check when connected.',
-      rewardPointsLabel: '25 pts (one-time)',
+      rewardPointsLabel: '25 fibon (one-time)',
       icon: Icons.forum_outlined,
     ),
     WorkerMissionDefinition(
@@ -124,20 +123,8 @@ abstract final class WorkerMissionCatalog {
       howToComplete:
           'Open X below, follow FibonAI, then return here. '
           'Server verification will replace the on-device check when connected.',
-      rewardPointsLabel: '25 pts (one-time)',
+      rewardPointsLabel: '25 fibon (one-time)',
       icon: Icons.alternate_email,
-    ),
-    WorkerMissionDefinition(
-      id: 'define_wallet',
-      kind: WorkerMissionKind.defineWallet,
-      title: 'Set up your payout wallet',
-      description:
-          'Add EUR payout details in Earnings. Verified when saved on the server.',
-      howToComplete:
-          'Open the Earnings tab → Payout wallets, add a valid payout destination, '
-          'and save. Points apply after the server verifies your wallet.',
-      rewardPointsLabel: '50 pts (one-time)',
-      icon: Icons.account_balance_wallet_outlined,
     ),
   ];
 }

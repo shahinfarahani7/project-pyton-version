@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'home shows the character and earnings chart without boost prompt',
+    'home shows the character and Fibonai total without the earnings chart',
     (tester) async {
       tester.view.physicalSize = const Size(390, 1600);
       tester.view.devicePixelRatio = 1;
@@ -40,28 +40,16 @@ void main() {
       expect(find.text('0'), findsOneWidget);
       expect(find.text('0 FIBON'), findsOneWidget);
       expect(find.text(r'$0.00'), findsNothing);
+      expect(find.text('Earnings'), findsNothing);
+      expect(find.byType(WorkerLineChart), findsNothing);
       controller.tasksProcessed = 2;
       controller.notifyListeners();
       await tester.pump();
       expect(find.text('2'), findsOneWidget);
       expect(find.text('60 FIBON'), findsOneWidget);
-      expect(
-        tester.widget<WorkerLineChart>(find.byType(WorkerLineChart)).values,
-        const [0, 0, 0, 0, 0, 0, 0],
-      );
-      controller.fibonaiDailyPoints = const [0, 0, 0, 0, 40, 0, 40];
-      controller.notifyListeners();
-      await tester.pump();
-      expect(
-        tester.widget<WorkerLineChart>(find.byType(WorkerLineChart)).values,
-        const [0, 0, 0, 0, 40, 0, 40],
-      );
-      expect(find.textContaining('80 Fibonai over the last 7 days'), findsOneWidget);
       expect(find.text('AI model'), findsNothing);
       expect(find.text('Download model'), findsNothing);
       expect(find.textContaining('Qwen'), findsNothing);
-      expect(find.text('Earnings'), findsOneWidget);
-      expect(find.textContaining('not guaranteed'), findsWidgets);
       expect(find.text('Boost your worker'), findsNothing);
       expect(find.text('Turn availability on'), findsNothing);
       expect(find.text('App update'), findsNothing);

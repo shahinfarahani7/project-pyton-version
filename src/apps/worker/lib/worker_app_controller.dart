@@ -367,7 +367,12 @@ class WorkerAppController extends ChangeNotifier {
   int fibonaiBalanceAtomic = 0;
   bool fibonaiBalanceFromServer = false;
 
-  /// Fibonai points per local day for the home earnings chart.
+  /// Total shown on Home and Earnings. A server ledger replaces the local estimate.
+  int get displayedFibonaiAtomic => fibonaiBalanceFromServer
+      ? fibonaiBalanceAtomic
+      : tasksProcessed * fibonaiPointsPerCompletedTask;
+
+  /// Fibonai points per local day for the earnings chart.
   /// Oldest day first, today last.
   List<double> fibonaiDailyPoints = emptyFibonaiDailyPoints;
 

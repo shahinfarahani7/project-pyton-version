@@ -35,12 +35,12 @@ void main() {
     expect(find.text('Daily online'), findsOneWidget);
     expect(find.text('Join Telegram'), findsOneWidget);
     expect(find.widgetWithText(TextButton, 'Open Telegram'), findsNothing);
-    expect(find.text('10 pts / verified day'), findsOneWidget);
-    expect(find.text('25 pts (one-time)'), findsNWidgets(3));
+    expect(find.text('2 fibon / verified day'), findsOneWidget);
+    expect(find.text('25 fibon (one-time)'), findsNWidgets(3));
     expect(find.text('View uptime on Home'), findsNothing);
     expect(find.text('Follow Discord'), findsWidgets);
     expect(find.text('Follow Twitter'), findsWidgets);
-    expect(find.text('Set up your payout wallet'), findsOneWidget);
+    expect(find.text('Set up your payout wallet'), findsNothing);
 
     final daily = tester.getTopLeft(find.text('Daily online').first);
     final telegram = tester.getTopLeft(find.text('Join Telegram').first);
@@ -174,44 +174,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('How to complete'), findsOneWidget);
     expect(find.widgetWithText(TextButton, 'Open Telegram'), findsOneWidget);
-  });
-
-  testWidgets('wallet mission help shows instructions without payout link', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 2400);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    final controller = WorkerAppController(
-      config: WorkerConfig(baseUrl: Uri.parse('http://127.0.0.1:65535')),
-      encryptedStore: InMemoryEncryptedStore(),
-    );
-    addTearDown(controller.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: buildWorkerTheme(),
-        home: Scaffold(body: WorkerMissionsTab(controller: controller)),
-      ),
-    );
-
-    expect(
-      find.widgetWithText(TextButton, 'Open payout wallet setup'),
-      findsNothing,
-    );
-
-    final walletHelp = find.byKey(const ValueKey('mission-help-define_wallet'));
-    await tester.scrollUntilVisible(walletHelp, 300);
-    await tester.tap(walletHelp);
-    await tester.pumpAndSettle();
-
-    expect(find.text('How to complete'), findsOneWidget);
-    expect(find.textContaining('Earnings tab'), findsOneWidget);
-    expect(
-      find.widgetWithText(TextButton, 'Open payout wallet setup'),
-      findsNothing,
-    );
   });
 }
 

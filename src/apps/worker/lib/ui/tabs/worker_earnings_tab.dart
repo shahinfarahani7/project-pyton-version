@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../runtime/worker_fibonai_earnings.dart';
 import '../../runtime/worker_payout_wallet_store.dart';
 import '../../worker_app_controller.dart';
 import '../worker_theme.dart';
@@ -15,7 +16,7 @@ class WorkerEarningsTab extends StatelessWidget {
     final wide = MediaQuery.sizeOf(context).width >= 900;
     final horizontal = wide ? 24.0 : 16.0;
 
-    final balance = const _BalancePanel();
+    final balance = _BalancePanel(controller: controller);
     final wallets = _PayoutWalletsPanel(controller: controller, wide: wide);
 
     return ListView(
@@ -37,6 +38,8 @@ class WorkerEarningsTab extends StatelessWidget {
           const SizedBox(height: 16),
           wallets,
         ],
+        const SizedBox(height: 16),
+        _EarningsChart(values: controller.fibonaiDailyPoints),
         if (controller.payoutWalletNotice != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -56,7 +59,9 @@ class WorkerEarningsTab extends StatelessWidget {
 }
 
 class _BalancePanel extends StatelessWidget {
-  const _BalancePanel();
+  const _BalancePanel({required this.controller});
+
+  final WorkerAppController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +73,9 @@ class _BalancePanel extends StatelessWidget {
         children: [
           Text(
             'Balance',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -82,26 +87,17 @@ class _BalancePanel extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '€0.00',
+            formatFibonaiAtomic(controller.displayedFibonaiAtomic),
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: WorkerColors.primary,
-                ),
+              fontWeight: FontWeight.w600,
+              color: WorkerColors.primary,
+            ),
           ),
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 14),
           const Text(
-            'No settled payout is loaded from the server.',
-            style: TextStyle(
-              color: WorkerColors.onSurfaceVariant,
-              fontSize: 12,
-              height: 1.45,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Task rewards are variable in EUR and are not guaranteed.',
+            'Rewards are variable and are not guaranteed.',
             style: TextStyle(
               color: WorkerColors.dim,
               fontSize: 12,
@@ -114,11 +110,51 @@ class _BalancePanel extends StatelessWidget {
   }
 }
 
+class _EarningsChart extends StatelessWidget {
+  const _EarningsChart({required this.values});
+
+  final List<double> values;
+
+  @override
+  Widget build(BuildContext context) {
+    final earned = values.fold<double>(0, (sum, value) => sum + value);
+    final hasEarnings = earned > 0;
+    final summary = hasEarnings
+        ? '${earned.round()} Fibonai over the last 7 days. '
+              'Rewards are variable and are not guaranteed.'
+        : 'No Fibonai earned in the last 7 days. '
+              'Rewards are variable and are not guaranteed.';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: workerPanelDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Earnings',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            summary,
+            style: const TextStyle(
+              color: WorkerColors.onSurfaceVariant,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 16),
+          WorkerLineChart(values: values, color: WorkerColors.primary),
+        ],
+      ),
+    );
+  }
+}
+
 class _PayoutWalletsPanel extends StatelessWidget {
-  const _PayoutWalletsPanel({
-    required this.controller,
-    required this.wide,
-  });
+  const _PayoutWalletsPanel({required this.controller, required this.wide});
 
   final WorkerAppController controller;
   final bool wide;
@@ -202,13 +238,13 @@ class _WalletsHeader extends StatelessWidget {
       children: [
         Text(
           'Payout wallets',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
         const Text(
-          'Where EUR task rewards should be sent. Saved encrypted on this device '
+          'Where Fibon rewards should be sent. Saved encrypted on this device '
           'until server registration is connected.',
           style: TextStyle(
             color: WorkerColors.onSurfaceVariant,

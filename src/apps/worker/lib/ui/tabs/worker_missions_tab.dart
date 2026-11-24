@@ -71,7 +71,6 @@ bool _isMissionCompleted(
     WorkerMissionKind.socialTwitter => controller.isMissionAcknowledged(
       mission.id,
     ),
-    WorkerMissionKind.defineWallet => controller.payoutWallets.isNotEmpty,
     WorkerMissionKind.dailyOnline => controller.isDailyMissionCompletedToday,
   };
 }
@@ -254,8 +253,7 @@ Widget? _titleTrailingIcon(WorkerMissionDefinition mission) {
   if (WorkerPlatformIcon.isSocialKind(mission.kind)) {
     return WorkerPlatformIcon(kind: mission.kind, size: 22);
   }
-  if (mission.kind == WorkerMissionKind.dailyOnline ||
-      mission.kind == WorkerMissionKind.defineWallet) {
+  if (mission.kind == WorkerMissionKind.dailyOnline) {
     return Icon(mission.icon, size: 20, color: WorkerColors.primary);
   }
   return null;
