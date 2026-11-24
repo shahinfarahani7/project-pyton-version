@@ -195,14 +195,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.1"
-  flutter_gemma_mediapipe:
-    dependency: "direct main"
-    description:
-      name: flutter_gemma_mediapipe
-      sha256: "6e0296f83e9521e8786d2a92ce24afa2ee6b1d6c6c7ca9f50e91de7fcf0888c2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.5"
   flutter_lints:
     dependency: "direct dev"
     description:

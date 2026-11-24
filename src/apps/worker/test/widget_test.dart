@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets(
-    'home shows the character and earnings chart without boost prompt',
+    'home shows the mascot and earnings chart without boost prompt',
     (tester) async {
       tester.view.physicalSize = const Size(390, 1600);
       tester.view.devicePixelRatio = 1;
@@ -34,10 +34,8 @@ void main() {
       );
       await tester.pump();
 
-      expect(
-        find.bySemanticsLabel('Worker character waiting for a task'),
-        findsOneWidget,
-      );
+      expect(find.byType(WorkerMascotAnimation), findsOneWidget);
+      expect(find.text('Unavailable'), findsOneWidget);
       expect(find.text('Tasks completed'), findsOneWidget);
       expect(find.text('Fibonai'), findsOneWidget);
       expect(find.text('0'), findsOneWidget);
@@ -73,7 +71,7 @@ void main() {
     },
   );
 
-  testWidgets('home shows the running character while a task is active', (
+  testWidgets('home shows the running mascot while a task is active', (
     tester,
   ) async {
     final controller = WorkerAppController(
@@ -94,14 +92,9 @@ void main() {
     );
     await tester.pump();
 
-    expect(
-      find.bySemanticsLabel('Worker character running a task'),
-      findsOneWidget,
-    );
-    expect(
-      find.bySemanticsLabel('Worker character waiting for a task'),
-      findsNothing,
-    );
+    expect(find.byType(WorkerMascotAnimation), findsOneWidget);
+    expect(find.text('Running a task'), findsOneWidget);
+    expect(find.text('Unavailable'), findsNothing);
   });
 
   testWidgets('home shows download progress card while model is installing', (
