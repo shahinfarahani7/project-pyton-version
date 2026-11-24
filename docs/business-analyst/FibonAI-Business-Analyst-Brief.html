@@ -10,7 +10,7 @@ h3 { font: 600 12pt system-ui, sans-serif; page-break-after: avoid; }
 table { border-collapse: collapse; width: 100%; font-size: 9pt; margin: 8px 0 12px; page-break-inside: avoid; }
 th, td { border: 1px solid #ccc; padding: 6px 8px; vertical-align: top; }
 th { background: #f7f5f0; text-align: left; }
-code { font: 9pt Consolas, monospace; background: #f0f0f0; padding: 1px 4px; }
+code.ltr { font: 9pt Consolas, monospace; background: #f0f0f0; padding: 1px 4px; }
 a { color: #806533; }
 hr { border: none; border-top: 1px solid #ddd; margin: 1.5em 0; }
 ul { padding-left: 1.2em; }
@@ -21,66 +21,69 @@ ul { padding-left: 1.2em; }
 <tr><td><strong>Audience</strong></td><td>Business analysts, product owners, compliance reviewers, partners</td></tr>
 <tr><td><strong>Product brand</strong></td><td>FibonAI (public)</td></tr>
 <tr><td><strong>Platform name (internal)</strong></td><td>EdgeMint</td></tr>
-<tr><td><strong>Version</strong></td><td>1.0</td></tr>
-<tr><td><strong>Date</strong></td><td>2026-10-28</td></tr>
-<tr><td><strong>Source of truth for conflicts</strong></td><td><a href="../EDGE-MINT-TARGET-ARCHITECTURE-v2.md">EDGE-MINT-TARGET-ARCHITECTURE-v2.md</a>, <a href="../../production/canonical-decisions.yaml">production/canonical-decisions.yaml</a></td></tr>
+<tr><td><strong>Version</strong></td><td>1.1</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-11-17</td></tr>
+<tr><td><strong>Business model (white paper)</strong></td><td><a href="../business/FibonAI-Business-Model.md">FibonAI-Business-Model.md</a> — token credit, 3-phone consensus, no customer-facing prices</td></tr>
+<tr><td><strong>Source of truth for engineering conflicts</strong></td><td><a href="../EDGE-MINT-TARGET-ARCHITECTURE-v2.md">EDGE-MINT-TARGET-ARCHITECTURE-v2.md</a>, <a href="../../production/canonical-decisions.yaml">production/canonical-decisions.yaml</a></td></tr>
 <tr><td><strong>Companion (technical summary)</strong></td><td><a href="../PROJECT-OVERVIEW.md">PROJECT-OVERVIEW.md</a></td></tr>
+<tr><td><strong>Persian (فارسی)</strong></td><td><a href="FibonAI-Business-Analyst-Brief.fa.md">FibonAI-Business-Analyst-Brief.fa.md</a> · PDF: <code class="ltr">FibonAI-Business-Analyst-Brief.fa.pdf</code></td></tr>
 </table>
 <hr/>
 <h2>1. Purpose of this document</h2>
-<p>This brief explains <strong>what FibonAI is as a business</strong>, <strong>who uses it</strong>, <strong>how work and money flow</strong>, and <strong>which rules are fixed</strong> for the first commercial release (GA1). It is written for analysis work: requirements traceability, process models, stakeholder interviews, gap analysis, and compliance review.</p>
+<p>This brief explains <strong>what FibonAI is as a business</strong>, <strong>who uses it</strong>, <strong>how work and value flow</strong>, and <strong>which rules are fixed</strong>. It is written for analysis work: requirements traceability, process models, stakeholder interviews, gap analysis, and compliance review.</p>
 <p>It does <strong>not</strong> replace legal terms, the full architecture specification, or signed production evidence.</p>
+<p>> <strong>Two layers to keep apart.</strong> The <strong>business model</strong> (from the white paper, see <a href="../business/FibonAI-Business-Model.md">FibonAI-Business-Model.md</a>) uses free monthly task credit, token-backed credit and FibonAI token rewards, and <strong>never shows prices to customers</strong>. The <strong>current build and frozen engineering docs</strong> (GA1) still implement an internal EUR quote and EUR worker rewards with tokens disabled. Gaps are listed in §12 and in the business model's conflict table. Requirements for the token model need an architecture v3 revision and legal sign-off.</p>
 <hr/>
 <h2>2. Executive summary</h2>
-<p>FibonAI is a <strong>B2B AI execution platform</strong> with a distinctive commercial model:</p>
-<p>1. The customer <strong>sees a fixed price in euros before any task runs</strong> (“quote before run”).</p>
-<p>2. Work is executed <strong>preferentially on opted-in mobile devices</strong> (edge workers), not only in a central cloud.</p>
-<p>3. If edge capacity or policy blocks execution, <strong>cloud fallback is explicit</strong> — reason and cost are recorded; there is no silent reroute.</p>
-<p>4. <strong>Every step is auditable</strong> for regulated teams (assignments, verification, billing, rewards, fallback).</p>
-<p><strong>Positioning (phase 1 messaging):</strong> edge-first AI inference with transparent pricing and auditable execution — not cryptocurrency mining, not guaranteed worker income, not token investment.</p>
+<p>FibonAI is a <strong>decentralized AI execution network</strong> with a distinctive model:</p>
+<p>1. Requesters get <strong>free task requests every month</strong>; after that they get <strong>monthly credit with FibonAI tokens</strong>. <strong>No price is shown to customers</strong> — only credits.</p>
+<p>2. Each request gets a <strong>quick assessment</strong> of difficulty and time, then is sent to <strong>at least 3 opted-in phones</strong> (edge workers).</p>
+<p>3. The platform <strong>compares the answers by consensus</strong> and returns the agreed result. Phones that answered correctly earn <strong>FibonAI tokens</strong>.</p>
+<p>4. FibonAI keeps <strong>no central store of confidential customer data</strong>, and <strong>every step is auditable</strong> (assignments, validation, credits, rewards).</p>
+<p><strong>Positioning:</strong> decentralized, privacy-first AI on everyday phones — not cryptocurrency mining, not guaranteed worker income, not an investment product.</p>
 <hr/>
 <h2>3. Business problem and value</h2>
 <h3>3.1 Customer problem</h3>
-<p>Organizations need document, vision, and language AI (OCR, extraction, classification, summarization, moderation) without:</p>
+<p>People and organizations need document, vision, and language AI (OCR, extraction, classification, summarization, translation, photo/video edits) without:</p>
 <ul>
-<li>Surprise bills after jobs complete</li>
-<ul>
-<li>Opaque routing (“where did my data go?”)</li>
-<ul>
-<li>Weak audit trails for finance or compliance reviews</li>
+<li>Expensive centralized infrastructure</li>
+<li>Their data being stored centrally and resold or misused</li>
+<li>Results they cannot trust or audit</li>
 </ul>
 <h3>3.2 Customer value</h3>
 <table>
 <tr><th>Value</th><th>How FibonAI delivers it</th></tr>
-<tr><td><strong>Price certainty</strong></td><td>Immutable EUR quote before confirmation; published unit rates as baseline</td></tr>
-<tr><td><strong>Policy control</strong></td><td>Region / execution policies enforced at intake; cloud only when policy allows</td></tr>
-<tr><td><strong>Auditability</strong></td><td>Hash-chained ledger of task lifecycle, verification, billing, and fallback events</td></tr>
+<tr><td><strong>Free to start</strong></td><td>Free task requests every month; launch offer of 1 month free with a free API</td></tr>
+<tr><td><strong>Simple credit</strong></td><td>Customers see credits left and credits used (difficulty class × base task), never a price</td></tr>
+<tr><td><strong>Trusted results</strong></td><td>Every task is checked by at least 3 phones; only the consensus answer is returned</td></tr>
+<tr><td><strong>Privacy</strong></td><td>No central store of confidential data; minimal payloads; encrypted transfer</td></tr>
+<tr><td><strong>Auditability</strong></td><td>Hash-chained ledger of task lifecycle, validation, credit, and reward events</td></tr>
 <tr><td><strong>Integration</strong></td><td>REST API, webhooks, customer portal; async task lifecycle</td></tr>
 </table>
 <h3>3.3 Worker (supply-side) value</h3>
-<p>Phone owners who <strong>opt in</strong> can contribute device compute to assigned tasks within limits they set (battery, Wi‑Fi, thermal). They receive <strong>variable EUR rewards</strong> (not tokens in GA1), subject to identity/payout eligibility.</p>
+<p>Phone owners who <strong>opt in</strong> (minimum 4 GB RAM and 4 GB free storage) contribute device compute to assigned tasks within limits they set (battery, Wi‑Fi, thermal). Workers whose answer matches the consensus earn <strong>FibonAI tokens</strong> (split rules in the business model §7). Rewards are not guaranteed.</p>
 <h3>3.4 Operator value</h3>
 <p>Internal teams run routing, fraud review, reconciliation, worker support, billing disputes, and incident response through an <strong>operations console</strong>, with the same ledger the customer audit uses.</p>
 <hr/>
 <h2>4. Stakeholders and personas</h2>
 <table>
 <tr><th>Stakeholder</th><th>Persona examples</th><th>Primary goals</th></tr>
-<tr><td><strong>Customer organization</strong></td><td>Finance ops, integration engineer, compliance officer</td><td>Submit work, control cost, prove who ran what and where</td></tr>
-<tr><td><strong>Customer user</strong></td><td>Portal user uploading invoices</td><td>Simple upload → quote → result</td></tr>
-<tr><td><strong>Worker</strong></td><td>Android app user</td><td>Control when device works; understand rewards are not guaranteed</td></tr>
-<tr><td><strong>Operator</strong></td><td>Support, fraud, finance, SRE</td><td>Resolve failures, reconcile payouts, enforce policy</td></tr>
-<tr><td><strong>Payment / identity providers</strong></td><td>Stripe Billing, Stripe Connect, Stripe Identity</td><td>Bill customers; pay workers where supported</td></tr>
-<tr><td><strong>Regulator / auditor (external)</strong></td><td>Customer’s auditor</td><td>Evidence of policy, pricing, and data handling</td></tr>
+<tr><td><strong>Customer organization</strong></td><td>Finance ops, integration engineer, compliance officer</td><td>Submit work, manage credit, prove who ran what and where</td></tr>
+<tr><td><strong>Customer user (public)</strong></td><td>Person translating a text or editing a photo</td><td>Simple upload → result, within free monthly credit</td></tr>
+<tr><td><strong>Worker</strong></td><td>Android app user</td><td>Control when device works; earn tokens for correct tasks; understand rewards are not guaranteed</td></tr>
+<tr><td><strong>Operator</strong></td><td>Support, fraud, finance, SRE</td><td>Resolve failures, reconcile rewards, enforce policy</td></tr>
+<tr><td><strong>Treasury / governance</strong></td><td>Token holders above a threshold</td><td>Decide on burning, development, or reward support</td></tr>
+<tr><td><strong>Parent investment company</strong></td><td>Founding team</td><td>Yearly allocation on the same schedule as workers</td></tr>
+<tr><td><strong>Payment / identity providers</strong></td><td>Exchanges (DEX/CEX) for tokens; identity checks</td><td>Requesters obtain tokens; workers verified</td></tr>
+<tr><td><strong>Regulator / auditor (external)</strong></td><td>Customer’s auditor</td><td>Evidence of policy, credit use, and data handling</td></tr>
 </table>
 <p><strong>Trust boundaries (for requirements):</strong></p>
 <ul>
 <li>Customer input is <strong>untrusted</strong> until validated.</li>
-<ul>
 <li>Worker device and worker-submitted results are <strong>untrusted</strong> until server verification.</li>
-<ul>
 <li>Customer <strong>identity is not shown</strong> to workers; task payloads are ephemeral (inputs deleted within <strong>15 minutes</strong> per architecture policy).</li>
-</ul>
 <hr/>
+</ul>
 <h2>5. Core business capabilities (GA1 scope)</h2>
 <p>Aligned with <a href="../00-executive/system-scope.md">system-scope.md</a> and canonical GA1 scope:</p>
 <table>
@@ -91,130 +94,136 @@ ul { padding-left: 1.2em; }
 <tr><td>Task catalog (OCR, docs, vision, NLP, etc.)</td><td>Yes</td><td><strong>56 catalog types</strong>; not all have unique on-device handlers yet</td></tr>
 <tr><td>Worker app (Android-first)</td><td>Yes</td><td>Consent, earnings UI, gamification (no gambling mechanics)</td></tr>
 <tr><td>Edge-preferred routing + cloud fallback</td><td>Yes</td><td>Fallback must be recorded</td></tr>
-<tr><td>EUR billing (credits, subscriptions, invoices)</td><td>Yes</td><td>Micro-EUR integer money</td></tr>
-<tr><td>EUR worker rewards (off-chain)</td><td>Yes</td><td>Stripe Connect; country gating</td></tr>
+<tr><td>Customer credit (current build: EUR credits; business model: free monthly + token credit)</td><td>Yes</td><td>Integer units only; never shown as a price</td></tr>
+<tr><td>Worker rewards (current build: EUR off-chain; business model: FibonAI tokens)</td><td>Yes</td><td>Token rewards need architecture v3 + legal</td></tr>
 <tr><td>Operations console</td><td>Yes</td><td>Audit, fraud, reconciliation</td></tr>
-<tr><td>Public token sale / on-chain settlement</td><td><strong>No</strong></td><td>Explicitly excluded GA1</td></tr>
+<tr><td>Public token sale / on-chain settlement</td><td><strong>No (GA1)</strong></td><td>Business model plans exchange listing; needs v3 + legal</td></tr>
 <tr><td>Permissionless model publishing</td><td><strong>No</strong></td><td>Approved catalog only</td></tr>
 <tr><td>Training on worker devices</td><td><strong>No</strong></td><td>Inference only</td></tr>
-<tr><td>Multi-phone split of one inference</td><td><strong>No</strong></td><td></td></tr>
+<tr><td>Multi-phone split of one inference</td><td><strong>No</strong></td><td>Consensus sends the <strong>whole</strong> task to 3+ phones; it does not split it</td></tr>
 <tr><td>Hidden background compute</td><td><strong>No</strong></td><td>Foreground / visible execution on Android</td></tr>
 </table>
-<p><strong>Token claims:</strong> Architecture documents describe gated token concepts for <strong>future</strong> phases. <strong>GA1 canonical decision: token features disabled</strong> — rewards and billing are <strong>EUR liabilities only</strong>. Do not specify token value, investment, or “earn crypto” in GA1 materials.</p>
+<p><strong>Token status:</strong> The white paper makes the FibonAI token the core of the economy (21 B fixed supply, consensus rewards). The <strong>frozen GA1 canonical decision still disables token features</strong>. Treat token requirements as <strong>target scope pending architecture v3 and legal approval</strong>. In all materials, never state token value, price, returns, or investment.</p>
 <hr/>
 <h2>6. End-to-end business process — “Run one AI task”</h2>
 <p>Use this as the baseline <strong>happy path</strong> for swimlanes, user stories, and acceptance criteria.</p>
 <h3>6.1 Swimlane summary</h3>
 <table>
 <tr><th>Step</th><th>Customer</th><th>Platform (control plane)</th><th>Worker device</th><th>Finance / ledger</th></tr>
-<tr><td>1</td><td>Submit task + input file</td><td>Validate input & policy</td><td>—</td><td>—</td></tr>
-<tr><td>2</td><td>Receive <strong>quote</strong> (EUR, route, policy hash)</td><td>Price from PriceBook + modifiers</td><td>—</td><td>—</td></tr>
-<tr><td>3</td><td>Confirm task</td><td>Lock quote; enter scheduling</td><td>—</td><td>—</td></tr>
-<tr><td>4</td><td>—</td><td>Select eligible worker; reserve capacity; create <strong>lease + fence</strong></td><td>Receive <strong>assignment</strong> (signed)</td><td>—</td></tr>
+<tr><td>1</td><td>Submit task + input file (free or token-backed credit)</td><td>Validate input & policy; check credit balance</td><td>—</td><td>—</td></tr>
+<tr><td>2</td><td>See <strong>credits this task uses</strong> (no price)</td><td><strong>Quick assessment</strong>: non-malicious check, difficulty class K, expected time</td><td>—</td><td>—</td></tr>
+<tr><td>3</td><td>Confirm task</td><td>Reserve K × base credits; enter queue</td><td>—</td><td>—</td></tr>
+<tr><td>4</td><td>—</td><td>Select <strong>at least 3</strong> eligible workers; reserve capacity; create <strong>lease + fence</strong> per worker</td><td>Receive <strong>assignment</strong> (signed)</td><td>Release X tokens for the task</td></tr>
 <tr><td>5</td><td>Optional progress via portal/webhook</td><td>Track lifecycle events</td><td>Execute if consent & safety OK</td><td>—</td></tr>
-<tr><td>6</td><td>—</td><td><strong>Verify</strong> result (tiers: standard → consensus → human)</td><td>Submit result / failure evidence</td><td>—</td></tr>
-<tr><td>7</td><td>Receive result</td><td>Deliver webhook / portal</td><td>—</td><td>Bill customer once; credit worker once</td></tr>
-<tr><td>8</td><td>—</td><td>If edge unavailable and policy allows: <strong>cloud fallback</strong> with recorded reason</td><td>—</td><td>Incremental cost recorded</td></tr>
+<tr><td>6</td><td>—</td><td><strong>Consensus</strong>: compare results; if no agreement, add 2 new workers (max 10 rounds)</td><td>Submit result / failure evidence</td><td>—</td></tr>
+<tr><td>7</td><td>Receive validated result</td><td>Deliver webhook / portal</td><td>—</td><td>Deduct credit once; reward agreeing workers; treasury share</td></tr>
+<tr><td>8</td><td>—</td><td>If edge unavailable and policy allows: <strong>cloud fallback</strong> with recorded reason</td><td>—</td><td>Recorded</td></tr>
 </table>
 <h3>6.2 Business rules (must hold in requirements)</h3>
 <table>
 <tr><th>ID</th><th>Rule</th><th>Rationale</th></tr>
-<tr><td>BR-01</td><td>Quote is <strong>immutable</strong> after issuance until expiry</td><td>“Price first” promise</td></tr>
+<tr><td>BR-01</td><td><strong>No price shown to customers.</strong> Credits used (K × base task) are fixed once the assessment is issued</td><td>Customer-facing rule; predictable credit use</td></tr>
 <tr><td>BR-02</td><td><strong>Only the platform</strong> schedules, retries, reassigns, and decides cloud fallback</td><td>Prevents worker-side orchestration and fraud</td></tr>
 <tr><td>BR-03</td><td>Worker <strong>does not accept/reject</strong> individual tasks in production protocol</td><td>Opt-in + availability is the consent model</td></tr>
-<tr><td>BR-04</td><td><strong>Exactly one</strong> accepted completion and <strong>one</strong> customer charge per task revision</td><td>Billing integrity</td></tr>
-<tr><td>BR-05</td><td><strong>Exactly one</strong> reward credit per accepted worker contribution (per policy)</td><td>Payout integrity</td></tr>
+<tr><td>BR-04</td><td><strong>Exactly one</strong> accepted completion and <strong>one</strong> credit deduction per task revision</td><td>Credit integrity</td></tr>
+<tr><td>BR-05</td><td><strong>Exactly one</strong> reward per agreeing worker per task; non-agreeing workers get nothing</td><td>Payout integrity</td></tr>
 <tr><td>BR-06</td><td>Cloud fallback <strong>never silent</strong></td><td>Compliance and customer trust</td></tr>
 <tr><td>BR-07</td><td>Worker rewards are <strong>variable, not guaranteed</strong></td><td>Legal / worker terms</td></tr>
 <tr><td>BR-08</td><td>Platform is <strong>not crypto mining</strong></td><td>Worker terms and marketing guardrails</td></tr>
 <tr><td>BR-09</td><td>Temporary customer inputs <strong>deleted within 15 minutes</strong></td><td>Privacy by design</td></tr>
-<tr><td>BR-10</td><td>GA1: <strong>no token</strong> sale, value, or investment claims</td><td><a href="../../production/canonical-decisions.yaml">canonical-decisions.yaml</a></td></tr>
+<tr><td>BR-10</td><td><strong>No token price, value, return, or investment claims</strong> in any material</td><td>White paper disclaimer; <a href="../../production/canonical-decisions.yaml">canonical-decisions.yaml</a></td></tr>
+<tr><td>BR-11</td><td>Every task goes to <strong>at least 3 workers</strong>; result accepted only on consensus (≥ 2 of 3, or a majority in extended rounds, max 10 rounds)</td><td>Trusted results</td></tr>
+<tr><td>BR-12</td><td>Reward split per task: 3/3 agree → 25% of X each + 25% treasury; 2/3 → 25% each + 50% treasury; extended rounds → 75% split equally among agreeing workers + 25% treasury</td><td>White paper §7</td></tr>
+<tr><td>BR-13</td><td>Cheating or lazy workers are warned, then <strong>removed automatically</strong> on repetition</td><td>Network integrity</td></tr>
 </table>
 <h3>6.3 Exception paths (BA should model)</h3>
 <table>
 <tr><th>Exception</th><th>Expected platform behavior</th><th>Customer-visible outcome</th></tr>
 <tr><td>No eligible worker</td><td>Queue, retry, or cloud fallback (if policy allows)</td><td>Delay or fallback with reason</td></tr>
 <tr><td>Worker loses consent mid-run</td><td>Pause / terminate; server reassigns or fails</td><td>Task state + audit event</td></tr>
+<tr><td>No consensus</td><td>Add 2 new workers per round, up to 10 rounds</td><td>Delay; after 10 rounds returned without result</td></tr>
 <tr><td>Verification fails</td><td>Retry classification per policy; escalation tiers</td><td>Failed or escalated status</td></tr>
-<tr><td>Quote expired before confirm</td><td>Reject confirm; new quote required</td><td>Clear error</td></tr>
+<tr><td>Credit exhausted</td><td>Reject submission; offer monthly token-backed credit</td><td>Clear message (no price)</td></tr>
+<tr><td>Assessment expired before confirm</td><td>Reject confirm; new assessment required</td><td>Clear error</td></tr>
 <tr><td>Unsupported worker country</td><td>Earning disabled for worker; task may still run on other workers</td><td>N/A to customer</td></tr>
 <tr><td>Duplicate submission (idempotency)</td><td>Same logical task identity</td><td>No double bill</td></tr>
 </table>
 <hr/>
 <h2>7. Product catalog (business view)</h2>
-<p>Customers choose a <strong>task type</strong> (from catalog). Examples aligned with marketing and published pricing:</p>
+<p>Customers choose a <strong>task type</strong> from the catalog. Examples:</p>
 <table>
-<tr><th>Category</th><th>Example task types</th><th>Typical input</th><th>Published example rate (baseline)</th></tr>
-<tr><td>Document intelligence</td><td>Document OCR, structured extract, verify</td><td>PDF, image</td><td>OCR from <strong>€0.0025 per page</strong> (final quote adds modifiers)</td></tr>
-<tr><td>Vision & catalog</td><td>Image classify, tagging, safety checks</td><td>Image</td><td>e.g. <strong>€0.0015 per image</strong> (classify)</td></tr>
-<tr><td>Language & NLP</td><td>Summarize, translate, moderate</td><td>Text</td><td>e.g. <strong>€0.003 per 1k chars</strong> (translate)</td></tr>
+<tr><th>Category</th><th>Example task types</th><th>Typical input</th></tr>
+<tr><td>Document intelligence</td><td>Document OCR, structured extract, verify</td><td>PDF, image</td></tr>
+<tr><td>Vision & catalog</td><td>Image classify, tagging, safety checks, background removal</td><td>Image</td></tr>
+<tr><td>Language & NLP</td><td>Summarize, translate, moderate, article help</td><td>Text</td></tr>
 </table>
 <p><strong>Important for BA:</strong></p>
 <ul>
 <li>Catalog lists <strong>56 types</strong>; implementation maps many types onto shared <strong>pipelines</strong> on the worker (OCR + on-device LLM + vision).</li>
-<ul>
-<li><strong>Published rates</strong> are starting points; quotes include plan, priority, verification tier, and execution policy.</li>
-<ul>
+<li><strong>No prices are published or shown.</strong> Each task uses <strong>K × base task</strong> credits, where K is the difficulty class from the quick assessment.</li>
 <li><strong>Accuracy</strong> of OCR on real-world receipts is a <strong>separate acceptance</strong> from “API returns valid JSON.”</li>
-</ul>
 <hr/>
+</ul>
 <h2>8. Commercial model</h2>
+<p>Full detail: <a href="../business/FibonAI-Business-Model.md">FibonAI-Business-Model.md</a> §5–§8.</p>
 <h3>8.1 Customer side</h3>
 <table>
-<tr><th>Element</th><th>Description</th></tr>
-<tr><td>Currency</td><td><strong>EUR only</strong></td></tr>
-<tr><td>Money precision</td><td>Integer <strong>micro-EUR</strong> (no floating point in core ledger)</td></tr>
-<tr><td>Pricing engine</td><td>PriceBook (e.g. public EUR 2026 Q3 v2 referenced on site) + quote modifiers</td></tr>
-<tr><td>Billing rails</td><td>Stripe Billing; tax via Stripe Tax</td></tr>
-<tr><td>Prepaid</td><td>Compute credits (non-transferable prepaid balance)</td></tr>
+<tr><th>Element</th><th>Business model</th><th>Current build (GA1, frozen docs)</th></tr>
+<tr><td>What the customer sees</td><td><strong>Credits only</strong> — free requests left this month, credits a task uses. <strong>No price</strong></td><td>EUR quote before run</td></tr>
+<tr><td>Free tier</td><td>A set number of free task requests per month; launch offer 1 month free + free API</td><td>—</td></tr>
+<tr><td>Beyond free</td><td>Monthly credit (more or unlimited requests) via FibonAI token / account subscription</td><td>Prepaid EUR compute credits, Stripe Billing</td></tr>
+<tr><td>Credit per task</td><td>\(T = K \times T_{base}\) (difficulty class × base task)</td><td>PriceBook + quote modifiers</td></tr>
+<tr><td>Precision</td><td>Integer units; no floating point</td><td>Integer micro-EUR</td></tr>
 </table>
 <h3>8.2 Worker side</h3>
 <table>
-<tr><th>Element</th><th>Description</th></tr>
-<tr><td>Reward unit</td><td>EUR micros (<strong>Reward Micros</strong> — not a token, not transferable)</td></tr>
-<tr><td>Payout</td><td>Stripe Connect Express after KYC (Stripe Identity)</td></tr>
-<tr><td>Unsupported countries</td><td>Worker earning <strong>disabled</strong>; no manual bypass</td></tr>
-<tr><td>Messaging</td><td>Must not promise guaranteed income or passive investment returns</td></tr>
+<tr><th>Element</th><th>Business model</th><th>Current build (GA1, frozen docs)</th></tr>
+<tr><td>Reward unit</td><td><strong>FibonAI tokens</strong> for correct (consensus) answers</td><td>EUR Reward Micros (not a token)</td></tr>
+<tr><td>Split per task</td><td>25% of X per agreeing worker (3/3 or 2/3); 75% shared in extended rounds; rest to treasury</td><td>One worker credited once</td></tr>
+<tr><td>Funding</td><td>16 B participant pool on the IFPEM schedule; after it runs out, requester subscriptions</td><td>EUR liabilities, Stripe Connect</td></tr>
+<tr><td>Messaging</td><td>Not guaranteed, not passive income, not mining</td><td>Same</td></tr>
 </table>
-<h3>8.3 What not to specify in GA1 sales copy</h3>
+<h3>8.3 Token economy (summary)</h3>
+<p>21 B fixed supply, never minted again. 16 B to participants, released by the Infinite Fibonacci Power Emission Model (exponent 0.25), with about 1.88 B in year 1. 5 B to the parent investment company and token holders, released yearly on the same schedule. Treasury gets 25% of every reward release plus unused yearly emission; governance decides whether to burn it, fund development, or use it for staking support.</p>
+<h3>8.4 What never goes in customer or sales copy</h3>
 <ul>
-<li>Token price, APY, “invest in the network,” or referral earnings from others’ tasks</li>
-<ul>
+<li>Any price per task (€, $ or tokens), rate tables, or quote amounts</li>
+<li>Token price, value forecasts, APY, returns, “investment”, or referral earnings from others’ tasks</li>
 <li>Guaranteed worker earnings or mining metaphors</li>
-<ul>
-<li>Total job price unless computed from <strong>published</strong> unit rate × measurable quantity on a real quote</li>
 </ul>
+<p>Inviting others <strong>to keep the network cycle going</strong> is encouraged, without earnings claims.</p>
 <hr/>
 <h2>9. Verification and quality (business tiers)</h2>
-<p>Verification is a <strong>product knob</strong> affecting price and SLA:</p>
+<p>In the business model, <strong>consensus is the default</strong>: every task goes to at least 3 independent workers.</p>
 <table>
 <tr><th>Tier (concept)</th><th>Business meaning</th></tr>
-<tr><td>Standard</td><td>Single verified result path</td></tr>
-<tr><td>Consensus</td><td>Multiple independent workers; anti-affinity rules</td></tr>
-<tr><td>Human review</td><td>Escalation when automated verification insufficient</td></tr>
+<tr><td>Consensus (default)</td><td>At least 3 independent workers; anti-affinity rules; up to 10 rounds of +2 workers</td></tr>
+<tr><td>Standard (current build default)</td><td>Single verified result path</td></tr>
+<tr><td>Human review</td><td>Escalation when automated verification is insufficient</td></tr>
 </table>
-<p>Requirements should tie <strong>verification choice</strong> to <strong>quote line items</strong> and <strong>audit events</strong>.</p>
+<p>Requirements should tie <strong>verification outcome</strong> to <strong>credit deduction</strong>, <strong>reward split</strong> and <strong>audit events</strong>.</p>
 <hr/>
 <h2>10. Channels and touchpoints</h2>
 <table>
 <tr><th>Channel</th><th>User</th><th>Primary actions</th></tr>
-<tr><td>Customer portal</td><td>Business user</td><td>Create task, view quote, monitor status, audit</td></tr>
-<tr><td>REST API</td><td>Integration</td><td>Idempotent create, quote, lifecycle, webhooks</td></tr>
-<tr><td>Worker mobile app</td><td>Worker</td><td>Opt-in, availability, run assigned work, view earnings</td></tr>
-<tr><td>Operations portal</td><td>Internal staff</td><td>Investigate tasks, workers, fraud, billing</td></tr>
-<tr><td>Marketing site</td><td>Prospect</td><td>Positioning, waitlist, pricing table (published rates)</td></tr>
+<tr><td>Customer portal</td><td>Business user</td><td>Create task, see credits, monitor status, audit</td></tr>
+<tr><td>REST API</td><td>Integration</td><td>Idempotent create, assessment, lifecycle, webhooks</td></tr>
+<tr><td>Worker mobile app</td><td>Worker</td><td>Opt-in, availability, run assigned work, view token earnings</td></tr>
+<tr><td>Operations portal</td><td>Internal staff</td><td>Investigate tasks, workers, fraud, credits and rewards</td></tr>
+<tr><td>Marketing site</td><td>Prospect</td><td>Positioning, waitlist, worker APK download, portal entry — <strong>no prices</strong></td></tr>
 <tr><td>Webhooks / SSE</td><td>Customer systems</td><td>Event-driven integration</td></tr>
 </table>
 <hr/>
 <h2>11. Compliance and messaging guardrails</h2>
 <p>Use this checklist when reviewing user stories, copy, or partner decks:</p>
-<p>☐ Quote shown <strong>before</strong> run confirmation</p>
-<p>☐ Fallback reason and cost <strong>visible</strong> when cloud used</p>
+<p>☐ <strong>No price</strong> (€, $, tokens) shown to customers — credits only</p>
+<p>☐ Credits a task uses shown <strong>before</strong> run confirmation</p>
+<p>☐ Fallback reason <strong>visible</strong> when cloud used</p>
 <p>☐ Worker copy includes <strong>variable / not guaranteed</strong> rewards</p>
-<p>☐ No <strong>token investment</strong> or <strong>mining</strong> language in GA1</p>
-<p>☐ Money shown as <strong>EUR strings</strong> from published or quoted amounts</p>
+<p>☐ No <strong>token value, investment, returns</strong> or <strong>mining</strong> language</p>
+<p>☐ Token disclaimer included wherever tokens are mentioned (business model §11.4)</p>
 <p>☐ Data residency / region policy described where relevant</p>
-<p>☐ DPA, privacy, worker participation terms referenced for legal sign-off (see <code>docs/09-legal/</code>)</p>
+<p>☐ DPA, privacy, worker participation terms referenced for legal sign-off (see <code class="ltr">docs/09-legal/</code>)</p>
 <hr/>
 <h2>12. Implementation status (for planning, not for customer promises)</h2>
 <table>
@@ -225,6 +234,8 @@ ul { padding-left: 1.2em; }
 <tr><td>Live OCR quality</td><td><strong>Not business-certified</strong> on real receipts</td></tr>
 <tr><td>Real-time worker delivery</td><td>Target WebSocket; verify actual worker transport before SLA claims</td></tr>
 <tr><td>Public launch</td><td>Marketing/waitlist assets exist; GA1 gates remain</td></tr>
+<tr><td>Token business model</td><td><strong>Not implemented.</strong> Frozen docs disable tokens; needs architecture v3 + legal sign-off</td></tr>
+<tr><td>Customer portal prices</td><td>Current portal still shows internal EUR quotes; hiding them is open work</td></tr>
 </table>
 <p>Treat customer-facing SLAs as <strong>blocked</strong> until production gate and agreed UAT sign-off.</p>
 <hr/>
@@ -233,14 +244,18 @@ ul { padding-left: 1.2em; }
 <tr><th>Term</th><th>Business meaning</th></tr>
 <tr><td><strong>Task</strong></td><td>Customer’s request to run one unit of AI work (stable identity)</td></tr>
 <tr><td><strong>Revision</strong></td><td>Immutable version of inputs/settings for that task</td></tr>
-<tr><td><strong>Quote</strong></td><td>Fixed EUR price + route + policy hash, valid until expiry</td></tr>
+<tr><td><strong>Assessment</strong></td><td>Quick estimate of difficulty class K and time; fixes credits a task uses (current build: internal EUR quote, never shown)</td></tr>
+<tr><td><strong>Consensus</strong></td><td>Agreement between independent workers' results; the only way a result is accepted</td></tr>
+<tr><td><strong>Base task / K</strong></td><td>Unit of credit; a task of difficulty K uses K base tasks</td></tr>
+<tr><td><strong>FibonAI token</strong></td><td>Network token (21 B fixed supply) for worker rewards and requester credit — no guaranteed value</td></tr>
+<tr><td><strong>Treasury</strong></td><td>Community-governed reserve receiving 25% of each reward release</td></tr>
 <tr><td><strong>Policy hash</strong></td><td>Fingerprint of execution policy for audit/replay</td></tr>
 <tr><td><strong>Assignment</strong></td><td>Platform’s instruction for one worker to execute one attempt</td></tr>
 <tr><td><strong>Lease / fence</strong></td><td>Exclusive right to execute; fence prevents stale workers overwriting results</td></tr>
 <tr><td><strong>Verification</strong></td><td>Platform decision that result meets quality/integrity rules</td></tr>
 <tr><td><strong>Cloud fallback</strong></td><td>Running on approved cloud when edge cannot meet policy/SLA</td></tr>
-<tr><td><strong>Compute credit</strong></td><td>Customer prepaid EUR balance (non-transferable)</td></tr>
-<tr><td><strong>Reward micros</strong></td><td>Worker payable EUR amount (liability), not a tradable token</td></tr>
+<tr><td><strong>Task credit</strong></td><td>Customer allowance: free monthly requests plus token-backed monthly credit (current build: prepaid EUR balance)</td></tr>
+<tr><td><strong>Reward micros</strong></td><td>Current build only: worker payable EUR amount, not a token</td></tr>
 <tr><td><strong>Workspace</strong></td><td>Customer tenancy boundary for data and billing</td></tr>
 <tr><td><strong>Edge / worker</strong></td><td>Opted-in device executing signed models</td></tr>
 <tr><td><strong>GA1</strong></td><td>First commercial release scope per canonical decisions</td></tr>
@@ -250,17 +265,19 @@ ul { padding-left: 1.2em; }
 <h2>14. Suggested BA deliverables from this brief</h2>
 <table>
 <tr><th>Deliverable</th><th>Suggested content</th></tr>
-<tr><td><strong>Context diagram</strong></td><td>Customer, Worker, Operator, Stripe, Cloud provider</td></tr>
-<tr><td><strong>BPMN</strong></td><td>§6 happy path + §6.3 exceptions</td></tr>
-<tr><td><strong>Stakeholder map</strong></td><td>§4 + RACI for quote, fallback, payout</td></tr>
-<tr><td><strong>Requirements backlog</strong></td><td>Trace BR-01…BR-10 to epics</td></tr>
-<tr><td><strong>Data dictionary</strong></td><td>Task, Quote, Assignment, Result, Ledger event</td></tr>
-<tr><td><strong>Compliance matrix</strong></td><td>Map BR rules to legal docs in <code>docs/09-legal/</code></td></tr>
+<tr><td><strong>Context diagram</strong></td><td>Customer, Worker, Operator, Treasury, Exchanges, Cloud provider</td></tr>
+<tr><td><strong>BPMN</strong></td><td>§6 happy path + §6.3 exceptions (including consensus rounds)</td></tr>
+<tr><td><strong>Stakeholder map</strong></td><td>§4 + RACI for assessment, consensus, rewards, treasury</td></tr>
+<tr><td><strong>Requirements backlog</strong></td><td>Trace BR-01…BR-13 to epics</td></tr>
+<tr><td><strong>Data dictionary</strong></td><td>Task, Assessment, Assignment, Result, Consensus, Credit, Reward, Ledger event</td></tr>
+<tr><td><strong>Gap analysis</strong></td><td>Business model vs frozen GA1 docs (business model §12)</td></tr>
+<tr><td><strong>Compliance matrix</strong></td><td>Map BR rules to legal docs in <code class="ltr">docs/09-legal/</code></td></tr>
 </table>
 <hr/>
 <h2>15. Related documents</h2>
 <table>
 <tr><th>Document</th><th>Use when</th></tr>
+<tr><td><a href="../business/FibonAI-Business-Model.md">FibonAI-Business-Model.md</a></td><td>Business model from the white paper (credits, consensus, tokens, governance)</td></tr>
 <tr><td><a href="../PROJECT-OVERVIEW.md">PROJECT-OVERVIEW.md</a></td><td>Shorter technical + repo map</td></tr>
 <tr><td><a href="../EDGE-MINT-TARGET-ARCHITECTURE-v2.md">EDGE-MINT-TARGET-ARCHITECTURE-v2.md</a></td><td>Deep scheduling, failure, reward mechanics</td></tr>
 <tr><td><a href="../00-executive/system-scope.md">system-scope.md</a></td><td>In/out of scope list</td></tr>
@@ -273,4 +290,5 @@ ul { padding-left: 1.2em; }
 <table>
 <tr><th>Version</th><th>Date</th><th>Author</th><th>Change</th></tr>
 <tr><td>1.0</td><td>2026-10-28</td><td>Prepared from PROJECT-OVERVIEW + canonical scope</td><td>Initial BA brief</td></tr>
+<tr><td>1.1</td><td>2026-11-17</td><td>Updated from the FibonAI white paper</td><td>No customer-facing prices; credit + token model; 3-worker consensus; BR-11…BR-13</td></tr>
 </table></body></html>

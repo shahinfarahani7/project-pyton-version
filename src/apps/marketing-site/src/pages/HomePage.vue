@@ -5,16 +5,16 @@ import { RouterLink } from 'vue-router';
 import BrandMark from '../components/BrandMark.vue';
 import GlassShapes from '../components/GlassShapes.vue';
 import HeroSequence from '../components/HeroSequence.vue';
-import { workerApkUrl } from '../config/env.js';
+import { portalLoginUrl, workerApkUrl, workerReleaseUrl } from '../config/env.js';
 import {
+  assessmentSample,
   capabilityChips,
+  consensusSteps,
   fanTargets,
   hero,
   integrations,
   portalFields,
   portalNav,
-  pricingRows,
-  quoteSample,
   taskCards,
   taskFeed,
   useCaseGroups,
@@ -61,13 +61,13 @@ function trackPointer(event) {
 
     <section v-reveal class="em-section">
       <div class="container">
-        <p class="em-eyebrow">Quote engine</p>
-        <h2 class="em-title">Price First.<br />Run Second.</h2>
+        <p class="em-eyebrow">Consensus engine</p>
+        <h2 class="em-title">Assess First.<br />Agree Always.</h2>
 
         <article class="em-card em-card--feature em-card--split">
           <div class="em-card__lead">
-            <p class="em-gradient-text" aria-hidden="true">Quote.<br />Route.<br />Verify.</p>
-            <span class="sr-only">Quote, route, verify.</span>
+            <p class="em-gradient-text" aria-hidden="true">Assess.<br />Dispatch.<br />Agree.</p>
+            <span class="sr-only">Assess, dispatch, agree.</span>
           </div>
           <ol class="em-feed" aria-label="Recent task activity">
             <li v-for="item in taskFeed" :key="`${item.task}-${item.file}`" class="em-feed__row">
@@ -86,8 +86,8 @@ function trackPointer(event) {
 
         <div class="em-grid em-grid--2">
           <article class="em-card em-card--panel">
-            <pre class="em-code" aria-label="Sample quote"><code><span v-for="(line, index) in quoteSample" :key="index" class="em-code__line"><span class="em-code__no">{{ String(index + 1).padStart(2, '0') }}</span>{{ line }}</span></code></pre>
-            <p class="em-card__caption"><strong>Immutable quotes.</strong> Amount, route, and policy hash are fixed before any worker starts.</p>
+            <pre class="em-code" aria-label="Sample assessment"><code><span v-for="(line, index) in assessmentSample" :key="index" class="em-code__line"><span class="em-code__no">{{ String(index + 1).padStart(2, '0') }}</span>{{ line }}</span></code></pre>
+            <p class="em-card__caption"><strong>Assessed first.</strong> Difficulty, credits, and policy hash are fixed before any phone starts.</p>
           </article>
           <article class="em-card em-card--panel">
             <div class="em-vault" aria-hidden="true">
@@ -96,7 +96,7 @@ function trackPointer(event) {
               <span class="em-vault__lamp em-vault__lamp--c"></span>
               <span class="em-vault__lock">⛨</span>
             </div>
-            <p class="em-card__caption"><strong>Audit trail.</strong> Every attempt, revision, and billing event stays in the ledger.</p>
+            <p class="em-card__caption"><strong>Audit trail.</strong> Every attempt, revision, and credit event stays in the ledger.</p>
           </article>
         </div>
       </div>
@@ -119,7 +119,7 @@ function trackPointer(event) {
           <div>
             <p class="em-eyebrow">Customer portal</p>
             <h2 class="em-title">Start In The Portal.<br />No Setup Required.</h2>
-            <p class="em-lead">Upload a file, pick a task type, and see the EUR quote before you confirm. Move to the API when you are ready.</p>
+            <p class="em-lead">Upload a file, pick a task type, and see how many credits it uses before you confirm. Your first month is free. Move to the API when you are ready.</p>
           </div>
           <div class="em-selects" aria-hidden="true">
             <div class="em-select">
@@ -137,15 +137,15 @@ function trackPointer(event) {
 
         <article class="em-card em-card--feature em-card--split em-card--blue">
           <div class="em-card__lead">
-            <p class="em-gradient-text em-gradient-text--blue" aria-hidden="true">Upload.<br />Quote.<br />Run.</p>
-            <span class="sr-only">Upload, quote, run.</span>
+            <p class="em-gradient-text em-gradient-text--blue" aria-hidden="true">Upload.<br />Assess.<br />Run.</p>
+            <span class="sr-only">Upload, assess, run.</span>
             <div class="em-beam-row">
               <RouterLink class="em-pill em-pill--solid" :to="{ name: 'contact' }">
                 Get access <span class="em-pill__chev">›</span>
               </RouterLink>
               <span class="em-beam" aria-hidden="true"></span>
             </div>
-            <p class="em-card__body">Click to create a task, <strong>see the quote first</strong>, then run it on an <strong>edge worker</strong> with results and audit events in <strong>one workspace</strong>.</p>
+            <p class="em-card__body">Click to create a task, <strong>see the credits first</strong>, then run it on <strong>three edge workers</strong> with results and audit events in <strong>one workspace</strong>.</p>
           </div>
           <div class="em-window" aria-label="Customer portal preview">
             <div class="em-window__bar">
@@ -164,7 +164,7 @@ function trackPointer(event) {
                   <span>{{ field.value }}</span>
                 </div>
                 <div class="em-window__quote">
-                  <span><small>Quote</small><strong>€0.0025</strong></span>
+                  <span><small>Uses</small><strong>1 free credit</strong></span>
                   <span class="em-window__run">Run task</span>
                 </div>
               </div>
@@ -258,7 +258,7 @@ function trackPointer(event) {
           </article>
           <article class="em-card em-card--panel em-card--text">
             <h3>Opt-in workers</h3>
-            <p>Devices run tasks only while their owner opts in. Rewards are variable, not guaranteed, and this is not crypto mining.</p>
+            <p>Devices run tasks only while their owner opts in. Correct answers earn FibonAI tokens — not guaranteed, and this is not crypto mining.</p>
             <div class="em-orb em-orb--ring" aria-hidden="true"><span>opt-in</span></div>
           </article>
           <article class="em-card em-card--panel em-card--text em-card--violet">
@@ -270,9 +270,9 @@ function trackPointer(event) {
             </div>
           </article>
           <article class="em-card em-card--panel em-card--text em-card--key">
-            <h3>One-request quotes</h3>
-            <p>Ask for a price before anything runs. The quote is fixed once issued.</p>
-            <div class="em-keycap" aria-hidden="true"><span>Quote</span></div>
+            <h3>First month free</h3>
+            <p>New accounts get their first month free, API included. After that, add monthly credit.</p>
+            <div class="em-keycap" aria-hidden="true"><span>Free</span></div>
           </article>
         </div>
       </div>
@@ -287,7 +287,7 @@ function trackPointer(event) {
             <div>
               <span aria-hidden="true">⌖</span>
               <h3>Region policies</h3>
-              <p>Data region rules are enforced at intake, before a quote is issued.</p>
+              <p>Data region rules are enforced at intake, before any phone is assigned.</p>
             </div>
             <div>
               <span aria-hidden="true">▤</span>
@@ -316,28 +316,28 @@ function trackPointer(event) {
 
     <section v-reveal class="em-section">
       <div class="container">
-        <p class="em-eyebrow">Pricing</p>
-        <h2 class="em-title">Published Unit Rates<br />In EUR.</h2>
+        <p class="em-eyebrow">Verification</p>
+        <h2 class="em-title">Three Phones.<br />One Answer.</h2>
 
         <article class="em-card em-card--feature em-card--split">
           <div class="em-card__lead">
-            <p class="em-gradient-text" aria-hidden="true">Know<br />Every<br />Cent.</p>
-            <span class="sr-only">Know every cent.</span>
-            <p class="em-card__body">Each production quote adds plan, priority, verification, and execution-policy modifiers to these base rates.</p>
-            <RouterLink class="em-pill em-pill--solid" :to="{ name: 'pricing' }">
-              View full pricing <span class="em-pill__chev">›</span>
+            <p class="em-gradient-text" aria-hidden="true">Check<br />Every<br />Answer.</p>
+            <span class="sr-only">Check every answer.</span>
+            <p class="em-card__body">No result is accepted because one device says it is done. Independent phones must agree, and devices that cheat are warned, then removed.</p>
+            <RouterLink class="em-pill em-pill--solid" :to="{ name: 'how-it-works' }">
+              See the workflow <span class="em-pill__chev">›</span>
             </RouterLink>
           </div>
-          <div class="em-table" role="table" aria-label="Base rates">
+          <div class="em-table" role="table" aria-label="How consensus works">
             <div class="em-table__head" role="row">
-              <span role="columnheader">Task</span>
-              <span role="columnheader">Measure</span>
-              <span role="columnheader">From</span>
+              <span role="columnheader">Step</span>
+              <span role="columnheader">What happens</span>
+              <span role="columnheader">Result</span>
             </div>
-            <div v-for="row in pricingRows.slice(0, 5)" :key="row.task" class="em-table__row" role="row">
-              <span role="cell">{{ row.task }}</span>
-              <span role="cell"><em class="em-badge">{{ row.measure }}</em></span>
-              <span role="cell"><strong>{{ row.price }}</strong></span>
+            <div v-for="row in consensusSteps" :key="row.step" class="em-table__row" role="row">
+              <span role="cell">{{ row.step }}</span>
+              <span role="cell"><em class="em-badge">{{ row.detail }}</em></span>
+              <span role="cell"><strong>{{ row.outcome }}</strong></span>
             </div>
           </div>
         </article>
@@ -362,13 +362,82 @@ function trackPointer(event) {
             <span class="em-template__glyph" aria-hidden="true">{{ card.glyph }}</span>
             <h3>{{ card.title }}</h3>
             <p>{{ card.body }}</p>
-            <small>{{ card.price }}</small>
+            <small>{{ card.input }}</small>
             <span class="em-circle" aria-hidden="true">›</span>
           </RouterLink>
           <div class="em-catalog__aside">
-            <p>Every task type ships with a published rate and a defined result contract.</p>
+            <p>Every task type ships with a difficulty class and a defined result contract.</p>
             <RouterLink class="em-link" :to="{ name: 'models' }">Explore task types <span aria-hidden="true">→</span></RouterLink>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section v-reveal class="em-section" aria-labelledby="get-started-title">
+      <div class="container">
+        <p class="em-eyebrow">Get started</p>
+        <h2 id="get-started-title" class="em-title">Pick Your Side<br />Of The Network.</h2>
+
+        <div class="em-doors">
+          <article class="em-card em-door em-door--worker">
+            <div class="em-door__stage" aria-hidden="true">
+              <div class="em-device">
+                <span class="em-device__hole"></span>
+                <div class="em-device__screen">
+                  <p class="em-device__app">FibonAI Worker</p>
+                  <img class="em-device__mascot" src="/mascot/run_loop.webp" alt="" width="528" height="320" loading="lazy" decoding="async" />
+                  <span class="em-device__chip"><i></i>Running a task</span>
+                  <span class="em-device__bar"><i></i></span>
+                </div>
+              </div>
+              <ul class="em-door__checks">
+                <li><span>✓</span>Signed release</li>
+                <li><span>✓</span>SHA-256 published</li>
+                <li><span>✓</span>Opt-in only</li>
+              </ul>
+            </div>
+            <div class="em-door__copy">
+              <p class="em-door__kicker">For Android phone owners</p>
+              <h3 class="em-door__title">Put Your Phone<br />To Work.</h3>
+              <p class="em-door__body">Run signed AI tasks only while you opt in, inside the battery, Wi-Fi, and heat limits you set. Correct answers earn FibonAI tokens — not guaranteed, and this is not crypto mining.</p>
+              <div class="em-door__actions">
+                <a class="em-pill em-pill--solid em-door__cta" :href="workerApkUrl" download="FibonAi.apk">
+                  <svg class="em-door__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 20h14" /></svg>
+                  Download APK
+                </a>
+                <a class="em-link" :href="workerReleaseUrl" target="_blank" rel="noopener noreferrer">Verify checksum <span aria-hidden="true">→</span></a>
+              </div>
+              <p class="em-door__meta">Android 8.0 or later · allow installs from this source when Android asks</p>
+            </div>
+          </article>
+
+          <article class="em-card em-door em-door--portal">
+            <div class="em-door__stage" aria-hidden="true">
+              <div class="em-receipt">
+                <div class="em-receipt__bar"><span></span><span></span><span></span><em>portal · new task</em></div>
+                <div class="em-receipt__row"><small>Task type</small><span>document.ocr</span></div>
+                <div class="em-receipt__row"><small>Region</small><span>EU only</span></div>
+                <div class="em-receipt__row"><small>Checked by</small><span>3 phones</span></div>
+                <div class="em-receipt__total">
+                  <span><small>Uses</small><strong>1 free credit</strong></span>
+                  <span class="em-receipt__run">Run task</span>
+                </div>
+                <p class="em-receipt__note">First month free · checked before delivery</p>
+              </div>
+            </div>
+            <div class="em-door__copy">
+              <p class="em-door__kicker">For teams and developers</p>
+              <h3 class="em-door__title">Send Your First<br />Task Today.</h3>
+              <p class="em-door__body">Upload a file, pick a task type, and see how many credits it uses before anything runs. Your first month is free. Results, webhooks, and the audit trail live in one workspace.</p>
+              <div class="em-door__actions">
+                <a class="em-pill em-pill--solid em-door__cta" :href="portalLoginUrl" target="_blank" rel="noopener noreferrer">
+                  Open customer portal <span class="em-pill__chev">›</span>
+                </a>
+                <RouterLink class="em-link" :to="{ name: 'developers' }">Read the API <span aria-hidden="true">→</span></RouterLink>
+              </div>
+              <p class="em-door__meta">No setup required · move to the API when you are ready</p>
+            </div>
+          </article>
         </div>
       </div>
     </section>

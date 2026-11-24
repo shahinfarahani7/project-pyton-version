@@ -12,7 +12,7 @@ import { workerPoints } from '../content/site.js';
         <h1 class="page-hero__title">Contribute compute on your terms</h1>
         <p class="page-hero__lead">
           The FibonAI Worker app runs assigned AI tasks on your device when you opt in. This is on-device inference —
-          not cryptocurrency mining — with transparent, variable EUR rewards.
+          not cryptocurrency mining. When your answer matches the consensus, you earn FibonAI tokens; rewards are variable and not guaranteed.
         </p>
         <p>
           <a class="btn btn--primary btn--lg" :href="workerApkUrl" download="FibonAi.apk">Download the Android app</a>

@@ -26,7 +26,7 @@ import { developerPoints } from '../content/site.js';
   "instructions": "Extract total and vendor name"
 }
 
-→ 201 Created · quote €0.0025 · edge-preferred
+→ 201 Created · 1 credit · edge-preferred · 3 workers
 → webhook: task.updated · lifecycle=succeeded</code></pre>
         </div>
       </div>

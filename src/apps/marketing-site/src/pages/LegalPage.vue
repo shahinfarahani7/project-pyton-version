@@ -15,9 +15,9 @@ const bodies = {
   privacy:
     'FibonAI processes customer task payloads, billing records, and audit events according to workspace data region policies. Worker devices receive only the minimum input required for assigned tasks; customer identity is not disclosed to workers. Temporary worker payloads are deleted within fifteen minutes unless a longer retention window is contractually required.',
   terms:
-    'Use of FibonAI services is subject to acceptable use policies, published pricing, and workspace-scoped access controls. Customers are responsible for lawful processing of data submitted to the platform. Service levels, support tiers, and liability caps are defined in enterprise agreements.',
+    'Use of FibonAI services is subject to acceptable use policies, plan and credit terms, and workspace-scoped access controls. Customers are responsible for lawful processing of data submitted to the platform. Service levels, support tiers, and liability caps are defined in enterprise agreements.',
   workers:
-    'Worker participation is optional and controlled by an explicit availability toggle. Rewards are variable, denominated in EUR, and not guaranteed. FibonAI does not offer investment products, cryptocurrency mining, or passive income programs through the worker app.',
+    'Worker participation is optional and controlled by an explicit availability toggle. Rewards are paid in FibonAI tokens, are variable, and are not guaranteed. FibonAI tokens have no guaranteed value or liquidity. FibonAI does not offer investment products, cryptocurrency mining, or passive income programs through the worker app.',
   dpa:
     'Enterprise customers may execute FibonAI’s Data Processing Addendum covering sub-processors, cross-border transfers, breach notification, and deletion obligations. Contact security@edgemint.io for the current DPA template and subprocessor registry.',
 };

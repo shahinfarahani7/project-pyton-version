@@ -12,6 +12,8 @@
 > **Before publishing, two approvals are needed.**
 > 1. **Offer terms:** the business has to set the limits of the free month — the number of free tasks, which task types are included, and API rate limits. This plan uses `[N]` where that number goes.
 > 2. **Token wording:** the repo still records tokens as disabled for the first release (`production/canonical-decisions.yaml`: `token.enabled: false`). Client posts mention the token only once, as an optional way to unlock more monthly tasks. Get legal approval before publishing that wording.
+>
+> **No prices, ever.** Posts never show a price in €, $ or tokens. Talk about free tasks and credits. Business background: [FibonAI-Business-Model.md](../../business/FibonAI-Business-Model.md).
 
 ---
 
@@ -22,7 +24,7 @@
 | **Startups and indie developers** | Cheap AI for an MVP, without managing GPUs | "Ship your AI feature this week. One API call, first month free." |
 | **Operations and back-office teams** | Read invoices, receipts and forms; sort documents | "Stop typing invoices by hand. Send the files, get structured data back." |
 | **E-commerce teams** | Tag product photos, remove backgrounds, find duplicates and blurry images | "Clean up your whole catalog without a design team." |
-| **Agencies and freelancers** | Batch work for many clients, predictable cost | "See the cost before the job runs." |
+| **Agencies and freelancers** | Batch work for many clients, predictable usage | "Know how many credits a job uses before it runs." |
 | **Content and support teams** | Summarise and classify long texts and tickets | "Summaries and labels, sent back to your system automatically." |
 
 ## 2. The offer
@@ -34,7 +36,7 @@ What a new client gets for the first month:
 - `[N]` free tasks every month, starting on day one.
 - A free API key, so they can connect FibonAI to their own app or backend straight away.
 - Webhooks, so results are sent to their system automatically when a task finishes.
-- A cost estimate before every task runs, so nothing is charged by surprise.
+- A quick estimate before every task runs, showing how many credits it uses, so nothing is used up by surprise.
 - Help from the team in a private Discord channel during setup.
 
 After the first month, the free monthly tasks continue. Clients who need more can unlock extra monthly credit (optionally with FibonAI tokens, once that is approved).
@@ -200,7 +202,7 @@ Format key: 🎬 video · 🖼 photo · 🎠 carousel/slider · ✍️ text · �
 | 2 | `[N]` free tasks from day one |
 | 3 | A free API key: connect your app in minutes |
 | 4 | Webhooks: results sent to your system automatically |
-| 5 | A cost estimate before every task |
+| 5 | A credit estimate before every task |
 | 6 | Team support in Discord while you set up |
 | 7 | Claim it now: link in the pinned post |
 
@@ -289,7 +291,7 @@ Format key: 🎬 video · 🖼 photo · 🎠 carousel/slider · ✍️ text · �
 | Slide | Text |
 | --- | --- |
 | 1 | Why FibonAI? |
-| 2 | **See the cost first.** Every task is estimated before it runs |
+| 2 | **Know before it runs.** Every task is estimated for difficulty and credits first |
 | 3 | **Verified answers.** Results are checked before you get them |
 | 4 | **Private by design.** Your identity is never shown to the devices |
 | 5 | **No infrastructure.** No GPUs, no servers, no model hosting |
@@ -402,7 +404,7 @@ Targets are starting assumptions; adjust after week 2. Task volume from clients 
 | Say | Don't say |
 | --- | --- |
 | "First month free" (with the real limits in the terms) | "Unlimited", "free forever" |
-| "See the cost before it runs" | Exact prices, unless they are the current published rates |
+| "See how many credits a task uses before it runs" | Any price in €, $ or tokens |
 | "Verified results" | "100% accurate", "instant" |
 | "Your identity is never shown to the devices" | "Fully anonymous", "no one ever sees your data" |
 | Real client quotes and numbers, with permission | Made-up testimonials or statistics |

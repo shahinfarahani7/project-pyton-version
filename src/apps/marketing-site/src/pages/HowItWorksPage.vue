@@ -9,8 +9,8 @@ import { flowSteps, pillars } from '../content/site.js';
   <div class="page">
     <PageHero
       eyebrow="How it works"
-      title="Quote, route, execute, audit"
-      lead="FibonAI is an async task platform. Customers submit workloads, receive deterministic quotes, and track execution across edge workers and optional cloud fallback — with every decision recorded."
+      title="Assess, dispatch, agree, deliver"
+      lead="FibonAI is an async task platform. Customers submit workloads — the first month is free — each task is assessed for difficulty and sent to at least three edge workers, and only the agreed answer comes back — with every decision recorded."
       :badges="['Async', 'Edge-first', 'Auditable']"
     />
 
@@ -49,10 +49,17 @@ import { flowSteps, pillars } from '../content/site.js';
           <strong>edge-only</strong>, <strong>edge-preferred</strong> (default), or
           <strong>fastest available</strong>. Private pools are available for enterprise workspaces.
         </p>
-        <h2>Verification tiers</h2>
+        <h2>Consensus verification</h2>
         <p>
-          Match quality to risk: standard inference, verified output, multi-worker consensus, enterprise review, or
-          human-in-the-loop. Each tier adjusts the quote multiplier and SLA expectations transparently.
+          Every task goes to at least three independent workers. A result is accepted when at least two agree; if
+          none do, two new workers are added each round, up to ten rounds. Enterprise review and human-in-the-loop
+          are available for higher-risk work.
+        </p>
+        <h2>Credits, not prices</h2>
+        <p>
+          New accounts get their first month free. The quick assessment places each task in a difficulty class, and a
+          harder task uses more credits. You always see the credits before you confirm. After the first month, add
+          monthly credit.
         </p>
       </div>
     </section>

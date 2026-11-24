@@ -10,7 +10,7 @@ import { contactChannels } from '../content/site.js';
         <p class="page-hero__eyebrow">Contact</p>
         <h1 class="page-hero__title">Talk to the FibonAI team</h1>
         <p class="page-hero__lead">
-          Request an enterprise demo, ask about pricing and regions, or get help integrating the task API into your
+          Request an enterprise demo, ask about plans, credits and regions, or get help integrating the task API into your
           product.
         </p>
       </div>

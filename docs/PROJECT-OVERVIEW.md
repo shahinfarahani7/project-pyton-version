@@ -5,11 +5,13 @@
 
 **Names:** *EdgeMint* is the internal/codebase name (packages, services, docs). *FibonAI* is the public brand used on the marketing site and in launch material.
 
+> **Business model:** see [business/FibonAI-Business-Model.md](business/FibonAI-Business-Model.md) (from the white paper). Customers never see prices — they get free monthly task credit, then token-backed credit. Every task goes to at least 3 phones, and phones that agree on the answer earn FibonAI tokens. This page describes **what the current code does**, which still follows the frozen GA1 decisions (internal EUR quote, EUR rewards, tokens disabled).
+
 ---
 
 ## In one sentence
 
-A business sends an AI job (for example "read the text in this invoice"), sees a fixed price in euros before anything runs, and the platform runs that job on a verified network of opted-in Android phones — falling back to cloud servers only when the customer's policy allows it, with every step recorded.
+A customer sends an AI job (for example "read the text in this invoice"), the platform quickly assesses its difficulty, and runs it on a verified network of opted-in Android phones — falling back to cloud servers only when the customer's policy allows it, with every step recorded. No price is shown to the customer.
 
 ---
 
@@ -17,8 +19,8 @@ A business sends an AI job (for example "read the text in this invoice"), sees a
 
 | Who | What they get |
 | --- | --- |
-| **Customers** (businesses, developers) | An API and a web portal to submit AI tasks — OCR, document extraction, classification, summarization, image checks. A fixed EUR quote before each task, structured results, webhooks and a full audit trail. |
-| **Workers** (phone owners) | An app that runs assigned AI tasks on their phone **only while they opt in**, within battery/Wi-Fi/thermal limits they control. They earn variable EUR rewards. Not crypto mining, no guaranteed income. |
+| **Customers** (businesses, developers, everyday users) | An API and a web portal to submit AI tasks — OCR, document extraction, classification, summarization, image checks. Free tasks every month, credits instead of prices, structured results, webhooks and a full audit trail. |
+| **Workers** (phone owners) | An app that runs assigned AI tasks on their phone **only while they opt in**, within battery/Wi-Fi/thermal limits they control. Business model: FibonAI tokens for correct answers (current build: variable EUR rewards). Not crypto mining, no guaranteed income. |
 | **Operators** (the FibonAI team) | An operations console for routing, fraud review, reconciliation, worker management, billing and incident handling. |
 
 ---
@@ -33,7 +35,7 @@ sequenceDiagram
     participant L as Ledger & billing
 
     C->>S: Submit task + file
-    S->>C: Fixed EUR quote (amount, route, policy hash)
+    S->>C: Assessment — credits used, route, policy hash<br/>(current build: internal EUR quote, not shown as a price)
     C->>S: Confirm
     S->>S: Pick one eligible worker, reserve its capacity,<br/>create lease + fence token
     S->>W: Signed assignment (secure WebSocket)
@@ -45,7 +47,7 @@ sequenceDiagram
 ```
 
 1. **Submit.** The customer uploads a file through the portal or API and picks a task type from the catalog.
-2. **Quote.** The server prices the task from the published PriceBook (e.g. Document OCR from €0.0025 per page) plus plan, priority and verification modifiers. The quote is immutable once issued.
+2. **Assess.** The server assesses the task's difficulty and cost. In the current build this is an immutable internal EUR quote from the PriceBook; in the business model it is a difficulty class K that fixes how many credits the task uses. Customers see credits, never a price.
 3. **Schedule.** Only the server decides which phone runs the task. It checks eligibility (consent, model installed, runtime compatible, enough RAM/storage, not overheating), scores candidates, and reserves capacity in one atomic database transaction.
 4. **Run.** The phone validates the signed assignment and starts automatically — there is no per-task "Accept/Reject" button. It runs a signed, hash-verified model locally. Long inputs are split into chunks with checkpoints so work can resume.
 5. **Verify.** The server validates every result. Phones and their outputs are treated as untrusted.
@@ -75,8 +77,12 @@ The worker app currently executes these pipelines (see [`task_type_mapper.dart`]
 
 ## Money and rewards
 
+**Business model (white paper, not yet implemented):** customers get free monthly task credit, then monthly credit through FibonAI tokens. No prices are shown to customers. Every task goes to at least 3 phones, and the agreeing phones share the task's token reward, with 25% going to a community treasury. The supply is fixed at 21 B tokens. Details and the conflict list are in [business/FibonAI-Business-Model.md](business/FibonAI-Business-Model.md).
+
+**Current build (frozen GA1 decisions):**
+
 - **Currency:** EUR only, stored as integer micro-euros (never floating point).
-- **Customers:** prepaid credits / Stripe Billing, quotes before every task, invoices and refunds.
+- **Customers:** prepaid credits / Stripe Billing, internal quotes per task, invoices and refunds.
 - **Workers:** rewards are EUR-denominated liabilities paid via Stripe Connect after identity checks. In unsupported countries, earning is disabled.
 - **Tokens:** **disabled for GA1.** No token sale, no on-chain per-task settlement, no token value or investment claims.
 
@@ -144,6 +150,7 @@ This is the honest picture. Keep it updated when status changes.
 | If you want… | Read |
 | --- | --- |
 | Plain-language overview (this page) | [PROJECT-OVERVIEW.md](PROJECT-OVERVIEW.md) |
+| **Business model (white paper; English / فارسی)** | [business/FibonAI-Business-Model.md](business/FibonAI-Business-Model.md) · [.fa.md](business/FibonAI-Business-Model.fa.md) |
 | **Business analyst brief (send to BA)** | [business-analyst/FibonAI-Business-Analyst-Brief.md](business-analyst/FibonAI-Business-Analyst-Brief.md) |
 | The full target architecture | [EDGE-MINT-TARGET-ARCHITECTURE-v2.md](EDGE-MINT-TARGET-ARCHITECTURE-v2.md) |
 | Fixed technology and business decisions | [production/canonical-decisions.yaml](../production/canonical-decisions.yaml) |

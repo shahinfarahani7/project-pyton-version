@@ -16,7 +16,7 @@ import BrandWordmark from './BrandWordmark.vue';
           <BrandWordmark class="site-brand__text" />
         </RouterLink>
         <p class="site-footer__tagline">
-          Edge-first AI inference with quote-before-run pricing and auditable execution for regulated teams.
+          Edge-first AI inference on everyday phones — first month free, consensus-checked results, and auditable execution.
         </p>
       </div>
 
