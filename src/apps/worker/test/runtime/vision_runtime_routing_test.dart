@@ -1,12 +1,15 @@
-import 'dart:typed_data';
-
+import 'package:edgemint_worker/contracts/worker_error.dart';
+import 'package:edgemint_worker/runtime/device_capability_report.dart';
+import 'package:edgemint_worker/runtime/device_snapshot.dart';
 import 'package:edgemint_worker/runtime/execution_plan_runner.dart';
 import 'package:edgemint_worker/runtime/runtime_class_catalog.dart';
 import 'package:edgemint_worker/runtime/vision_runtime_catalog.dart';
 import 'package:edgemint_worker/runtime/vision_runtime_manager.dart';
 import 'package:edgemint_worker/tasks/handlers/lightweight_vision_handlers.dart';
 import 'package:edgemint_worker/tasks/handlers/vision_handlers.dart';
+import 'package:edgemint_worker/tasks/mobile_task_dispatcher.dart';
 import 'package:edgemint_worker/tasks/task_type_mapper.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _RecordingVisionRuntimeManager extends VisionRuntimeManager {
@@ -133,6 +136,74 @@ void main() {
         VisionRuntimeCatalog.kindFor(handler.capability),
         VisionRuntimeKind.classifier,
       );
+    });
+  });
+
+  group('Segmentation is not shipped in this build', () {
+    const snapshot = DeviceSnapshot(
+      available: true,
+      batteryPercent: 80,
+      isCharging: true,
+      thermalState: ThermalState.normal,
+      network: NetworkKind.wifi,
+      freeStorageMb: 20480,
+      withinSchedule: true,
+      consentsGranted: ['terms'],
+    );
+
+    test('default capability report does not advertise segmentation_runtime', () {
+      final report = DeviceCapabilityReport.fromDispatcher(snapshot: snapshot);
+      final classes = report['runtimeClasses'] as List<String>;
+
+      expect(classes, isNot(contains('segmentation_runtime')));
+      expect(classes, containsAll(['vlm_runtime', 'image_classifier']));
+    });
+
+    test('a dispatcher that registers background removal still advertises it', () {
+      final report = DeviceCapabilityReport.fromDispatcher(
+        snapshot: snapshot,
+        dispatcher: MobileTaskDispatcher(
+          handlers: [RemoveBackgroundHandler(), BlurryImageHandler()],
+        ),
+      );
+
+      expect(report['runtimeClasses'], contains('segmentation_runtime'));
+    });
+
+    group('segmentBackground failures', () {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      const channel = MethodChannel('test/image_segmenter');
+      final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+
+      tearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+      Future<WorkerError> failureFor(String code) async {
+        messenger.setMockMethodCallHandler(
+          channel,
+          (_) async => throw PlatformException(code: code, message: code),
+        );
+        final runtime = VisionRuntimeManager(segmentationChannel: channel);
+        try {
+          await runtime.segmentBackground(imageBytes: Uint8List.fromList([1]));
+        } on WorkerError catch (error) {
+          return error;
+        }
+        fail('segmentBackground did not throw');
+      }
+
+      test('missing segmentation runtime is not retryable', () async {
+        final error = await failureFor('SEGMENTATION_UNAVAILABLE');
+
+        expect(error.code, WorkerErrorCode.unsupportedTaskType);
+        expect(error.retryable, isFalse);
+      });
+
+      test('other segmentation failures stay retryable', () async {
+        final error = await failureFor('SEGMENTATION_FAILED');
+
+        expect(error.code, WorkerErrorCode.modelNotAvailable);
+        expect(error.retryable, isTrue);
+      });
     });
   });
 }

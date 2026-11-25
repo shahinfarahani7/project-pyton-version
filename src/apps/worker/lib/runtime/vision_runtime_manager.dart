@@ -46,6 +46,14 @@ class VisionRuntimeManager {
       }
       return png;
     } on PlatformException catch (error) {
+      if (error.code == 'SEGMENTATION_UNAVAILABLE') {
+        throw WorkerError(
+          code: WorkerErrorCode.unsupportedTaskType,
+          message: 'Image segmentation is not included in this build',
+          retryable: false,
+          stage: WorkerTaskStage.validation,
+        );
+      }
       throw WorkerError(
         code: WorkerErrorCode.modelNotAvailable,
         message: 'Image segmentation failed: ${error.message}',

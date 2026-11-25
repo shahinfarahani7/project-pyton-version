@@ -30,7 +30,9 @@ class _RouteRow {
 
   final String publicId;
   final String internalCapability;
-  final Type handlerType;
+
+  /// Null marks a mapped type the default dispatcher intentionally does not run.
+  final Type? handlerType;
   final bool requiresOcr;
   final bool requiresLlm;
   final bool imageInput;
@@ -166,7 +168,8 @@ void main() {
     _RouteRow(
       publicId: 'image.remove_background',
       internalCapability: TaskTypeMapper.removeBackground,
-      handlerType: RemoveBackgroundHandler,
+      // No segmentation runtime ships in the APK.
+      handlerType: null,
       requiresOcr: false,
       requiresLlm: false,
       requiresVisionRuntime: true,
@@ -209,7 +212,11 @@ void main() {
     test('dispatcher exposes unique handler capabilities', () {
       final capabilities = dispatcher.capabilities.toList();
       expect(capabilities.length, capabilities.toSet().length);
-      expect(capabilities.length, routes.map((r) => r.internalCapability).toSet().length);
+      expect(
+        capabilities.toSet(),
+        routes.where((r) => r.handlerType != null).map((r) => r.internalCapability).toSet(),
+      );
+      expect(capabilities, isNot(contains(TaskTypeMapper.removeBackground)));
     });
 
     for (final row in routes) {
@@ -246,8 +253,12 @@ void main() {
         }
 
         final handler = dispatcher.handlerFor(row.internalCapability);
-        expect(handler, isNotNull, reason: 'missing handler for ${row.internalCapability}');
-        expect(handler.runtimeType, row.handlerType);
+        if (row.handlerType == null) {
+          expect(handler, isNull, reason: 'unregistered ${row.internalCapability}');
+        } else {
+          expect(handler, isNotNull, reason: 'missing handler for ${row.internalCapability}');
+          expect(handler.runtimeType, row.handlerType);
+        }
 
         final backend = TaskTypeMapper.toBackend(row.internalCapability);
         if (TaskTypeMapper.backendToV1.containsKey(row.publicId)) {

@@ -26,7 +26,9 @@ class MobileTaskDispatcher {
     BlurryImageHandler(),
     DuplicateImageHandler(),
     VisionAnalyzeHandler(),
-    RemoveBackgroundHandler(),
+    // RemoveBackgroundHandler is not registered: this APK ships no
+    // segmentation runtime, and a registered handler advertises
+    // segmentation_runtime to the router.
   ];
 
   TaskHandler? handlerFor(String v1Type) {
