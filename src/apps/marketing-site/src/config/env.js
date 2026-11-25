@@ -1,4 +1,4 @@
-const portalBase = (import.meta.env.VITE_PORTAL_URL || 'http://171.22.26.64:3000').replace(/\/$/, '');
+const portalBase = (import.meta.env.VITE_PORTAL_URL || 'https://app.fibonai.app').replace(/\/$/, '');
 const workerGatewayBase = (import.meta.env.VITE_WORKER_GATEWAY_URL || 'https://fibonai.app/worker').replace(/\/$/, '');
 
 export const portalUrl = portalBase;
