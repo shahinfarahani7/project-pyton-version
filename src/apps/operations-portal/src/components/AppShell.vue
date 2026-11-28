@@ -15,6 +15,7 @@ const NAV = [
   { to: '/reconciliation', label: 'Reconciliation', group: 'Review', permission: 'operations.read' },
   { to: '/incidents', label: 'Incidents', group: 'Review', permission: 'operations.read' },
   { to: '/approvals', label: 'Approvals', group: 'Governance', permission: 'operations.approve' },
+  { to: '/admins', label: 'Admin access', group: 'Governance', permission: 'operations.read' },
   { to: '/emergency', label: 'Emergency access', group: 'Governance', permission: 'operations.break_glass' },
 ];
 

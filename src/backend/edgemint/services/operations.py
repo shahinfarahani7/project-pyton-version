@@ -11,6 +11,7 @@ from edgemint.building_blocks.app import create_service_app
 from edgemint.building_blocks.database import transaction
 from edgemint.building_blocks.settings import get_settings
 from edgemint.dev.fibonai_credits import credits_by_task, sum_credited_points
+from edgemint.operations.admin_handoff import redeem_admin_handoff
 from edgemint.operations.auth import (
     CSRF_HEADER,
     OPERATOR_SESSION_TTL,
@@ -21,7 +22,14 @@ from edgemint.operations.auth import (
     require_operator,
 )
 from edgemint.operations.errors import OperationsServiceError, operations_error
-from edgemint.operations.portal_admin import admin_roles, portal_email_for_principal
+from edgemint.operations.policy import ROLE_PERMISSIONS
+from edgemint.operations.portal_admin import (
+    delete_admin_email,
+    list_admin_entries,
+    portal_email_for_principal,
+    resolve_admin_role,
+    upsert_admin_email,
+)
 from edgemint.operations.service import OperationsService
 from edgemint.operations.task_monitor import (
     TaskMonitorUnavailable,
@@ -66,6 +74,15 @@ class BreakGlassRequest(BaseModel):
 
 class ExportRequest(BaseModel):
     view: str
+
+
+class AdminEmailRequest(BaseModel):
+    email: str
+    role: str = "operator.approver"
+
+
+class HandoffLoginRequest(BaseModel):
+    handoffCode: str
 
 
 @app.exception_handler(OperationsServiceError)
@@ -127,12 +144,30 @@ async def portal_login(request: Request) -> JSONResponse:
         if record is None or not record.is_active():
             raise operations_error("PORTAL_SESSION_REQUIRED")
         email = await portal_email_for_principal(connection, record.principal_id)
-    role = admin_roles(settings).get(email) if email else None
+        role = await resolve_admin_role(connection, settings, email)
     if email is None or role is None:
         raise operations_error("AUTH_SCOPE_REQUIRED", detail="portal account is not an operations admin")
     token, session = issue_operator_session(
         operator_id=email,
         role=role,
+        mfa_verified=True,
+        settings=settings,
+    )
+    return _signed_in_response(token, session)
+
+
+@app.post("/internal/operations/session:handoff", tags=["operations-auth"])
+async def handoff_login(payload: HandoffLoginRequest) -> JSONResponse:
+    settings = get_settings()
+    if not dev_login_enabled(settings):
+        raise operations_error("DEV_LOGIN_DISABLED")
+    try:
+        handoff = redeem_admin_handoff(payload.handoffCode.strip(), settings=settings)
+    except ValueError:
+        raise operations_error("HANDOFF_INVALID") from None
+    token, session = issue_operator_session(
+        operator_id=handoff.email,
+        role=handoff.role,
         mfa_verified=True,
         settings=settings,
     )
@@ -176,6 +211,59 @@ async def search_view(view_name: str, operator: Operator) -> JSONResponse:
     operator.require("operations.read")
     items = operations_service.search(view=view_name)
     return JSONResponse({"items": items, "page": {"limit": 50, "hasMore": False}}, status_code=200)
+
+
+@app.get("/internal/operations/admins", tags=["operations"])
+async def list_admins(operator: Operator) -> JSONResponse:
+    operator.require("operations.read")
+    settings = get_settings()
+    async with transaction(isolation="READ COMMITTED") as connection:
+        items = await list_admin_entries(connection, settings)
+    return JSONResponse(
+        {"items": items, "roles": sorted(ROLE_PERMISSIONS.keys())},
+        status_code=200,
+    )
+
+
+@app.post("/internal/operations/admins", tags=["operations"])
+async def add_admin(payload: AdminEmailRequest, operator: Operator) -> JSONResponse:
+    operator.require("operations.approve")
+    try:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            item = await upsert_admin_email(
+                connection,
+                email=payload.email,
+                role=payload.role,
+                created_by=operator.operator_id,
+            )
+    except ValueError as exc:
+        detail = str(exc)
+        if detail == "INVALID_EMAIL" or detail == "UNKNOWN_ROLE":
+            raise operations_error("INPUT_SCHEMA_INVALID", detail=detail) from exc
+        raise
+    return JSONResponse(item, status_code=201)
+
+
+@app.delete("/internal/operations/admins/{email}", tags=["operations"])
+async def remove_admin(email: str, operator: Operator) -> JSONResponse:
+    operator.require("operations.approve")
+    try:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            removed = await delete_admin_email(
+                connection,
+                email=email,
+                actor_id=operator.operator_id,
+            )
+    except ValueError as exc:
+        detail = str(exc)
+        if detail == "CANNOT_REMOVE_SELF":
+            raise operations_error("ADMIN_SELF_REMOVE_DENIED") from exc
+        if detail == "INVALID_EMAIL":
+            raise operations_error("INPUT_SCHEMA_INVALID", detail=detail) from exc
+        raise
+    if not removed:
+        raise operations_error("TENANT_RESOURCE_NOT_FOUND", detail="admin email not found")
+    return JSONResponse({"status": "removed", "email": email.strip().lower()}, status_code=200)
 
 
 def _published_worker_app() -> dict[str, object] | None:

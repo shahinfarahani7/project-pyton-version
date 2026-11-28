@@ -57,6 +57,13 @@ class SessionResponse(BaseModel):
     authorizationGeneration: int
     expiresAt: datetime
     role: str = "customer"
+    operationsAdmin: bool = False
+
+
+class OperationsHandoffResponse(BaseModel):
+    handoffCode: str
+    expiresInSeconds: int
+    role: str
 
 
 class DelegatedTokenResponse(BaseModel):
@@ -113,6 +120,22 @@ def _try_send_otp(recipient: str, code: str) -> bool:
     return True
 
 
+async def _operations_admin_role(email: str | None) -> str | None:
+    if not email:
+        return None
+    from edgemint.operations.portal_admin import admin_roles, normalize_admin_email, resolve_admin_role
+
+    try:
+        normalized = normalize_admin_email(email)
+    except ValueError:
+        return None
+    try:
+        async with transaction(isolation="READ COMMITTED") as connection:
+            return await resolve_admin_role(connection, settings, normalized)
+    except Exception:
+        return admin_roles(settings).get(normalized)
+
+
 async def _issue_browser_session(
     response: Response,
     request: Request,
@@ -121,6 +144,7 @@ async def _issue_browser_session(
     workspace_id: UUID,
     details: dict[str, object],
     role: str = "customer",
+    email: str | None = None,
 ) -> SessionResponse:
     absolute_ttl, idle_ttl = browser_session_ttl(
         request.headers.get(WORKER_CLIENT_HEADER),
@@ -129,6 +153,7 @@ async def _issue_browser_session(
     session_token = secrets.token_urlsafe(32)
     csrf_secret = secrets.token_urlsafe(32)
     session_public_id = public_id("ses")
+    admin_role = await _operations_admin_role(email)
     async with transaction(workspace_id=workspace_id) as connection:
         record = await session_store.create_session(
             connection,
@@ -165,6 +190,7 @@ async def _issue_browser_session(
         authorizationGeneration=record.authorization_generation,
         expiresAt=record.absolute_expires_at,
         role=role,
+        operationsAdmin=admin_role is not None,
     )
 
 
@@ -229,6 +255,7 @@ async def verify_email_otp_challenge(
         workspace_id=identity.workspace_id,
         details={"method": "email_otp"},
         role=identity.role,
+        email=payload.email,
     )
 
 
@@ -253,6 +280,7 @@ async def login_with_email_password(
         workspace_id=identity.workspace_id,
         details={"method": "email_password"},
         role=identity.role,
+        email=payload.email,
     )
 
 
@@ -290,7 +318,35 @@ async def signup_with_email_password(
         workspace_id=identity.workspace_id,
         details={"method": "email_signup"},
         role=identity.role,
+        email=normalized,
     )
+
+
+@app.post("/auth/operations-handoff", response_model=OperationsHandoffResponse, tags=["auth"])
+async def create_operations_handoff(request: Request) -> OperationsHandoffResponse:
+    """Mint a one-time code so the operations portal can adopt an admin after customer login."""
+    _require_local_bff()
+    from edgemint.dev.email_otp import email_for_principal, hydrate_local_accounts
+    from edgemint.operations.admin_handoff import issue_admin_handoff
+
+    await hydrate_local_accounts()
+    from edgemint.operations.portal_admin import resolve_admin_role
+
+    session_token = BrowserSessionStore.read_session_cookie(
+        request.cookies, environment=settings.environment
+    )
+    if not session_token:
+        raise_auth_error("AUTH_INVALID_CREDENTIAL")
+    async with transaction(isolation="READ COMMITTED") as connection:
+        record = await session_store.load_by_token(connection, session_token=session_token)
+        if record is None or not record.is_active():
+            raise_auth_error("AUTH_SESSION_REVOKED")
+        email = email_for_principal(record.principal_id)
+        role = await resolve_admin_role(connection, settings, email) if email else None
+    if email is None or role is None:
+        raise_auth_error("AUTH_SCOPE_REQUIRED", status=403, detail="not an operations admin")
+    code, expires_in = issue_admin_handoff(email=email, role=role, settings=settings)
+    return OperationsHandoffResponse(handoffCode=code, expiresInSeconds=expires_in, role=role)
 
 
 @app.post("/auth/sessions/renew", response_model=SessionResponse, tags=["auth"])

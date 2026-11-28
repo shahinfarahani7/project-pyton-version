@@ -10,6 +10,7 @@ const initialState = {
   workspaces: [],
   permissions: [],
   role: 'customer',
+  operationsAdmin: false,
 };
 
 const portalPermissions = [
@@ -33,21 +34,42 @@ async function adoptSession(created) {
     authorizationGeneration: created.authorizationGeneration,
     workspaces: workspacesResponse.items ?? [],
     permissions: portalPermissions,
-    role: 'customer',
+    role: created.role ?? 'customer',
+    operationsAdmin: Boolean(created.operationsAdmin),
   });
+}
+
+export function operationsPortalLoginUrl() {
+  const base =
+    import.meta.env.VITE_OPERATIONS_PORTAL_URL ??
+    `${window.location.protocol}//${window.location.hostname}:5174`;
+  return base.replace(/\/login\/?$/, '').replace(/\/$/, '');
+}
+
+async function openOperationsConsole() {
+  const handoff = await authApi.operationsHandoff();
+  const target = `${operationsPortalLoginUrl()}/login?handoff=${encodeURIComponent(handoff.handoffCode)}`;
+  window.location.assign(target);
 }
 
 export const session = reactive({
   ...initialState,
   async loginWithEmailOtp({ email, challengeId, code }) {
     await adoptSession(await authApi.verifyEmailOtp({ email, challengeId, code }));
+    if (session.operationsAdmin) {
+      await openOperationsConsole();
+    }
   },
   async loginWithPassword({ email, password }) {
     await adoptSession(await authApi.loginWithPassword({ email, password }));
+    if (session.operationsAdmin) {
+      await openOperationsConsole();
+    }
   },
   async signUpWithPassword({ email, password }) {
     await adoptSession(await authApi.signUp({ email, password }));
   },
+  openOperationsConsole,
   async loginDev(workspaceId) {
     const created = await authApi.login({
       principalId: '00000000-0000-0000-0000-00000000000a',

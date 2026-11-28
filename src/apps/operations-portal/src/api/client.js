@@ -50,6 +50,7 @@ export const authApi = {
 export const opsApi = {
   devLogin: (body) => fetchJson('/internal/operations/session:dev-login', { method: 'POST', body }),
   portalLogin: () => fetchJson('/internal/operations/session:portal', { method: 'POST' }),
+  handoffLogin: (body) => fetchJson('/internal/operations/session:handoff', { method: 'POST', body }),
   currentSession: () => fetchJson('/internal/operations/session'),
   logout: () => fetchJson('/internal/operations/session:logout', { method: 'POST' }),
   search: (view) => fetchJson(`/internal/operations/views/${view}`),
@@ -62,4 +63,8 @@ export const opsApi = {
     fetchJson(`/internal/operations/approvals/${approvalId}:approve`, { method: 'POST', body }),
   activateBreakGlass: (body) => fetchJson('/internal/operations/break-glass:activate', { method: 'POST', body }),
   exportView: (body) => fetchJson('/internal/operations/exports:audited', { method: 'POST', body }),
+  listAdmins: () => fetchJson('/internal/operations/admins'),
+  addAdmin: (body) => fetchJson('/internal/operations/admins', { method: 'POST', body }),
+  removeAdmin: (email) =>
+    fetchJson(`/internal/operations/admins/${encodeURIComponent(email)}`, { method: 'DELETE' }),
 };

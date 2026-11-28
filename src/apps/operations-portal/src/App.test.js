@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App.vue';
 import { session } from './auth/session';
 import AppShell from './components/AppShell.vue';
+import AdminsPage from './pages/AdminsPage.vue';
 import ApprovalsPage from './pages/ApprovalsPage.vue';
 import DashboardPage from './pages/DashboardPage.vue';
 import DisputesPage from './pages/DisputesPage.vue';
@@ -17,7 +18,7 @@ import ReconciliationPage from './pages/ReconciliationPage.vue';
 import TasksPage from './pages/TasksPage.vue';
 import WorkersPage from './pages/WorkersPage.vue';
 
-import { authApi, opsApi } from './api/client';
+import { opsApi } from './api/client';
 
 function resetSession() {
   Object.assign(session, {
@@ -39,9 +40,9 @@ beforeEach(() => {
   });
 });
 
-function createTestRouter(initialRoute = '/login') {
+function createTestRouter() {
   return createRouter({
-    history: createMemoryHistory(initialRoute),
+    history: createMemoryHistory(),
     routes: [
       {
         path: '/',
@@ -57,6 +58,7 @@ function createTestRouter(initialRoute = '/login') {
           { path: 'reconciliation', component: ReconciliationPage, meta: { requiresAuth: true } },
           { path: 'incidents', component: IncidentsPage, meta: { requiresAuth: true } },
           { path: 'approvals', component: ApprovalsPage, meta: { requiresAuth: true } },
+          { path: 'admins', component: AdminsPage, meta: { requiresAuth: true } },
           { path: 'emergency', component: EmergencyPage, meta: { requiresAuth: true } },
         ],
       },
@@ -65,7 +67,7 @@ function createTestRouter(initialRoute = '/login') {
 }
 
 async function renderApp(route = '/login') {
-  const router = createTestRouter(route);
+  const router = createTestRouter();
   router.beforeEach((to) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
     if (requiresAuth && (!session.authenticated || !session.mfaVerified)) {
@@ -76,13 +78,15 @@ async function renderApp(route = '/login') {
     }
     return true;
   });
+  await router.push(route);
+  await router.isReady();
   const wrapper = mount(App, {
     global: {
       plugins: [router],
     },
     attachTo: document.body,
   });
-  await router.isReady();
+  await wrapper.vm.$nextTick();
   return wrapper;
 }
 
@@ -117,66 +121,37 @@ describe('operations-portal', () => {
     expect(document.querySelector('nav[aria-label="Operations"]')).toBeNull();
   });
 
-  it('renders separate admin and customer sign-in without provider tokens', async () => {
-    const wrapper = await renderApp('/login');
-    expect(document.body.textContent).toMatch(/admin sign-in/i);
+  it('points admins to the single portal sign-in without audience tabs', async () => {
+    await renderApp('/login');
+    expect(document.body.textContent).toMatch(/admin console/i);
+    expect(document.body.textContent).toMatch(/sign in once on the portal/i);
+    expect(document.querySelector('[role="tablist"]')).toBeNull();
     expect(document.body.textContent?.toLowerCase()).not.toContain('id_token');
-    await wrapper.findAll('[role="tab"]').find((tab) => tab.text() === 'Customer').trigger('click');
-    expect(document.body.textContent).toMatch(/customer sign-in/i);
-    expect(document.querySelector('a.primary-link')?.getAttribute('href')).toMatch(/:5173\/login$/);
+    expect(document.body.textContent).toMatch(/go to portal sign-in/i);
   });
 
-  it('admin password sign-in authenticates then enters the admin session', async () => {
-    const loginWithPassword = vi.spyOn(authApi, 'loginWithPassword').mockResolvedValue({});
-    vi.spyOn(opsApi, 'portalLogin').mockResolvedValue({
+  it('redeems an admin handoff code into an operator session', async () => {
+    vi.spyOn(opsApi, 'handoffLogin').mockResolvedValue({
       operatorId: 'boss@example.com',
       role: 'operator.approver',
       mfaVerified: true,
       permissions: ['operations.read'],
     });
-    const wrapper = await renderApp('/login');
-    await wrapper.find('input[type="email"]').setValue('boss@example.com');
-    await wrapper.find('input[type="password"]').setValue('secret-pass');
-    await wrapper.find('form').trigger('submit');
+    await renderApp('/login?handoff=handoff-code-1');
     await vi.waitFor(() => {
       expect(document.querySelector('nav[aria-label="Operations"]')).toBeTruthy();
     });
-    expect(loginWithPassword).toHaveBeenCalledWith({ email: 'boss@example.com', password: 'secret-pass' });
+    expect(opsApi.handoffLogin).toHaveBeenCalledWith({ handoffCode: 'handoff-code-1' });
+    expect(session.operatorId).toBe('boss@example.com');
   });
 
-  it('non-admin account stays on the login page with an error', async () => {
-    vi.spyOn(authApi, 'loginWithPassword').mockResolvedValue({});
-    vi.spyOn(opsApi, 'portalLogin').mockRejectedValue(new Error('portal account is not an operations admin'));
-    const wrapper = await renderApp('/login');
-    await wrapper.find('input[type="email"]').setValue('customer@example.com');
-    await wrapper.find('input[type="password"]').setValue('secret-pass');
-    await wrapper.find('form').trigger('submit');
+  it('shows an error when the admin handoff is rejected', async () => {
+    vi.spyOn(opsApi, 'handoffLogin').mockRejectedValue(new Error('Admin handoff code is invalid or expired'));
+    await renderApp('/login?handoff=bad-code');
     await vi.waitFor(() => {
-      expect(document.querySelector('[role="alert"]')?.textContent).toMatch(/not an operations admin/);
+      expect(document.querySelector('[role="alert"]')?.textContent).toMatch(/invalid or expired/i);
     });
     expect(session.authenticated).toBe(false);
-  });
-
-  it('admin email-code sign-in requests and verifies the code', async () => {
-    vi.spyOn(authApi, 'requestEmailOtp').mockResolvedValue({ challengeId: 'chl_1', devCode: '123456' });
-    const verify = vi.spyOn(authApi, 'verifyEmailOtp').mockResolvedValue({});
-    vi.spyOn(opsApi, 'portalLogin').mockResolvedValue({
-      operatorId: 'boss@example.com',
-      role: 'operator.approver',
-      mfaVerified: true,
-      permissions: ['operations.read'],
-    });
-    const wrapper = await renderApp('/login');
-    await wrapper.findAll('.method-switch button').find((b) => b.text() === 'Email code').trigger('click');
-    await wrapper.find('input[type="email"]').setValue('boss@example.com');
-    await wrapper.find('form').trigger('submit');
-    await vi.waitFor(() => expect(wrapper.find('input[inputmode="numeric"]').exists()).toBe(true));
-    await wrapper.find('input[inputmode="numeric"]').setValue('123456');
-    await wrapper.find('form').trigger('submit');
-    await vi.waitFor(() => {
-      expect(document.querySelector('nav[aria-label="Operations"]')).toBeTruthy();
-    });
-    expect(verify).toHaveBeenCalledWith({ email: 'boss@example.com', challengeId: 'chl_1', code: '123456' });
   });
 
   it('sign out returns to the login page', async () => {
@@ -188,7 +163,7 @@ describe('operations-portal', () => {
     await wrapper.findAll('button').find((b) => b.text() === 'Sign out').trigger('click');
     await vi.waitFor(() => expect(wrapper.vm.$router.currentRoute.value.path).toBe('/login'));
     expect(session.authenticated).toBe(false);
-    expect(document.body.textContent).toMatch(/admin sign-in/i);
+    expect(document.body.textContent).toMatch(/admin console/i);
   });
 
   it('hides break-glass navigation without permission', async () => {

@@ -221,6 +221,13 @@ def workspaces_for_principal(principal_id: UUID) -> list[dict]:
     ]
 
 
+def email_for_principal(principal_id: UUID) -> str | None:
+    for email, account in _ACCOUNTS.items():
+        if account.principal_id == principal_id:
+            return email
+    return None
+
+
 def profile_for_principal(principal_id: UUID) -> dict[str, str] | None:
     for email, account in _ACCOUNTS.items():
         if account.principal_id != principal_id or email == DEV_LOGIN_EMAIL:

@@ -29,6 +29,8 @@ def operations_error(code: str, *, detail: str | None = None) -> OperationsServi
         "INPUT_SCHEMA_INVALID": (422, "Invalid request"),
         "PENDING_APPROVAL_REQUIRED": (409, "Independent approval required"),
         "TENANT_RESOURCE_NOT_FOUND": (404, "Resource not found"),
+        "ADMIN_SELF_REMOVE_DENIED": (409, "Cannot remove your own admin access"),
+        "HANDOFF_INVALID": (401, "Admin handoff code is invalid or expired"),
     }
     status, title = catalog.get(code, (500, "Operations action failed"))
     return OperationsServiceError(code=code, status=status, title=title, detail=detail)

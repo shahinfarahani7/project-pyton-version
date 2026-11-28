@@ -50,6 +50,9 @@ export const session = reactive({
   loginPortal() {
     return signIn(() => opsApi.portalLogin());
   },
+  loginHandoff(handoffCode) {
+    return signIn(() => opsApi.handoffLogin({ handoffCode }));
+  },
   restore() {
     restorePromise ??= opsApi
       .currentSession()

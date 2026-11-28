@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import { session } from '../auth/session';
 import AppShell from '../components/AppShell.vue';
+import AdminsPage from '../pages/AdminsPage.vue';
 import ApprovalsPage from '../pages/ApprovalsPage.vue';
 import DashboardPage from '../pages/DashboardPage.vue';
 import DisputesPage from '../pages/DisputesPage.vue';
@@ -31,6 +32,7 @@ const router = createRouter({
         { path: 'reconciliation', name: 'reconciliation', component: ReconciliationPage, meta: { requiresAuth: true } },
         { path: 'incidents', name: 'incidents', component: IncidentsPage, meta: { requiresAuth: true } },
         { path: 'approvals', name: 'approvals', component: ApprovalsPage, meta: { requiresAuth: true } },
+        { path: 'admins', name: 'admins', component: AdminsPage, meta: { requiresAuth: true } },
         { path: 'emergency', name: 'emergency', component: EmergencyPage, meta: { requiresAuth: true } },
         { path: ':pathMatch(.*)*', redirect: '/' },
       ],

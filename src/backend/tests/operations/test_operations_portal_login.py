@@ -50,9 +50,18 @@ def portal(monkeypatch: pytest.MonkeyPatch) -> Iterator[dict[str, Any]]:
     async def fake_email(_conn: object, principal_id: UUID) -> str | None:
         return state["email"] if principal_id == PRINCIPAL else None
 
+    async def fake_resolve(
+        _conn: object, settings: Settings, email: str | None
+    ) -> str | None:
+        managed = state.get("managed_roles", {})
+        if email and email in managed:
+            return managed[email]
+        return admin_roles(settings).get(email) if email else None
+
     monkeypatch.setattr(operations_module, "transaction", fake_transaction)
     monkeypatch.setattr(BrowserSessionStore, "load_by_token", fake_load)
     monkeypatch.setattr(operations_module, "portal_email_for_principal", fake_email)
+    monkeypatch.setattr(operations_module, "resolve_admin_role", fake_resolve)
     yield state
     get_settings.cache_clear()
 
@@ -79,6 +88,16 @@ def test_portal_user_not_in_admin_list_is_rejected(portal: dict[str, Any]) -> No
     response = client.post("/internal/operations/session:portal")
     assert response.status_code == 403
     assert client.get("/internal/operations/views/workers").status_code == 401
+
+
+def test_portal_admin_from_managed_list_is_accepted(portal: dict[str, Any]) -> None:
+    portal["email"] = "new-admin@example.com"
+    portal["managed_roles"] = {"new-admin@example.com": "operator.approver"}
+    client = _client()
+    response = client.post("/internal/operations/session:portal")
+    assert response.status_code == 201
+    assert response.json()["operatorId"] == "new-admin@example.com"
+    assert response.json()["role"] == "operator.approver"
 
 
 def test_missing_or_revoked_portal_session_is_rejected(portal: dict[str, Any]) -> None:

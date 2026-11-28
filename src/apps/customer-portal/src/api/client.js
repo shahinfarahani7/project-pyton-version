@@ -170,6 +170,7 @@ export const authApi = {
   verifyEmailOtp: (body) => fetchJson('/auth/email-otp/verify', { method: 'POST', body }),
   loginWithPassword: (body) => fetchJson('/auth/email-password', { method: 'POST', body }),
   signUp: (body) => fetchJson('/auth/email-signup', { method: 'POST', body }),
+  operationsHandoff: () => fetchJson('/auth/operations-handoff', { method: 'POST' }),
   logout: () => fetchJson('/auth/sessions/logout', { method: 'POST' }),
 };
 
