@@ -285,10 +285,12 @@ def _known_portal_principal(principal_id: UUID) -> bool:
 def _ensure_workspace_access(session: BrowserSessionRecord, workspace_id: UUID) -> None:
     if not _known_portal_principal(session.principal_id):
         raise HTTPException(403, "WORKSPACE_ACCESS_DENIED")
-    if workspace_id not in fixtures.DEV_WORKSPACE_IDS:
-        raise HTTPException(404, "WORKSPACE_NOT_FOUND")
     if session.workspace_id != workspace_id:
         raise HTTPException(403, "WORKSPACE_SESSION_MISMATCH")
+    if not email_otp.principal_can_access_workspace(session.principal_id, workspace_id):
+        if workspace_id in fixtures.DEV_WORKSPACE_IDS:
+            raise HTTPException(403, "WORKSPACE_ACCESS_DENIED")
+        raise HTTPException(404, "WORKSPACE_NOT_FOUND")
 
 
 @router.get("/v1/me")
@@ -310,7 +312,7 @@ async def current_principal(session: BrowserSessionRecord = Depends(require_dev_
 async def list_workspaces(session: BrowserSessionRecord = Depends(require_dev_portal_session)) -> dict:
     if not _known_portal_principal(session.principal_id):
         return {"items": [], "page": fixtures.PAGE}
-    return {"items": fixtures.dev_workspaces(), "page": fixtures.PAGE}
+    return {"items": email_otp.workspaces_for_principal(session.principal_id), "page": fixtures.PAGE}
 
 
 @router.get("/v1/task-types")

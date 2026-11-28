@@ -203,16 +203,31 @@ def test_signup_creates_a_password_account_that_can_receive_a_code() -> None:
     identity = email_otp.register_local_account("new-user@example.com", "new-password")
     assert identity.role == "customer"
     assert identity.principal_id != DEV_PRINCIPAL_ID
-    assert identity.workspace_id == DEV_WORKSPACE_PRIMARY
+    assert identity.workspace_id != DEV_WORKSPACE_PRIMARY
     assert email_otp.is_registered_principal(identity.principal_id)
+    assert email_otp.principal_can_access_workspace(identity.principal_id, identity.workspace_id)
+    assert not email_otp.principal_can_access_workspace(identity.principal_id, DEV_WORKSPACE_PRIMARY)
     signed_in = email_otp.verify_email_password("new-user@example.com", "new-password")
     assert signed_in.principal_id == identity.principal_id
+    assert signed_in.workspace_id == identity.workspace_id
     profile = email_otp.profile_for_principal(identity.principal_id)
     assert profile is not None
     assert profile["email"] == "new-user@example.com"
     issued = email_otp.request_email_otp("new-user@example.com")
     verified = email_otp.verify_email_otp(issued.challenge_id, "new-user@example.com", issued.code)
     assert verified.principal_id == identity.principal_id
+    assert verified.workspace_id == identity.workspace_id
+
+
+def test_signup_isolates_each_account_to_its_own_workspace() -> None:
+    first = email_otp.register_local_account("first@example.com", "password-one")
+    second = email_otp.register_local_account("second@example.com", "password-two")
+    assert first.workspace_id != second.workspace_id
+    assert first.principal_id != second.principal_id
+    assert email_otp.workspaces_for_principal(first.principal_id)[0]["id"] == str(first.workspace_id)
+    assert email_otp.workspaces_for_principal(second.principal_id)[0]["id"] == str(second.workspace_id)
+    assert not email_otp.principal_can_access_workspace(first.principal_id, second.workspace_id)
+    assert not email_otp.principal_can_access_workspace(second.principal_id, first.workspace_id)
 
 
 def test_signup_rejects_a_duplicate_or_short_password() -> None:
@@ -243,7 +258,8 @@ def test_http_signup_opens_a_session_without_touching_the_database(
 
     async def persist(identity: email_otp.LoginIdentity, email: str) -> None:
         assert email == "new-user@example.com"
-        assert identity.workspace_id == DEV_WORKSPACE_PRIMARY
+        assert identity.workspace_id != DEV_WORKSPACE_PRIMARY
+        assert identity.principal_id != DEV_PRINCIPAL_ID
 
     async def issue(response, request, **kwargs):
         return api_gateway.SessionResponse(

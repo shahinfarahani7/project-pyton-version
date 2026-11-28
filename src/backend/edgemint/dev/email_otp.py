@@ -18,6 +18,7 @@ from email.message import EmailMessage
 from uuid import UUID, uuid4
 
 from edgemint.building_blocks.ids import public_id
+from edgemint.dev import fixtures
 from edgemint.dev.fixtures import DEV_PRINCIPAL_ID, DEV_WORKSPACE_PRIMARY
 
 DEV_LOGIN_EMAIL = "dev-user@edgemint.local"
@@ -89,14 +90,18 @@ class IssuedChallenge:
 _challenges: dict[str, _Challenge] = {}
 _password_failures: dict[str, int] = {}
 _registered_principals: set[UUID] = set()
+_principal_workspaces: dict[UUID, UUID] = {}
 _accounts_hydrated = False
 
 
 def reset_email_otp_challenges() -> None:
     global _accounts_hydrated
+    for workspace_id in list(_principal_workspaces.values()):
+        fixtures.forget_private_workspace(workspace_id)
     _challenges.clear()
     _password_failures.clear()
     _registered_principals.clear()
+    _principal_workspaces.clear()
     _accounts_hydrated = False
     for email in [item for item in _ACCOUNTS if item != DEV_LOGIN_EMAIL]:
         del _ACCOUNTS[email]
@@ -193,6 +198,29 @@ def is_registered_principal(principal_id: UUID) -> bool:
     return principal_id in _registered_principals
 
 
+def principal_can_access_workspace(principal_id: UUID, workspace_id: UUID) -> bool:
+    if fixtures.is_dev_principal(principal_id):
+        return workspace_id in fixtures.DEV_WORKSPACE_IDS
+    return _principal_workspaces.get(principal_id) == workspace_id
+
+
+def workspaces_for_principal(principal_id: UUID) -> list[dict]:
+    if fixtures.is_dev_principal(principal_id):
+        return fixtures.dev_workspaces()
+    workspace_id = _principal_workspaces.get(principal_id)
+    if workspace_id is None:
+        return []
+    return [
+        {
+            "id": str(workspace_id),
+            "name": "My workspace",
+            "environment": "production",
+            "status": "active",
+            "version": 1,
+        }
+    ]
+
+
 def profile_for_principal(principal_id: UUID) -> dict[str, str] | None:
     for email, account in _ACCOUNTS.items():
         if account.principal_id != principal_id or email == DEV_LOGIN_EMAIL:
@@ -207,6 +235,14 @@ def profile_for_principal(principal_id: UUID) -> dict[str, str] | None:
     return None
 
 
+def _bind_private_workspace(principal_id: UUID, workspace_id: UUID) -> None:
+    previous = _principal_workspaces.get(principal_id)
+    if previous is not None and previous != workspace_id:
+        fixtures.forget_private_workspace(previous)
+    _principal_workspaces[principal_id] = workspace_id
+    fixtures.register_private_workspace(workspace_id)
+
+
 def register_local_account(email: str, password: str) -> LoginIdentity:
     normalized = normalize_email(email)
     if normalized in _ACCOUNTS:
@@ -214,13 +250,15 @@ def register_local_account(email: str, password: str) -> LoginIdentity:
     if not MIN_PASSWORD_LENGTH <= len(password) <= 128:
         raise EmailOtpError("Use a password of at least 8 characters.", status=422)
     principal_id = uuid4()
+    workspace_id = uuid4()
     _ACCOUNTS[normalized] = LocalAccount(
         principal_id,
-        DEV_WORKSPACE_PRIMARY,
+        workspace_id,
         "customer",
         _password_hash(password),
     )
     _registered_principals.add(principal_id)
+    _bind_private_workspace(principal_id, workspace_id)
     _password_failures.pop(normalized, None)
     return _identity_for(normalized)
 
@@ -232,6 +270,9 @@ def forget_local_account(email: str) -> None:
     account = _ACCOUNTS.pop(normalized, None)
     if account is not None:
         _registered_principals.discard(account.principal_id)
+        workspace_id = _principal_workspaces.pop(account.principal_id, None)
+        if workspace_id is not None:
+            fixtures.forget_private_workspace(workspace_id)
 
 
 async def hydrate_local_accounts() -> None:
@@ -281,6 +322,12 @@ async def hydrate_local_accounts() -> None:
                     bytes(row["password_hash"]),
                 )
                 _registered_principals.add(principal_id)
+                if workspace_id not in fixtures.DEV_WORKSPACE_IDS:
+                    _bind_private_workspace(principal_id, workspace_id)
+                else:
+                    # Legacy shared demo workspace — keep membership so sessions still work,
+                    # but do not expose seeded demo tasks as "owned" private content.
+                    _principal_workspaces[principal_id] = workspace_id
     except Exception:
         return
     _accounts_hydrated = True
@@ -293,6 +340,7 @@ async def persist_local_account(identity: LoginIdentity, email: str) -> None:
 
     account = _ACCOUNTS[email]
     display_name = email.split("@", 1)[0][:200] or "Portal User"
+    organization_id = uuid4()
     async with transaction(workspace_id=identity.workspace_id) as connection:
         await connection.execute(
             text(
@@ -305,6 +353,37 @@ async def persist_local_account(identity: LoginIdentity, email: str) -> None:
                 )
                 """
             )
+        )
+        await connection.execute(
+            text(
+                """
+                INSERT INTO public.organizations (id, public_id, name, status)
+                VALUES (:id, :public_id, :name, 'active')
+                """
+            ),
+            {
+                "id": organization_id,
+                "public_id": public_id("org"),
+                "name": f"{display_name} org",
+            },
+        )
+        await connection.execute(
+            text(
+                """
+                INSERT INTO public.workspaces (
+                  id, organization_id, public_id, name, status, data_region
+                )
+                VALUES (
+                  :id, :organization_id, :public_id, :name, 'active', 'eu-west-1'
+                )
+                """
+            ),
+            {
+                "id": identity.workspace_id,
+                "organization_id": organization_id,
+                "public_id": public_id("ws"),
+                "name": "My workspace",
+            },
         )
         await connection.execute(
             text(

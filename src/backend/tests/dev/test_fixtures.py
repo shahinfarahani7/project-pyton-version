@@ -29,6 +29,19 @@ def test_dev_tasks_vary_by_workspace(monkeypatch: pytest.MonkeyPatch) -> None:
     assert primary["items"][0]["lifecycleStatus"] == "running"
 
 
+def test_private_signup_workspace_starts_empty_and_ready(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(fixtures, "_reconcile_worker_pending_tasks", lambda: [])
+    workspace_id = UUID(int=91)
+    fixtures.forget_private_workspace(workspace_id)
+    fixtures.register_private_workspace(workspace_id)
+    tasks = fixtures.dev_tasks(workspace_id)
+    balance = fixtures.dev_credit_balance(workspace_id)
+    assert tasks["items"] == []
+    assert balance["status"] == "ready"
+    assert balance["availableFibonAtomic"] > 0
+    fixtures.forget_private_workspace(workspace_id)
+
+
 def test_dev_task_lookup() -> None:
     task = fixtures.dev_task(fixtures.DEV_WORKSPACE_PRIMARY, "tsk_dev_nlp_done")
     assert task is not None

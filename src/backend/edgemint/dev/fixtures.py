@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from edgemint.dev.fibonai_billing import (
+    DEV_GRANT_TOKENS,
     WorkspaceBook,
     detach_book,
     ensure_book,
@@ -33,10 +34,40 @@ _PREVIEW_RESULT_CHARS = 500
 _MAX_STORED_TEXT_CHARS = 32_000
 
 _created_tasks: dict[UUID, list[dict[str, Any]]] = {}
+_private_workspace_ids: set[UUID] = set()
+
+
+def register_private_workspace(workspace_id: UUID) -> None:
+    """Grant a signup workspace the same prepaid book as the shared demo workspaces."""
+    if workspace_id in DEV_WORKSPACE_IDS:
+        return
+    _private_workspace_ids.add(workspace_id)
+    if existing_book(workspace_id) is None:
+        from edgemint.economy.fibonai_token import cached_economy
+
+        install_fibonai_book(
+            workspace_id,
+            primary_atomic=DEV_GRANT_TOKENS * cached_economy().atomic_units_per_token,
+        )
+
+
+def forget_private_workspace(workspace_id: UUID) -> None:
+    _private_workspace_ids.discard(workspace_id)
+    forget_book(workspace_id)
+    _created_tasks.pop(workspace_id, None)
+
+
+def is_private_workspace(workspace_id: UUID) -> bool:
+    return workspace_id in _private_workspace_ids
+
+
+def _billing_ready(workspace_id: UUID) -> bool:
+    return workspace_id in DEV_WORKSPACE_IDS or workspace_id in _private_workspace_ids
 
 
 def _fibonai_book(workspace_id: UUID) -> WorkspaceBook:
-    return ensure_book(workspace_id, DEV_WORKSPACE_IDS)
+    grant_ids = frozenset({*DEV_WORKSPACE_IDS, *_private_workspace_ids})
+    return ensure_book(workspace_id, grant_ids)
 
 
 def fibonai_available(workspace_id: UUID) -> int:
@@ -621,7 +652,7 @@ def dev_usage(workspace_id: UUID) -> dict[str, Any]:
     period = datetime.now(tz=UTC).strftime("%Y-%m")
     tasks = _created_tasks.get(workspace_id, [])
     submitted = [task for task in tasks if str(task.get("createdAt") or "").startswith(period)]
-    status = "ready" if workspace_id in DEV_WORKSPACE_IDS else "empty"
+    status = "ready" if _billing_ready(workspace_id) else "empty"
     return {
         "status": status,
         "period": period,
@@ -642,7 +673,7 @@ def dev_credit_balance(workspace_id: UUID) -> dict[str, Any]:
         "workerRewardAtomic": quote.worker_reward_atomic,
         "fibonAtomicPerToken": policy.atomic_units_per_token,
     }
-    if workspace_id in DEV_WORKSPACE_IDS:
+    if _billing_ready(workspace_id):
         return {"status": "ready", **fibonai}
     return {"status": "empty", **fibonai}
 
